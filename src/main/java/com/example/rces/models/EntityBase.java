@@ -1,9 +1,10 @@
-//Класс с общими полями для всех сущностей(кроме Employee т.к там токен доступа)
+//Класс с общими полями для всех сущностей(кроме Employee т.к там токен доступа или нет)
 package com.example.rces.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -13,8 +14,10 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public abstract class EntityBase {
 
+    @Getter
     public enum Appraisal {
 
         score1(1, "Ужасно"),
@@ -31,15 +34,9 @@ public abstract class EntityBase {
             this.score = score;
         }
 
-        public int getId() {
-            return id;
-        }
-
-        public String getScore() {
-            return score;
-        }
     }
 
+    @Getter
     @Id
     @GeneratedValue (strategy = GenerationType.UUID)
     @Column (name = "id", nullable = false)
@@ -58,4 +55,7 @@ public abstract class EntityBase {
     @Enumerated(EnumType.STRING)
     private Appraisal score;
 
+    public UUID getId() {
+        return id;
+    }
 }

@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface OtkRepository extends JpaRepository <Otk, UUID> {
 
     //Что б номер заявки был ++ ключевыми словами Spring
-    Integer findTopByOrderByRequestNumberDesc();
+    //Integer findTopByOrderByRequestNumberDesc();
 
 }
