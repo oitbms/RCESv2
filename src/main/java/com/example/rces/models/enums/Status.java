@@ -1,6 +1,9 @@
 //Все статусы
 package com.example.rces.models.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum Status {
 
     New(1L, "Новый"),
@@ -16,11 +19,4 @@ public enum Status {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
 }

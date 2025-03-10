@@ -1,8 +1,11 @@
 //Класс с причинами вызовов
 package com.example.rces.models;
 
+import lombok.Getter;
+
 public class GeneralReason {
 
+    @Getter
     public enum Technologist {
         TECH1(1L, "Первая причина"),
         TECH2(2L, "Вторая причина");
@@ -15,15 +18,9 @@ public class GeneralReason {
             this.name = name;
         }
 
-        public Long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
     }
 
+    @Getter
     public enum Otk {
         OTK1(1L, "Первая причина"),
         OTK2(2L, "Вторая причина");
@@ -36,15 +33,9 @@ public class GeneralReason {
             this.name = name;
         }
 
-        public Long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
     }
 
+    @Getter
     public enum Constructor {
         CONSTR1(1L, "Первая причина"),
         CONSTR2(2L, "Вторая причина");
@@ -57,13 +48,6 @@ public class GeneralReason {
             this.name = name;
         }
 
-        public Long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
     }
 
 }
