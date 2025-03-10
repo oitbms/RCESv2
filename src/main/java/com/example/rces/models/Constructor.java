@@ -13,11 +13,6 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Constructor {
-    @Id
-    @GeneratedValue (strategy = GenerationType.UUID)
-    @Column (name = "name", nullable = false)
-    private UUID id;
-
+public class Constructor extends EntityBase{
 
 }

@@ -13,11 +13,6 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageConstructor {
-    @Id
-    @GeneratedValue (strategy = GenerationType.UUID)
-    @Column (name = "id", nullable = false)
-    private UUID id;
-
+public class ImageConstructor extends EntityBase{
 
 }

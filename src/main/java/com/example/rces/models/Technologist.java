@@ -13,10 +13,16 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Technologist {
-    @Id
-    @GeneratedValue (strategy = GenerationType.UUID)
-    @Column (name = "id", nullable = false)
-    private UUID id;
+public class Technologist extends EntityBase {
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    private Employee employee;
+
+    @Column(name = "reason")
+    @Enumerated(EnumType.STRING)
+    private GeneralReason.Technologist reason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CustomerOrder customerOrder;
 
 }
