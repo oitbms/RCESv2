@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface ConstructorRepository extends JpaRepository <Constructor, UUID> {
 
+    //Что б номер заявки был ++ ключевыми словами Spring
     Integer findTopByOrderByRequestNumberDesc();
 
 }

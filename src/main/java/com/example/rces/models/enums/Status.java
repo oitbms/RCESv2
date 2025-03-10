@@ -1,3 +1,4 @@
+//Все статусы
 package com.example.rces.models.enums;
 
 public enum Status {
