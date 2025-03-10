@@ -1,3 +1,4 @@
+//сущность заказы клиентов
 package com.example.rces.models;
 
 import jakarta.persistence.Column;

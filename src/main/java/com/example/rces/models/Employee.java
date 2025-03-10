@@ -1,3 +1,4 @@
+//сущность сотрудники
 package com.example.rces.models;
 
 import jakarta.persistence.Entity;

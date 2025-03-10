@@ -1,7 +1,5 @@
+//Класс с причинами вызовов
 package com.example.rces.models;
-
-import lombok.AllArgsConstructor;
-
 
 public class GeneralReason {
 

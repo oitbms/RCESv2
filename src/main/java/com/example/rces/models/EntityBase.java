@@ -1,3 +1,4 @@
+//Класс с общими полями для всех сущностей(кроме Employee т.к там токен доступа)
 package com.example.rces.models;
 
 import jakarta.persistence.*;
