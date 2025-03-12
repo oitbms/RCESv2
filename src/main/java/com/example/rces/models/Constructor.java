@@ -18,7 +18,7 @@ public class Constructor extends EntityBase{
     private String description;
     private String numberWorkshop;
     private String customerOrder;
-    private String image;
+//    private String image;
     private boolean accepted;
     private Date dateStartAccepted;
     private Date dateEndAccepted;
@@ -55,14 +55,6 @@ public class Constructor extends EntityBase{
 
     public void setCustomerOrder(String customerOrder) {
         this.customerOrder = customerOrder;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 
     public boolean isAccepted() {
