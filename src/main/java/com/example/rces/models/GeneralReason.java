@@ -5,7 +5,6 @@ import lombok.Getter;
 
 public class GeneralReason {
 
-
     public enum Technologist {
         TECH1(1L, "Первая причина"),
         TECH2(2L, "Вторая причина");
