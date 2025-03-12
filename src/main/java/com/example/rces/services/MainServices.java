@@ -4,12 +4,10 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-public class ApiServices {
+public class MainServices {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -18,10 +16,8 @@ public class ApiServices {
         return entityManager.createQuery("select e from CustomerOrder e", CustomerOrder.class).getResultList();
     }
 
-    public List<Employee> findAllEmployees(String role) {
-        return entityManager.createQuery("select e from Employee e where e.role =: role", Employee.class)
-                .setParameter("role", role)
-                .getResultList();
+    public List<Employee> findAllEmployees() {
+        return entityManager.createQuery("select e from Employee e", Employee.class).getResultList();
     }
 
 

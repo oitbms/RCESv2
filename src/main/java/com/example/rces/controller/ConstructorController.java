@@ -36,6 +36,7 @@ public class ConstructorController {
             if (additionalFiles.length > 0 && !additionalFiles[0].isEmpty()) {
                 byte[] imageBytes = additionalFiles[0].getBytes();
                 String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                constructor.setImage(base64Image); // Сохраняем строку Base64
             }
             constructor.setDateStartAccepted(new Date());
             constructor.setAccepted(false); // По умолчанию заявка не принята

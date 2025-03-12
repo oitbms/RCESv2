@@ -1,60 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание заявки на вызов технолога</title>
-    <link rel="stylesheet" href="/styles.css">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TechnologistBid</title>
 </head>
 <body>
+<!--Форма создания заявки на вызов технолога из цеха-->
+<a href="/technologistmain">&larr; К списку заявок</a>
+<h1>Новая заявка на вызов технолога</h1>
+<form method="post" action="/technologistbid/create">
+    <label>
+        Сотрудник:<br>
+        <input type="text" name="employee" value="${payload.employee!}">
+    </label>
 
-<!-- Сотрудник -->
-<h2>Сотрудник</h2>
-<input type="text" id="employeeName" placeholder="Имя сотрудника" readonly>
-<button class="openModal"
-        data-endpoint="employees"
-        data-param="technologist"
-        data-display-field="name"
-        data-input-id="employeeName">
-    список
-</button>
-<div id="myModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Список сотрудников</h2>
-        <ul id="employeeList"></ul>
-    </div>
-</div>
+    <!-- Ещё фото -->
 
-<!-- ЗК -->
-<h2>Заказ клиента</h2>
-<input type="text" id="customerOrderName" placeholder="Номер заказа" readonly>
-<button class="openModal"
-        data-endpoint="customerOrders"
-        data-display-field="name"
-        data-input-id="customerOrderName">
-    список
-</button>
-<div id="myModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Список заказов клиента</h2>
-        <ul id="customerOrderList"></ul>
-    </div>
-</div>
+    <label>
+        Причина:<br>
+        <input type="text" name="reason" value="${payload.reason!}">
+    </label>
 
-<!-- Причина -->
-<h2>Причина</h2>
-<input type="text" id="reasonId" placeholder="Причина" readonly>
-<button class="openModal"
-        data-endpoint="reasons"
-        data-display-field="name"
-        data-input-id="reasonId">
-    список
-</button>
+    <label>
+        Заказ клиента:<br>
+        <input type="text" name="customerOrder" value="${payload.customerOrder!}">
+    </label>
 
-<button type="submit">Создать заявку</button>
-
-<script src="/script.js"></script>
+    <button type="submit">Создать заявку</button>
+</form>
 </body>
 </html>
