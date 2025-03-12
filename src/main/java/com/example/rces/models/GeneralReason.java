@@ -5,7 +5,7 @@ import lombok.Getter;
 
 public class GeneralReason {
 
-    @Getter
+
     public enum Technologist {
         TECH1(1L, "Первая причина"),
         TECH2(2L, "Вторая причина");
@@ -18,6 +18,13 @@ public class GeneralReason {
             this.name = name;
         }
 
+        public Long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     @Getter
