@@ -12,12 +12,16 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "customerorder")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CustomerOrder extends EntityBase {
 
     @Column(name = "str_code")
-    private String code; // Номер
+    private String name; // Номер заказа
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
