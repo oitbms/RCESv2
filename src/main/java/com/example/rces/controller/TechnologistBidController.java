@@ -57,10 +57,10 @@ public class TechnologistBidController {
         service.save(technologist);
 
         model.addAttribute("requestNumber", technologist.getRequestNumber());
-//        // Отправляем сообщение
-//        String message = String.format("Создана новая заявка: %d\nСотрудник: %s\nЗаказ клиента: %s\nПричина: %s",
-//                requestNumber, employee.getName(), customerOrder.getName(), reason.toString());
-//        tgService.sendMessage(message);
+        // Отправляем сообщение
+        String message = String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nПричина: %s",
+                technologist.getRequestNumber(), employee.getName(), customerOrder.getName(), technologist.getReason().getName());
+        tgService.sendMessage(message);
 
         return "success";
     }
