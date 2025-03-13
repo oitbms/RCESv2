@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "employees")
 public class Employee {
-    @Id
-    private String token;
 
+    @Id
+    private Long id;
 
     private String name;
 
@@ -21,12 +21,12 @@ public class Employee {
 
     private String role;
 
-    public String getToken() {
-        return token;
+    public Long getId() {
+        return id;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

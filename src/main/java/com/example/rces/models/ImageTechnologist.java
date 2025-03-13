@@ -1,13 +1,12 @@
 //сущность прикрепляемые изображения к вызову технолога
 package com.example.rces.models;
 
+import com.example.rces.models.base.EntityBase;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -15,6 +14,6 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageTechnologist extends EntityBase{
+public class ImageTechnologist extends EntityBase {
 
 }

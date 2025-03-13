@@ -1,18 +1,15 @@
 //сущность конструктора
 package com.example.rces.models;
 
+import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "constructorbid")
-public class Constructor extends EntityBase{
+public class Constructor extends EntityBase {
 
     private String name;
     private String description;

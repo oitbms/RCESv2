@@ -1,6 +1,7 @@
 //сущность технолога
 package com.example.rces.models;
 
+import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,9 +26,6 @@ public class Technologist extends EntityBase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private CustomerOrder customerOrder;
-
-    @Column(name = "request_number")
-    private Integer requestNumber;
 
     @Column(name = "status_id")
     @Enumerated(EnumType.STRING)
@@ -58,14 +56,6 @@ public class Technologist extends EntityBase {
 
     public void setCustomerOrder(CustomerOrder customerOrder) {
         this.customerOrder = customerOrder;
-    }
-
-    public Integer getRequestNumber() {
-        return requestNumber;
-    }
-
-    public void setRequestNumber(Integer requestNumber) {
-        this.requestNumber = requestNumber;
     }
 
     public Status getStatus() {

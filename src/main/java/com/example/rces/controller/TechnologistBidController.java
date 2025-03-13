@@ -4,8 +4,10 @@ package com.example.rces.controller;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.GeneralReason;
-import com.example.rces.services.TechnologistServices;
+import com.example.rces.models.Technologist;
+import com.example.rces.models.enums.Status;
 import com.example.rces.services.TelegramService;
+import com.example.rces.services.UniversalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,34 +17,50 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Arrays;
+import java.util.UUID;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/technologistbid")
 public class TechnologistBidController {
 
     @Autowired
-    private TechnologistServices service;
+    private UniversalService service;
 
     @Autowired
     private TelegramService tgService;
 
     @GetMapping
-    public String getRequestFromTechnologist(Model model) {
+    public String getRequestFromTechnologist() {
         return "technologistbid";
     }
 
+    //Создание, сохранение заявки и отправка сообщения в ТГ
     @PostMapping("/create")
-    public String createRequestFromTechnologist(@RequestParam("employee") Employee employee,
-                                                @RequestParam("customerOrder") CustomerOrder customerOrder,
-                                                @RequestParam("reason") GeneralReason.Technologist reason,
+    public String createRequestFromTechnologist(@RequestParam("employeeId") Long employeeId,
+                                                @RequestParam("customerOrderId") UUID customerOrderId,
+                                                @RequestParam("reasonsId") Long reasonsId,
                                                 Model model) {
+        Employee employee = service.findById(Employee.class, employeeId);
+        CustomerOrder customerOrder = service.findById(CustomerOrder.class, customerOrderId);
 
-        Integer requestNumber = service.createTechnologist(employee, customerOrder, reason);
-        model.addAttribute("requestNumber", requestNumber);
+        Technologist technologist = new Technologist();
+        technologist.setEmployee(employee);
+        technologist.setCustomerOrder(customerOrder);
+        Arrays.stream(GeneralReason.Technologist.values())
+                .filter(tech -> tech.getId().equals(reasonsId))
+                .findFirst()
+                .ifPresent(technologist::setReason);
+        technologist.setStatus(Status.NEW);
 
-        String message = String.format("Создана новая заявка: %d\nСотрудник: %s\nЗаказ клиента: %s\nПричина: %s",
-                requestNumber, employee.getName(), customerOrder.getName(), reason.toString());
-        tgService.sendMessage(message);
+        service.save(technologist);
+
+        model.addAttribute("requestNumber", technologist.getRequestNumber());
+//        // Отправляем сообщение
+//        String message = String.format("Создана новая заявка: %d\nСотрудник: %s\nЗаказ клиента: %s\nПричина: %s",
+//                requestNumber, employee.getName(), customerOrder.getName(), reason.toString());
+//        tgService.sendMessage(message);
 
         return "success";
     }

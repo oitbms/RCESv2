@@ -6,10 +6,10 @@ import lombok.Getter;
 @Getter
 public enum Status {
 
-    New(1L, "Новый"),
-    InWork(2L, "В работе"),
-    Closed(3L, "Закрыт"),
-    Cancel(4L, "Отменен");
+    NEW(1L, "Новый"),
+    WORK(2L, "В работе"),
+    CLOCED(3L, "Закрыт"),
+    CANCELED(4L, "Отменен");
 
     private final Long id;
     private final String name;
