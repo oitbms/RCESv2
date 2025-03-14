@@ -4,8 +4,12 @@ package com.example.rces.models;
 import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "constructorbid")
@@ -15,12 +19,33 @@ public class Constructor extends EntityBase {
     private String description;
     private String numberWorkshop;
     private String customerOrder;
-//    private String image;
+    private String image;
     private boolean accepted;
     private Date dateStartAccepted;
     private Date dateEndAccepted;
-    @Enumerated(EnumType.STRING) // Сохраняем значение enum как строку
+
+    @Column(name = "status_id")
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Employee employee;
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public String getName() {
         return name;
@@ -54,6 +79,14 @@ public class Constructor extends EntityBase {
         this.customerOrder = customerOrder;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public boolean isAccepted() {
         return accepted;
     }
@@ -76,13 +109,5 @@ public class Constructor extends EntityBase {
 
     public void setDateEndAccepted(Date dateEndAccepted) {
         this.dateEndAccepted = dateEndAccepted;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 }
