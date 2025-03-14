@@ -8,6 +8,8 @@
     <title>HOME</title>
 </head>
 <body>
-<!--Главное меню программы-->
+<a href="technologistbid">Создать заявку на вызов технолога</a>
+<a href="constructorbid">Создать заявку на вызов конструктора</a>
+<a href="otkbid">Создать заявку на вызов ОТК</a>
 </body>
 </html>

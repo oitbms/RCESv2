@@ -21,6 +21,8 @@ public class Employee {
 
     private String role;
 
+    private Boolean isActive;
+
     public Long getId() {
         return id;
     }
@@ -51,5 +53,13 @@ public class Employee {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 }

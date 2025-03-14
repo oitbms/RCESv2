@@ -43,4 +43,12 @@ public class UniversalRepository {
         cq.select(root).where(cb.equal(root.get(fieldName), value));
         return entityManager.createQuery(cq).getResultList();
     }
+
+    public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> cq = cb.createQuery(entityClass);
+        Root<T> root = cq.from(entityClass);
+        cq.select(root).where(cb.equal(root.get("requestNumber"), requestNumber));
+        return entityManager.createQuery(cq).getSingleResult();
+    }
 }

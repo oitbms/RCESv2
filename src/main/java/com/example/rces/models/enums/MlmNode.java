@@ -3,7 +3,7 @@ package com.example.rces.models.enums;
 
 import lombok.Getter;
 
-@Getter
+
 public enum MlmNode {
 
     workShop1(1L, "Цех №1"),
@@ -20,6 +20,23 @@ public enum MlmNode {
     MlmNode(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public static MlmNode fromString(String statusName) {
+        for (MlmNode mlmNode : MlmNode.values()) {
+            if (mlmNode.getName().equals(statusName)) {
+                return mlmNode;
+            }
+        }
+        throw new IllegalArgumentException("Неизвестный узел: " + statusName);
     }
 
 }

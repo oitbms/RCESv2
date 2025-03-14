@@ -4,17 +4,11 @@ package com.example.rces.models;
 import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "technologistbid")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Technologist extends EntityBase {
 
     @ManyToOne(fetch = FetchType.LAZY)

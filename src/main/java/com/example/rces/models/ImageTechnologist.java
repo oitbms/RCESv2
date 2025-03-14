@@ -11,9 +11,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table (name = "imagetechnologist")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@AttributeOverride(name = "comment", column = @Column(name = "transient_score"))
 public class ImageTechnologist extends EntityBase {
-
+    @Transient
+    private Appraisal score;
 }

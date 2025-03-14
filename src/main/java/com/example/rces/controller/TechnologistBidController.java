@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -31,8 +28,9 @@ public class TechnologistBidController {
     @Autowired
     private TelegramService tgService;
 
-    @GetMapping
-    public String getRequestFromTechnologist() {
+    @GetMapping("/create")
+    public String getCreateBidForm(Model model) {
+        model.addAttribute("createForm", true);
         return "technologistbid";
     }
 
@@ -44,7 +42,6 @@ public class TechnologistBidController {
                                                 Model model) {
         Employee employee = service.findById(Employee.class, employeeId);
         CustomerOrder customerOrder = service.findById(CustomerOrder.class, customerOrderId);
-
         Technologist technologist = new Technologist();
         technologist.setEmployee(employee);
         technologist.setCustomerOrder(customerOrder);
@@ -52,17 +49,35 @@ public class TechnologistBidController {
                 .filter(tech -> tech.getId().equals(reasonsId))
                 .findFirst()
                 .ifPresent(technologist::setReason);
-        technologist.setStatus(Status.NEW);
-
+        technologist.setStatus(Status.New);
         service.save(technologist);
-
-        model.addAttribute("requestNumber", technologist.getRequestNumber());
-        // Отправляем сообщение
         String message = String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nПричина: %s",
                 technologist.getRequestNumber(), employee.getName(), customerOrder.getName(), technologist.getReason().getName());
-        tgService.sendMessage(message);
+        tgService.sendMessageToGroup(message);
+
+        model.addAttribute("requestNumber", technologist.getRequestNumber());
+        model.addAttribute("create", true);
 
         return "success";
     }
+
+    @GetMapping("/view/{requestNumber}")
+    public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
+        Technologist technologist = service.findByRequestNumber(Technologist.class, requestNumber);
+        model.addAttribute("bid", technologist);
+        model.addAttribute("viewForm", true);
+        return "/technologistbid";
+    }
+
+    @PostMapping("/view/{requestNumber}")
+    public String updateViewBidForm(@ModelAttribute Technologist technologist,
+                                    @ModelAttribute Status status,
+                                    Model model) {
+        technologist.setStatus(status);
+        service.save(technologist);
+        model.addAttribute("create", false);
+        return "success";
+    }
+
 
 }

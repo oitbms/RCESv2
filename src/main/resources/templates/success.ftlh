@@ -68,7 +68,13 @@
 <body>
 <div class="container">
     <div class="checkmark"></div>
-    <div class="message">Заявка под номером <span>${requestNumber}</span> создана</div>
+    <div class="message">Заявка под номером <span>${requestNumber}</span>
+        <#if create>
+            создана
+        <#else>
+            обновлена
+        </#if>
+    </div>
 </div>
 </body>
 </html>

@@ -34,4 +34,8 @@ public class UniversalService {
         return repository.findByField(entityClass, fieldName, value);
     }
 
+    public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
+        return repository.findByRequestNumber(entityClass, requestNumber);
+    }
+
 }

@@ -1,15 +1,12 @@
 //Все статусы
 package com.example.rces.models.enums;
 
-import lombok.Getter;
-
-@Getter
 public enum Status {
 
-    NEW(1L, "Новый"),
-    WORK(2L, "В работе"),
-    CLOCED(3L, "Закрыт"),
-    CANCELED(4L, "Отменен");
+    New(1L, "Новый"),
+    InWork(2L, "В работе"),
+    Cloced(3L, "Закрыт"),
+    Canceled(4L, "Отменен");
 
     private final Long id;
     private final String name;
@@ -19,4 +16,19 @@ public enum Status {
         this.name = name;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public static Status fromString(String statusName) {
+        for (Status status : Status.values()) {
+            if (status.getName().equals(statusName)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Неизвестный статус: " + statusName);
+    }
 }
