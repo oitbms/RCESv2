@@ -15,9 +15,21 @@ public class TelegramService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public void sendMessageToGroup(String message) {
-        String url = String.format("https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s",
-                botToken, chatId, message);
+    private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
+
+    private String message(Integer requestNumber, String employee, String customerOrder, String reason, Boolean isCreate) {
+        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nПричина: %s",
+                requestNumber, employee, customerOrder, reason)
+                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЗаказ клиента: %s\nПричина: %s", requestNumber, employee, customerOrder, reason);
+    }
+
+    public void sendMessageToGroup(Integer requestNumber, String employee, String customerOrder, String reason) {
+        String url = String.format(messageUrl, botToken, chatId, message(requestNumber, employee, customerOrder, reason, true));
+        restTemplate.getForObject(url, String.class);
+    }
+
+    public void sendUpdateMessageToGroup(Integer requestNumber, String employee, String customerOrder, String reason) {
+        String url = String.format(messageUrl, botToken, chatId, message(requestNumber, employee, customerOrder, reason, false));
         restTemplate.getForObject(url, String.class);
     }
 }

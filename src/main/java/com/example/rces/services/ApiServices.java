@@ -4,6 +4,7 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,9 @@ public class ApiServices {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private TelegramService tgService;
 
     public List<CustomerOrder> findAllCustomerOrder() {
         return entityManager.createQuery("select e from CustomerOrder e", CustomerOrder.class).getResultList();

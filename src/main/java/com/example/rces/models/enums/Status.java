@@ -5,8 +5,8 @@ public enum Status {
 
     New(1L, "Новый"),
     InWork(2L, "В работе"),
-    Cloced(3L, "Закрыт"),
-    Canceled(4L, "Отменен");
+    Closed(3L, "Закрыт"),
+    Cancel(4L, "Отменен");
 
     private final Long id;
     private final String name;

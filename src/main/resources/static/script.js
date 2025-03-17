@@ -12,13 +12,13 @@ async function fetchData(endpoint, param) {
 //          Param: entity - имя сущности
 async function saveData(className) {
     const entityId = document.getElementsByName('id'); //Id сущности в детальной карточке для сохранения
-    const formData  = new FormData(document.getElementById('viewRequestForm'));
+    const formData = new FormData(document.getElementById('viewRequestForm'));
     const data = {};
     formData.forEach((value, key) => {
         data[key] = value;
     });
     const url = new URL('/api/update', window.location.origin);
-    url.searchParams.append('className',className)
+    url.searchParams.append('className', className)
     url.searchParams.append("id", entityId[0].value)
     const response = await fetch(url.toString(), {
         method: 'POST',
@@ -27,6 +27,7 @@ async function saveData(className) {
         },
         body: JSON.stringify(data), // Отправляем данные в формате JSON
     });
+    notification("Запись сохранена", 3000)
 }
 
 // Обработчик для кнопок открытия модальных окон
@@ -53,7 +54,7 @@ document.querySelectorAll('.openModal').forEach(button => {
             li.onclick = () => {
                 document.getElementById(inputId).value = item[displayField];
                 document.getElementById(hiddenId).value = item.id;
-                if (save!=null) saveData(save);
+                if (save != null) saveData(save);
                 closeModal(modalId);
             };
             list.appendChild(li);
@@ -67,21 +68,21 @@ document.querySelectorAll('.openModal').forEach(button => {
 //Для загрузки Фото
 $(document).ready(
     function () {
-    $('#infoModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var imgSrc = button.data('img-src');
+        $('#infoModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var imgSrc = button.data('img-src');
 
-        var modal = $(this);
-        if (imgSrc) {
-            modal.find('#modalImage').attr('src', imgSrc).show();
-            modal.find('#imageMessage').hide(); // Скрываем сообщение об отсутствии изображения
-        } else {
-            modal.find('#modalImage').attr('src', '').hide();
-            modal.find('#modalDescription').text('Изображение отсутствует.');
-            modal.find('#imageMessage').show(); // Показываем сообщение об отсутствии изображения
-        }
-    });
-}
+            var modal = $(this);
+            if (imgSrc) {
+                modal.find('#modalImage').attr('src', imgSrc).show();
+                modal.find('#imageMessage').hide();
+            } else {
+                modal.find('#modalImage').attr('src', '').hide();
+                modal.find('#modalDescription').text('Изображение отсутствует.');
+                modal.find('#imageMessage').show();
+            }
+        });
+    }
 );
 
 // Функция закрытия модального окна
@@ -97,9 +98,48 @@ document.querySelectorAll('.close').forEach(btn => {
     };
 });
 
+//Уведомление
+function notification(message, duration = 3000) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+
+    // Добавляем уведомление в контейнер
+    const container = document.getElementById('notification-container');
+    container.appendChild(notification);
+
+    // Показываем уведомление
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    // Убираем уведомление через указанное время
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            container.removeChild(notification);
+        }, 500);
+    }, duration);
+}
+
 // Закрытие при клике вне окна
 window.onclick = function (event) {
     if (event.target.classList.contains('modal')) {
         closeModal(event.target.id);
     }
+
+    //Скрытие ненужных заявок
+    function showTable(tableId) {
+        // Скрываем все таблицы
+        document.getElementById('inWorkTable').style.display = 'none';
+        document.getElementById('canceledTable').style.display = 'none';
+        document.getElementById('closedTable').style.display = 'none';
+
+        // Показываем выбранную таблицу
+        document.getElementById(tableId + 'Table').style.display = 'table';
+    }
+
+    // По умолчанию показываем таблицу "Заявки в работе"
+    showTable('inWork');
+
 };

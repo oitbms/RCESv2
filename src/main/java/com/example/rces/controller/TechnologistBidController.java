@@ -40,6 +40,7 @@ public class TechnologistBidController {
                                                 @RequestParam("customerOrderId") UUID customerOrderId,
                                                 @RequestParam("reasonsId") Long reasonsId,
                                                 Model model) {
+        model.addAttribute("create", true);
         Employee employee = service.findById(Employee.class, employeeId);
         CustomerOrder customerOrder = service.findById(CustomerOrder.class, customerOrderId);
         Technologist technologist = new Technologist();
@@ -51,12 +52,9 @@ public class TechnologistBidController {
                 .ifPresent(technologist::setReason);
         technologist.setStatus(Status.New);
         service.save(technologist);
-        String message = String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nПричина: %s",
-                technologist.getRequestNumber(), employee.getName(), customerOrder.getName(), technologist.getReason().getName());
-        tgService.sendMessageToGroup(message);
+        tgService.sendMessageToGroup(technologist.getRequestNumber(), employee.getName(), customerOrder.getName(), technologist.getReason().getName());
 
         model.addAttribute("requestNumber", technologist.getRequestNumber());
-        model.addAttribute("create", true);
 
         return "success";
     }

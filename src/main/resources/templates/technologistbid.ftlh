@@ -9,7 +9,7 @@
 <body>
 <#if createForm!false>
     <!-- Форма создания заявки -->
-    <form id="createRequestForm" action="technologistbid/create" method="POST">
+    <form id="createRequestForm" action="/technologistbid/create" method="POST">
 
         <!-- Сотрудник -->
         <h2>Сотрудник</h2>
@@ -111,7 +111,7 @@
 
 <#if viewForm!false>
     <!-- Форма просмотра заявки -->
-    <form id="viewRequestForm" action="technologistbid/view/${bid.requestNumber}" method="GET">
+    <form id="viewRequestForm" action="/technologistbid/view/${bid.requestNumber}" method="GET">
         <input type="hidden" name="id" value="${bid.id}"/>
 
         <!-- Поле: Номер заявки -->
@@ -169,6 +169,9 @@
             <a href="/technologistmain">К списку</a>
         </div>
     </form>
+    <div id="notification-container">
+        <!-- Тут надпись для уведомления -->
+    </div>
 </#if>
 <script src="/script.js"></script>
 <!-- Для загрузки фото -->
