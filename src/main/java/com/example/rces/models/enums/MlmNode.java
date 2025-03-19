@@ -30,13 +30,16 @@ public enum MlmNode {
         return name;
     }
 
-    public static MlmNode fromString(String statusName) {
+    public static MlmNode fromString(String field) {
+        if (field==null) {
+            return null;
+        }
         for (MlmNode mlmNode : MlmNode.values()) {
-            if (mlmNode.getName().equals(statusName)) {
+            if (mlmNode.getName().equals(field)) {
                 return mlmNode;
             }
         }
-        throw new IllegalArgumentException("Неизвестный узел: " + statusName);
+        throw new IllegalArgumentException("Неизвестный узел: " + field);
     }
 
 }

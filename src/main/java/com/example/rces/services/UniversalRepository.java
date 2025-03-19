@@ -51,4 +51,10 @@ public class UniversalRepository {
         cq.select(root).where(cb.equal(root.get("requestNumber"), requestNumber));
         return entityManager.createQuery(cq).getSingleResult();
     }
+
+    public Integer generateRequestNumber(Class<?> entityClass) {
+        return (Integer) entityManager
+                .createQuery("SELECT MAX(e.requestNumber) FROM " + entityClass.getSimpleName() + " e")
+                .getSingleResult();
+    }
 }

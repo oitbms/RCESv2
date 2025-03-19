@@ -1,6 +1,7 @@
 //сущность сотрудники
 package com.example.rces.models;
 
+import com.example.rces.models.annotation.Identifier;
 import com.example.rces.models.enums.MlmNode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "employees")
+@Identifier("Long.class")
 public class Employee {
 
     @Id

@@ -1,145 +1,123 @@
-// Функция для получения данных по url api
-//          Param: endpoint - url api
-//                 param - необязательный
-async function fetchData(endpoint, param) {
-    const url = new URL(/api/ + endpoint, window.location.origin);
-    url.searchParams.append('param', param);
-    const response = await fetch(url.toString());
-    return await response.json();
-}
+// Функция для получения данных по API
+async function fetchData(endpoint, param = '') {
+    try {
+        const url = new URL(`/api/${endpoint}`, window.location.origin);
+        if (param) url.searchParams.append('param', param);
 
-//Функция для обновления существующей сущности
-//          Param: entity - имя сущности
-async function saveData(className) {
-    const entityId = document.getElementsByName('id'); //Id сущности в детальной карточке для сохранения
-    const formData = new FormData(document.getElementById('viewRequestForm'));
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-    const url = new URL('/api/update', window.location.origin);
-    url.searchParams.append('className', className)
-    url.searchParams.append("id", entityId[0].value)
-    const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data), // Отправляем данные в формате JSON
-    });
-    notification("Запись сохранена", 3000)
-}
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
 
-// Обработчик для кнопок открытия модальных окон
-document.querySelectorAll('.openModal').forEach(button => {
-    button.onclick = async function () {
-        const endpoint = button.getAttribute('data-endpoint');
-        const param = button.getAttribute('data-param');
-        const displayField = button.getAttribute('data-display-field');
-        const inputId = button.getAttribute('data-input-id');
-        const hiddenId = button.getAttribute('data-hidden-id');
-        const modalId = button.getAttribute('data-modal-id'); // Получаем ID модального окна
-        const save = button.getAttribute('data-save'); //Если не пусто - нужно сохранять после изменения
-
-        // Получаем модальное окно и список
-        const modal = document.getElementById(modalId);
-        const list = document.getElementById(`${endpoint}List`);
-
-        const data = await fetchData(endpoint, param);
-        list.innerHTML = '';
-
-        data.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = item[displayField];
-            li.onclick = () => {
-                document.getElementById(inputId).value = item[displayField];
-                document.getElementById(hiddenId).value = item.id;
-                if (save != null) saveData(save);
-                closeModal(modalId);
-            };
-            list.appendChild(li);
-        });
-
-        modal.style.display = 'block'; // Открываем модальное окно
-
-    };
-});
-
-//Для загрузки Фото
-$(document).ready(
-    function () {
-        $('#infoModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget);
-            var imgSrc = button.data('img-src');
-
-            var modal = $(this);
-            if (imgSrc) {
-                modal.find('#modalImage').attr('src', imgSrc).show();
-                modal.find('#imageMessage').hide();
-            } else {
-                modal.find('#modalImage').attr('src', '').hide();
-                modal.find('#modalDescription').text('Изображение отсутствует.');
-                modal.find('#imageMessage').show();
-            }
-        });
+        return await response.json();
+    } catch (error) {
+        console.error('Fetch error:', error);
+        notification('Ошибка загрузки данных', 5000, 'error');
+        return [];
     }
-);
-
-// Функция закрытия модального окна
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.style.display = 'none';
 }
 
-// Закрытие при клике на крестик
-document.querySelectorAll('.close').forEach(btn => {
-    btn.onclick = function () {
-        closeModal(this.closest('.modal').id);
-    };
+// Функция для обновления сущности
+async function saveData(className) {
+    try {
+        const entityId = document.getElementsByName('id');
+        const formData = new FormData(document.getElementById('viewRequestForm'));
+        const data = Object.fromEntries(formData.entries());
+
+        const url = new URL('/api/update', window.location.origin);
+        url.searchParams.append('className', className)
+        url.searchParams.append("id", entityId[0].value)
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Class-Name': className,
+                'X-Entity-Id': entityId
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) throw new Error(`Ошибка сохранения: ${response.status}`);
+
+        notification('Запись сохранена', 3000, 'success');
+        return true;
+    } catch (error) {
+        console.error('Save error:', error);
+        notification('Ошибка сохранения', 5000, 'error');
+        return false;
+    }
+}
+
+// Модальные окна
+document.querySelectorAll('.openModal').forEach(button => {
+    button.addEventListener('click', async () => {
+        const { endpoint, param, displayField, inputId, hiddenId, modalId, save } = button.dataset;
+        const modal = document.getElementById(modalId);
+        const list = modal.querySelector('.modal-list');
+
+        try {
+            list.innerHTML = '<li>Загрузка...</li>';
+            const data = await fetchData(endpoint, param);
+
+            list.innerHTML = data.length > 0
+                ? data.map(item => `
+                    <li class="selectable" data-id="${item.id}">
+                        ${String(item[displayField]).trim()} <!-- Обрезка на этапе рендеринга -->
+                    </li>
+                `).join('')
+                : '<li>Нет данных</li>';
+
+            modal.querySelectorAll('.selectable').forEach(li => {
+                li.addEventListener('click', () => {
+                    document.getElementById(inputId).value = li.textContent.trim(); // Добавляем trim()
+                    document.getElementById(hiddenId).value = li.dataset.id;
+                    if (save) saveData(save);
+                    closeModal(modalId);
+                });
+            });
+
+            modal.classList.add('open');
+        } catch (error) {
+            list.innerHTML = '<li>Ошибка загрузки</li>';
+        }
+    });
 });
 
-//Уведомление
-function notification(message, duration = 3000) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-
-    // Добавляем уведомление в контейнер
-    const container = document.getElementById('notification-container');
-    container.appendChild(notification);
-
-    // Показываем уведомление
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    // Убираем уведомление через указанное время
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            container.removeChild(notification);
-        }, 500);
-    }, duration);
+// Управление модальными окнами
+function closeModal(modalId) {
+    document.getElementById(modalId)?.classList.remove('open');
 }
 
-// Закрытие при клике вне окна
-window.onclick = function (event) {
+window.addEventListener('click', event => {
     if (event.target.classList.contains('modal')) {
         closeModal(event.target.id);
     }
+});
 
-    //Скрытие ненужных заявок
-    function showTable(tableId) {
-        // Скрываем все таблицы
-        document.getElementById('inWorkTable').style.display = 'none';
-        document.getElementById('canceledTable').style.display = 'none';
-        document.getElementById('closedTable').style.display = 'none';
+// Уведомления
+function notification(message, duration = 3000, type = 'info') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
 
-        // Показываем выбранную таблицу
-        document.getElementById(tableId + 'Table').style.display = 'table';
-    }
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
 
-    // По умолчанию показываем таблицу "Заявки в работе"
+    container.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 10);
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 500);
+    }, duration);
+}
+
+// Управление таблицами
+function showTable(tableId) {
+    document.querySelectorAll('.request-table').forEach(table => {
+        table.style.display = table.id === `${tableId}Table` ? 'table' : 'none';
+    });
+}
+
+// Инициализация при полной загрузки страницы
+document.addEventListener('DOMContentLoaded', () => {
     showTable('inWork');
-
-};
+});

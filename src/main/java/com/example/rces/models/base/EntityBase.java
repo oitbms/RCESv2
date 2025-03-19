@@ -1,13 +1,17 @@
 //Класс с общими полями для всех сущностей(кроме Employee т.к там токен доступа или нет)
 package com.example.rces.models.base;
 
+import com.example.rces.models.Images;
 import jakarta.persistence.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @MappedSuperclass
-@EntityListeners(EntityBaseListener.class)
 public abstract class EntityBase {
 
     public enum Appraisal {
@@ -19,19 +23,30 @@ public abstract class EntityBase {
         score5(5, "Отлично");
 
         private final int id;
-        private final String score;
+        private final String name;
 
-        Appraisal(int id, String score) {
+        Appraisal(int id, String name) {
             this.id = id;
-            this.score = score;
+            this.name = name;
         }
 
         public int getId() {
             return id;
         }
 
-        public String getScore() {
-            return score;
+        public String getName() {
+            return name;
+        }
+        public static Appraisal fromString(String field) {
+            if (field==null) {
+                return null;
+            }
+            for (Appraisal appraisal : Appraisal.values()) {
+                if (appraisal.getId() == (Long.parseLong(field))) {
+                    return appraisal;
+                }
+            }
+            throw new IllegalArgumentException("Неизвестная оценка: " + field);
         }
     }
 
@@ -43,7 +58,7 @@ public abstract class EntityBase {
     @Column(name = "comment")
     private String comment;
 
-    @Column(name = "request_number")
+    @Column(name = "request_number", unique = true)
     private Integer requestNumber;
 
     @Column(
@@ -55,6 +70,24 @@ public abstract class EntityBase {
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     private Appraisal score;
+
+    public List<Images> saveFiles(MultipartFile[] files) {
+        List<Images> images = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setFileName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                    images.add(imageEntity);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return images;
+    }
+
 
     public UUID getId() {
         return id;

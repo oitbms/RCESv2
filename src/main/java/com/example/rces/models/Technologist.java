@@ -6,6 +6,9 @@ import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "technologistbid")
@@ -25,8 +28,9 @@ public class Technologist extends EntityBase {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private ImageTechnologist image;
+    @OneToMany(mappedBy = "technologist", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Images> image = new ArrayList<>();
+
 
     public Employee getEmployee() {
         return employee;
@@ -60,11 +64,12 @@ public class Technologist extends EntityBase {
         this.status = status;
     }
 
-    public ImageTechnologist getImage() {
+    public List<Images> getImage() {
         return image;
     }
 
-    public void setImage(ImageTechnologist image) {
+    public void setImage(List<Images> image) {
         this.image = image;
     }
+
 }

@@ -1,11 +1,13 @@
 package com.example.rces.services;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
-@Service
-public class TelegramService {
+@Component
+public class TelegramService extends TelegramLongPollingBot {
 
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -31,5 +33,22 @@ public class TelegramService {
     public void sendUpdateMessageToGroup(Integer requestNumber, String employee, String customerOrder, String reason) {
         String url = String.format(messageUrl, botToken, chatId, message(requestNumber, employee, customerOrder, reason, false));
         restTemplate.getForObject(url, String.class);
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+        if (update.hasMessage() && update.getMessage().hasText()) {
+
+        }
+    }
+
+    @Override
+    public String getBotUsername() {
+        return "BormashRequestBot";
+    }
+
+    @Override
+    public String getBotToken() {
+        return botToken;
     }
 }

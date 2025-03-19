@@ -1,6 +1,8 @@
 //Класс с причинами вызовов
 package com.example.rces.models;
 
+import com.example.rces.models.enums.Status;
+
 public class GeneralReason {
 
     public enum Technologist {
@@ -21,6 +23,23 @@ public class GeneralReason {
 
         public String getName() {
             return name;
+        }
+
+        public static Technologist fromField(Object field) {
+            if (field==null) {
+                return null;
+            }
+            for (Technologist technologist : Technologist.values()) {
+                if (technologist.getName().equals(field)) {
+                    return technologist;
+                }
+            }
+            for (Technologist technologist : Technologist.values()) {
+                if (technologist.getId().equals(field)) {
+                    return technologist;
+                }
+            }
+            throw new IllegalArgumentException("Неизвестная причина: " + field);
         }
     }
 
@@ -44,6 +63,22 @@ public class GeneralReason {
         public String getName() {
             return name;
         }
+        public static Otk fromField(Object field) {
+            if (field==null) {
+                return null;
+            }
+            for (Otk otk : Otk.values()) {
+                if (otk.getName().equals(field)) {
+                    return otk;
+                }
+            }
+            for (Otk otk : Otk.values()) {
+                if (otk.getId().equals(field)) {
+                    return otk;
+                }
+            }
+            throw new IllegalArgumentException("Неизвестная причина: " + field);
+        }
     }
 
     public enum Constructor {
@@ -64,6 +99,22 @@ public class GeneralReason {
 
         public String getName() {
             return name;
+        }
+        public static Constructor fromField(Object field) {
+            if (field==null) {
+                return null;
+            }
+            for (Constructor constructor : Constructor.values()) {
+                if (constructor.getName().equals(field)) {
+                    return constructor;
+                }
+            }
+            for (Constructor constructor : Constructor.values()) {
+                if (constructor.getId().equals(field)) {
+                    return constructor;
+                }
+            }
+            throw new IllegalArgumentException("Неизвестная причина: " + field);
         }
     }
 

@@ -14,4 +14,9 @@ public class Home {
         return "home";
     }
 
+    @GetMapping("mobiledevice")
+    public String erorMobile() {
+        return "mobiledevice";
+    }
+
 }

@@ -1,9 +1,6 @@
 //контроллер формы создания заявки на вызов технолога
 package com.example.rces.controller;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
 import com.example.rces.models.Technologist;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.TelegramService;
@@ -13,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 @Controller
@@ -39,23 +36,15 @@ public class TechnologistBidController {
     public String createRequestFromTechnologist(@RequestParam("employeeId") Long employeeId,
                                                 @RequestParam("customerOrderId") UUID customerOrderId,
                                                 @RequestParam("reasonsId") Long reasonsId,
+                                                @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
                                                 Model model) {
         model.addAttribute("create", true);
-        Employee employee = service.findById(Employee.class, employeeId);
-        CustomerOrder customerOrder = service.findById(CustomerOrder.class, customerOrderId);
-        Technologist technologist = new Technologist();
-        technologist.setEmployee(employee);
-        technologist.setCustomerOrder(customerOrder);
-        Arrays.stream(GeneralReason.Technologist.values())
-                .filter(tech -> tech.getId().equals(reasonsId))
-                .findFirst()
-                .ifPresent(technologist::setReason);
-        technologist.setStatus(Status.New);
-        service.save(technologist);
-        tgService.sendMessageToGroup(technologist.getRequestNumber(), employee.getName(), customerOrder.getName(), technologist.getReason().getName());
+
+        Technologist technologist = service.createRequestEntity(Technologist.class, employeeId, customerOrderId, reasonsId, additionalFiles);
+
+        tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), technologist.getReason().getName());
 
         model.addAttribute("requestNumber", technologist.getRequestNumber());
-
         return "success";
     }
 

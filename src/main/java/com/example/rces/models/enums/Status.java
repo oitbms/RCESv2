@@ -23,12 +23,20 @@ public enum Status {
     public String getName() {
         return name;
     }
-    public static Status fromString(String statusName) {
+    public static Status fromField(Object field) {
+        if (field==null) {
+            return null;
+        }
         for (Status status : Status.values()) {
-            if (status.getName().equals(statusName)) {
+            if (status.getName().equals(field)) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Неизвестный статус: " + statusName);
+        for (Status status : Status.values()) {
+            if (status.getId().equals(field)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Неизвестный статус: " + field);
     }
 }
