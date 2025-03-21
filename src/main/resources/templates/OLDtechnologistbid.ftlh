@@ -20,13 +20,15 @@
         <div class="form-group">
             <label>Сотрудник</label>
             <div class="form-group-flex">
-                <input type="text" id="employeeName" placeholder="Имя сотрудника" readonly
+                <input type="text" id="employeeName" name="employee" placeholder="Имя сотрудника" readonly
                        class="form-input">
                 <input type="hidden" id="employeeId" name="employeeId">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="employees"
+                        data-param="Technologist"
+                        data-display-field="name"
                         data-input-id="employeeName"
-                        data-hidden-entity="employeeId"
+                        data-hidden-id="employeeId"
                         data-modal-id="employeesModal">
                     Выбрать
                 </button>
@@ -37,13 +39,14 @@
         <div class="form-group">
             <label>Заказ клиента</label>
             <div class="form-group-flex">
-                <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
+                <input type="text" id="customerOrderName" name="customerOrder" placeholder="Номер заказа" readonly
                        class="form-input">
                 <input type="hidden" id="customerOrderId" name="customerOrderId">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="customerOrders"
+                        data-display-field="name"
                         data-input-id="customerOrderName"
-                        data-hidden-entity="customerOrderId"
+                        data-hidden-id="customerOrderId"
                         data-modal-id="customerOrdersModal">
                     Выбрать
                 </button>
@@ -59,7 +62,7 @@
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
                         data-input-id="reasonsName"
-                        data-hidden-entity="reasonsId"
+                        data-hidden-id="reasonsId"
                         data-modal-id="reasonsModal">
                     Выбрать
                 </button>
@@ -87,7 +90,7 @@
 <#if viewForm!false>
     <!-- Форма просмотра заявки -->
     <form id="viewRequestForm" class="modern-form">
-        <input type="hidden" id="id" value="${bid.id}"/>
+        <input type="hidden" name="id" value="${bid.id}"/>
 
         <div class="form-group">
             <span class="form-value request-number">Заявка №${bid.requestNumber}</span>
@@ -107,9 +110,11 @@
             <input type="hidden" id="customerOrderId" value="${bid.customerOrder.id}" name="customerOrder">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="customerOrders"
+                    data-display-field="name"
                     data-input-id="customerOrderName"
                     data-hidden-id="customerOrderId"
-                    data-modal-id="customerOrdersModal">
+                    data-modal-id="customerOrdersModal"
+                    data-save="Technologist">
                 Изменить
             </button>
         </div>
@@ -123,9 +128,11 @@
             <input type="hidden" id="employeeId" value="${bid.employee.id?c}" name="employee">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="employees"
+                    data-display-field="name"
                     data-input-id="employeeName"
                     data-hidden-id="employeeId"
-                    data-modal-id="employeesModal">
+                    data-modal-id="employeesModal"
+                    data-save="Technologist">
                 Изменить
             </button>
         </div>
@@ -135,13 +142,13 @@
             <input type="text" id="comment"
                    value="${bid.comment!''}"
                    class="form-input"
+                   data-save="Technologist"
                    name="comment">
         </div>
 
         <div class="form-group form-group-flex telegram-checkbox">
             <label for="telegramCheckbox">Отправить уведомление в Telegram</label>
-            <input type="hidden" name="sendToTelegram" value="false">
-            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox" value="true">
+            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox">
         </div>
 
         <!-- Кнопка для открытия модального окна просмотра фото-->
@@ -220,6 +227,6 @@
 <!-- Уведомления -->
 <div id="notification-container"></div>
 
-<script src="/script.js"></script>
+<script src="/newscript.js"></script>
 </body>
 </html>

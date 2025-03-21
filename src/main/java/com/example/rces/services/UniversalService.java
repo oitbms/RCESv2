@@ -9,9 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -46,35 +45,25 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public <T> T createRequestEntity(Class<T> entityClass, Long employeeId, UUID customerOrderId, Long reasonsId, MultipartFile[] additionalFiles) {
+    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String comment, MultipartFile[] additionalFiles) {
         try {
             T entity = entityClass.getDeclaredConstructor().newInstance();
 
-            Employee employee = repository.findById(Employee.class, employeeId);
-            CustomerOrder customerOrder = repository.findById(CustomerOrder.class, customerOrderId);
-            Arrays.stream(entity.getClass().getDeclaredMethod("getReason").getReturnType().getEnumConstants())
-                    .filter(reason -> {try {return reason.getClass().getDeclaredMethod("getId").invoke(reason).equals(reasonsId);} catch (Exception e) {throw new RuntimeException(e);}})
-                    .findFirst()
-                    .ifPresent(enym -> {
-                        try {
-                            entity.getClass().getDeclaredMethod("setReason", enym.getClass()).invoke(entity, enym);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }});
-
             entity.getClass().getDeclaredMethod("setEmployee", Employee.class).invoke(entity, employee);
             entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
+            entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
-            if (additionalFiles!=null) {
+            if (additionalFiles != null) {
                 List<Images> images = (List<Images>) entity.getClass().getSuperclass()
                         .getDeclaredMethod("saveFiles", MultipartFile[].class)
                         .invoke(entity, (Object) additionalFiles);
                 entity.getClass().getDeclaredMethod("setImage", List.class).invoke(entity, images);
             }
+            entity.getClass().getSuperclass().getDeclaredMethod("setComment", String.class).invoke(entity, !Objects.equals(comment, "") ? comment.substring(0, comment.length() - 1) : "");
             entity.getClass().getSuperclass().getDeclaredMethod("setRequestNumber", Integer.class).invoke(entity, repository.generateRequestNumber(entity.getClass()));
             entity.getClass().getSuperclass().getDeclaredMethod("setCreateDate", LocalDateTime.class).invoke(entity, LocalDateTime.now());
 
-           return repository.save(entity);
+            return repository.save(entity);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при создании заявки", e);
         }

@@ -4,6 +4,7 @@ package com.example.rces.controller;
 import com.example.rces.models.Constructor;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.UniversalRepository;
+import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ import java.util.Date;
 public class ConstructorController {
 
     @Autowired
-    private UniversalRepository repository;
+    private UniversalService service;
 
     @GetMapping("/requestForm")
     public String showRequestForm() {
@@ -36,12 +37,11 @@ public class ConstructorController {
             if (additionalFiles.length > 0 && !additionalFiles[0].isEmpty()) {
                 byte[] imageBytes = additionalFiles[0].getBytes();
                 String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-                constructor.setImage(base64Image); // Сохраняем строку Base64
             }
             constructor.setDateStartAccepted(new Date());
-            constructor.setStatus(Status.NEW); // По умолчанию статус APPROVED
-            constructor.setAccepted(false); // По умолчанию заявка не принята
-            repository.save(constructor);
+            constructor.setStatus(Status.New    );
+            constructor.setAccepted(false);
+            service.save(constructor);
         } catch (IOException e) {
             e.printStackTrace();
         }

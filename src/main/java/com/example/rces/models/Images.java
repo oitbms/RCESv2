@@ -5,6 +5,11 @@ import com.example.rces.models.base.EntityBase;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.Base64;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table (name = "images")
@@ -30,6 +35,22 @@ public class Images extends EntityBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "otk_id")
     private Otk otk;
+
+
+    public Images() {
+    }
+
+    public Images(String base64, String className, Object entity) {
+        setBase64Data(base64);
+        setFileName("Фото от " + LocalDateTime.now());
+        try {
+            Class<?> paramClass = Class.forName("com.example.rces.models." + className);
+            Method method = this.getClass().getMethod("set" + className, paramClass);
+            method.invoke(this, paramClass.cast(entity));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public String getFileName() {
         return fileName;
@@ -69,5 +90,13 @@ public class Images extends EntityBase {
 
     public void setOtk(Otk otk) {
         this.otk = otk;
+    }
+
+    public String getBase64Data() {
+        return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
+    }
+
+    public void setBase64Data(String base64Image) {
+        setData(Base64.getDecoder().decode(base64Image.substring("data:image/jpeg;base64,".length())));
     }
 }

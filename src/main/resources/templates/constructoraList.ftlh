@@ -76,7 +76,7 @@
         </div>
     </div>
 </div>
-
+<script src="/script.js"></script>
 <script>
     $(document).ready(function () {
         $('#infoModal').on('show.bs.modal', function (event) {

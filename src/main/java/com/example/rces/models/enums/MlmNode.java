@@ -1,8 +1,6 @@
 //Все цеха
 package com.example.rces.models.enums;
 
-import lombok.Getter;
-
 
 public enum MlmNode {
 
@@ -30,13 +28,21 @@ public enum MlmNode {
         return name;
     }
 
-    public static MlmNode fromString(String field) {
-        if (field==null) {
+    public static MlmNode fromString(Object field) {
+        if (field == null) {
             return null;
         }
+        String fieldAsString = field.toString();
         for (MlmNode mlmNode : MlmNode.values()) {
-            if (mlmNode.getName().equals(field)) {
+            if (mlmNode.getName().equals(fieldAsString)) {
                 return mlmNode;
+            }
+        }
+        if (field instanceof Number) {
+            for (MlmNode mlmNode : MlmNode.values()) {
+                if (mlmNode.getId().equals(field)) {
+                    return mlmNode;
+                }
             }
         }
         throw new IllegalArgumentException("Неизвестный узел: " + field);

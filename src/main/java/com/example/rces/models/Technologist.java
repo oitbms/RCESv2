@@ -31,7 +31,6 @@ public class Technologist extends EntityBase {
     @OneToMany(mappedBy = "technologist", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Images> image = new ArrayList<>();
 
-
     public Employee getEmployee() {
         return employee;
     }

@@ -5,6 +5,7 @@ import com.example.rces.controller.payload.StatusPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.GeneralReason;
+import com.example.rces.models.Images;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,17 @@ public class ApiController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/images")
+    public List<Images> getImages(@RequestParam String param) {
+        return service.findImages(param);
+    }
+
     @PostMapping("/update")
-    public void updateData(@RequestParam String className, @RequestParam Object id,
+    public void updateData(@RequestParam String entityName,
+                           @RequestParam Object entityId,
+                           @RequestParam Boolean sendMessage,
                            @RequestBody Map<String, Object> updatedFields) {
-        service.update(className, id, updatedFields);
+        service.update(entityName, entityId, sendMessage, updatedFields);
     }
 
 }

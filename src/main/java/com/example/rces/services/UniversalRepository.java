@@ -54,7 +54,7 @@ public class UniversalRepository {
 
     public Integer generateRequestNumber(Class<?> entityClass) {
         return (Integer) entityManager
-                .createQuery("SELECT MAX(e.requestNumber) FROM " + entityClass.getSimpleName() + " e")
+                .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM " + entityClass.getSimpleName() + " e")
                 .getSingleResult();
     }
 }

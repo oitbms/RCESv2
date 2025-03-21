@@ -1,7 +1,11 @@
 //// Контроллер формы создания заявки на вызов конструктора
 package com.example.rces.controller;
 
-import com.example.rces.models.*;
+import com.example.rces.controller.payload.StatusPayload;
+import com.example.rces.models.Constructor;
+import com.example.rces.models.ConstructorCanceled;
+import com.example.rces.models.ConstructorCompleted;
+import com.example.rces.models.Employee;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,15 +54,15 @@ public class ConstructorBidController {
     @PostMapping("/updateStatus/{id}")
     public ResponseEntity<Constructor> updateStatus(
             @PathVariable UUID id,
-            @RequestBody StatusUpdateRequest statusUpdateRequest
+            @RequestBody StatusPayload statusPayload
     ) {
         try {
-            Constructor constructor = service.findById(Constructor.class,id);
+            Constructor constructor = service.findById(Constructor.class, id);
             if (constructor == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-            if (statusUpdateRequest.getStatus().equals("IN_PROGRESS")) {
-                constructor.setStatus(Status.WORK);
+            if (statusPayload.name().equals("IN_PROGRESS")) {
+                constructor.setStatus(Status.InWork);
                 constructor.setDateEndAccepted(new Date());
                 service.save(constructor);
             }
@@ -112,7 +116,7 @@ public class ConstructorBidController {
             @PathVariable UUID id,
             @RequestBody Map<String, String> requestBody
     ) {
-        Constructor constructor = service.findById(Constructor.class,id);
+        Constructor constructor = service.findById(Constructor.class, id);
 
         constructor.setAccepted(true);
 
@@ -136,15 +140,15 @@ public class ConstructorBidController {
 
     @Transactional
     @PostMapping("/moveDocumentCompleted/{id}")
-    public ResponseEntity<Constructor> requestMoveDocumentCompleted(@PathVariable UUID id){
+    public ResponseEntity<Constructor> requestMoveDocumentCompleted(@PathVariable UUID id) {
 
-        Constructor constructor = service.findById(Constructor.class,id);
+        Constructor constructor = service.findById(Constructor.class, id);
 
         constructor.setAccepted(true);
 
         constructor.setDateEndAccepted(new Date());
 
-        constructor.setStatus(Status.CLOCED);
+        constructor.setStatus(Status.Closed);
 
         ConstructorCompleted constructorCompleted = new ConstructorCompleted();
 

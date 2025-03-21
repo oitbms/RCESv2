@@ -4,12 +4,9 @@ package com.example.rces.models;
 import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Table(name = "constructorbid")
@@ -19,7 +16,6 @@ public class Constructor extends EntityBase {
     private String description;
     private String numberWorkshop;
     private String customerOrder;
-    private String image;
     private boolean accepted;
     private Date dateStartAccepted;
     private Date dateEndAccepted;
@@ -31,21 +27,8 @@ public class Constructor extends EntityBase {
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
 
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
+    @OneToMany(mappedBy = "constructor", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Images> image;
 
     public String getName() {
         return name;
@@ -79,14 +62,6 @@ public class Constructor extends EntityBase {
         this.customerOrder = customerOrder;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
     public boolean isAccepted() {
         return accepted;
     }
@@ -109,5 +84,29 @@ public class Constructor extends EntityBase {
 
     public void setDateEndAccepted(Date dateEndAccepted) {
         this.dateEndAccepted = dateEndAccepted;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public List<Images> getImage() {
+        return image;
+    }
+
+    public void setImage(List<Images> image) {
+        this.image = image;
     }
 }

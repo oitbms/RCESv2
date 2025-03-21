@@ -159,3 +159,80 @@ h2 {
         width: 95%;
     }
 }
+
+/* Стили для чекбокса */
+.form-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.request-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #007bff;
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Стили для просмотра прикрепленных фото */
+.attached-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.photo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.attached-photo {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: transform 0.2s;
+}
+
+.attached-photo:hover {
+    transform: scale(1.1);
+}
+
+.btn-delete-photo {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-delete-photo:hover {
+    background: #c82333;
+}
+
+#openPhotoModal {
+    margin-bottom: 15px;
+}

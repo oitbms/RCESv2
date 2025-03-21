@@ -10,49 +10,98 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Градиентный фон */
         }
 
         /* Центрирование контента */
         .container {
             display: flex;
-            flex-direction: column; /* Вертикальное выравнивание */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100%;
-            background-color: #f0f0f0;
+            text-align: center;
         }
 
         /* Стиль для зеленой галочки */
         .checkmark {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background-color: #4CAF50; /* Зеленый цвет */
+            background: linear-gradient(135deg, #4CAF50, #45a049); /* Градиентный фон */
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px; /* Отступ для текста */
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Тень */
+            animation: pop 0.6s ease-in-out; /* Анимация появления */
+        }
+
+        /* Анимация для галочки */
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Символ галочки */
         .checkmark::after {
             content: "✓";
-            font-size: 60px;
+            font-size: 70px;
             color: white;
+            font-weight: bold;
         }
 
         /* Стиль для текста */
         .message {
-            font-size: 24px;
-            color: #333; /* Цвет текста */
+            font-size: 26px;
+            color: #333;
+            background: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Тень */
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        /* Стиль для номера заявки */
+        .message span {
+            font-weight: bold;
+            color: #4CAF50; /* Зеленый цвет */
+        }
+
+        /* Стиль для ссылки */
+        .message a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049); /* Градиентный фон */
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 18px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавные переходы */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Тень */
+        }
+
+        /* Эффект при наведении на ссылку */
+        .message a:hover {
+            transform: translateY(-3px); /* Сдвиг вверх */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Увеличенная тень */
         }
 
         /* Адаптация для мобильных устройств */
         @media (max-width: 600px) {
             .checkmark {
-                width: 80px;
-                height: 80px;
+                width: 90px;
+                height: 90px;
             }
 
             .checkmark::after {
@@ -60,7 +109,13 @@
             }
 
             .message {
-                font-size: 20px; /* Уменьшенный размер текста для мобильных */
+                font-size: 20px;
+                padding: 15px 20px;
+            }
+
+            .message a {
+                font-size: 16px;
+                padding: 8px 16px;
             }
         }
     </style>
@@ -68,12 +123,15 @@
 <body>
 <div class="container">
     <div class="checkmark"></div>
-    <div class="message">Заявка под номером <span>${requestNumber}</span>
+    <div class="message">
+        Заявка под номером <span>${requestNumber}</span>
         <#if create>
-            создана
+            успешно создана.
         <#else>
-            обновлена
+            успешно обновлена.
         </#if>
+        <br>
+        <a href="/technologistbid/view/${requestNumber}">Редактировать</a>
     </div>
 </div>
 </body>

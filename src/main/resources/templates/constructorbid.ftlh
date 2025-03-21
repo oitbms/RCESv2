@@ -39,10 +39,12 @@
                 <option value="Цех 8" <#if request.numberWorkshop?? && request.numberWorkshop == "Цех 8">selected</#if>>Цех 8</option>
             </select>
         </div>
+
         <div class="form-group">
-            <label for="additionalFiles">Загрузить дополнительные фотографии:</label>
-            <input type="file" class="form-control-file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple>
+            <label for="additionalFiles">Загрузить фотографии:</label>
+            <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple class="add-photo">
         </div>
+
         <div class="text-center">
             <button type="submit" class="btn btn-primary">Отправить заявку</button>
         </div>

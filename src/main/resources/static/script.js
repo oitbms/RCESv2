@@ -1,97 +1,66 @@
+const entityName = document.getElementById('entityName').innerText;  // Название сущности
+const entityId = document.getElementById('id');  // Id сущности
+
 // Функция для получения данных по API
-async function fetchData(endpoint, param = '') {
-    try {
-        const url = new URL(`/api/${endpoint}`, window.location.origin);
-        if (param) url.searchParams.append('param', param);
-
-        const response = await fetch(url.toString());
-        if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
-
-        return await response.json();
-    } catch (error) {
-        console.error('Fetch error:', error);
-        notification('Ошибка загрузки данных', 5000, 'error');
-        return [];
-    }
+async function fetchData(endpoint, param) {
+    const url = new URL(/api/ + endpoint, window.location.origin);
+    url.searchParams.append('param', param != null ? param : entityName);
+    const response = await fetch(url.toString());
+    return await response.json();
 }
 
-// Функция для обновления сущности
-async function saveData(className) {
-    try {
-        const entityId = document.getElementsByName('id');
-        const formData = new FormData(document.getElementById('viewRequestForm'));
-        const data = Object.fromEntries(formData.entries());
+async function saveData() {
+    let formData = new FormData(document.getElementById('viewRequestForm'));
+    let data = Object.fromEntries(formData.entries());
 
-        const url = new URL('/api/update', window.location.origin);
-        url.searchParams.append('className', className)
-        url.searchParams.append("id", entityId[0].value)
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Class-Name': className,
-                'X-Entity-Id': entityId
-            },
-            body: JSON.stringify(data),
-        });
+    const url = new URL('/api/update', window.location.origin);
+    url.searchParams.append('className', entityName);
+    url.searchParams.append("id", entityId.value);
+    url.searchParams.append("sendMessage", data.sendToTelegram);
 
-        if (!response.ok) throw new Error(`Ошибка сохранения: ${response.status}`);
-
-        notification('Запись сохранена', 3000, 'success');
-        return true;
-    } catch (error) {
-        console.error('Save error:', error);
-        notification('Ошибка сохранения', 5000, 'error');
-        return false;
-    }
+    await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Class-Name': entityName,
+            'X-Entity-Id': entityId.value
+        },
+        body: JSON.stringify(data),
+    }).then(r => notification('Запись сохранена', 3000, 'success'));
 }
 
-// Модальные окна
+
 document.querySelectorAll('.openModal').forEach(button => {
     button.addEventListener('click', async () => {
-        const { endpoint, param, displayField, inputId, hiddenId, modalId, save } = button.dataset;
-        const modal = document.getElementById(modalId);
-        const list = modal.querySelector('.modal-list');
+        const {endpoint, param, modalId, inputId, hiddenEntity} = button.dataset;
 
-        try {
-            list.innerHTML = '<li>Загрузка...</li>';
-            const data = await fetchData(endpoint, param);
+        const modalWindow = document.getElementById(modalId);
+        const list = modalWindow.querySelector('.modal-list');
+        const isViewForm = "${viewForm}"
 
-            list.innerHTML = data.length > 0
-                ? data.map(item => `
-                    <li class="selectable" data-id="${item.id}">
-                        ${String(item[displayField]).trim()} <!-- Обрезка на этапе рендеринга -->
-                    </li>
-                `).join('')
-                : '<li>Нет данных</li>';
+        const data = await fetchData(endpoint, param);
 
-            modal.querySelectorAll('.selectable').forEach(li => {
-                li.addEventListener('click', () => {
-                    document.getElementById(inputId).value = li.textContent.trim(); // Добавляем trim()
-                    document.getElementById(hiddenId).value = li.dataset.id;
-                    if (save) saveData(save);
-                    closeModal(modalId);
-                });
+        list.innerHTML = data.map(item =>
+            `<li class="selectable" data-entity="${encodeURIComponent(JSON.stringify(item))}">
+        ${item.name}
+     </li>`
+        ).join('');
+
+        modalWindow.querySelectorAll('.selectable').forEach(li => {
+            li.addEventListener('click', () => {
+                const entity = JSON.parse(decodeURIComponent(li.dataset.entity));
+                document.getElementById(inputId).value = li.textContent.trim();
+                document.getElementById(hiddenEntity).value = JSON.stringify(entity);
+                if (isViewForm)saveData();
+                closeModal(modalId);
             });
-
-            modal.classList.add('open');
-        } catch (error) {
-            list.innerHTML = '<li>Ошибка загрузки</li>';
-        }
+        });
+        // Для css
+        modalWindow.classList.add('open')
     });
 });
 
-// Управление модальными окнами
-function closeModal(modalId) {
-    document.getElementById(modalId)?.classList.remove('open');
-}
-
-window.addEventListener('click', event => {
-    if (event.target.classList.contains('modal')) {
-        closeModal(event.target.id);
-    }
-});
 
 // Уведомления
 function notification(message, duration = 3000, type = 'info') {
@@ -110,14 +79,6 @@ function notification(message, duration = 3000, type = 'info') {
     }, duration);
 }
 
-// Управление таблицами
-function showTable(tableId) {
-    document.querySelectorAll('.request-table').forEach(table => {
-        table.style.display = table.id === `${tableId}Table` ? 'table' : 'none';
-    });
+function closeModal(modalId) {
+    document.getElementById(modalId)?.classList.remove('open');
 }
-
-// Инициализация при полной загрузки страницы
-document.addEventListener('DOMContentLoaded', () => {
-    showTable('inWork');
-});
