@@ -2,6 +2,7 @@
 package com.example.rces.models.base;
 
 import com.example.rces.models.Images;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,6 +66,7 @@ public abstract class EntityBase {
             name = "created_at",
             updatable = false
     )
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createDate;
 
     @Column(name = "score")

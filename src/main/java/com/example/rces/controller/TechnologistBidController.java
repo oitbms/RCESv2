@@ -10,14 +10,11 @@ import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -29,6 +26,9 @@ public class TechnologistBidController {
 
     @Autowired
     private TelegramService tgService;
+
+    @Autowired
+    private  ObjectMapper objectMapper;
 
     @GetMapping("/create")
     public String getCreateBidForm(Model model) {
@@ -43,22 +43,17 @@ public class TechnologistBidController {
                                                 @RequestParam(value = "reasonsId") String reasonsId,
                                                 @RequestParam(value = "comment", required = false) String comment,
                                                 @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
-                                                Model model) {
+                                                Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
-            Employee employee = objectMapper.readValue(employeeId, Employee.class);
-            CustomerOrder customerOrder = objectMapper.readValue(customerOrderId, CustomerOrder.class);
-            GeneralReason.Technologist reason = objectMapper.readValue(reasonsId,GeneralReason.Technologist.class);
+        Employee employee = objectMapper.readValue(employeeId, Employee.class);
+        CustomerOrder customerOrder = objectMapper.readValue(customerOrderId, CustomerOrder.class);
+        GeneralReason.Technologist reason = objectMapper.readValue(reasonsId, GeneralReason.Technologist.class);
 
-            Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, comment ,additionalFiles);
+        Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, comment, additionalFiles);
 
-            tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), technologist.getReason().getName(), technologist.getComment());
-            model.addAttribute("requestNumber", technologist.getRequestNumber());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), technologist.getReason().getName(), technologist.getComment());
+        model.addAttribute("requestNumber", technologist.getRequestNumber());
 
         return "success";
     }
