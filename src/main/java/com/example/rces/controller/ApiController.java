@@ -1,5 +1,6 @@
 package com.example.rces.controller;
 
+import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.controller.payload.ReasonPayload;
 import com.example.rces.controller.payload.StatusPayload;
 import com.example.rces.models.CustomerOrder;
@@ -49,7 +50,7 @@ public class ApiController {
     }
 
     @GetMapping("/images")
-    public List<Images> getImages(@RequestParam UUID param) {
+    public List<ImagesPayload> getImages(@RequestParam UUID param) {
         return service.findImages(param);
     }
 

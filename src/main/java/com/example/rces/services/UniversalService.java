@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import static com.example.rces.services.ServiceUtil.saveFiles;
+
 @Service
 @Transactional
 public class UniversalService {
@@ -56,9 +58,7 @@ public class UniversalService {
             entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
             if (additionalFiles != null) {
-                List<Images> images = (List<Images>) entity.getClass().getSuperclass()
-                        .getDeclaredMethod("saveFiles", MultipartFile[].class)
-                        .invoke(entity, (Object) additionalFiles);
+                List<Images> images = saveFiles(additionalFiles, entity);
                 entity.getClass().getDeclaredMethod("setImage", List.class).invoke(entity, images);
             }
             entity.getClass().getSuperclass().getDeclaredMethod("setComment", String.class).invoke(entity, !Objects.equals(comment, "") ? comment.substring(0, comment.length() - 1) : "");

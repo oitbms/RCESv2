@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,23 +73,6 @@ public abstract class EntityBase {
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     private Appraisal score;
-
-    public List<Images> saveFiles(MultipartFile[] files) {
-        List<Images> images = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                Images imageEntity = new Images();
-                imageEntity.setFileName(file.getOriginalFilename());
-                try {
-                    imageEntity.setData(file.getBytes());
-                    images.add(imageEntity);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return images;
-    }
 
 
     public UUID getId() {

@@ -1,5 +1,8 @@
 package com.example.rces.services;
 
+import com.example.rces.models.Images;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,6 +55,30 @@ public class ServiceUtil {
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при копировании объекта", e);
         }
+    }
+
+    public static List<Images> saveFiles(MultipartFile[] files, Object entity) {
+        List<Images> images = new ArrayList<>();
+        Class<?> clazz = entity.getClass();
+        String methodName = "set" + clazz.getSimpleName();
+
+        try {
+            Method setter = Images.class.getMethod(methodName, clazz);
+
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    Images imageEntity = new Images();
+                    imageEntity.setFileName(file.getOriginalFilename());
+                    imageEntity.setData(file.getBytes());
+
+                    setter.invoke(imageEntity, entity);
+                    images.add(imageEntity);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return images;
     }
 
 

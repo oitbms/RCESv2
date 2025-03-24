@@ -1,5 +1,6 @@
 package com.example.rces.services;
 
+import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.GeneralReason;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.example.rces.services.ServiceUtil.*;
 
@@ -43,15 +45,22 @@ public class ApiServices {
                 .getResultList();
     }
 
-    public List<Images> findImages(UUID param) {
-       List<Images> sasa =  entityManager.createQuery(
+    public List<ImagesPayload> findImages(UUID param) {
+        List<Images> images = entityManager.createQuery(
                         "select e from Images e " +
                                 "where e.constructor.id = :param or e.otk.id = :param or e.technologist.id = :param", Images.class)
                 .setParameter("param", param)
                 .getResultList();
-        return sasa;
+        return images.stream()
+                .map(image -> new ImagesPayload(
+                        image.getId(),
+                        image.getFileName(),
+                        image.getData(),
+                        image.getConstructor() != null ? image.getConstructor().getId()
+                                : image.getTechnologist()!=null ? image.getTechnologist().getId() : image.getOtk().getId()
+                ))
+                .collect(Collectors.toList());
     }
-
     @Transactional
     public void update(Object entityClassName, Object id, Boolean sendMessage, Map<String, Object> updatedFields) {
         try {
