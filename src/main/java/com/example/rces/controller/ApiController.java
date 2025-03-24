@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,15 +49,16 @@ public class ApiController {
     }
 
     @GetMapping("/images")
-    public List<Images> getImages(@RequestParam String param) {
+    public List<Images> getImages(@RequestParam UUID param) {
         return service.findImages(param);
     }
 
     @PostMapping("/update")
-    public void updateData(@RequestParam String entityName,
-                           @RequestParam Object entityId,
-                           @RequestParam Boolean sendMessage,
-                           @RequestBody Map<String, Object> updatedFields) {
+    public void updateData(@RequestParam Object entityName,// Имя класса bid
+                           @RequestParam Object entityId, // id класса bid
+                           @RequestParam Boolean sendMessage, // отправлять сообщение в ТГ
+                           @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
+    {
         service.update(entityName, entityId, sendMessage, updatedFields);
     }
 

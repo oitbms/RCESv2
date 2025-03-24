@@ -1,10 +1,7 @@
 //контроллер формы создания заявки на вызов технолога
 package com.example.rces.controller;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
-import com.example.rces.models.Technologist;
+import com.example.rces.models.*;
 import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,17 +35,17 @@ public class TechnologistBidController {
 
     //Создание, сохранение заявки и отправка сообщения в ТГ
     @PostMapping("/create")
-    public String createRequestFromTechnologist(@RequestParam("employeeId") String employeeId,
-                                                @RequestParam("customerOrderId") String customerOrderId,
-                                                @RequestParam(value = "reasonsId") String reasonsId,
+    public String createRequestFromTechnologist(@RequestParam("employeeJson") String employeeJson,
+                                                @RequestParam("customerOrderJson") String customerOrderJson,
+                                                @RequestParam(value = "reasonsJson") String reasonsJson,
                                                 @RequestParam(value = "comment", required = false) String comment,
                                                 @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
                                                 Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
 
-        Employee employee = objectMapper.readValue(employeeId, Employee.class);
-        CustomerOrder customerOrder = objectMapper.readValue(customerOrderId, CustomerOrder.class);
-        GeneralReason.Technologist reason = objectMapper.readValue(reasonsId, GeneralReason.Technologist.class);
+        Employee employee = objectMapper.readValue(employeeJson, Employee.class);
+        CustomerOrder customerOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
+        GeneralReason.Technologist reason = objectMapper.readValue(reasonsJson, GeneralReason.Technologist.class);
 
         Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, comment, additionalFiles);
 

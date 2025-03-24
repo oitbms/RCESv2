@@ -22,11 +22,11 @@
             <div class="form-group-flex">
                 <input type="text" id="employeeName" placeholder="Имя сотрудника" readonly
                        class="form-input">
-                <input type="hidden" id="employeeId" name="employeeId">
+                <input type="hidden" id="employeeJson" name="employeeJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="employees"
                         data-input-id="employeeName"
-                        data-hidden-entity="employeeId"
+                        data-hidden-entity="employeeJson"
                         data-modal-id="employeesModal">
                     Выбрать
                 </button>
@@ -39,11 +39,11 @@
             <div class="form-group-flex">
                 <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
                        class="form-input">
-                <input type="hidden" id="customerOrderId" name="customerOrderId">
+                <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="customerOrders"
                         data-input-id="customerOrderName"
-                        data-hidden-entity="customerOrderId"
+                        data-hidden-entity="customerOrderJson"
                         data-modal-id="customerOrdersModal">
                     Выбрать
                 </button>
@@ -55,11 +55,11 @@
             <label>Причина</label>
             <div class="form-group-flex">
                 <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input">
-                <input type="hidden" id="reasonsId" name="reasonsId">
+                <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
                         data-input-id="reasonsName"
-                        data-hidden-entity="reasonsId"
+                        data-hidden-entity="reasonsJson"
                         data-modal-id="reasonsModal">
                     Выбрать
                 </button>
@@ -104,11 +104,11 @@
                    value="${bid.customerOrder.name?trim}"
                    readonly
                    class="form-input">
-            <input type="hidden" id="customerOrderId" value="${bid.customerOrder.id}" name="customerOrder">
+            <input type="hidden" id="customerOrderJson" value="${bid.customerOrder.id}" name="customerOrder">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="customerOrders"
                     data-input-id="customerOrderName"
-                    data-hidden-id="customerOrderId"
+                    data-hidden-entity="customerOrderJson"
                     data-modal-id="customerOrdersModal">
                 Изменить
             </button>
@@ -120,11 +120,11 @@
                    value="${bid.employee.name?trim}"
                    readonly
                    class="form-input">
-            <input type="hidden" id="employeeId" value="${bid.employee.id?c}" name="employee">
+            <input type="hidden" id="employeeJson" value="${bid.employee.id?c}" name="employee">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="employees"
                     data-input-id="employeeName"
-                    data-hidden-id="employeeId"
+                    data-hidden-entity="employeeJson"
                     data-modal-id="employeesModal">
                 Изменить
             </button>
@@ -146,22 +146,6 @@
 
         <!-- Кнопка для открытия модального окна просмотра фото-->
         <button type="button" class="btn-modern" id="openPhotoModal">Прикрепленные фото</button>
-        <!-- Модальное окно для просмотра фото -->
-        <div id="photoModal" data-save="Technologist" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="attached-photos">
-                    <#list bid.image as img>
-                        <div class="photo-container">
-                            <img src="${img.base64Data}" id="image" name="image" alt="Фото" class="attached-photo">
-                            <button class="btn-delete-photo" data-id="${img.id}">Удалить</button>
-                        </div>
-                    </#list>
-                </div>
-                <input type="file" id="uploadPhoto" style="display: none;" accept="image/*">
-                <button type="button" class="btn-modern" id="addPhoto">Прикрепить фото</button>
-            </div>
-        </div>
 
         <div class="form-group form-group-flex">
             <label>Статус</label>
@@ -169,12 +153,12 @@
                    value="${bid.status.name()?trim}"
                    readonly
                    class="form-input">
-            <input type="hidden" id="statusId" value="${bid.status.id}">
+            <input type="hidden" id="statusJson" value="${bid.status}">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="status"
                     data-display-field="name"
                     data-input-id="statusName"
-                    data-hidden-id="statusId"
+                    data-hidden-entity="statusJson"
                     data-modal-id="statusModal"
                     data-save="Technologist">
                 Изменить и уведомить
@@ -217,9 +201,20 @@
     </div>
 </div>
 
+<!-- Модальное окно для фотографий -->
+<div id="photoModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('photoModal')">&times;</span>
+        <h2>Прикрепленные фото</h2>
+        <div id="photoContainer" class="photo-container"></div>
+        <button type="button" id="addPhotoBtn" class="btn-modern">Добавить фото</button>
+        <input type="file" id="photoInput" accept="image/*" style="display: none;">
+    </div>
+</div>
+
 <!-- Уведомления -->
 <div id="notification-container"></div>
-
+<script> const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
 <script src="/script.js"></script>
 </body>
 </html>

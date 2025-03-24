@@ -4,7 +4,7 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.GeneralReason;
 import com.example.rces.models.Images;
-import com.example.rces.models.annotation.Identifier;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.*;
 
@@ -27,6 +30,9 @@ public class ApiServices {
     @Autowired
     private TelegramService tgService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     public List<CustomerOrder> findAllCustomerOrder() {
         return entityManager.createQuery("select e from CustomerOrder e", CustomerOrder.class).getResultList();
     }
@@ -37,18 +43,19 @@ public class ApiServices {
                 .getResultList();
     }
 
-    public List<Images> findImages(String param) {
-        return entityManager.createQuery(
+    public List<Images> findImages(UUID param) {
+       List<Images> sasa =  entityManager.createQuery(
                         "select e from Images e " +
                                 "where e.constructor.id = :param or e.otk.id = :param or e.technologist.id = :param", Images.class)
                 .setParameter("param", param)
                 .getResultList();
+        return sasa;
     }
 
     @Transactional
-    public void update(String entityClassName, Object id, Boolean sendMessage, Map<String, Object> updatedFields) {
+    public void update(Object entityClassName, Object id, Boolean sendMessage, Map<String, Object> updatedFields) {
         try {
-            Class<?> entityClass = Class.forName("com.example.rces.models." + entityClassName);
+            Class<?> entityClass = Class.forName("com.example.rces.models." + entityClassName.toString());
             Object entityId = (id instanceof String) ? UUID.fromString((String) id) : id;
             Object entity = entityManager.find(entityClass, entityId);
             Object oldEntity = deepCopy(entity, entityClass);
@@ -69,13 +76,13 @@ public class ApiServices {
                             Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) field.getType();
                             value = enumClass.getMethod("fromField", Object.class).invoke(null, value.toString());
                         } else if (field.getType().isAnnotationPresent(Entity.class) && value != null) {
-                            Object idEntity = field.getType().getAnnotation(Identifier.class).value().equals("UUID.class")
-                                    ? UUID.fromString((String) value)
-                                    : Long.parseLong((String) value);
-                            value = entityManager.find(field.getType(), idEntity);
+//                            Object idEntity = field.getType().getAnnotation(Identifier.class).value().equals("UUID.class")
+//                                    ? UUID.fromString((String) value)
+//                                    : Long.parseLong((String) value);
+                            value = objectMapper.readValue((String)value,field.getType());
                         }
                         if (field.getType().isInterface() && value != null) {
-                            entityManager.merge(new Images((String) value, entityClassName, entity));
+                            entityManager.merge(new Images((String) value, entityClassName.toString(), entity));
                             return;
                         }
                         field.set(entity, value);

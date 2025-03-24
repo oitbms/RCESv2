@@ -13,6 +13,7 @@ async function fetchData(endpoint, param) {
     }
 }
 
+
 // Функция для обновления сущности по API
 async function saveData(className) {
     try {
@@ -151,93 +152,11 @@ document.getElementById('comment').addEventListener('input', function () {
     clearTimeout(timeout); // Очистка предыдущего таймера
     timeout = setTimeout(function () {
         const save = document.getElementById('comment').dataset.save;
-        saveData(save);
+        saveData();
     }, 3000);
 });
 
-// Обработчик для кнопки "Прикрепленные фото"
-document.getElementById('openPhotoModal').addEventListener('click', () => {
-    const modal = document.getElementById('photoModal');
-    modal.classList.add('open');
-});
-
-// Обработчик для кнопки "Добавить фото"
-document.getElementById('addPhoto').addEventListener('click', () => {
-    document.getElementById('uploadPhoto').click();
-});
-
-// Обработчик для кнопок "Удалить"
-document.querySelectorAll('.btn-delete-photo').forEach(button => {
-    button.addEventListener('click', async () => {
-        const photo = button.dataset; // Получаем ID фото из data-id
-        const save = document.getElementById('photoModal').dataset.save;
-        const entityId = document.getElementsByName('id')[0].value; // Получаем ID сущности
-        try {
-            // Отправляем запрос на удаление фото из БД
-            const response = await saveData(save);
-
-            if (!response.ok) {
-                throw new Error(`Ошибка: ${response.status}`);
-            }
-
-            // Уведомляем пользователя об успешном удалении
-            notification('Фото удалено', 3000, 'success');
-
-            // Обновляем список фото в модальном окне
-            const modal = document.getElementById('photoModal');
-            const attachedPhotos = modal.querySelector('.attached-photos');
-            attachedPhotos.innerHTML = '<li>Загрузка...</li>';
-
-            // Получаем обновленный список фото
-            const data = await fetchData('images', entityId);
-            renderPhotos(data);
-        } catch (error) {
-            console.error('Ошибка при удалении фото:', error);
-            notification('Ошибка при удалении фото', 5000, 'error');
-        }
-    });
-});
 
 
-// Обработчик для выбора файла
-document.getElementById('uploadPhoto').addEventListener('change', async (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-        const formData = new FormData();
 
-        // Добавляем выбранные файлы в FormData
-        for (let i = 0; i < files.length; i++) {
-            formData.append('additionalFiles', files[i]);
-        }
-        const save = document.getElementById('photoModal').dataset.save;
-        const entityId = document.getElementsByName('id');
 
-        // Вызываем saveData для отправки файлов на сервер
-        const success = await saveData(save);
-
-        if (success) {
-            notification('Фото успешно добавлены', 3000, 'success');
-            // Обновляем список фото в модальном окне
-            const modal = document.getElementById('photoModal');
-            const attachedPhotos = modal.querySelector('.attached-photos');
-            attachedPhotos.innerHTML = '<li>Загрузка...</li>';
-            const data = await fetchData('images', entityId);
-            renderPhotos(data);
-        } else {
-            notification('Ошибка при добавлении фото', 5000, 'error');
-        }
-    }
-});
-
-// Функция для отрисовки фото в модальном окне
-function renderPhotos(data) {
-    const attachedPhotos = document.querySelector('.attached-photos');
-    attachedPhotos.innerHTML = data.length > 0
-        ? data.map(img => `
-            <div class="photo-container">
-                <img src="${img.base64Data}" alt="Фото" class="attached-photo">
-                <button class="btn-delete-photo" data-id="${img.id}">Удалить</button>
-            </div>
-        `).join('')
-        : '<li>Нет данных</li>';
-}

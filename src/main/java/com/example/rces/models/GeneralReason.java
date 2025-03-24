@@ -1,7 +1,9 @@
 //Класс с причинами вызовов
 package com.example.rces.models;
 
-import com.example.rces.models.enums.Status;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class GeneralReason {
 
@@ -25,21 +27,56 @@ public class GeneralReason {
             return name;
         }
 
-        public static Technologist fromField(Object field) {
-            if (field==null) {
+        @JsonValue
+        public Long toValue() {
+            return this.id;
+        }
+
+        @JsonCreator
+        public static Technologist fromField(JsonNode node) {
+            if (node == null) {
                 return null;
             }
-            for (Technologist technologist : Technologist.values()) {
-                if (technologist.getName().equals(field)) {
-                    return technologist;
+
+            // Если node — это объект, извлекаем id или name
+            if (node.isObject()) {
+                Long id = node.has("id") ? node.get("id").asLong() : null;
+                String name = node.has("name") ? node.get("name").asText() : null;
+
+                if (id != null) {
+                    for (Technologist technologist : Technologist.values()) {
+                        if (technologist.getId().equals(id)) {
+                            return technologist;
+                        }
+                    }
+                }
+
+                if (name != null) {
+                    for (Technologist technologist : Technologist.values()) {
+                        if (technologist.getName().equals(name)) {
+                            return technologist;
+                        }
+                    }
                 }
             }
-            for (Technologist technologist : Technologist.values()) {
-                if (technologist.getId().equals(field)) {
-                    return technologist;
+            if (node.isNumber()) {
+                Long id = node.asLong();
+                for (Technologist technologist : Technologist.values()) {
+                    if (technologist.getId().equals(id)) {
+                        return technologist;
+                    }
                 }
             }
-            throw new IllegalArgumentException("Неизвестная причина: " + field);
+            if (node.isTextual()) {
+                String name = node.asText();
+                for (Technologist technologist : Technologist.values()) {
+                    if (technologist.getName().equals(name)) {
+                        return technologist;
+                    }
+                }
+            }
+
+            throw new IllegalArgumentException("Неизвестная причина: " + node);
         }
     }
 
@@ -63,8 +100,15 @@ public class GeneralReason {
         public String getName() {
             return name;
         }
+
+        @JsonValue
+        public Long toValue() {
+            return this.id;
+        }
+
+        @JsonCreator
         public static Otk fromField(Object field) {
-            if (field==null) {
+            if (field == null) {
                 return null;
             }
             for (Otk otk : Otk.values()) {
@@ -100,8 +144,15 @@ public class GeneralReason {
         public String getName() {
             return name;
         }
+
+        @JsonValue
+        public Long toValue() {
+            return this.id;
+        }
+
+        @JsonCreator
         public static Constructor fromField(Object field) {
-            if (field==null) {
+            if (field == null) {
                 return null;
             }
             for (Constructor constructor : Constructor.values()) {
