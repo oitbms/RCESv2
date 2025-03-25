@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.rces.services.ServiceUtil.*;
+import static com.example.rces.services.ServiceUtil.getGetterMethod;
 
 @Service
 public class ApiServices {
@@ -127,7 +128,10 @@ public class ApiServices {
                     String customerOrderName = (String) customerOrder.getClass().getDeclaredMethod("getName").invoke(customerOrder);
                     String comment = (String) getGetterMethod(clazz, entity, "getComment");
                     String reasonName = (String) Objects.requireNonNull(reason).getClass().getDeclaredMethod("getName").invoke(reason);
-                    tgService.sendUpdateMessageToGroup(requestNumber, employeeName, customerOrderName, comment, reasonName);
+                    boolean hasImage = ((List<?>) Objects.requireNonNull(
+                            getGetterMethod(clazz, entity, "getImage")
+                    )).isEmpty();
+                    tgService.sendUpdateMessageToGroup(requestNumber, employeeName, customerOrderName, !hasImage, comment, reasonName);
                 }
             }
         } catch (Exception e) {

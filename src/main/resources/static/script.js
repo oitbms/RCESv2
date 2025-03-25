@@ -44,8 +44,6 @@ document.querySelectorAll('.openModal').forEach(button => {
         const {endpoint, param, modalId, inputId, hiddenEntity} = button.dataset;
         const modalWindow = document.getElementById(modalId);
         const list = modalWindow.querySelector('.modal-list');
-
-        // Загрузка данных
         const data = await fetchData(endpoint, param);
 
         list.innerHTML = data.map(item =>
@@ -87,31 +85,44 @@ function renderPhotos(images) {
     const container = document.getElementById('photoContainer');
     container.innerHTML = '';
 
-    images.forEach(image => {
-        const imgWrapper = document.createElement('div');
-        imgWrapper.classList.add('photo-wrapper');
-        imgWrapper.innerHTML = `
-            <img src="${image.data}" class="attached-photo">
-            <button class="delete-photo-btn" data-image='${JSON.stringify(image)}'>Удалить</button>
-        `;
-        container.appendChild(imgWrapper);
+    if (!images || images.length === 0) {
+        container.innerHTML = '<div class="no-photos">Нет прикрепленных фото</div>';
+        return;
+    }
 
-        // Для открытия увеличенного фото
-        imgWrapper.querySelector('.attached-photo').addEventListener('click', function(event) {
-            console.log("Клик по изображению:", event.target.src);
+    images.forEach((imgData, index) => {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'photo-wrapper';
+        const isString = typeof imgData === 'string';
+        const imageUrl = isString ? imgData : imgData.data;
+
+        imgWrapper.innerHTML = `
+            <img src="${imageUrl}" class="attached-photo">
+            <button class="delete-photo-btn" data-index="${index}">Удалить</button>
+        `;
+
+        // Обработчик удаления
+        imgWrapper.querySelector('.delete-photo-btn').addEventListener('click', function() {
+            deletePhoto(index);
+        });
+
+        // Обработчик просмотра
+        imgWrapper.querySelector('img').addEventListener('click', function() {
             const fullPhotoModal = document.getElementById('fullPhotoModal');
             const fullPhoto = document.getElementById('fullPhoto');
-            fullPhoto.src = event.target.src;
+            fullPhoto.src = this.src;
             fullPhotoModal.classList.add('open');
         });
-    });
 
-    document.querySelectorAll('.delete-photo-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const imageObj = JSON.parse(this.dataset.image);
-            deletePhoto(imageObj);
-        });
+        container.appendChild(imgWrapper);
     });
+}
+
+async function deletePhoto(index) {
+    const id = document.getElementById('id').value;
+    let images = await fetchData("images", id);
+    images.splice(index, 1);
+    await saveData(images);
 }
 
 // Закрытие модального окна при клике на крестик или вне изображения
@@ -122,29 +133,38 @@ document.getElementById('fullPhotoModal').addEventListener('click', function (ev
 });
 
 
-async function deletePhoto(imageToDelete) {
-    const id = document.getElementById('id').value;
-    let images = await fetchData("images", id);
-    images = images.filter(image => image.id !== imageToDelete.id);
-    await saveData(images);
-}
-
 document.getElementById('addPhotoBtn').addEventListener('click', function () {
     document.getElementById('photoInput').click();
 });
 
-document.getElementById('photoInput').addEventListener('change', async function (event) {
+document.getElementById('photoInput').addEventListener('change', async function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const id = document.getElementById('id').value;
-    let images = await fetchData("images", id);
+    // Временное превью
+    const tempPreview = document.createElement('div');
+    tempPreview.className = 'photo-wrapper temporary';
+    tempPreview.innerHTML = `
+        <img src="" class="attached-photo loading">
+        <button class="delete-photo-btn" disabled>Удалить</button>
+    `;
+    document.getElementById('photoContainer').prepend(tempPreview);
 
     const reader = new FileReader();
-    reader.onload = async function (e) {
-        images.push(e.target.result); // Добавляем новое фото
+    reader.onload = async function(e) {
+        tempPreview.querySelector('img').src = e.target.result;
+        tempPreview.querySelector('img').classList.remove('loading');
+        const id = document.getElementById('id').value;
+        let images = await fetchData("images", id) || [];
+        images.unshift(e.target.result);
         await saveData(images);
+        renderPhotos(images);
     };
+
+    reader.onerror = function() {
+        tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
+    };
+
     reader.readAsDataURL(file);
 });
 
