@@ -218,3 +218,21 @@ h2 {
     border: none;
     cursor: pointer;
 }
+
+.full-photo {
+    max-width: 90%;
+    max-height: 90vh;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Закрытие модальных окон */
+.x {
+    position:absolute;top:12px;right:12px;
+    width:32px;height:32px;border:0;
+    background:none;cursor:pointer;
+    border-radius:50%;font:20px/1 Arial;
+    display:grid;place-items:center;
+}
+.x:hover {background:rgba(0,0,0,0.05)}
+.x:active {background:rgba(0,0,0,0.1)}

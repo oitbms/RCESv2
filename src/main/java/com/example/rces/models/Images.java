@@ -4,6 +4,7 @@ package com.example.rces.models;
 import com.example.rces.models.base.EntityBase;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -99,4 +100,5 @@ public class Images extends EntityBase {
     public void setBase64Data(String base64Image) {
         setData(Base64.getDecoder().decode(base64Image.substring("data:image/jpeg;base64,".length())));
     }
+
 }

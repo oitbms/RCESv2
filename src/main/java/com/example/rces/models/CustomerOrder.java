@@ -1,7 +1,6 @@
 //сущность заказы клиентов
 package com.example.rces.models;
 
-import com.example.rces.models.annotation.Identifier;
 import com.example.rces.models.base.EntityBase;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -11,7 +10,6 @@ import lombok.EqualsAndHashCode;
 @Table(name = "customerorder")
 @AttributeOverride(name = "requestNumber", column = @Column(name = "transient_requestNumber"))
 @AttributeOverride(name = "score", column = @Column(name = "transient_score"))
-@Identifier("UUID.class")
 public class CustomerOrder extends EntityBase {
 
     @Column(name = "str_code")

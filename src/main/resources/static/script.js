@@ -14,7 +14,7 @@ async function fetchData(endpoint, param) {
 async function saveData(images) {
     let formData = new FormData(document.getElementById('viewRequestForm'));
     let data = Object.fromEntries(formData.entries());
-    data["big.images"] = images; // Обновляем список фото
+    data["image"] = images; // Обновляем список фото
 
     const url = new URL('/api/update', window.location.origin);
     url.searchParams.append('entityName', entityName);
@@ -32,7 +32,7 @@ async function saveData(images) {
         body: JSON.stringify(data),
     }).then(r => {
         notification('Запись сохранена', 3000, 'success');
-        if (images!=null) {
+        if (images != null) {
             renderPhotos(images);
         }
     });
@@ -83,14 +83,6 @@ document.getElementById('openPhotoModal').addEventListener('click', async functi
 });
 
 
-// Обработчик для кнопки "Добавить фото"
-document.getElementById('addPhoto').addEventListener('click', () => {
-    document.getElementById('uploadPhoto').click();
-});
-
-
-
-// Функция для отрисовки фото в модальном окне
 function renderPhotos(images) {
     const container = document.getElementById('photoContainer');
     container.innerHTML = '';
@@ -99,25 +91,44 @@ function renderPhotos(images) {
         const imgWrapper = document.createElement('div');
         imgWrapper.classList.add('photo-wrapper');
         imgWrapper.innerHTML = `
-            <img src="${image}" class="attached-photo">
-            <button class="delete-photo-btn" data-image="${image}">Удалить</button>
+            <img src="${image.data}" class="attached-photo">
+            <button class="delete-photo-btn" data-image='${JSON.stringify(image)}'>Удалить</button>
         `;
         container.appendChild(imgWrapper);
+
+        // Для открытия увеличенного фото
+        imgWrapper.querySelector('.attached-photo').addEventListener('click', function(event) {
+            console.log("Клик по изображению:", event.target.src);
+            const fullPhotoModal = document.getElementById('fullPhotoModal');
+            const fullPhoto = document.getElementById('fullPhoto');
+            fullPhoto.src = event.target.src;
+            fullPhotoModal.classList.add('open');
+        });
     });
 
     document.querySelectorAll('.delete-photo-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            deletePhoto(this.dataset.image);
+        button.addEventListener('click', function() {
+            const imageObj = JSON.parse(this.dataset.image);
+            deletePhoto(imageObj);
         });
     });
 }
 
+// Закрытие модального окна при клике на крестик или вне изображения
+document.getElementById('fullPhotoModal').addEventListener('click', function (event) {
+    if (event.target === this || event.target.classList.contains('close')) {
+        this.classList.remove('open');
+    }
+});
+
+
 async function deletePhoto(imageToDelete) {
     const id = document.getElementById('id').value;
     let images = await fetchData("images", id);
-    images = images.filter(image => image !== imageToDelete); // Удаляем фото из списка
+    images = images.filter(image => image.id !== imageToDelete.id);
     await saveData(images);
 }
+
 document.getElementById('addPhotoBtn').addEventListener('click', function () {
     document.getElementById('photoInput').click();
 });

@@ -23,7 +23,7 @@ public class ServiceUtil {
         return fields;
     }
 
-    public static Object getMethod(Class<?> clazz, Object entity, String methodName) {
+    public static Object getGetterMethod(Class<?> clazz, Object entity, String methodName) {
         List<Method> methods = new ArrayList<>();
         while (clazz != null) {
             Method[] declaredMethods = clazz.getDeclaredMethods();
@@ -57,6 +57,7 @@ public class ServiceUtil {
         }
     }
 
+    // Сохранение коллекции изображений
     public static List<Images> saveFiles(MultipartFile[] files, Object entity) {
         List<Images> images = new ArrayList<>();
         Class<?> clazz = entity.getClass();
@@ -80,6 +81,31 @@ public class ServiceUtil {
         }
         return images;
     }
+
+    //Изменение коллекции изображений
+    public static void handleImageCollection(Object entity, Field field, List<?> newImages) throws Exception {
+        // Получаем текущую коллекцию
+        @SuppressWarnings("unchecked")
+        List<Images> currentImages = (List<Images>) field.get(entity);
+
+        // Удаляем изображения, которых нет в новом списке
+        List<Images> toRemove = new ArrayList<>(currentImages);
+        if (newImages != null) {
+            toRemove.removeIf(img -> newImages.contains(img));
+        }
+        toRemove.forEach(img -> img.setTechnologist(null));
+        currentImages.removeAll(toRemove);
+        if (newImages != null) {
+            for (Object img : newImages) {
+                Images image = (Images) img;
+                if (!currentImages.contains(image)) {
+                    getGetterMethod(entity.getClass(), image, "set" + entity.getClass().getSimpleName());
+                    currentImages.add(image);
+                }
+            }
+        }
+    }
+
 
 
 }

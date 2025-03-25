@@ -14,11 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.rces.services.ServiceUtil.*;
@@ -55,12 +51,13 @@ public class ApiServices {
                 .map(image -> new ImagesPayload(
                         image.getId(),
                         image.getFileName(),
-                        image.getData(),
+                        image.getBase64Data(),
                         image.getConstructor() != null ? image.getConstructor().getId()
-                                : image.getTechnologist()!=null ? image.getTechnologist().getId() : image.getOtk().getId()
+                                : image.getTechnologist() != null ? image.getTechnologist().getId() : image.getOtk().getId()
                 ))
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public void update(Object entityClassName, Object id, Boolean sendMessage, Map<String, Object> updatedFields) {
         try {
@@ -85,13 +82,30 @@ public class ApiServices {
                             Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) field.getType();
                             value = enumClass.getMethod("fromField", Object.class).invoke(null, value.toString());
                         } else if (field.getType().isAnnotationPresent(Entity.class) && value != null) {
-//                            Object idEntity = field.getType().getAnnotation(Identifier.class).value().equals("UUID.class")
-//                                    ? UUID.fromString((String) value)
-//                                    : Long.parseLong((String) value);
-                            value = objectMapper.readValue((String)value,field.getType());
+                            value = objectMapper.readValue((String) value, field.getType());
                         }
                         if (field.getType().isInterface() && value != null) {
-                            entityManager.merge(new Images((String) value, entityClassName.toString(), entity));
+                            if (!((ArrayList<?>) value).isEmpty()) {
+                                List<UUID> imageIds = ((ArrayList<?>) value).stream()
+                                        .filter(LinkedHashMap.class::isInstance)
+                                        .map(img -> UUID.fromString((String)((LinkedHashMap<?,?>) img).get("id")))
+                                        .toList();
+                                List<Images> images = entityManager.createQuery(
+                                                "SELECT i FROM Images i WHERE i.id IN :ids", Images.class)
+                                        .setParameter("ids", imageIds)
+                                        .getResultList();
+                                ((ArrayList<?>) value).stream()
+                                        .filter(String.class::isInstance)
+                                        .map(String.class::cast)
+                                        .forEach(imgStr -> {
+                                            Images newImage = new Images(imgStr, entityClassName.toString(), entity);
+                                            images.add(newImage);
+                                            entityManager.persist(newImage);
+                                        });
+                                handleImageCollection(entity, field, images);
+                                return;
+                            }
+                            handleImageCollection(entity, field, (List<?>) value);
                             return;
                         }
                         field.set(entity, value);
@@ -100,28 +114,24 @@ public class ApiServices {
                     }
                 }
             });
-
-            entityManager.merge(entity);
             if (sendMessage) {
                 if (entity.getClass().getDeclaredMethod("getStatus").invoke(entity)
                         !=
                         entity.getClass().getDeclaredMethod("getStatus").invoke(oldEntity)) {
                     Class<?> clazz = entity.getClass();
-                    Employee employee = (Employee) Objects.requireNonNull(getMethod(clazz, entity, "getEmployee"));
-                    CustomerOrder customerOrder = (CustomerOrder) Objects.requireNonNull(getMethod(clazz, entity, "getCustomerOrder"));
-                    Enum<?> reason = (GeneralReason.Technologist) getMethod(clazz, entity, "getReason");
-                    Integer requestNumber = (Integer) getMethod(clazz, entity, "getRequestNumber");
+                    Employee employee = (Employee) Objects.requireNonNull(getGetterMethod(clazz, entity, "getEmployee"));
+                    CustomerOrder customerOrder = (CustomerOrder) Objects.requireNonNull(getGetterMethod(clazz, entity, "getCustomerOrder"));
+                    Enum<?> reason = (GeneralReason.Technologist) getGetterMethod(clazz, entity, "getReason");
+                    Integer requestNumber = (Integer) getGetterMethod(clazz, entity, "getRequestNumber");
                     String employeeName = (String) employee.getClass().getDeclaredMethod("getName").invoke(employee);
                     String customerOrderName = (String) customerOrder.getClass().getDeclaredMethod("getName").invoke(customerOrder);
-                    String comment = (String) getMethod(clazz, entity, "getComment");
+                    String comment = (String) getGetterMethod(clazz, entity, "getComment");
                     String reasonName = (String) Objects.requireNonNull(reason).getClass().getDeclaredMethod("getName").invoke(reason);
                     tgService.sendUpdateMessageToGroup(requestNumber, employeeName, customerOrderName, comment, reasonName);
                 }
             }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Класс не найден: " + entityClassName, e);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

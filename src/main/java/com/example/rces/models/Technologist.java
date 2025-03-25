@@ -70,5 +70,4 @@ public class Technologist extends EntityBase {
     public void setImage(List<Images> image) {
         this.image = image;
     }
-
 }
