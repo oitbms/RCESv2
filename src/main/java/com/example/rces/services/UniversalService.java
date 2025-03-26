@@ -55,7 +55,9 @@ public class UniversalService {
 
             entity.getClass().getDeclaredMethod("setEmployee", Employee.class).invoke(entity, employee);
             entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
-            entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
+            if (reason!=null) {
+                entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
+            }
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
             if (additionalFiles != null) {
                 List<Images> images = saveFiles(additionalFiles, entity);
