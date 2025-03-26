@@ -21,7 +21,7 @@
             <label>Сотрудник</label>
             <div class="form-group-flex">
                 <input type="text" id="employeeName" placeholder="Имя сотрудника" readonly
-                       class="form-input">
+                       class="form-input" data-required="true">
                 <input type="hidden" id="employeeJson" name="employeeJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="employees"
@@ -38,7 +38,7 @@
             <label>Заказ клиента</label>
             <div class="form-group-flex">
                 <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
-                       class="form-input">
+                       class="form-input" data-required="true">
                 <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="customerOrders"
@@ -54,7 +54,7 @@
         <div class="form-group">
             <label>Причина</label>
             <div class="form-group-flex">
-                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input">
+                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input" data-required="true">
                 <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"

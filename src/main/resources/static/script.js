@@ -65,6 +65,24 @@ document.querySelectorAll('.openModal').forEach(button => {
     });
 });
 
+document.querySelector('form').addEventListener('submit', function(event) {
+    const requiredFields = document.querySelectorAll('[data-required]');
+    let valid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            valid = false
+            field.classList.add('error-field');
+        } else {
+            field.classList.remove('error-field');
+        }
+    })
+    if (!valid) {
+        event.preventDefault();
+        notification("Заполните обязательные поля", 3000, 'error')
+    }
+});
+
 // Обработка ввода комментария с задержкой
 document.getElementById('comment').addEventListener('input', function () {
     clearTimeout(timeout); // Очистка предыдущего таймера

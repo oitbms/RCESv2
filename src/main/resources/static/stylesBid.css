@@ -133,7 +133,8 @@ h2 {
 }
 
 .notification.error {
-    background: #dc3545;
+    background-color: #dc3545;
+    color: white;
 }
 
 /* Адаптация для мобильных устройств */
@@ -257,6 +258,11 @@ h2 {
     color: #dc3545;
     padding: 10px;
     text-align: center;
+}
+
+.error-field {
+    border: 2px solid #ff0000 !important;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5) !important;
 }
 
 /* Закрытие модальных окон */
