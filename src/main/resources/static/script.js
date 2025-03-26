@@ -1,4 +1,4 @@
-const entityName = document.getElementById('entityName').innerText;  // Название сущности\4
+const entityName = document.getElementById('entityName').innerText;  // Название сущности
 const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
 

@@ -8,17 +8,16 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "customerorder")
-@AttributeOverride(name = "requestNumber", column = @Column(name = "transient_requestNumber"))
-@AttributeOverride(name = "score", column = @Column(name = "transient_score"))
 public class CustomerOrder extends EntityBase {
 
     @Column(name = "str_code")
     private String name; // Номер заказа
 
-    @Transient
+    @Column(name = "request_number", insertable = false, updatable = false)
     private Integer requestNumber;
 
-    @Transient
+    @Column(name = "score", insertable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
     private Appraisal score;
 
     public String getName() {

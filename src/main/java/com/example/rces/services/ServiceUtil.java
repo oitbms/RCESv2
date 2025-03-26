@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -106,6 +108,9 @@ public class ServiceUtil {
         }
     }
 
+    public static String formatedDate(LocalDateTime date) {
+       return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    }
 
 
 }

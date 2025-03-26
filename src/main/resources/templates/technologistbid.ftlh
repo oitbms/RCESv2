@@ -95,7 +95,7 @@
 
         <div class="form-group">
             <label>Дата создания:</label>
-            <span class="form-value">${bid.createDate}</span>
+            <span class="form-value">${date}</span>
         </div>
 
         <div class="form-group form-group-flex">

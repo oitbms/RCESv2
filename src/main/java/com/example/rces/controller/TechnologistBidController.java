@@ -1,7 +1,10 @@
 //контроллер формы создания заявки на вызов технолога
 package com.example.rces.controller;
 
-import com.example.rces.models.*;
+import com.example.rces.models.CustomerOrder;
+import com.example.rces.models.Employee;
+import com.example.rces.models.GeneralReason;
+import com.example.rces.models.Technologist;
 import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,7 +30,7 @@ public class TechnologistBidController {
     private TelegramService tgService;
 
     @Autowired
-    private  ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @GetMapping("/create")
     public String getCreateBidForm(Model model) {
@@ -49,7 +54,7 @@ public class TechnologistBidController {
 
         Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, comment, additionalFiles);
 
-        tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), !technologist.getImage().isEmpty(),technologist.getReason().getName(), technologist.getComment());
+        tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), !technologist.getImage().isEmpty(), technologist.getReason().getName(), technologist.getComment());
         model.addAttribute("requestNumber", technologist.getRequestNumber());
 
         return "success";
@@ -59,6 +64,7 @@ public class TechnologistBidController {
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
         Technologist technologist = service.findByRequestNumber(Technologist.class, requestNumber);
         model.addAttribute("bid", technologist);
+        model.addAttribute("date", formatedDate(technologist.getCreateDate()));
         model.addAttribute("viewForm", true);
         return "/technologistbid";
     }
