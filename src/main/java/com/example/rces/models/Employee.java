@@ -4,14 +4,11 @@ package com.example.rces.models;
 import com.example.rces.models.enums.MlmNode;
 import jakarta.persistence.*;
 
-import java.util.UUID;
-
 @Entity
 @Table(name = "employees")
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -22,9 +19,6 @@ public class Employee {
     private String role;
 
     private Boolean isActive;
-
-    @Column(name = "user_id", unique = true)
-    private UUID userId;
 
     public Long getId() {
         return id;
@@ -64,13 +58,5 @@ public class Employee {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
     }
 }

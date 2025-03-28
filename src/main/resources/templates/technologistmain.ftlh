@@ -58,7 +58,7 @@
                         <#if technologist.status == status>
                             <tr>
                                 <td>${technologist.requestNumber}</td>
-                                <td>${technologist.createDate}</td>
+                                <td> ${technologist.createDate.toString()?datetime("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")?string("dd.MM.yyyy HH:mm")}</td>
                                 <td>${technologist.customerOrder.name}</td>
                                 <td>${technologist.status.getName()}</td>
                                 <td>${technologist.employee.name}</td>

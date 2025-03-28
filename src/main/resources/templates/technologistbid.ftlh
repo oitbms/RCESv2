@@ -21,7 +21,7 @@
             <label>Сотрудник</label>
             <div class="form-group-flex">
                 <input type="text" id="employeeName" placeholder="Имя сотрудника" readonly
-                       class="form-input">
+                       class="form-input" data-required="true">
                 <input type="hidden" id="employeeJson" name="employeeJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="employees"
@@ -38,7 +38,7 @@
             <label>Заказ клиента</label>
             <div class="form-group-flex">
                 <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
-                       class="form-input">
+                       class="form-input" data-required="true">
                 <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="customerOrders"
@@ -54,7 +54,7 @@
         <div class="form-group">
             <label>Причина</label>
             <div class="form-group-flex">
-                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input">
+                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input" data-required="true">
                 <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
@@ -95,7 +95,7 @@
 
         <div class="form-group">
             <label>Дата создания:</label>
-            <span class="form-value">${bid.createDate}</span>
+            <span class="form-value">${date}</span>
         </div>
 
         <div class="form-group form-group-flex">
@@ -104,7 +104,10 @@
                    value="${bid.customerOrder.name?trim}"
                    readonly
                    class="form-input">
-            <input type="hidden" id="customerOrderJson" value="${bid.customerOrder.id}" name="customerOrder">
+            <#assign customerOrderJson = '{"id":"${bid.customerOrder.id?string}", "name":"${bid.customerOrder.name?js_string}"}'>
+            <input type="hidden" id="customerOrderJson"
+                   value='${customerOrderJson}'
+                   name="customerOrder">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="customerOrders"
                     data-input-id="customerOrderName"
@@ -120,7 +123,10 @@
                    value="${bid.employee.name?trim}"
                    readonly
                    class="form-input">
-            <input type="hidden" id="employeeJson" value="${bid.employee.id?c}" name="employee">
+            <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+            <input type="hidden" id="employeeJson"
+                   value='${employeeJson}'
+                   name="employee">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="employees"
                     data-input-id="employeeName"
@@ -171,7 +177,7 @@
 <!-- Модальные окна -->
 <div id="employeesModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
+        <button class="x" onclick="closeModal('employeesModal')">✕</button>
         <h2>Список сотрудников</h2>
         <ul id="employeesList" class="modal-list"></ul>
     </div>
@@ -179,7 +185,7 @@
 
 <div id="customerOrdersModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
+        <button class="x" onclick="closeModal('photoModal')">✕</button>
         <h2>Список заказов</h2>
         <ul id="customerOrdersList" class="modal-list"></ul>
     </div>
@@ -187,7 +193,7 @@
 
 <div id="reasonsModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
+        <button class="x" onclick="closeModal('reasonsModal')">✕</button>
         <h2>Список причин</h2>
         <ul id="reasonsList" class="modal-list"></ul>
     </div>
@@ -195,7 +201,7 @@
 
 <div id="statusModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
+        <button class="x" onclick="closeModal('statusModal')">✕</button>
         <h2>Статусы</h2>
         <ul id="statusList" class="modal-list"></ul>
     </div>
@@ -204,11 +210,19 @@
 <!-- Модальное окно для фотографий -->
 <div id="photoModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal('photoModal')">&times;</span>
+        <button class="x" onclick="closeModal('photoModal')">✕</button>
         <h2>Прикрепленные фото</h2>
         <div id="photoContainer" class="photo-container"></div>
         <button type="button" id="addPhotoBtn" class="btn-modern">Добавить фото</button>
         <input type="file" id="photoInput" accept="image/*" style="display: none;">
+    </div>
+</div>
+
+<!-- Модальное окно для увеличенного фото -->
+<div id="fullPhotoModal" class="modal">
+    <div class="modal-content">
+        <button class="x" onclick="closeModal('fullPhotoModal')">✕</button>
+        <img id="fullPhoto" class="full-photo" src="" alt="Просмотр фото">
     </div>
 </div>
 

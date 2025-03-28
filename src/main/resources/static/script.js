@@ -1,4 +1,4 @@
-const entityName = document.getElementById('entityName').innerText;  // Название сущности\4
+const entityName = document.getElementById('entityName').innerText;  // Название сущности
 const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
 
@@ -14,7 +14,7 @@ async function fetchData(endpoint, param) {
 async function saveData(images) {
     let formData = new FormData(document.getElementById('viewRequestForm'));
     let data = Object.fromEntries(formData.entries());
-    data["big.images"] = images; // Обновляем список фото
+    data["image"] = images; // Обновляем список фото
 
     const url = new URL('/api/update', window.location.origin);
     url.searchParams.append('entityName', entityName);
@@ -32,7 +32,7 @@ async function saveData(images) {
         body: JSON.stringify(data),
     }).then(r => {
         notification('Запись сохранена', 3000, 'success');
-        if (images!=null) {
+        if (images != null) {
             renderPhotos(images);
         }
     });
@@ -44,8 +44,6 @@ document.querySelectorAll('.openModal').forEach(button => {
         const {endpoint, param, modalId, inputId, hiddenEntity} = button.dataset;
         const modalWindow = document.getElementById(modalId);
         const list = modalWindow.querySelector('.modal-list');
-
-        // Загрузка данных
         const data = await fetchData(endpoint, param);
 
         list.innerHTML = data.map(item =>
@@ -67,6 +65,24 @@ document.querySelectorAll('.openModal').forEach(button => {
     });
 });
 
+document.querySelector('form').addEventListener('submit', function(event) {
+    const requiredFields = document.querySelectorAll('[data-required]');
+    let valid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            valid = false
+            field.classList.add('error-field');
+        } else {
+            field.classList.remove('error-field');
+        }
+    })
+    if (!valid) {
+        event.preventDefault();
+        notification("Заполните обязательные поля", 3000, 'error')
+    }
+});
+
 // Обработка ввода комментария с задержкой
 document.getElementById('comment').addEventListener('input', function () {
     clearTimeout(timeout); // Очистка предыдущего таймера
@@ -83,57 +99,90 @@ document.getElementById('openPhotoModal').addEventListener('click', async functi
 });
 
 
-// Обработчик для кнопки "Добавить фото"
-document.getElementById('addPhoto').addEventListener('click', () => {
-    document.getElementById('uploadPhoto').click();
-});
-
-
-
-// Функция для отрисовки фото в модальном окне
 function renderPhotos(images) {
     const container = document.getElementById('photoContainer');
     container.innerHTML = '';
 
-    images.forEach(image => {
+    if (!images || images.length === 0) {
+        container.innerHTML = '<div class="no-photos">Нет прикрепленных фото</div>';
+        return;
+    }
+
+    images.forEach((imgData, index) => {
         const imgWrapper = document.createElement('div');
-        imgWrapper.classList.add('photo-wrapper');
+        imgWrapper.className = 'photo-wrapper';
+        const isString = typeof imgData === 'string';
+        const imageUrl = isString ? imgData : imgData.data;
+
         imgWrapper.innerHTML = `
-            <img src="${image}" class="attached-photo">
-            <button class="delete-photo-btn" data-image="${image}">Удалить</button>
+            <img src="${imageUrl}" class="attached-photo">
+            <button class="delete-photo-btn" data-index="${index}">Удалить</button>
         `;
+
+        // Обработчик удаления
+        imgWrapper.querySelector('.delete-photo-btn').addEventListener('click', function() {
+            deletePhoto(index);
+        });
+
+        // Обработчик просмотра
+        imgWrapper.querySelector('img').addEventListener('click', function() {
+            const fullPhotoModal = document.getElementById('fullPhotoModal');
+            const fullPhoto = document.getElementById('fullPhoto');
+            fullPhoto.src = this.src;
+            fullPhotoModal.classList.add('open');
+        });
+
         container.appendChild(imgWrapper);
     });
-
-    document.querySelectorAll('.delete-photo-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            deletePhoto(this.dataset.image);
-        });
-    });
 }
 
-async function deletePhoto(imageToDelete) {
+async function deletePhoto(index) {
     const id = document.getElementById('id').value;
     let images = await fetchData("images", id);
-    images = images.filter(image => image !== imageToDelete); // Удаляем фото из списка
+    images.splice(index, 1);
     await saveData(images);
 }
+
+// Закрытие модального окна при клике на крестик или вне изображения
+document.getElementById('fullPhotoModal').addEventListener('click', function (event) {
+    if (event.target === this || event.target.classList.contains('close')) {
+        this.classList.remove('open');
+    }
+});
+
+
 document.getElementById('addPhotoBtn').addEventListener('click', function () {
     document.getElementById('photoInput').click();
 });
 
-document.getElementById('photoInput').addEventListener('change', async function (event) {
+document.getElementById('photoInput').addEventListener('change', async function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const id = document.getElementById('id').value;
-    let images = await fetchData("images", id);
+    // Временное превью
+    const tempPreview = document.createElement('div');
+    tempPreview.className = 'photo-wrapper temporary';
+    tempPreview.innerHTML = `
+        <img src="" class="attached-photo loading">
+        <button class="delete-photo-btn" disabled>Удалить</button>
+    `;
+    document.getElementById('photoContainer').prepend(tempPreview);
 
     const reader = new FileReader();
-    reader.onload = async function (e) {
-        images.push(e.target.result); // Добавляем новое фото
+    reader.onload = async function(e) {
+        tempPreview.querySelector('img').src = e.target.result;
+        tempPreview.querySelector('img').classList.remove('loading');
+        const id = document.getElementById('id').value;
+        let images = await fetchData("images", id) || [];
+        images.unshift(e.target.result);
         await saveData(images);
+        renderPhotos(images);
     };
+
+    reader.onerror = function() {
+        tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
+    };
+
     reader.readAsDataURL(file);
 });
 

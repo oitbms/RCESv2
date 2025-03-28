@@ -2,7 +2,6 @@ package com.example.rces.services;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
 import com.example.rces.models.Images;
 import com.example.rces.models.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import static com.example.rces.services.ServiceUtil.saveFiles;
+
 @Service
 @Transactional
 public class UniversalService {
@@ -22,10 +23,6 @@ public class UniversalService {
     @Autowired
     public UniversalService(UniversalRepository repository) {
         this.repository = repository;
-    }
-
-    public <T> T findByName(Class<T> entityClass,String name) {
-        return repository.findByName(entityClass,name);
     }
 
     public <T> T findById(Class<T> entityClass, Object id) {
@@ -52,57 +49,30 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String comment, MultipartFile[] additionalFiles) {
+    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String itemName, String comment, MultipartFile[] additionalFiles) {
         try {
             T entity = entityClass.getDeclaredConstructor().newInstance();
 
             entity.getClass().getDeclaredMethod("setEmployee", Employee.class).invoke(entity, employee);
             entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
-
-            // Обработка reason только если он не null
-            if (reason != null) {
-                Class<?> reasonClass = reason.getClass(); // Получаем класс reason один раз
-                entity.getClass().getDeclaredMethod("setReason", reasonClass).invoke(entity, reason);
+            if (reason!=null) {
+                entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
             }
-
+            if (itemName!=null) {
+                entity.getClass().getDeclaredMethod("setItemName", String.class).invoke(entity, itemName);
+            }
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
-
-            // Загрузка дополнительных файлов
             if (additionalFiles != null) {
-                List<Images> images = (List<Images>) entity.getClass().getSuperclass()
-                        .getDeclaredMethod("saveFiles", MultipartFile[].class)
-                        .invoke(entity, (Object) additionalFiles);
+                List<Images> images = saveFiles(additionalFiles, entity);
                 entity.getClass().getDeclaredMethod("setImage", List.class).invoke(entity, images);
             }
-
-            // Обработка комментария
-            String processedComment = (comment != null && !comment.isEmpty()) ? comment.substring(0, comment.length() - 1) : "";
-            entity.getClass().getSuperclass().getDeclaredMethod("setComment", String.class).invoke(entity, processedComment);
-
-            // Установка номера заявки и даты создания
+            entity.getClass().getSuperclass().getDeclaredMethod("setComment", String.class).invoke(entity, !Objects.equals(comment, "") ? comment.substring(0, comment.length() - 1) : "");
             entity.getClass().getSuperclass().getDeclaredMethod("setRequestNumber", Integer.class).invoke(entity, repository.generateRequestNumber(entity.getClass()));
             entity.getClass().getSuperclass().getDeclaredMethod("setCreateDate", LocalDateTime.class).invoke(entity, LocalDateTime.now());
 
             return repository.save(entity);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при создании заявки", e);
-        }
-    }
-
-    public List<Employee> getEmployeesByRole(String role) {
-        return repository.findByRole(Employee.class,role);
-    }
-
-    public CustomerOrder getOrCreateCustomerOrder(String customerOrderJson) {
-        CustomerOrder existingOrder = repository.findByName(CustomerOrder.class, customerOrderJson);
-
-        if (existingOrder != null) {
-            return existingOrder;
-        } else {
-            CustomerOrder newOrder = new CustomerOrder();
-            newOrder.setName(customerOrderJson);
-            repository.save(newOrder);
-            return newOrder;
         }
     }
 }
