@@ -113,7 +113,7 @@
         <div class="fill-effect"></div>
         <a class="menu-link">Создать заявку на вызов технолога</a>
     </div>
-    <div class="menu-item" data-href="/constructorbid/create">
+    <div class="menu-item" data-href="/constructormain">
         <div class="fill-effect"></div>
         <a class="menu-link">Создать заявку на вызов конструктора</a>
     </div>

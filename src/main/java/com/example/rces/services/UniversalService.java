@@ -75,4 +75,12 @@ public class UniversalService {
             throw new RuntimeException("Ошибка при создании заявки", e);
         }
     }
+
+    public CustomerOrder getOrCreateCustomerOrder(String name) {
+        return repository.findByName(CustomerOrder.class, name);
+    }
+
+    public List<Employee> getEmployeesByRole(String role){
+        return repository.findByRole(Employee.class, role);
+    }
 }

@@ -40,8 +40,10 @@ public class LoginController {
                 model.addAttribute("error", "Пользователь не найден");
                 return "login";
             }
+
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
+
             Authentication authentication = customAuthenticationProvider.authenticate(authRequest);
 
             if (authentication.isAuthenticated()) {

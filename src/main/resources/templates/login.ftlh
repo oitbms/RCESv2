@@ -12,7 +12,7 @@
         <div class="col-md-4">
             <h2 class="text-center">User Login</h2>
 
-            <form method="POST" action="/loginser">
+            <form method="POST" action="/login">
                 <input type="text" name="username" required>
                 <button type="submit">Login</button>
             </form>

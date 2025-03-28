@@ -79,5 +79,4 @@ public class UniversalRepository {
                 .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM " + entityClass.getSimpleName() + " e")
                 .getSingleResult();
     }
-
 }

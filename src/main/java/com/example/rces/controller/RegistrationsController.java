@@ -3,7 +3,6 @@ package com.example.rces.controller;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
-import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.services.UniversalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +20,9 @@ public class RegistrationsController {
     @Autowired
     private UniversalRepository universalRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
     @GetMapping("/admin")
     public String admin(Model model) {
-        model.addAttribute("users", universalRepository.findAll(User.class));
+        model.addAttribute("users", universalRepository.findAll(Employee.class));
         return "admin";
     }
 
@@ -38,25 +34,18 @@ public class RegistrationsController {
     }
 
     @PostMapping("/registration")
-    public String addUser(@RequestParam String mlmNode, String role, Employee employee, Map<String, Object> model) {
+    public String addUser(@RequestParam String username, String mlmNode, String role, Employee employee, Map<String, Object> model) {
         Employee userFromDb = universalRepository.findByName(Employee.class, employee.getName());
 
         if (userFromDb != null) {
             model.put("message", "User exist!");
             return "registration";
         }
+        employee.setName(username);
         employee.setActive(true);
         employee.setRole(Collections.singleton(Role.valueOf(role)));
-        universalRepository.save(employee);
-
-        Employee employee = new Employee();
-        employee.setName(user.getUsername());
-        employee.setRole(role);
         employee.setMlmNode(MlmNode.valueOf(mlmNode));
-        employee.setId(user.getId());
-        employee.setActive(true);
-
-        employeeRepository.save(employee);
+        universalRepository.save(Employee.class);
 
         return "redirect:/admin";
     }
