@@ -27,12 +27,12 @@ public class LoginController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    @GetMapping("/loginser")
+    @GetMapping("/login")
     public String login() {
         return "login";
     }
 
-    @PostMapping("/loginserr")
+    @PostMapping("/login")
     public String login(@RequestParam String username, Model model) {
         try {
             UserDetails user = customUserDetailsService.loadUserByUsername(username);

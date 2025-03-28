@@ -3,9 +3,8 @@ package com.example.rces.controller;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
-import com.example.rces.models.User;
 import com.example.rces.repository.EmployeeRepository;
-import com.example.rces.repository.UserRepository;
+import com.example.rces.services.UniversalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,14 +19,14 @@ import java.util.UUID;
 public class RegistrationsController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UniversalRepository universalRepository;
 
     @Autowired
     private EmployeeRepository employeeRepository;
 
     @GetMapping("/admin")
     public String admin(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("users", universalRepository.findAll(User.class));
         return "admin";
     }
 
@@ -39,37 +38,38 @@ public class RegistrationsController {
     }
 
     @PostMapping("/registration")
-    public String addUser(@RequestParam String mlmNode, String role, User user, Map<String, Object> model) {
-        User userFromDb = userRepository.findByUsername(user.getUsername());
+    public String addUser(@RequestParam String mlmNode, String role, Employee employee, Map<String, Object> model) {
+        Employee userFromDb = universalRepository.findByName(Employee.class, employee.getName());
 
         if (userFromDb != null) {
             model.put("message", "User exist!");
             return "registration";
         }
-        user.setEnabled(true);
-        user.setRoles(Collections.singleton(Role.valueOf(role)));
-        userRepository.save(user);
+        employee.setActive(true);
+        employee.setRole(Collections.singleton(Role.valueOf(role)));
+        universalRepository.save(employee);
 
         Employee employee = new Employee();
         employee.setName(user.getUsername());
         employee.setRole(role);
         employee.setMlmNode(MlmNode.valueOf(mlmNode));
-        employee.setUserId(user.getId());
+        employee.setId(user.getId());
         employee.setActive(true);
+
         employeeRepository.save(employee);
+
         return "redirect:/admin";
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    userRepository.delete(user);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Employee user = universalRepository.findById(Employee.class, id);
+        if (user != null) {
+            universalRepository.delete(user);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-}
 
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String contextUser = authentication.getName();
+}

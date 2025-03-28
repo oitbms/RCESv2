@@ -69,15 +69,4 @@ public class TechnologistBidController {
         return "/technologistbid";
     }
 
-//    @PostMapping("/view/{requestNumber}")
-//    public String updateViewBidForm(@ModelAttribute Technologist technologist,
-//                                    @ModelAttribute Status status,
-//                                    Model model) {
-//        technologist.setStatus(status);
-//        service.save(technologist);
-//        model.addAttribute("create", false);
-//        return "success";
-//    }
-
-
 }
