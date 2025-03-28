@@ -5,6 +5,7 @@ import com.example.rces.models.base.EntityBase;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
 
+
 import java.util.Date;
 import java.util.List;
 
@@ -15,20 +16,52 @@ public class Constructor extends EntityBase {
     private String name;
     private String description;
     private String numberWorkshop;
-    private String customerOrder;
     private boolean accepted;
     private Date dateStartAccepted;
     private Date dateEndAccepted;
+    private String customerOrderAndItem;
+
+    @Column(name = "reason")
+    @Enumerated(EnumType.STRING)
+    private GeneralReason.Constructor reason;
 
     @Column(name = "status_id")
     @Enumerated(EnumType.STRING)
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    private CustomerOrder customerOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
 
     @OneToMany(mappedBy = "constructor", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Images> image;
+
+    public String getCustomerOrderAndItem() {
+        return customerOrderAndItem;
+    }
+
+    public void setCustomerOrderAndItem(String customerOrderAndItem) {
+        this.customerOrderAndItem = customerOrderAndItem;
+    }
+
+    public GeneralReason.Constructor getReason() {
+        return reason;
+    }
+
+    public void setReason(GeneralReason.Constructor reason) {
+        this.reason = reason;
+    }
+
+
+    public CustomerOrder getCustomerOrder() {
+        return customerOrder;
+    }
+
+    public void setCustomerOrder(CustomerOrder customerOrder) {
+        this.customerOrder = customerOrder;
+    }
 
     public String getName() {
         return name;
@@ -52,14 +85,6 @@ public class Constructor extends EntityBase {
 
     public void setNumberWorkshop(String numberWorkshop) {
         this.numberWorkshop = numberWorkshop;
-    }
-
-    public String getCustomerOrder() {
-        return customerOrder;
-    }
-
-    public void setCustomerOrder(String customerOrder) {
-        this.customerOrder = customerOrder;
     }
 
     public boolean isAccepted() {

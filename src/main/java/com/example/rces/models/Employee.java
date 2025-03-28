@@ -1,19 +1,17 @@
 //сущность сотрудники
 package com.example.rces.models;
 
-import com.example.rces.models.annotation.Identifier;
 import com.example.rces.models.enums.MlmNode;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "employees")
-@Identifier("Long.class")
 public class Employee {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -24,6 +22,9 @@ public class Employee {
     private String role;
 
     private Boolean isActive;
+
+    @Column(name = "user_id", unique = true)
+    private UUID userId;
 
     public Long getId() {
         return id;
@@ -63,5 +64,13 @@ public class Employee {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 }

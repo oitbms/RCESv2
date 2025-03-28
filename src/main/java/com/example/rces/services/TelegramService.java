@@ -20,9 +20,17 @@ public class TelegramService extends TelegramLongPollingBot {
     private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
     private String message(Integer requestNumber, String employee, String customerOrder, String reason, String comment, Boolean isCreate) {
-        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nКомментарий: %s\nПричина: %s",
-                requestNumber, employee, customerOrder,comment!=null ? comment : "", reason)
-                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЗаказ клиента: %s\nКомментарий: %s\nПричина: %s", requestNumber, employee, customerOrder, comment!=null ? comment : "", reason);
+        String baseMessage = isCreate
+                ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\nКомментарий: %s",
+                requestNumber, employee, customerOrder, comment != null ? comment : "")
+                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЗаказ клиента: %s\nКомментарий: %s",
+                requestNumber, employee, customerOrder, comment != null ? comment : "");
+
+        if (reason != null && !"Нет причины".equals(reason)) {
+            baseMessage += String.format("\nПричина: %s", reason);
+        }
+
+        return baseMessage;
     }
 
     public void sendMessageToGroup(Integer requestNumber, String employee, String customerOrder,String comment, String reason) {

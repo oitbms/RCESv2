@@ -23,6 +23,17 @@ public class CustomerOrder extends EntityBase {
     @Transient
     private Appraisal score;
 
+    @Column(name = "name")
+    private String customer;
+
+    public String getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(String customer) {
+        this.customer = customer;
+    }
+
     public String getName() {
         return name;
     }

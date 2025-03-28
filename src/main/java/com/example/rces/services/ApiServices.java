@@ -1,14 +1,13 @@
 package com.example.rces.services;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
-import com.example.rces.models.Images;
+import com.example.rces.models.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +31,9 @@ public class ApiServices {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     public List<CustomerOrder> findAllCustomerOrder() {
         return entityManager.createQuery("select e from CustomerOrder e", CustomerOrder.class).getResultList();

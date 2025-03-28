@@ -38,8 +38,9 @@ public abstract class EntityBase {
         public String getName() {
             return name;
         }
+
         public static Appraisal fromString(String field) {
-            if (field==null) {
+            if (field == null) {
                 return null;
             }
             for (Appraisal appraisal : Appraisal.values()) {
@@ -90,7 +91,6 @@ public abstract class EntityBase {
         return images;
     }
 
-
     public UUID getId() {
         return id;
     }
@@ -130,4 +130,5 @@ public abstract class EntityBase {
     public void setScore(Appraisal score) {
         this.score = score;
     }
+
 }

@@ -1,15 +1,14 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>HOME</title>
+    <title>Spring Security Example</title>
 </head>
 <body>
-<a href="technologistbid">Создать заявку на вызов технолога</a>
-<a href="constructorbid">Создать заявку на вызов конструктора</a>
-<a href="otkbid">Создать заявку на вызов ОТК</a>
+<h1>Welcome!</h1>
+
+<p>Click ADMIN<a href="/admin">here</a> to see a greeting.</p>
+<p>Click <a href="/technologistmain">here</a> to see a greeting.</p>
+<#--<p>Click <a href="/otkbid">here</a> to see a greeting.</p>-->
+<p>Click <a href="/constructormain">here</a> to see a greeting.</p>
 </body>
 </html>
