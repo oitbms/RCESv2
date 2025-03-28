@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class Employee implements UserDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String name;

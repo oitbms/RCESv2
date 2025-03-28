@@ -54,7 +54,14 @@ public class TechnologistBidController {
 
         Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, null,comment, additionalFiles);
 
-        tgService.sendMessageToGroup(technologist.getRequestNumber(), technologist.getEmployee().getName(), technologist.getCustomerOrder().getName(), !technologist.getImage().isEmpty(), technologist.getReason().getName(), technologist.getComment());
+        tgService.sendMessageToGroup(
+                technologist.getRequestNumber(),
+                technologist.getEmployee().getName(),
+                technologist.getCustomerOrder().getName(),
+                !technologist.getImage().isEmpty(),
+                technologist.getReason().getName(),
+                technologist.getComment());
+
         model.addAttribute("requestNumber", technologist.getRequestNumber());
 
         return "success";

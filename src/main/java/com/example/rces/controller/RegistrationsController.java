@@ -4,9 +4,11 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
 import com.example.rces.services.UniversalRepository;
+import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,7 @@ public class RegistrationsController {
     }
 
     @PostMapping("/registration")
+    @Transactional
     public String addUser(@RequestParam String username, String mlmNode, String role, Employee employee, Map<String, Object> model) {
         Employee userFromDb = universalRepository.findByName(Employee.class, employee.getName());
 
@@ -45,7 +48,7 @@ public class RegistrationsController {
         employee.setActive(true);
         employee.setRole(Collections.singleton(Role.valueOf(role)));
         employee.setMlmNode(MlmNode.valueOf(mlmNode));
-        universalRepository.save(Employee.class);
+        universalRepository.save(employee);
 
         return "redirect:/admin";
     }
