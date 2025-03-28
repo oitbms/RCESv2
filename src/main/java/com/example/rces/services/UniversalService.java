@@ -49,7 +49,7 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String comment, MultipartFile[] additionalFiles) {
+    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String itemName, String comment, MultipartFile[] additionalFiles) {
         try {
             T entity = entityClass.getDeclaredConstructor().newInstance();
 
@@ -57,6 +57,9 @@ public class UniversalService {
             entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
             if (reason!=null) {
                 entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
+            }
+            if (itemName!=null) {
+                entity.getClass().getDeclaredMethod("setItemName", String.class).invoke(entity, itemName);
             }
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
             if (additionalFiles != null) {

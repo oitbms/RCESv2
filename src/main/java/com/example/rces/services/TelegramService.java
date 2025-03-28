@@ -37,6 +37,8 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
+
+
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
