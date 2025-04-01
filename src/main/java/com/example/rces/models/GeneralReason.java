@@ -107,21 +107,50 @@ public class GeneralReason {
         }
 
         @JsonCreator
-        public static Otk fromField(Object field) {
-            if (field == null) {
+        public static Otk fromField(JsonNode node) {
+            if (node == null) {
                 return null;
             }
-            for (Otk otk : Otk.values()) {
-                if (otk.getName().equals(field)) {
-                    return otk;
+
+            // Если node — это объект, извлекаем id или name
+            if (node.isObject()) {
+                Long id = node.has("id") ? node.get("id").asLong() : null;
+                String name = node.has("name") ? node.get("name").asText() : null;
+
+                if (id != null) {
+                    for (Otk otk : Otk.values()) {
+                        if (otk.getId().equals(id)) {
+                            return otk;
+                        }
+                    }
+                }
+
+                if (name != null) {
+                    for (Otk otk : Otk.values()) {
+                        if (otk.getName().equals(name)) {
+                            return otk;
+                        }
+                    }
                 }
             }
-            for (Otk otk : Otk.values()) {
-                if (otk.getId().equals(field)) {
-                    return otk;
+            if (node.isNumber()) {
+                Long id = node.asLong();
+                for (Otk otk : Otk.values()) {
+                    if (otk.getId().equals(id)) {
+                        return otk;
+                    }
                 }
             }
-            throw new IllegalArgumentException("Неизвестная причина: " + field);
+            if (node.isTextual()) {
+                String name = node.asText();
+                for (Otk otk : Otk.values()) {
+                    if (otk.getName().equals(name)) {
+                        return otk;
+                    }
+                }
+            }
+
+            throw new IllegalArgumentException("Неизвестная причина: " + node);
         }
     }
 

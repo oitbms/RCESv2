@@ -37,7 +37,7 @@
         <div class="form-group">
             <label>Заказ клиента</label>
             <div class="form-group-flex">
-                <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
+                <input type="text" id="customerOrderName" name="customerOrder" placeholder="Номер заказа"
                        class="form-input" data-required="true">
                 <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                 <button type="button" class="openModal btn-modern"

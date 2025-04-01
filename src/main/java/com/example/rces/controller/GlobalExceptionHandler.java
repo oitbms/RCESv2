@@ -1,5 +1,6 @@
 package com.example.rces.controller;
 
+import jakarta.persistence.NoResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,5 +16,9 @@ public class GlobalExceptionHandler {
     public String handleNoResourceFoundException(NoResourceFoundException ex, Model model) {
         return "home";
     }
+
+    @ExceptionHandler(NoResultException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNoResultException(NoResultException ex, Model model) {return "home";}
 
 }

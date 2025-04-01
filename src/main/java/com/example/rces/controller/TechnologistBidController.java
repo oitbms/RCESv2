@@ -5,12 +5,16 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.GeneralReason;
 import com.example.rces.models.Technologist;
+import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +36,16 @@ public class TechnologistBidController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
     @GetMapping("/create")
     public String getCreateBidForm(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         model.addAttribute("createForm", true);
+        model.addAttribute("employeeName", userDetails.getUsername());
         return "technologistbid";
     }
 
@@ -42,14 +53,16 @@ public class TechnologistBidController {
     @PostMapping("/create")
     public String createRequestFromTechnologist(@RequestParam("employeeJson") String employeeJson,
                                                 @RequestParam("customerOrderJson") String customerOrderJson,
-                                                @RequestParam(value = "reasonsJson") String reasonsJson,
+                                                @RequestParam("reasonsJson") String reasonsJson,
                                                 @RequestParam(value = "comment", required = false) String comment,
                                                 @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
                                                 Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
 
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
+
         CustomerOrder customerOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
+
         GeneralReason.Technologist reason = objectMapper.readValue(reasonsJson, GeneralReason.Technologist.class);
 
         Technologist technologist = service.createRequestEntity(Technologist.class, employee, customerOrder, reason, null,comment, additionalFiles);
@@ -60,7 +73,8 @@ public class TechnologistBidController {
                 technologist.getCustomerOrder().getName(),
                 !technologist.getImage().isEmpty(),
                 technologist.getReason().getName(),
-                technologist.getComment());
+                technologist.getComment(),
+                "technologist");
 
         model.addAttribute("requestNumber", technologist.getRequestNumber());
 

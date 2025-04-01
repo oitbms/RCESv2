@@ -41,10 +41,6 @@ public class UniversalService {
         return repository.findAll(entityClass);
     }
 
-    public <T> List<T> findByField(Class<T> entityClass, String fieldName, Object value) {
-        return repository.findByField(entityClass, fieldName, value);
-    }
-
     public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
@@ -55,10 +51,10 @@ public class UniversalService {
 
             entity.getClass().getDeclaredMethod("setEmployee", Employee.class).invoke(entity, employee);
             entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
-            if (reason!=null) {
+            if (reason != null) {
                 entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
             }
-            if (itemName!=null) {
+            if (itemName != null) {
                 entity.getClass().getDeclaredMethod("setItemName", String.class).invoke(entity, itemName);
             }
             entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
@@ -77,10 +73,20 @@ public class UniversalService {
     }
 
     public CustomerOrder getOrCreateCustomerOrder(String name) {
-        return repository.findByName(CustomerOrder.class, name);
+        CustomerOrder customerOrder = repository.findByName(CustomerOrder.class, name);
+        if (customerOrder != null) {
+            return customerOrder;
+        } else {
+            customerOrder = new CustomerOrder();
+            customerOrder.setName(name);
+            return repository.save(customerOrder);
+        }
     }
 
-    public List<Employee> getEmployeesByRole(String role){
+    public List<Employee> getEmployeesByRole(String role) {
         return repository.findByRole(Employee.class, role);
     }
+
+    public Employee findEmployeeByChatId(Long chatId) {return repository.findEmployeeByChatId(chatId);}
+
 }

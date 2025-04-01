@@ -54,10 +54,11 @@ document.querySelectorAll('.openModal').forEach(button => {
 
         modalWindow.querySelectorAll('.selectable').forEach(li => {
             li.addEventListener('click', () => {
+                const update = document.getElementById(inputId).value!==li.textContent.trim();
                 const entity = JSON.parse(decodeURIComponent(li.dataset.entity));
                 document.getElementById(inputId).value = li.textContent.trim();
                 document.getElementById(hiddenEntity).value = JSON.stringify(entity);
-                if (viewForm) saveData();
+                if (viewForm && update) saveData();
                 closeModal(modalId);
             });
         });

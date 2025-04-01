@@ -4,7 +4,6 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
 import com.example.rces.services.UniversalRepository;
-import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,7 +35,7 @@ public class RegistrationsController {
 
     @PostMapping("/registration")
     @Transactional
-    public String addUser(@RequestParam String username, String mlmNode, String role, Employee employee, Map<String, Object> model) {
+    public String addUser(@RequestParam String username, String mlmNode, Role role, Employee employee, Map<String, Object> model) {
         Employee userFromDb = universalRepository.findByName(Employee.class, employee.getName());
 
         if (userFromDb != null) {
@@ -46,7 +44,7 @@ public class RegistrationsController {
         }
         employee.setName(username);
         employee.setActive(true);
-        employee.setRole(Collections.singleton(Role.valueOf(role)));
+        employee.setRole(role.getName());
         employee.setMlmNode(MlmNode.valueOf(mlmNode));
         universalRepository.save(employee);
 

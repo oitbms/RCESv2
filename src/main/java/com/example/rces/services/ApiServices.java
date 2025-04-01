@@ -3,8 +3,8 @@ package com.example.rces.services;
 import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
 import com.example.rces.models.Images;
+import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -67,7 +67,6 @@ public class ApiServices {
             Object entity = entityManager.find(entityClass, entityId);
             Object oldEntity = deepCopy(entity, entityClass);
 
-            // Получаем все поля, включая унаследованные
             List<Field> fields = getAllDeclaredFields(entityClass);
 
             updatedFields.forEach((key, value) -> {
@@ -115,23 +114,26 @@ public class ApiServices {
                     }
                 }
             });
-            if (sendMessage) {
+            if (sendMessage || entity.getClass().getDeclaredMethod("getStatus").invoke(entity).equals(Status.Closed)) {
                 if (entity.getClass().getDeclaredMethod("getStatus").invoke(entity)
                         !=
                         entity.getClass().getDeclaredMethod("getStatus").invoke(oldEntity)) {
                     Class<?> clazz = entity.getClass();
                     Employee employee = (Employee) Objects.requireNonNull(getGetterMethod(clazz, entity, "getEmployee"));
+                    employee = entityManager.find(Employee.class, employee.getId());
                     CustomerOrder customerOrder = (CustomerOrder) Objects.requireNonNull(getGetterMethod(clazz, entity, "getCustomerOrder"));
-                    Enum<?> reason = (GeneralReason.Technologist) getGetterMethod(clazz, entity, "getReason");
+                    Enum<?> reason = (Enum<?>) getGetterMethod(clazz, entity, "getReason");
                     Integer requestNumber = (Integer) getGetterMethod(clazz, entity, "getRequestNumber");
-                    String employeeName = (String) employee.getClass().getDeclaredMethod("getName").invoke(employee);
-                    String customerOrderName = (String) customerOrder.getClass().getDeclaredMethod("getName").invoke(customerOrder);
                     String comment = (String) getGetterMethod(clazz, entity, "getComment");
                     String reasonName = (String) Objects.requireNonNull(reason).getClass().getDeclaredMethod("getName").invoke(reason);
                     boolean hasImage = ((List<?>) Objects.requireNonNull(
-                            getGetterMethod(clazz, entity, "getImage")
-                    )).isEmpty();
-                    tgService.sendUpdateMessageToGroup(requestNumber, employeeName, customerOrderName, !hasImage, comment, reasonName);
+                            getGetterMethod(clazz, entity, "getImage")))
+                            .isEmpty();
+                    if (sendMessage) {
+                        tgService.sendUpdateMessageToGroup(requestNumber, employee.getName(), customerOrder.getName(), !hasImage, comment, reasonName, entityClassName.toString());
+                    } else {
+                     tgService.closeRequestMessage(Long.valueOf(employee.getChatId()));
+                    }
                 }
             }
         } catch (Exception e) {

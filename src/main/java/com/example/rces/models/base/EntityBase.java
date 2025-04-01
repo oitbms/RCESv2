@@ -1,16 +1,10 @@
 //Класс с общими полями для всех сущностей(кроме Employee т.к там токен доступа или нет)
 package com.example.rces.models.base;
 
-import com.example.rces.models.Images;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @MappedSuperclass
@@ -39,16 +33,17 @@ public abstract class EntityBase {
         public String getName() {
             return name;
         }
-        public static Appraisal fromString(String field) {
-            if (field==null) {
+
+        public static Appraisal fromId(Integer score) {
+            if (score == null) {
                 return null;
             }
             for (Appraisal appraisal : Appraisal.values()) {
-                if (appraisal.getId() == (Long.parseLong(field))) {
+                if (appraisal.getId() == (score)) {
                     return appraisal;
                 }
             }
-            throw new IllegalArgumentException("Неизвестная оценка: " + field);
+            throw new IllegalArgumentException("Неизвестная оценка: " + score);
         }
     }
 

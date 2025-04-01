@@ -9,6 +9,7 @@ import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/constructorbid")
 public class ConstructorBidController {
 
@@ -48,30 +50,29 @@ public class ConstructorBidController {
     }
 
     @PostMapping("/create")
-    public String createRequestFromTechnologist(
-            @RequestParam("employeeJson") String employeeJson,
-            @RequestParam("customerOrderJson") String customerOrderJson,
-            @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
-            Model model) throws JsonProcessingException {
-
+    public String createRequestFromConstructor(@RequestParam("employeeJson") String employeeJson,
+                                               @RequestParam("customerOrderJson") String customerOrderJson,
+                                               @RequestParam(value = "comment", required = false) String comment,
+                                               @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
+                                               Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
 
-        CustomerOrder customerOrder = service.getOrCreateCustomerOrder(customerOrderJson);
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
-        Constructor constructor = service.createRequestEntity(Constructor.class, employee, customerOrder, null,null, comment, additionalFiles);
-        String reasonName = constructor.getReason() != null ? constructor.getReason().getName() : "Нет причины";
+        CustomerOrder customerOrder = service.getOrCreateCustomerOrder(customerOrderJson);
+
+        Constructor constructor = service.createRequestEntity(Constructor.class, employee, customerOrder, null, null, comment, additionalFiles);
+
         telegramService.sendMessageToGroup(
                 constructor.getRequestNumber(),
                 constructor.getEmployee().getName(),
                 constructor.getCustomerOrder().getName(),
                 !constructor.getImage().isEmpty(),
-                reasonName,
-                constructor.getComment()
-        );
+                constructor.getReason() != null ? constructor.getReason().getName() : "Нет причины",
+                constructor.getComment(),
+                "constructor");
 
         model.addAttribute("requestNumber", constructor.getRequestNumber());
-        return "successconstructor";
+        return "success";
     }
 
     @GetMapping("/view/{requestNumber}")

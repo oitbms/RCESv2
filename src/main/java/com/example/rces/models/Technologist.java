@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "technologistbid")
 public class Technologist extends EntityBase {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Employee employee;
 
     @Column(name = "reason")

@@ -2,12 +2,14 @@
 package com.example.rces.models;
 
 import com.example.rces.models.base.EntityBase;
+import com.example.rces.models.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -15,8 +17,54 @@ import java.util.List;
 @Table(name = "otkbid")
 public class Otk extends EntityBase {
 
-    @OneToMany(mappedBy = "otk", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Images> image;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Employee employee;
+
+    @Column(name = "reason")
+    @Enumerated(EnumType.STRING)
+    private GeneralReason.Otk reason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CustomerOrder customerOrder;
+
+    @Column(name = "status_id")
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @OneToMany(mappedBy = "otk", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Images> image = new ArrayList<>();
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public GeneralReason.Otk getReason() {
+        return reason;
+    }
+
+    public void setReason(GeneralReason.Otk reason) {
+        this.reason = reason;
+    }
+
+    public CustomerOrder getCustomerOrder() {
+        return customerOrder;
+    }
+
+    public void setCustomerOrder(CustomerOrder customerOrder) {
+        this.customerOrder = customerOrder;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public List<Images> getImage() {
         return image;

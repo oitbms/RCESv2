@@ -1,67 +1,77 @@
-//сущность сотрудники
 package com.example.rces.models;
 
 import com.example.rces.models.enums.MlmNode;
-import com.example.rces.models.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Entity
 @Table(name = "employees")
 public class Employee implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private MlmNode mlmNode;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<Role> role;
+    @Column(nullable = false)
+    private String role;
 
-    private boolean isActive;
+    @Column(nullable = false)
+    private boolean isActive = true;
+
+    @Column(name = "chat_id")
+    private String chatId;
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.role.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
-                .collect(Collectors.toList());
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
+    @JsonIgnore
+    public boolean isEnabled() {
+        return isActive;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return name;
     }
@@ -94,11 +104,11 @@ public class Employee implements UserDetails {
         this.mlmNode = mlmNode;
     }
 
-    public Set<Role> getRole() {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(Set<Role> role) {
+    public void setRole(String role) {
         this.role = role;
     }
 
@@ -108,5 +118,13 @@ public class Employee implements UserDetails {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public String getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(String chatId) {
+        this.chatId = chatId;
     }
 }

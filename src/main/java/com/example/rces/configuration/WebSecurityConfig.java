@@ -25,12 +25,14 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
-                                .requestMatchers("/", "/login").permitAll()
-                                .requestMatchers("/home").permitAll()
-                                .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
-                                .requestMatchers("/technologistmain", "/technologistbid/view/", "/technologistbid/create").hasAuthority("TECHNOLOG")
-                                .requestMatchers("/constructormain","/constructorbid/create","constructorbid/view/").hasAuthority("CONSTRUCTOR")
-                                .anyRequest().authenticated()
+                        .requestMatchers("/", "/login").permitAll()
+                        .requestMatchers("/home").permitAll()
+                        .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
+                        .requestMatchers("/technologistmain", "/technologistbid/view/**", "/technologistbid/create")
+                                .hasAnyAuthority("TECHNOLOGIST", "ADMIN")
+                        .requestMatchers("/constructormain", "/constructorbid/create", "/constructorbid/view/**")
+                                .hasAnyAuthority("CONSTRUCTOR", "ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
