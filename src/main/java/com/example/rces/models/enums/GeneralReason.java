@@ -1,5 +1,5 @@
 //Класс с причинами вызовов
-package com.example.rces.models;
+package com.example.rces.models.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;

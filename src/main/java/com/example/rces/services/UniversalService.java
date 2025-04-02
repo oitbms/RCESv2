@@ -1,6 +1,8 @@
 package com.example.rces.services;
 
 import com.example.rces.models.*;
+import com.example.rces.models.enums.GeneralReason;
+import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +48,7 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public Requests createRequest(String type, Employee employee, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
+    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
         Requests request = new Requests();
 
         request.setTypeRequest(Requests.type.valueOf(type));
@@ -60,6 +62,7 @@ public class UniversalService {
             request.setImages(images);
         }
         request.setReason(reason);
+        request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);
 

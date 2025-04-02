@@ -2,50 +2,54 @@
 package com.example.rces.models.enums;
 
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public enum MlmNode {
 
-    workShop1(1L, "Цех №1"),
-    workShop2(2L, "Цех №3"),
-    workShop3(3L, "Цех №4"),
-    workShop4(4L, "Цех №5"),
-    workShop5(5L, "Цех №6"),
-    workShop6(6L, "Цех №7"),
-    workShop7(6L, "Цех №8");
+    workShop1("Цех №1"),
+    workShop2( "Цех №3"),
+    workShop3( "Цех №4"),
+    workShop4( "Цех №5"),
+    workShop5( "Цех №6"),
+    workShop6( "Цех №7"),
+    workShop7( "Цех №8");
 
-    private final Long id;
     private final String name;
 
-    MlmNode(Long id, String name) {
-        this.id = id;
+    MlmNode(String name) {
         this.name = name;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public static MlmNode fromString(Object field) {
-        if (field == null) {
+    @JsonCreator
+    public static MlmNode fromField(JsonNode node) {
+        if (node == null) {
             return null;
         }
-        String fieldAsString = field.toString();
-        for (MlmNode mlmNode : MlmNode.values()) {
-            if (mlmNode.getName().equals(fieldAsString)) {
-                return mlmNode;
-            }
-        }
-        if (field instanceof Number) {
+
+        if (node.has("name") && node.get("name").isTextual()) {
+            String name = node.get("name").asText();
             for (MlmNode mlmNode : MlmNode.values()) {
-                if (mlmNode.getId().equals(field)) {
+                if (mlmNode.getName().equals(name)) {
+                    return mlmNode;
+                }
+            }
+        }else {
+            for (MlmNode mlmNode : MlmNode.values()) {
+                if (mlmNode.name().equals(node.textValue())) {
                     return mlmNode;
                 }
             }
         }
-        throw new IllegalArgumentException("Неизвестный узел: " + field);
+
+        throw new IllegalArgumentException("Неизвестный цех: " + node);
     }
 
 }

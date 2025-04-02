@@ -33,6 +33,23 @@
             </div>
         </div>
 
+        <!-- Цех -->
+        <div class="form-group">
+            <label>Цех</label>
+            <div class="form-group-flex <#if !otk??>hidden</#if>">
+                <input type="text" id="mlmNodeName" placeholder="Цех" readonly
+                       class="form-input" <#if !otk??>data-required="true"</#if>>
+                <input type="hidden" id="mlmNodeJson" name="mlmNodeJson">
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="mlmNode"
+                        data-input-id="mlmNodeName"
+                        data-hidden-entity="mlmNodeJson"
+                        data-modal-id="mlmNodeModal">
+                    Выбрать
+                </button>
+            </div>
+        </div>
+
         <!-- Заказ клиента -->
         <div class="form-group">
             <label>Заказ клиента</label>
@@ -55,7 +72,7 @@
             <label>Причина</label>
             <div class="form-group-flex">
                 <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input"
-                       <#if !technologist??>data-required="true"</#if>>
+                       <#if !constructor??>data-required="true"</#if>>
                 <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
@@ -178,6 +195,14 @@
         <button class="x" onclick="closeModal('employeesModal')">✕</button>
         <h2>Список сотрудников</h2>
         <ul id="employeesList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="mlmNodeModal" class="modal">
+    <div class="modal-content">
+        <button class="x" onclick="closeModal('mlmNodeModal')">✕</button>
+        <h2>Список сотрудников</h2>
+        <ul id="mlmNodeList" class="modal-list"></ul>
     </div>
 </div>
 

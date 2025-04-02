@@ -2,7 +2,7 @@ package com.example.rces.services;
 
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.models.base.EntityBase;
+import com.example.rces.models.enums.Appraisal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,9 +30,9 @@ public class TelegramService extends TelegramLongPollingBot {
     private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
     private String createdOrUpdatedMessage(Requests request, Boolean isCreate, String bidUrl) {
-        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                request.getRequestNumber(), request.getEmployee().getName(), request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber())
-                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s ", request.getRequestNumber(), request.getEmployee(), request.getCustomerOrder(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber());
+        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber())
+                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s ", request.getRequestNumber(), request.getEmployee(), request.getMlmNode().getName() ,request.getCustomerOrder(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber());
     }
 
     public void sendMessageToGroup(Requests request, String bidUrl) {
@@ -70,7 +70,7 @@ public class TelegramService extends TelegramLongPollingBot {
             Employee employee = service.findEmployeeByChatId(update.getMessage().getChatId());
             String message = update.getMessage().getText();
             if (message.matches("[1-5]")) {
-                EntityBase.Appraisal score = EntityBase.Appraisal.fromId(Integer.parseInt(message));
+                Appraisal score = Appraisal.fromId(Integer.parseInt(message));
                 Requests request = service.findAllByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId()).get(0);
                 request.setScore(score);
                 service.save(request);

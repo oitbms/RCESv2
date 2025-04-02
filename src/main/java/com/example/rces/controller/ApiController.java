@@ -1,11 +1,13 @@
 package com.example.rces.controller;
 
 import com.example.rces.controller.payload.ImagesPayload;
+import com.example.rces.controller.payload.MlmNodePayload;
 import com.example.rces.controller.payload.ReasonPayload;
 import com.example.rces.controller.payload.StatusPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.GeneralReason;
+import com.example.rces.models.enums.GeneralReason;
+import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,13 @@ public class ApiController {
     public List<ReasonPayload> getReasons() {
         return Arrays.stream(GeneralReason.values())
                 .map(reason -> new ReasonPayload(reason.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/mlmNode")
+    public List<MlmNodePayload> getMlmNode() {
+        return Arrays.stream(MlmNode.values())
+                .map(mlmNode -> new MlmNodePayload(mlmNode.getName()))
                 .collect(Collectors.toList());
     }
 

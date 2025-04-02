@@ -1,6 +1,8 @@
 package com.example.rces.models;
 
-import com.example.rces.models.base.EntityBase;
+import com.example.rces.models.enums.Appraisal;
+import com.example.rces.models.enums.GeneralReason;
+import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -54,6 +56,10 @@ public class Requests implements Cloneable {
     @Enumerated(EnumType.STRING)
     private GeneralReason reason;
 
+    @Column(name = "mlm_node")
+    @Enumerated(EnumType.STRING)
+    private MlmNode mlmNode;
+
     @Column(name = "status_id")
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -86,7 +92,7 @@ public class Requests implements Cloneable {
 
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
-    private EntityBase.Appraisal score;
+    private Appraisal score;
 
     public UUID getId() {
         return id;
@@ -160,6 +166,14 @@ public class Requests implements Cloneable {
         this.reason = reason;
     }
 
+    public MlmNode getMlmNode() {
+        return mlmNode;
+    }
+
+    public void setMlmNode(MlmNode mlmNode) {
+        this.mlmNode = mlmNode;
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -224,11 +238,11 @@ public class Requests implements Cloneable {
         this.messageId = messageId;
     }
 
-    public EntityBase.Appraisal getScore() {
+    public Appraisal getScore() {
         return score;
     }
 
-    public void setScore(EntityBase.Appraisal score) {
+    public void setScore(Appraisal score) {
         this.score = score;
     }
 
