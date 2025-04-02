@@ -33,7 +33,7 @@ public class Employee implements UserDetails {
     private boolean isActive = true;
 
     @Column(name = "chat_id")
-    private String chatId;
+    private Long chatId;
 
     @Override
     @JsonIgnore
@@ -120,11 +120,11 @@ public class Employee implements UserDetails {
         isActive = active;
     }
 
-    public String getChatId() {
+    public Long getChatId() {
         return chatId;
     }
 
-    public void setChatId(String chatId) {
+    public void setChatId(Long chatId) {
         this.chatId = chatId;
     }
 }

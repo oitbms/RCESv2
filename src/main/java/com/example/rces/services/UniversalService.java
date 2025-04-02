@@ -1,8 +1,6 @@
 package com.example.rces.services;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.Images;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
@@ -25,8 +22,8 @@ public class UniversalService {
         this.repository = repository;
     }
 
-    public <T> T findById(Class<T> entityClass, Object id) {
-        return repository.findById(entityClass, id);
+    public <T> T findById (Class<T> entity, Object id) {
+        return repository.findById(entity, id);
     }
 
     public <T> T save(T entity) {
@@ -41,52 +38,40 @@ public class UniversalService {
         return repository.findAll(entityClass);
     }
 
+    public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
+        return repository.findByField(entityClass, fieldName, fieldValue);
+    }
+
     public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public <T> T createRequestEntity(Class<T> entityClass, Employee employee, CustomerOrder customerOrder, Enum<?> reason, String itemName, String comment, MultipartFile[] additionalFiles) {
-        try {
-            T entity = entityClass.getDeclaredConstructor().newInstance();
+    public Requests createRequest(String type, Employee employee, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
+        Requests request = new Requests();
 
-            entity.getClass().getDeclaredMethod("setEmployee", Employee.class).invoke(entity, employee);
-            entity.getClass().getDeclaredMethod("setCustomerOrder", CustomerOrder.class).invoke(entity, customerOrder);
-            if (reason != null) {
-                entity.getClass().getDeclaredMethod("setReason", reason.getClass()).invoke(entity, reason);
-            }
-            if (itemName != null) {
-                entity.getClass().getDeclaredMethod("setItemName", String.class).invoke(entity, itemName);
-            }
-            entity.getClass().getDeclaredMethod("setStatus", Status.class).invoke(entity, Status.New);
-            if (additionalFiles != null) {
-                List<Images> images = saveFiles(additionalFiles, entity);
-                entity.getClass().getDeclaredMethod("setImage", List.class).invoke(entity, images);
-            }
-            entity.getClass().getSuperclass().getDeclaredMethod("setComment", String.class).invoke(entity, !Objects.equals(comment, "") ? comment.substring(0, comment.length() - 1) : "");
-            entity.getClass().getSuperclass().getDeclaredMethod("setRequestNumber", Integer.class).invoke(entity, repository.generateRequestNumber(entity.getClass()));
-            entity.getClass().getSuperclass().getDeclaredMethod("setCreateDate", LocalDateTime.class).invoke(entity, LocalDateTime.now());
-
-            return repository.save(entity);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при создании заявки", e);
+        request.setTypeRequest(Requests.type.valueOf(type));
+        request.setCreatedBy(createdEmployee);
+        request.setCreateDate(LocalDateTime.now());
+        request.setRequestNumber(repository.generateRequestNumber());
+        request.setEmployee(employee);
+        request.setCustomerOrder(customerOrder);
+        if (additionalFiles != null) {
+            List<Images> images = saveFiles(additionalFiles, request);
+            request.setImages(images);
         }
+        request.setReason(reason);
+        request.setComment(comment != null ? comment : "");
+        request.setStatus(Status.New);
+
+        return repository.save(request);
     }
 
-    public CustomerOrder getOrCreateCustomerOrder(String name) {
-        CustomerOrder customerOrder = repository.findByName(CustomerOrder.class, name);
-        if (customerOrder != null) {
-            return customerOrder;
-        } else {
-            customerOrder = new CustomerOrder();
-            customerOrder.setName(name);
-            return repository.save(customerOrder);
-        }
+    public CustomerOrder createCustomerOrder(Employee employee, String customerOrderName) {
+        return repository.createCustomerOrder(employee, customerOrderName);
     }
 
-    public List<Employee> getEmployeesByRole(String role) {
-        return repository.findByRole(Employee.class, role);
+    public Employee findEmployeeByChatId(Long chatId) {
+        return repository.findEmployeeByChatId(chatId);
     }
-
-    public Employee findEmployeeByChatId(Long chatId) {return repository.findEmployeeByChatId(chatId);}
 
 }

@@ -131,7 +131,7 @@
             успешно обновлена.
         </#if>
         <br>
-        <a href="/technologistbid/view/${requestNumber}">Редактировать</a>
+        <a href="/view/${requestNumber}">Редактировать</a>
     </div>
 </div>
 </body>

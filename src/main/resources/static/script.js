@@ -1,24 +1,28 @@
-const entityName = document.getElementById('entityName').innerText;  // Название сущности
 const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
 
 // Функция для получения данных по API
 async function fetchData(endpoint, param) {
     const url = new URL(/api/ + endpoint, window.location.origin);
-    url.searchParams.append('param', param != null ? param : entityName);
+    url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
     return await response.json();
 }
 
 // Обновление полей
-async function saveData(images) {
+async function saveData(images, customerOrder) {
     let formData = new FormData(document.getElementById('viewRequestForm'));
     let data = Object.fromEntries(formData.entries());
-    data["image"] = images; // Обновляем список фото
+    if (images!=null) {
+        data["image"] = images;
+    }
+    if (customerOrder!=null) {
+        data["customerOrder"] = customerOrder;
+    }
 
     const url = new URL('/api/update', window.location.origin);
-    url.searchParams.append('entityName', entityName);
-    url.searchParams.append("entityId", entityId.value);
+    url.searchParams.append('bidType', bidType);
+    url.searchParams.append("id", entityId.value);
     url.searchParams.append("sendMessage", data.sendToTelegram);
     delete data.sendToTelegram;
 
@@ -26,7 +30,7 @@ async function saveData(images) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Class-Name': entityName,
+            'X-Class-Name': bidType,
             'X-Entity-Id': entityId.value
         },
         body: JSON.stringify(data),
@@ -89,6 +93,21 @@ document.getElementById('comment').addEventListener('input', function () {
     clearTimeout(timeout); // Очистка предыдущего таймера
     timeout = setTimeout(function () {
         saveData();
+    }, 3000);
+});
+// Обработка ввода описания решения с задержкой
+document.getElementById('description').addEventListener('input', function () {
+    clearTimeout(timeout); // Очистка предыдущего таймера
+    timeout = setTimeout(function () {
+        saveData();
+    }, 3000);
+});
+// Обработка ввода Заказа клиента с задержкой
+document.getElementById('customerOrderString').addEventListener('input', function () {
+    clearTimeout(timeout); // Очистка предыдущего таймера
+    const customerOrderString = this.value;
+    timeout = setTimeout(function () {
+        saveData(null, customerOrderString);
     }, 3000);
 });
 

@@ -1,34 +1,48 @@
 //сущность заказы клиентов
 package com.example.rces.models;
 
-import com.example.rces.models.base.EntityBase;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = true)
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "customerorder")
-public class CustomerOrder extends EntityBase {
+public class CustomerOrder {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
+
+    @Column(
+            name = "created_at",
+            updatable = false
+    )
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createDate;
 
     @Column(name = "str_code")
     private String name; // Номер заказа
 
-    @Column(name = "request_number", insertable = false, updatable = false)
-    private Integer requestNumber;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Employee employee;
 
-    @Column(name = "score", insertable = false, updatable = false)
-    @Enumerated(EnumType.STRING)
-    private Appraisal score;
-
-    @Column(name = "name")
-    private String customer;
-
-    public String getCustomer() {
-        return customer;
+    public UUID getId() {
+        return id;
     }
 
-    public void setCustomer(String customer) {
-        this.customer = customer;
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(LocalDateTime createDate) {
+        this.createDate = createDate;
     }
 
     public String getName() {
@@ -39,23 +53,11 @@ public class CustomerOrder extends EntityBase {
         this.name = name;
     }
 
-    @Override
-    public Integer getRequestNumber() {
-        return requestNumber;
+    public Employee getEmployee() {
+        return employee;
     }
 
-    @Override
-    public void setRequestNumber(Integer requestNumber) {
-        this.requestNumber = requestNumber;
-    }
-
-    @Override
-    public Appraisal getScore() {
-        return score;
-    }
-
-    @Override
-    public void setScore(Appraisal score) {
-        this.score = score;
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
     }
 }

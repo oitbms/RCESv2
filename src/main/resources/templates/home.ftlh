@@ -109,15 +109,15 @@
 </head>
 <body>
 <div class="menu">
-    <div class="menu-item" data-href="/technologistbid/create">
+    <div class="menu-item" data-href="/create?type=technologist">
         <div class="fill-effect"></div>
         <a class="menu-link">Создать заявку на вызов технолога</a>
     </div>
-    <div class="menu-item" data-href="/constructormain">
+    <div class="menu-item" data-href="/create?type=constructor">
         <div class="fill-effect"></div>
         <a class="menu-link">Создать заявку на вызов конструктора</a>
     </div>
-    <div class="menu-item" data-href="/otkbid/create">
+    <div class="menu-item" data-href="/create?type=otk">
         <div class="fill-effect"></div>
         <a class="menu-link">Создать заявку на вызов ОТК</a>
     </div>

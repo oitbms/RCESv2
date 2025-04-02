@@ -32,6 +32,7 @@ public class WebSecurityConfig {
                                 .hasAnyAuthority("TECHNOLOGIST", "ADMIN")
                         .requestMatchers("/constructormain", "/constructorbid/create", "/constructorbid/view/**")
                                 .hasAnyAuthority("CONSTRUCTOR", "ADMIN")
+                        .requestMatchers("/create").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

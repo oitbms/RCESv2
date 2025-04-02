@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заявка на вызов технолога</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/stylesBid.css">
 </head>
 <body>
-
 <#if createForm!false>
-    <!-- Форма создания заявки -->
-    <form id="createRequestForm" action="/technologistbid/create" method="POST" class="modern-form"
+    <form id="createRequestForm" action="/create" method="POST" class="modern-form"
           enctype="multipart/form-data">
         <h2>Создание заявки</h2>
+
+        <input type="hidden" name="type" value="${type}">
 
         <!-- Сотрудник -->
         <div class="form-group">
@@ -35,12 +37,12 @@
         <div class="form-group">
             <label>Заказ клиента</label>
             <div class="form-group-flex">
-                <input type="text" id="customerOrderName" name="customerOrder" placeholder="Номер заказа"
+                <input type="text" id="customerOrderString" name="customerOrderString" placeholder="Номер заказа"
                        class="form-input" data-required="true">
                 <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="customerOrders"
-                        data-input-id="customerOrderName"
+                        data-input-id="customerOrderString"
                         data-hidden-entity="customerOrderJson"
                         data-modal-id="customerOrdersModal">
                     Выбрать
@@ -49,10 +51,11 @@
         </div>
 
         <!-- Причина -->
-        <div class="form-group">
+        <div class="form-group <#if !technologist??>hidden</#if>">
             <label>Причина</label>
             <div class="form-group-flex">
-                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input" data-required="true">
+                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input"
+                       <#if !technologist??>data-required="true"</#if>>
                 <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
@@ -81,7 +84,6 @@
         <button type="submit" class="btn-modern submit-btn">Создать заявку</button>
     </form>
 </#if>
-
 <#if viewForm!false>
     <!-- Форма просмотра заявки -->
     <form id="viewRequestForm" class="modern-form">
@@ -98,9 +100,8 @@
 
         <div class="form-group form-group-flex">
             <label>Заказ клиента:</label>
-            <input type="text" id="customerOrderName"
+            <input type="text" id="customerOrderString"
                    value="${bid.customerOrder.name?trim}"
-                   readonly
                    class="form-input">
             <#assign customerOrderJson = '{"id":"${bid.customerOrder.id?string}", "name":"${bid.customerOrder.name?js_string}"}'>
             <input type="hidden" id="customerOrderJson"
@@ -108,7 +109,7 @@
                    name="customerOrder">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="customerOrders"
-                    data-input-id="customerOrderName"
+                    data-input-id="customerOrderString"
                     data-hidden-entity="customerOrderJson"
                     data-modal-id="customerOrdersModal">
                 Изменить
@@ -132,14 +133,6 @@
                     data-modal-id="employeesModal">
                 Изменить
             </button>
-        </div>
-
-        <div class="form-group form-group-flex">
-            <label>Описание решения:</label>
-            <input type="text" id="description"
-                   value="${bid.description!''}"
-                   class="form-input"
-                   name="description">
         </div>
 
         <div class="form-group form-group-flex">
@@ -176,7 +169,6 @@
                 Изменить и уведомить
             </button>
         </div>
-
     </form>
 </#if>
 
@@ -234,7 +226,8 @@
 
 <!-- Уведомления -->
 <div id="notification-container"></div>
-<script> const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
+<script>const bidType = "${type}";
+    const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
 <script src="/script.js"></script>
 </body>
 </html>

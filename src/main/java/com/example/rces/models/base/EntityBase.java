@@ -70,6 +70,8 @@ public abstract class EntityBase {
     private Appraisal score;
 
 
+
+
     public UUID getId() {
         return id;
     }

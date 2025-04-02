@@ -36,8 +36,8 @@ public class ApiController {
 
     @GetMapping("/reasons")
     public List<ReasonPayload> getReasons() {
-        return Arrays.stream(GeneralReason.Technologist.values())
-                .map(technologist -> new ReasonPayload(technologist.getId(), technologist.getName()))
+        return Arrays.stream(GeneralReason.values())
+                .map(reason -> new ReasonPayload(reason.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -54,12 +54,12 @@ public class ApiController {
     }
 
     @PostMapping("/update")
-    public void updateData(@RequestParam Object entityName,// Имя класса bid
-                           @RequestParam Object entityId, // id класса bid
+    public void updateData(@RequestParam String bidType,// Имя класса bid
+                           @RequestParam UUID id, // id класса bid
                            @RequestParam Boolean sendMessage, // отправлять сообщение в ТГ
                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
-        service.update(entityName, entityId, sendMessage, updatedFields);
+        service.update(bidType, id, sendMessage, updatedFields);
     }
 
 }
