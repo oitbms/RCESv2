@@ -1,5 +1,5 @@
 package com.example.rces.models.enums;
 
-public enum Constructor {
+public enum ExtConstructor {
     ИВАНОВ,ПЕТРОВ,СИДОРОВ
 }

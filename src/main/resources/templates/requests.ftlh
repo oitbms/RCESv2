@@ -50,6 +50,23 @@
             </div>
         </div>
 
+        <!--ТМЦ-->
+        <div class="form-group">
+            <label>ДСЕ</label>
+            <div class="form-group-flex">
+                <input type="text" id="itemName" placeholder="ДСЕ" readonly
+                class="form-input">
+                <input type="hidden" id="itemNameJson" name="itemNameJson">
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="item"
+                        data-input-id="itemName"
+                        data-hidden-entity="itemNameJson"
+                        data-modal-id="itemModal">
+                    Выбрать
+                </button>
+            </div>
+        </div>
+
         <!-- Заказ клиента -->
         <div class="form-group">
             <label>Заказ клиента</label>
@@ -152,6 +169,16 @@
             </button>
         </div>
 
+        <div class="form-group">
+            <label>Цех:</label>
+            <span class="form-value">${bid.mlmNode}</span>
+        </div>
+
+        <div class="form-group">
+            <label>ДСЕ:</label>
+            <span class="form-value">${bid.item}</span>
+        </div>
+
         <div class="form-group form-group-flex">
             <label>Комментарий:</label>
             <input type="text" id="comment"
@@ -203,6 +230,14 @@
         <button class="x" onclick="closeModal('mlmNodeModal')">✕</button>
         <h2>Список сотрудников</h2>
         <ul id="mlmNodeList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="itemModal" class="modal">
+    <div class="modal-content">
+        <button class="x" onclick="closeModal('itemModal')">✕</button>
+        <h2>Список ДСЕ</h2>
+        <ul id="itemNodeList" class="modal-list"></ul>
     </div>
 </div>
 
