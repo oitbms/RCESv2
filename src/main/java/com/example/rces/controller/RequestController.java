@@ -66,12 +66,7 @@ public class RequestController {
         Employee createdEmployee = userDetailsService.loadUserByUsername(authentication.getName());
 
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
-        CustomerOrder customerOrder = null;
-        if (!customerOrderJson.isBlank()) {
-            customerOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
-        } else {
-            customerOrder = service.createOrGetCustomerOrder(createdEmployee, customerOrderString);
-        }
+        CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, employee, customerOrderString, customerOrderJson);
 
         GeneralReason reason = null;
         if (!reasonsJson.isBlank()) {
@@ -82,9 +77,9 @@ public class RequestController {
         Requests request = service.createRequest(type, employee, mlmNode, customerOrder, reason, comment, additionalFiles, createdEmployee);
 
         if (request.getTypeRequest().equals(Requests.type.constructor)) {
-            tgService.sendMessageToGroup(request, type);
+            tgService.sendMessageToGroup(request);
         } else {
-            tgService.sendMessageToUser(request, employee.getChatId(), type);
+            tgService.sendMessageToUser(request, employee.getChatId());
         }
 
         model.addAttribute("requestNumber", request.getRequestNumber());

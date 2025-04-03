@@ -1,9 +1,13 @@
 package com.example.rces.services;
 
-import com.example.rces.models.*;
+import com.example.rces.models.CustomerOrder;
+import com.example.rces.models.Employee;
+import com.example.rces.models.Images;
+import com.example.rces.models.Requests;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +28,7 @@ public class UniversalService {
         this.repository = repository;
     }
 
-    public <T> T findById (Class<T> entity, Object id) {
+    public <T> T findById(Class<T> entity, Object id) {
         return repository.findById(entity, id);
     }
 
@@ -69,8 +73,8 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public CustomerOrder createOrGetCustomerOrder(Employee employee, String customerOrderName) {
-        return repository.createCustomerOrder(employee, customerOrderName);
+    public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
+        return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
     }
 
     public Employee findEmployeeByChatId(Long chatId) {

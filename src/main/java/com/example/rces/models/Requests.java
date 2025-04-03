@@ -173,11 +173,13 @@ public class Requests implements Cloneable {
     }
 
     public void setStatus(Status status) {
-        if (this.status.equals(Status.Closed) || this.status.equals(Status.Cancel)) {
-            closedEmployee = null;
-            closeDate = null;
-            messageId = null;
-            score = null;
+        if (this.status!=null) {
+            if (this.status.equals(Status.Closed) || this.status.equals(Status.Cancel)) {
+                closedEmployee = null;
+                closeDate = null;
+                messageId = null;
+                score = null;
+            }
         }
         this.status = status;
     }

@@ -29,7 +29,7 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/login").permitAll()
+                        .requestMatchers( "/login").permitAll()
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST","OTK","CONSTRUCTOR","ADMIN","MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create")

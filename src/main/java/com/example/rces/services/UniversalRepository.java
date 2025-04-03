@@ -2,6 +2,8 @@ package com.example.rces.services;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -82,18 +84,36 @@ public class UniversalRepository {
         return entityManager.createQuery(cq).getSingleResult();
     }
 
-    public CustomerOrder createCustomerOrder(Employee employee, String customerOrderName) {
-        CustomerOrder customerOrder = findByField(CustomerOrder.class, "name", customerOrderName).get(0);
-        if (customerOrder!=null) {
-            return customerOrder;
-        } else {
-            customerOrder = new CustomerOrder();
-            customerOrder.setCreateDate(LocalDateTime.now());
-            customerOrder.setEmployee(employee);
-            customerOrder.setName(customerOrderName);
-            return save(customerOrder);
+    public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
+        try {
+            CustomerOrder existingOrder = null;
+            if (!customerOrderName.isBlank()) {
+                List<CustomerOrder> orders = findByField(CustomerOrder.class, "name", customerOrderName);
+                if (!orders.isEmpty()) {
+                    existingOrder = orders.get(0);
+                }
+            }
+            CustomerOrder jsonOrder = null;
+            if (customerOrderJson != null && !customerOrderJson.isBlank()) {
+                jsonOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
+            }
+            if (existingOrder != null && jsonOrder != null) {
+                if (existingOrder.getName().equals(jsonOrder.getName())) {
+                    return jsonOrder;
+                }
+            } else if (existingOrder != null) {
+                return existingOrder;
+            } else {
+                CustomerOrder newOrder = new CustomerOrder();
+                newOrder.setCreateDate(LocalDateTime.now());
+                newOrder.setEmployee(employee);
+                newOrder.setName(customerOrderName);
+                return save(newOrder);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse customer order JSON", e);
         }
-
+        return null;
     }
 
     public Integer generateRequestNumber() {

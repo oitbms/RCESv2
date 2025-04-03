@@ -83,7 +83,7 @@ public class ApiServices {
                             .getType());
 
                     if (key.equals("customerOrder") && !isJson(value)) {
-                        CustomerOrder customerOrder = service.createOrGetCustomerOrder(updaterEmployee, value.toString());
+                        CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, updaterEmployee, (String) value, null);
                         method.invoke(request, customerOrder);
                         return;
                     }
@@ -134,7 +134,7 @@ public class ApiServices {
                 if (request.getTypeRequest().equals(Requests.type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
                 } else {
-                    tgService.sendMessageToUser(request, request.getEmployee().getChatId(), request.getTypeRequest().name());
+                    tgService.sendMessageToUser(request, updaterEmployee.getChatId());
                 }
 
             }
