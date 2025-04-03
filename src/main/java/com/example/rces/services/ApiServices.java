@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,25 +75,27 @@ public class ApiServices {
         updatedFields.forEach((key, value) -> {
             if (!"id".equals(key)) {
                 try {
-                    Field field = fields.stream()
+                    String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
+                    Method method = request.getClass().getMethod(methodName, fields.stream()
                             .filter(f -> f.getName().equals(key))
                             .findFirst()
-                            .orElseThrow(() -> new NoSuchFieldException("Поле " + key + " не найдено"));
-                    field.setAccessible(true);
-                    if (key.equals("customerOrder") && !isJson(value)) {
+                            .orElseThrow(() -> new NoSuchFieldException("Поле " + key + " не найдено"))
+                            .getType());
 
-                        CustomerOrder customerOrder = service.createCustomerOrder(updaterEmployee, value.toString());
-                        field.set(request, customerOrder);
+                    if (key.equals("customerOrder") && !isJson(value)) {
+                        CustomerOrder customerOrder = service.createOrGetCustomerOrder(updaterEmployee, value.toString());
+                        method.invoke(request, customerOrder);
                         return;
                     }
 
-                    if (field.getType().isEnum() && value != null) {
-                        Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) field.getType();
+                    if (method.getParameterTypes()[0].isEnum() && value != null) {
+                        Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) method.getParameterTypes()[0];
                         value = enumClass.getMethod("fromField", Object.class).invoke(null, value.toString());
-                    } else if (field.getType().isAnnotationPresent(Entity.class) && value != null) {
-                        value = objectMapper.readValue((String) value, field.getType());
+                    } else if (method.getParameterTypes()[0].isAnnotationPresent(Entity.class) && value != null) {
+                        value = objectMapper.readValue((String) value, method.getParameterTypes()[0]);
                     }
-                    if (field.getType().isInterface() && value != null) {
+
+                    if (method.getParameterTypes()[0].isInterface() && value != null) {
                         if (!((ArrayList<?>) value).isEmpty()) {
                             List<UUID> imageIds = ((ArrayList<?>) value).stream()
                                     .filter(LinkedHashMap.class::isInstance)
@@ -113,7 +116,10 @@ public class ApiServices {
                         handleImageCollection(request, (List<?>) value);
                         return;
                     }
-                    field.set(request, value);
+
+                    method.invoke(request, value);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException("Метод " + key + " не найден", e);
                 } catch (Exception e) {
                     throw new RuntimeException("Ошибка при обновлении поля " + key, e);
                 }
@@ -123,14 +129,17 @@ public class ApiServices {
         request.setUpdateBy(updaterEmployee);
         service.save(request);
 
-        if (sendMessage || request.getStatus().equals(Status.Closed)) {
+        if (sendMessage) {
             if (request.getStatus() != oldRequest.getStatus()) {
-                if (sendMessage) {
+                if (request.getTypeRequest().equals(Requests.type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
                 } else {
-                    tgService.closeRequestMessage(request.getEmployee().getChatId(), request);
+                    tgService.sendMessageToUser(request, request.getEmployee().getChatId(), request.getTypeRequest().name());
                 }
+
             }
+        } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
+            tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
         }
     }
 

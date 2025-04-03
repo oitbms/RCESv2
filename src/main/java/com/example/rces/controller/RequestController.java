@@ -2,8 +2,8 @@ package com.example.rces.controller;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.Requests;
+import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
@@ -68,17 +68,25 @@ public class RequestController {
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
         CustomerOrder customerOrder = null;
         if (!customerOrderJson.isBlank()) {
-            customerOrder =  objectMapper.readValue(customerOrderJson, CustomerOrder.class);
-        }else {
-            customerOrder = service.createCustomerOrder(createdEmployee, customerOrderString);
+            customerOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
+        } else {
+            customerOrder = service.createOrGetCustomerOrder(createdEmployee, customerOrderString);
         }
 
-        GeneralReason reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+        GeneralReason reason = null;
+        if (!reasonsJson.isBlank()) {
+            reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+        }
         MlmNode mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
 
         Requests request = service.createRequest(type, employee, mlmNode, customerOrder, reason, comment, additionalFiles, createdEmployee);
 
-        tgService.sendMessageToGroup(request, type);
+        if (request.getTypeRequest().equals(Requests.type.constructor)) {
+            tgService.sendMessageToGroup(request, type);
+        } else {
+            tgService.sendMessageToUser(request, employee.getChatId(), type);
+        }
+
         model.addAttribute("requestNumber", request.getRequestNumber());
 
         return "success";

@@ -36,10 +36,7 @@ public class Requests implements Cloneable {
     @JoinColumn(name = "updated_by")
     private Employee updateBy;
 
-    @Column(
-            name = "created_at",
-            updatable = false
-    )
+    @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createDate;
 
@@ -73,10 +70,7 @@ public class Requests implements Cloneable {
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Images> images = new ArrayList<>();
 
-    @Column(
-            name = "closed_date",
-            updatable = false
-    )
+    @Column(name = "closed_date")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime closeDate;
 
@@ -179,6 +173,12 @@ public class Requests implements Cloneable {
     }
 
     public void setStatus(Status status) {
+        if (this.status.equals(Status.Closed) || this.status.equals(Status.Cancel)) {
+            closedEmployee = null;
+            closeDate = null;
+            messageId = null;
+            score = null;
+        }
         this.status = status;
     }
 

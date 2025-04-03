@@ -1,5 +1,6 @@
 package com.example.rces.configuration;
 
+import com.example.rces.services.UniversalService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,8 +17,11 @@ public class WebSecurityConfig {
 
     private final CustomAuthenticationProvider customAuthenticationProvider;
 
-    public WebSecurityConfig(CustomAuthenticationProvider customAuthenticationProvider) {
+    private final UniversalService service;
+
+    public WebSecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, UniversalService service) {
         this.customAuthenticationProvider = customAuthenticationProvider;
+        this.service = service;
     }
 
     @Bean
@@ -26,13 +30,11 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/", "/login").permitAll()
-                        .requestMatchers("/home").permitAll()
+                        .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST","OTK","CONSTRUCTOR","ADMIN","MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
-                        .requestMatchers("/technologistmain", "/technologistbid/view/**", "/technologistbid/create")
-                                .hasAnyAuthority("TECHNOLOGIST", "ADMIN")
-                        .requestMatchers("/constructormain", "/constructorbid/create", "/constructorbid/view/**")
-                                .hasAnyAuthority("CONSTRUCTOR", "ADMIN")
-                        .requestMatchers("/create").hasAuthority("ADMIN")
+                        .requestMatchers("/create")
+                                .hasAnyAuthority("MASTER", "ADMIN")
+                        .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

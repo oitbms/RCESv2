@@ -69,7 +69,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public CustomerOrder createCustomerOrder(Employee employee, String customerOrderName) {
+    public CustomerOrder createOrGetCustomerOrder(Employee employee, String customerOrderName) {
         return repository.createCustomerOrder(employee, customerOrderName);
     }
 

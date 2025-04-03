@@ -83,11 +83,17 @@ public class UniversalRepository {
     }
 
     public CustomerOrder createCustomerOrder(Employee employee, String customerOrderName) {
-        CustomerOrder customerOrder = new CustomerOrder();
-        customerOrder.setCreateDate(LocalDateTime.now());
-        customerOrder.setEmployee(employee);
-        customerOrder.setName(customerOrderName);
-        return save(customerOrder);
+        CustomerOrder customerOrder = findByField(CustomerOrder.class, "name", customerOrderName).get(0);
+        if (customerOrder!=null) {
+            return customerOrder;
+        } else {
+            customerOrder = new CustomerOrder();
+            customerOrder.setCreateDate(LocalDateTime.now());
+            customerOrder.setEmployee(employee);
+            customerOrder.setName(customerOrderName);
+            return save(customerOrder);
+        }
+
     }
 
     public Integer generateRequestNumber() {

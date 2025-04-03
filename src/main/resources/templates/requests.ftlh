@@ -153,6 +153,14 @@
         </div>
 
         <div class="form-group form-group-flex">
+            <label>Описание:</label>
+            <input type="text" id="description"
+                   value="${bid.description!''}"
+                   class="form-input"
+                   name="description">
+        </div>
+
+        <div class="form-group form-group-flex">
             <label>Комментарий:</label>
             <input type="text" id="comment"
                    value="${bid.comment!''}"
