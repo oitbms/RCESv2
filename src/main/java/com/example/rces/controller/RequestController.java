@@ -4,7 +4,6 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.Requests;
-import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
@@ -55,7 +54,6 @@ public class RequestController {
     public String createRequest(@RequestParam(value = "type") String type,
                                 @RequestParam(value = "employeeJson") String employeeJson,
                                 @RequestParam(value = "mlmNodeJson") String mlmNodeJson,
-                                @RequestParam(value = "itemNameJson") String itemJson,
                                 @RequestParam(value = "customerOrderString", required = false) String customerOrderString,
                                 @RequestParam(value = "customerOrderJson", required = false) String customerOrderJson,
                                 @RequestParam(value = "reasonsJson", required = false) String reasonsJson,
@@ -75,20 +73,14 @@ public class RequestController {
             customerOrder = service.createCustomerOrder(createdEmployee, customerOrderString);
         }
 
-        if (reasonsJson.isEmpty()){
-            MlmNode mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
-            Item item = objectMapper.readValue(itemJson, Item.class);
-            Requests request = service.createRequest(type, employee, mlmNode,item, customerOrder, null, comment, additionalFiles, createdEmployee);
-            tgService.sendMessageToGroup(request, type);
-            model.addAttribute("requestNumber", request.getRequestNumber());
-        } else {
-            Item item = objectMapper.readValue(itemJson, Item.class);
-            GeneralReason reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
-            MlmNode mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
-            Requests request = service.createRequest(type, employee, mlmNode,item, customerOrder, reason, comment, additionalFiles, createdEmployee);
-            tgService.sendMessageToGroup(request, type);
-            model.addAttribute("requestNumber", request.getRequestNumber());
-        }
+        GeneralReason reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+        MlmNode mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
+
+        Requests request = service.createRequest(type, employee, mlmNode, customerOrder, reason, comment, additionalFiles, createdEmployee);
+
+        tgService.sendMessageToGroup(request, type);
+        model.addAttribute("requestNumber", request.getRequestNumber());
+
         return "success";
     }
 

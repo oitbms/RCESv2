@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDateTime;
+
 @Component
 public class TelegramService extends TelegramLongPollingBot {
 
@@ -23,7 +25,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private String botToken;
 
     @Value("${telegram.chat.id}")
-    private String chatId;
+    private String constructorGroupChatId;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -32,7 +34,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private String createdOrUpdatedMessage(Requests request, Boolean isCreate, String bidUrl) {
         return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
                 request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber())
-                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s ", request.getRequestNumber(), request.getEmployee(), request.getMlmNode().getName() ,request.getCustomerOrder(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber());
+                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s ", request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/" + bidUrl + "bid/view/" + request.getRequestNumber());
     }
 
     public void sendMessageToGroup(Requests request, String bidUrl) {
@@ -40,27 +42,35 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    public void closeRequestMessage(Long userChatId, Requests request) {
+    public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId("764495337");
-        sendMessage.setText(String.format("Заявка №" + request.getRequestNumber() + " закрыта\nОцените работу сотрудника (от 1 до 5)"));
+        sendMessage.setChatId(request.getCreatedBy().getChatId());
+        sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)", request.getRequestNumber(), request.getStatus().getName() + "a", request.getDescription()));
         try {
             Message message = execute(sendMessage);
 
+            request.setCloseDate(LocalDateTime.now());
+            request.setClosedEmployee(updaterEmployee);
             request.setChatId(message.getChatId());
             request.setMessageId(message.getMessageId());
+
+            service.save(request);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
     }
 
+    private void sendScoreIsSave(Long chatId) {
+        restTemplate.getForObject(String.format(messageUrl, botToken, chatId, "Оценка сохранена"), String.class);
+    }
+
     public void sendUpdateMessageToGroup(Requests requests, String bidUrl) {
-        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedMessage(requests, false, bidUrl));
+        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedMessage(requests, false, bidUrl));
         restTemplate.getForObject(url, String.class);
     }
 
-    private void sendMessageToUser(Requests requests, String bidUrl, String userChatId) {
-        String url = String.format(messageUrl, botToken, userChatId, createdOrUpdatedMessage(requests, true, bidUrl));
+    public void sendMessageToUser(Requests requests, Long chatId, String bidUrl) {
+        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedMessage(requests, true, bidUrl));
         restTemplate.getForObject(url, String.class);
     }
 
@@ -74,6 +84,17 @@ public class TelegramService extends TelegramLongPollingBot {
                 Requests request = service.findAllByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId()).get(0);
                 request.setScore(score);
                 service.save(request);
+                sendScoreIsSave(request.getChatId());
+            }
+            if (message.contains("нахуй")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(update.getMessage().getChatId());
+                sendMessage.setText("Сам иди нахуй " + update.getMessage().getFrom().getFirstName() + " пидорас, блядота, сало ёбобо гнида");
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
