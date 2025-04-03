@@ -1,12 +1,10 @@
 package com.example.rces.controller;
 
-import com.example.rces.controller.payload.ImagesPayload;
-import com.example.rces.controller.payload.MlmNodePayload;
-import com.example.rces.controller.payload.ReasonPayload;
-import com.example.rces.controller.payload.StatusPayload;
+import com.example.rces.controller.payload.*;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
+import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.ApiServices;
@@ -40,6 +38,13 @@ public class ApiController {
     public List<ReasonPayload> getReasons() {
         return Arrays.stream(GeneralReason.values())
                 .map(reason -> new ReasonPayload(reason.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/item")
+    public List<ItemPayload> getItems() {
+        return Arrays.stream(Item.values())
+                .map(item -> new ItemPayload(item.getName()))
                 .collect(Collectors.toList());
     }
 

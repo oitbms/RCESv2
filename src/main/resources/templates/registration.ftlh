@@ -13,8 +13,8 @@
             <h2 class="text-center">Add New User</h2>
             <form action="/registration" method="post" class="mt-4">
                 <div class="form-group">
-                    <label for="username">User Name:</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
+                    <label for="name">User Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password:</label>

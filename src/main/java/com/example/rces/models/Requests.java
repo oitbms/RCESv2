@@ -1,9 +1,6 @@
 package com.example.rces.models;
 
-import com.example.rces.models.enums.Appraisal;
-import com.example.rces.models.enums.GeneralReason;
-import com.example.rces.models.enums.MlmNode;
-import com.example.rces.models.enums.Status;
+import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
@@ -57,6 +54,10 @@ public class Requests implements Cloneable {
     @Enumerated(EnumType.STRING)
     private MlmNode mlmNode;
 
+    @Column(name = "item")
+    @Enumerated(EnumType.STRING)
+    private Item item;
+
     @Column(name = "status_id")
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -87,6 +88,14 @@ public class Requests implements Cloneable {
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     private Appraisal score;
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
 
     public UUID getId() {
         return id;
