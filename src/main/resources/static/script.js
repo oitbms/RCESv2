@@ -6,7 +6,7 @@ async function fetchData(endpoint, param) {
     const url = new URL(/api/ + endpoint, window.location.origin);
     url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
-    return await response.json();
+    return response.json();
 }
 
 // Обновление полей
@@ -14,7 +14,7 @@ async function saveData(images, customerOrder) {
     let formData = new FormData(document.getElementById('viewRequestForm'));
     let data = Object.fromEntries(formData.entries());
     if (images!=null) {
-        data["image"] = images;
+        data["images"] = images;
     }
     if (customerOrder!=null) {
         data["customerOrder"] = customerOrder;
@@ -88,36 +88,36 @@ document.querySelector('form').addEventListener('submit', function(event) {
     }
 });
 
-// Обработка ввода комментария с задержкой
-document.getElementById('comment').addEventListener('input', function () {
-    clearTimeout(timeout); // Очистка предыдущего таймера
-    timeout = setTimeout(function () {
-        saveData();
-    }, 3000);
-});
+if (viewForm) {
+    // Обработка ввода комментария с задержкой
+    document.getElementById('comment').addEventListener('input', function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            saveData();
+        }, 3000);
+    });
 // Обработка ввода описания решения с задержкой
-document.getElementById('description').addEventListener('input', function () {
-    clearTimeout(timeout); // Очистка предыдущего таймера
-    timeout = setTimeout(function () {
-        saveData();
-    }, 3000);
-});
+        document.getElementById('description').addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                saveData();
+            }, 3000);
+        });
 // Обработка ввода Заказа клиента с задержкой
-document.getElementById('customerOrderString').addEventListener('input', function () {
-    clearTimeout(timeout); // Очистка предыдущего таймера
-    const customerOrderString = this.value;
-    timeout = setTimeout(function () {
-        saveData(null, customerOrderString);
-    }, 3000);
-});
-
-// Обработчик для кнопки "Прикрепленные фото"
-document.getElementById('openPhotoModal').addEventListener('click', async function () {
-    const images = await fetchData("images", entityId.value); // Получаем список фото
-    renderPhotos(images);
-    document.getElementById('photoModal').classList.add('open'); // Открываем модальное окно
-});
-
+    document.getElementById('customerOrderString').addEventListener('input', function () {
+        clearTimeout(timeout);
+        const customerOrderString = this.value;
+        timeout = setTimeout(function () {
+            saveData(null, customerOrderString);
+        }, 3000);
+    });
+    // Обработчик для кнопки "Прикрепленные фото"
+    document.getElementById('openPhotoModal').addEventListener('click', async function () {
+        const images = await fetchData("images", entityId.value); // Получаем список фото
+        renderPhotos(images);
+        document.getElementById('photoModal').classList.add('open'); // Открываем модальное окно
+    });
+}
 
 function renderPhotos(images) {
     const container = document.getElementById('photoContainer');
@@ -227,3 +227,32 @@ function notification(message, duration = 3000, type = 'info') {
         setTimeout(() => notification.remove(), 500);
     }, duration);
 }
+
+document.addEventListener('DOMContentLoaded', async function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    let type = urlParams.get('type');
+    if (viewForm) {
+        type = await fetchData("typeRequest", entityId.value);
+    }
+    if (type === 'constructor') {
+        if (viewForm) {
+            document.getElementById("inconsistencyViewField").classList.add('hidden')
+        } else {
+            document.getElementById('reasonCreateField').classList.add('hidden');
+        }
+    }
+    if (type === 'otk') {
+        if (viewForm) {
+            document.getElementById('mlmNodeViewField').classList.add('hidden');
+            document.getElementById("descriptionViewField").classList.add('hidden');
+        } else {
+            document.getElementById('mlmNodeCreateField').classList.add('hidden');
+            document.getElementById('mlmNodeName').removeAttribute('data-required');
+        }
+    }
+    if (type === 'technologist') {
+        if (viewForm) {
+            document.getElementById("inconsistencyViewField").classList.add('hidden')
+        }
+    }
+});

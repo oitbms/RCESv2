@@ -15,6 +15,10 @@ public class RcesApplication {
         SpringApplication.run(RcesApplication.class, args);
     }
 
-
-
+    @Bean
+    public TelegramBotsApi telegramBotsApi(TelegramService bot) throws TelegramApiException {
+        TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
+        api.registerBot(bot);
+        return api;
+    }
 }

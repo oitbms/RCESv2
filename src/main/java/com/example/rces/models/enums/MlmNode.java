@@ -5,18 +5,15 @@ package com.example.rces.models.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 public enum MlmNode {
 
-    workShop1("Цех №1"),
-    workShop2( "Цех №3"),
-    workShop3( "Цех №4"),
-    workShop4( "Цех №5"),
-    workShop5( "Цех №6"),
-    workShop6( "Цех №7"),
-    workShop7( "Цех №8");
+    workShop1("№1"),
+    workShop2("№3"),
+    workShop3("№4"),
+    workShop4("№5"),
+    workShop5("№6"),
+    workShop6("№7"),
+    workShop7("№8");
 
     private final String name;
 
@@ -41,7 +38,7 @@ public enum MlmNode {
                     return mlmNode;
                 }
             }
-        }else {
+        } else {
             for (MlmNode mlmNode : MlmNode.values()) {
                 if (mlmNode.name().equals(node.textValue())) {
                     return mlmNode;

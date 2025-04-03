@@ -50,6 +50,10 @@ public class Requests implements Cloneable {
     @Enumerated(EnumType.STRING)
     private GeneralReason reason;
 
+    @Column(name = "inconsistency")
+    @Enumerated(EnumType.STRING)
+    private Inconsistency inconsistency;
+
     @Column(name = "mlm_node")
     @Enumerated(EnumType.STRING)
     private MlmNode mlmNode;
@@ -167,6 +171,14 @@ public class Requests implements Cloneable {
 
     public void setReason(GeneralReason reason) {
         this.reason = reason;
+    }
+
+    public Inconsistency getInconsistency() {
+        return inconsistency;
+    }
+
+    public void setInconsistency(Inconsistency inconsistency) {
+        this.inconsistency = inconsistency;
     }
 
     public MlmNode getMlmNode() {

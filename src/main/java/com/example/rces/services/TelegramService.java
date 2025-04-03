@@ -32,9 +32,23 @@ public class TelegramService extends TelegramLongPollingBot {
     private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
     private String createdOrUpdatedMessage(Requests request, Boolean isCreate) {
-        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/view/" + request.getRequestNumber())
-                : String.format("Заявка обновлена: %d\nОтветственный: %s\nЦех: %s\nЗаказ клиента: %s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s ", request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,request.getCustomerOrder().getName(), !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены", request.getComment() != null ? request.getComment() : "", request.getReason() != null ? request.getReason().getName() : "Причина не указана", "192.168.0.67:2520/view/" + request.getRequestNumber());
+        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                request.getRequestNumber(), request.getEmployee().getName(),
+                request.getMlmNode()!=null ? "\nЦех: " + request.getMlmNode().getName() : "",
+                request.getCustomerOrder().getName(),
+                request.getItem()!=null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                request.getComment() != null ? request.getComment() : "",
+                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                "192.168.0.67:2520/view/" + request.getRequestNumber())
+
+                : String.format("Заявка обновлена: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,
+                request.getCustomerOrder().getName(), request.getItem().getName(),
+                !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                request.getComment() != null ? request.getComment() : "",
+                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                "192.168.0.67:2520/view/" + request.getRequestNumber());
     }
 
     public void sendMessageToGroup(Requests request) {
@@ -85,16 +99,6 @@ public class TelegramService extends TelegramLongPollingBot {
                 request.setScore(score);
                 service.save(request);
                 sendScoreIsSave(request.getChatId());
-            }
-            if (message.contains("нахуй")) {
-                SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(update.getMessage().getChatId());
-                sendMessage.setText("Сам иди нахуй " + update.getMessage().getFrom().getFirstName() + " пидорас, блядота, сало ёбобо гнида");
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
             }
         }
     }

@@ -46,7 +46,8 @@ public class ApiServices {
     }
 
     public List<ImagesPayload> findImages(UUID param) {
-        List<Images> images = service.findAllByField(Images.class, "request.id", param);
+        Requests request = service.findById(Requests.class, param);
+        List<Images> images = service.findAllByField(Images.class, "request", request);
         return images.stream()
                 .map(image -> new ImagesPayload(
                         image.getId(),
@@ -108,7 +109,7 @@ public class ApiServices {
                                     .forEach(imgStr -> {
                                         Images newImage = new Images(imgStr, request);
                                         images.add(newImage);
-                                        service.save(images);
+                                        service.save(newImage);
                                     });
                             handleImageCollection(request, images);
                             return;
@@ -143,4 +144,7 @@ public class ApiServices {
         }
     }
 
+    public String getTypeRequest(UUID id) {
+        return service.findById(Requests.class, id).getTypeRequest().name();
+    }
 }

@@ -3,10 +3,7 @@ package com.example.rces.controller;
 import com.example.rces.controller.payload.*;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.enums.GeneralReason;
-import com.example.rces.models.enums.Item;
-import com.example.rces.models.enums.MlmNode;
-import com.example.rces.models.enums.Status;
+import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +35,13 @@ public class ApiController {
     public List<ReasonPayload> getReasons() {
         return Arrays.stream(GeneralReason.values())
                 .map(reason -> new ReasonPayload(reason.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/inconsistency")
+    public List<InconsistencyPayload> getInconsistency() {
+        return Arrays.stream(Inconsistency.values())
+                .map(inconsistency -> new InconsistencyPayload(inconsistency.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -74,6 +78,12 @@ public class ApiController {
                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
         service.update(bidType, id, sendMessage, updatedFields);
+    }
+
+    @GetMapping("/typeRequest")
+    @ResponseBody
+    public String getTypeRequest(@RequestParam UUID param) {
+        return "\"" + service.getTypeRequest(param) + "\"";
     }
 
 }

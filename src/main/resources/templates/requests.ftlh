@@ -34,11 +34,11 @@
         </div>
 
         <!-- Цех -->
-        <div class="form-group">
+        <div class="form-group"  id="mlmNodeCreateField">
             <label>Цех</label>
-            <div class="form-group-flex <#if !otk??>hidden</#if>">
+            <div class="form-group-flex">
                 <input type="text" id="mlmNodeName" placeholder="Цех" readonly
-                       class="form-input" <#if !otk??>data-required="true"</#if>>
+                       class="form-input" data-required="true">
                 <input type="hidden" id="mlmNodeJson" name="mlmNodeJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="mlmNode"
@@ -52,10 +52,10 @@
 
         <!--ТМЦ-->
         <div class="form-group">
-            <label>ДСЕ</label>
+            <label>Тип ДСЕ</label>
             <div class="form-group-flex">
                 <input type="text" id="itemName" placeholder="ДСЕ" readonly
-                class="form-input">
+                class="form-input" data-required="true">
                 <input type="hidden" id="itemNameJson" name="itemNameJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="item"
@@ -85,7 +85,7 @@
         </div>
 
         <!-- Причина -->
-        <div class="form-group <#if !technologist??>hidden</#if>">
+        <div class="form-group" id="reasonCreateField">
             <label>Причина</label>
             <div class="form-group-flex">
                 <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input"
@@ -132,6 +132,16 @@
             <span class="form-value">${date}</span>
         </div>
 
+        <div class="form-group" id="mlmNodeViewField">
+            <label>Цех:</label>
+            <span class="form-value">${(bid.mlmNode.getName())!""}</span>
+        </div>
+
+        <div class="form-group">
+            <label>Тип ТМЦ:</label>
+            <span class="form-value">${(bid.item.getName())!""}</span>
+        </div>
+
         <div class="form-group form-group-flex">
             <label>Заказ клиента:</label>
             <input type="text" id="customerOrderString"
@@ -169,22 +179,28 @@
             </button>
         </div>
 
-        <div class="form-group">
-            <label>Цех:</label>
-            <span class="form-value">${bid.mlmNode}</span>
-        </div>
-
-        <div class="form-group">
-            <label>ДСЕ:</label>
-            <span class="form-value">${bid.item}</span>
-        </div>
-
-        <div class="form-group form-group-flex">
+        <div class="form-group form-group-flex" id="descriptionViewField">
             <label>Описание:</label>
             <input type="text" id="description"
                    value="${bid.description!''}"
                    class="form-input"
                    name="description">
+        </div>
+
+        <div class="form-group form-group-flex " id="inconsistencyViewField">
+            <label>Несоответствие:</label>
+            <input type="text" id="inconsistencyName"
+                   readonly
+                   class="form-input">
+            <input type="hidden" id="inconsistencyJson"
+                   name="inconsistency">
+            <button type="button" class="openModal btn-modern"
+                    data-endpoint="inconsistency"
+                    data-input-id="inconsistencyName"
+                    data-hidden-entity="inconsistencyJson"
+                    data-modal-id="inconsistencyModal">
+                Изменить
+            </button>
         </div>
 
         <div class="form-group form-group-flex">
@@ -207,7 +223,7 @@
         <div class="form-group form-group-flex">
             <label>Статус</label>
             <input type="text" id="statusName" name="status"
-                   value="${bid.status.name()?trim}"
+                   value="${bid.status.getName()?trim}"
                    readonly
                    class="form-input">
             <input type="hidden" id="statusJson" value="${bid.status}">
@@ -236,7 +252,7 @@
 <div id="mlmNodeModal" class="modal">
     <div class="modal-content">
         <button class="x" onclick="closeModal('mlmNodeModal')">✕</button>
-        <h2>Список сотрудников</h2>
+        <h2>Список цехов</h2>
         <ul id="mlmNodeList" class="modal-list"></ul>
     </div>
 </div>
@@ -262,6 +278,14 @@
         <button class="x" onclick="closeModal('reasonsModal')">✕</button>
         <h2>Список причин</h2>
         <ul id="reasonsList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="inconsistencyModal" class="modal">
+    <div class="modal-content">
+        <button class="x" onclick="closeModal('inconsistencyModal')">✕</button>
+        <h2>Список несоответствий</h2>
+        <ul id="inconsistencyList" class="modal-list"></ul>
     </div>
 </div>
 
@@ -296,6 +320,6 @@
 <div id="notification-container"></div>
 <script>const bidType = "${type}";
     const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
-<script src="/script.js"></script>
+<script src="/script.js" defer></script>
 </body>
 </html>
