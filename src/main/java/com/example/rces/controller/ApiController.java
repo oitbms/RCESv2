@@ -74,7 +74,7 @@ public class ApiController {
     @PostMapping("/update")
     public void updateData(@RequestParam String bidType,// Имя класса bid
                            @RequestParam UUID id, // id класса bid
-                           @RequestParam Boolean sendMessage, // отправлять сообщение в ТГ
+                           @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
         service.update(bidType, id, sendMessage, updatedFields);

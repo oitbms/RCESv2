@@ -31,28 +31,41 @@ public class TelegramService extends TelegramLongPollingBot {
 
     private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
-    private String createdOrUpdatedMessage(Requests request, Boolean isCreate) {
-        return isCreate ? String.format("Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                request.getRequestNumber(), request.getEmployee().getName(),
-                request.getMlmNode()!=null ? "\nЦех: " + request.getMlmNode().getName() : "",
-                request.getCustomerOrder().getName(),
-                request.getItem()!=null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
-                !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
-                request.getComment() != null ? request.getComment() : "",
-                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                "192.168.0.67:2520/view/" + request.getRequestNumber())
-
-                : String.format("Заявка обновлена: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName() ,
-                request.getCustomerOrder().getName(), request.getItem().getName(),
-                !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
-                request.getComment() != null ? request.getComment() : "",
-                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                "192.168.0.67:2520/view/" + request.getRequestNumber());
+    private String createdOrUpdatedOrRedirectMessage(Requests request, Boolean isCreate, Boolean isRedirect) {
+        if (isCreate) {
+            return String.format("Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                    request.getRequestNumber(), request.getEmployee().getName(),
+                    request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
+                    request.getCustomerOrder().getName(),
+                    request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                    request.getComment() != null ? request.getComment() : "",
+                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+        } else if (isRedirect) {
+            return String.format("%s переадресовал заявку %d в вашу ответственность \nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                    request.getUpdateBy().getName(),
+                    request.getRequestNumber(), request.getEmployee().getName(),
+                    request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
+                    request.getCustomerOrder().getName(),
+                    request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                    request.getComment() != null ? request.getComment() : "",
+                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+        } else {
+            return String.format("Заявка обновлена: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                    request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName(),
+                    request.getCustomerOrder().getName(), request.getItem().getName(),
+                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                    request.getComment() != null ? request.getComment() : "",
+                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+        }
     }
 
     public void sendMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken, "764495337", createdOrUpdatedMessage(request, true));
+        String url = String.format(messageUrl, botToken, "764495337", createdOrUpdatedOrRedirectMessage(request, true, false));
         restTemplate.getForObject(url, String.class);
     }
 
@@ -78,14 +91,18 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(String.format(messageUrl, botToken, chatId, "Оценка сохранена"), String.class);
     }
 
-    public void sendUpdateMessageToGroup(Requests requests, String bidUrl) {
-        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedMessage(requests, false));
+    public void sendUpdateMessageToGroup(Requests request, String bidUrl) {
+        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedOrRedirectMessage(request, false, false));
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToUser(Requests requests, Long chatId) {
-        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedMessage(requests, true));
+    public void sendMessageToUser(Requests request, Long chatId, Boolean isRedirect) {
+        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedOrRedirectMessage(request, true, isRedirect));
         restTemplate.getForObject(url, String.class);
+    }
+
+    public void sendRedirectMessageToUser(Requests request, Long chatId) {
+
     }
 
     @Override

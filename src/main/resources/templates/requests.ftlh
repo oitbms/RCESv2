@@ -7,6 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/stylesBid.css">
+    <script>const bidType = "${type}";
+        const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
+    <script src="/script.js" defer></script>
 </head>
 <body>
 <#if createForm!false>
@@ -89,7 +92,7 @@
             <label>Причина</label>
             <div class="form-group-flex">
                 <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input"
-                       <#if !constructor??>data-required="true"</#if>>
+                       data-required="true">
                 <input type="hidden" id="reasonsJson" name="reasonsJson">
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="reasons"
@@ -190,10 +193,11 @@
         <div class="form-group form-group-flex " id="inconsistencyViewField">
             <label>Несоответствие:</label>
             <input type="text" id="inconsistencyName"
+                   value="${(bid.inconsistency?? && bid.inconsistency.name??)?then(bid.inconsistency.getName()?trim, '')}"
                    readonly
                    class="form-input">
             <input type="hidden" id="inconsistencyJson"
-                   name="inconsistency">
+                   name="inconsistency" value="${bid.inconsistency!}">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="inconsistency"
                     data-input-id="inconsistencyName"
@@ -229,11 +233,9 @@
             <input type="hidden" id="statusJson" value="${bid.status}">
             <button type="button" class="openModal btn-modern"
                     data-endpoint="status"
-                    data-display-field="name"
                     data-input-id="statusName"
                     data-hidden-entity="statusJson"
-                    data-modal-id="statusModal"
-                    data-save="Technologist">
+                    data-modal-id="statusModal">
                 Изменить и уведомить
             </button>
         </div>
@@ -318,8 +320,5 @@
 
 <!-- Уведомления -->
 <div id="notification-container"></div>
-<script>const bidType = "${type}";
-    const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
-<script src="/script.js" defer></script>
 </body>
 </html>

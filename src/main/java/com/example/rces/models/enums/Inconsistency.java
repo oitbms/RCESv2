@@ -1,8 +1,5 @@
 package com.example.rces.models.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.JsonNode;
-
 public enum Inconsistency {
 
     Inconsistency1("Несоответствие1"),
@@ -23,20 +20,22 @@ public enum Inconsistency {
         return name;
     }
 
-    @JsonCreator
-    public static Inconsistency fromField(JsonNode node) {
-        if (node == null) {
-            return null;
-        }
-        if (node.has("name") && node.get("name").isTextual()) {
-            String name = node.get("name").asText();
+    public static Inconsistency fromField(Object field) {
+        try {
+            String name = field.toString().split("\"")[3];
             for (Inconsistency inconsistency : Inconsistency.values()) {
                 if (inconsistency.getName().equals(name)) {
                     return inconsistency;
                 }
             }
+        } catch (Exception e) {
+            for (Inconsistency inconsistency : Inconsistency.values()) {
+                if (inconsistency.name().equals(field.toString())) {
+                    return inconsistency;
+                }
+            }
         }
-        throw new IllegalArgumentException("Неизвестное несоответствие: " + node);
+        throw new RuntimeException("Неизвестное несоответствие: " + field);
     }
 
 }

@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (type === 'constructor') {
         if (viewForm) {
             document.getElementById("inconsistencyViewField").classList.add('hidden')
+            document.getElementById("reasonCreateField").removeAttribute("data-required")
         } else {
             document.getElementById('reasonCreateField').classList.add('hidden');
         }

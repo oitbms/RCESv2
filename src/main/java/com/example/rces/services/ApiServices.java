@@ -129,16 +129,18 @@ public class ApiServices {
 
         request.setUpdateBy(updaterEmployee);
         service.save(request);
-
+        //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
             if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getTypeRequest().equals(Requests.type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
                 } else {
-                    tgService.sendMessageToUser(request, updaterEmployee.getChatId());
+                    //если поменяли ответственного -> редирект сообщения
+                    tgService.sendMessageToUser(request, updaterEmployee.getChatId(), request.getEmployee() != oldRequest.getEmployee());
                 }
 
             }
+            //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
             tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
         }
