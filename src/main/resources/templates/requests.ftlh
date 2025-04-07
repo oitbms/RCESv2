@@ -269,7 +269,7 @@
 
 <div id="customerOrdersModal" class="modal">
     <div class="modal-content">
-        <button class="x" onclick="closeModal('photoModal')">✕</button>
+        <button class="x" onclick="closeModal('customerOrdersModal')">✕</button>
         <h2>Список заказов</h2>
         <ul id="customerOrdersList" class="modal-list"></ul>
     </div>

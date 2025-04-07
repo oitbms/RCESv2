@@ -21,6 +21,9 @@ public enum Inconsistency {
     }
 
     public static Inconsistency fromField(Object field) {
+        if (field.equals("")) {
+            return null;
+        }
         try {
             String name = field.toString().split("\"")[3];
             for (Inconsistency inconsistency : Inconsistency.values()) {

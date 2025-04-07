@@ -134,11 +134,10 @@ public class ApiServices {
             if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
-                } else {
-                    //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                    tgService.sendMessageToUser(request, updaterEmployee.getChatId(), request.getEmployee() != oldRequest.getEmployee());
                 }
-
+            } else {
+                //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
+                tgService.sendMessageToUser(request, updaterEmployee.getChatId(), false, request.getEmployee() != oldRequest.getEmployee());
             }
             //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {

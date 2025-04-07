@@ -94,7 +94,7 @@ public class RequestController {
         if (request.getTypeRequest().equals(Requests.Type.constructor)) {
             tgService.sendMessageToGroup(request);
         } else {
-            tgService.sendMessageToUser(request, employee.getChatId(), false);
+            tgService.sendMessageToUser(request, employee.getChatId(), true,false);
         }
 
         model.addAttribute("requestNumber", request.getRequestNumber());

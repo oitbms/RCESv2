@@ -96,8 +96,8 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToUser(Requests request, Long chatId, Boolean isRedirect) {
-        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedOrRedirectMessage(request, true, isRedirect));
+    public void sendMessageToUser(Requests request, Long chatId, Boolean isCreate ,Boolean isRedirect) {
+        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedOrRedirectMessage(request, isCreate, isRedirect));
         restTemplate.getForObject(url, String.class);
     }
 

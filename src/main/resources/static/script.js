@@ -240,6 +240,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById("reasonCreateField").removeAttribute("data-required")
         } else {
             document.getElementById('reasonCreateField').classList.add('hidden');
+            document.getElementById("reasonsName").removeAttribute("data-required")
         }
     }
     if (type === 'otk') {
