@@ -132,10 +132,10 @@ public class ApiServices {
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
             if (request.getStatus() != oldRequest.getStatus()) {
-                if (request.getTypeRequest().equals(Requests.type.constructor)) {
+                if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
                 } else {
-                    //если поменяли ответственного -> редирект сообщения
+                    //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
                     tgService.sendMessageToUser(request, updaterEmployee.getChatId(), request.getEmployee() != oldRequest.getEmployee());
                 }
 

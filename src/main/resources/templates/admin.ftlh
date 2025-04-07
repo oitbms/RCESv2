@@ -44,17 +44,17 @@
         reqs.forEach(req => {
             req.addEventListener('contextmenu', function (e) {
                 e.preventDefault();
-                const reqId = this.id.replace('req-', ''); // Извлекаем UUID, убирая 'req-'
+                const reqId = this.id.replace('req-', '');
                 const confirmation = confirm("Вы действительно хотите удалить этого пользователя?");
                 if (confirmation) {
-                    deleteReq(reqId); // вызываем функцию с правильным UUID
+                    deleteReq(reqId);
                 }
             });
         });
     });
 
     function deleteReq(reqId) {
-        console.log('Attempting to delete user with ID:', reqId); // Проверка UUID
+        console.log('Attempting to delete user with ID:', reqId);
         fetch(`/delete/` + reqId, {
             method: 'DELETE',
             headers: {

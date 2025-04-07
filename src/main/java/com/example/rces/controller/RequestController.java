@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+
 import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @Controller
@@ -42,11 +44,15 @@ public class RequestController {
 
     @GetMapping("/create")
     public String getCreateBidForm(@RequestParam String type, Model model) {
+        if (!Arrays.stream(Requests.Type.values()).map(Enum::name).toList().contains(type)) {
+            model.addAttribute("type", type);
+            return "error";
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getName());
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
-            model.addAttribute(type, true);
+        model.addAttribute(type, true);
         model.addAttribute("employeeName", userDetails.getUsername());
         return "/requests";
     }
@@ -85,7 +91,7 @@ public class RequestController {
 
         Requests request = service.createRequest(type, employee, mlmNode, item, customerOrder, reason, comment, additionalFiles, createdEmployee);
 
-        if (request.getTypeRequest().equals(Requests.type.constructor)) {
+        if (request.getTypeRequest().equals(Requests.Type.constructor)) {
             tgService.sendMessageToGroup(request);
         } else {
             tgService.sendMessageToUser(request, employee.getChatId(), false);

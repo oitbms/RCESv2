@@ -12,7 +12,7 @@ import java.util.UUID;
 @Entity
 public class Requests implements Cloneable {
 
-    public enum type {
+    public enum Type {
         constructor, otk, technologist
     }
 
@@ -23,7 +23,7 @@ public class Requests implements Cloneable {
 
     @Column(name = "type_request")
     @Enumerated(EnumType.STRING)
-    private type typeRequest;
+    private Type typeRequest;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by")
@@ -109,11 +109,11 @@ public class Requests implements Cloneable {
         this.id = id;
     }
 
-    public type getTypeRequest() {
+    public Type getTypeRequest() {
         return typeRequest;
     }
 
-    public void setTypeRequest(type typeRequest) {
+    public void setTypeRequest(Type typeRequest) {
         this.typeRequest = typeRequest;
     }
 

@@ -14,11 +14,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNoResourceFoundException(NoResourceFoundException ex, Model model) {
-        return "home";
+        return "error";
     }
 
     @ExceptionHandler(NoResultException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleNoResultException(NoResultException ex, Model model) {return "home";}
+    public String handleNoResultException(NoResultException ex, Model model) {return "error";}
 
 }

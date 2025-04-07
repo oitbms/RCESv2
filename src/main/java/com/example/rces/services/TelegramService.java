@@ -101,10 +101,6 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendRedirectMessageToUser(Requests request, Long chatId) {
-
-    }
-
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {

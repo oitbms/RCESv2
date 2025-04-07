@@ -56,7 +56,7 @@ public class UniversalService {
     public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
         Requests request = new Requests();
 
-        request.setTypeRequest(Requests.type.valueOf(type));
+        request.setTypeRequest(Requests.Type.valueOf(type));
         request.setCreatedBy(createdEmployee);
         request.setCreateDate(LocalDateTime.now());
         request.setRequestNumber(repository.generateRequestNumber());
