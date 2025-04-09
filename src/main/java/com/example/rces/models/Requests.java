@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -50,9 +51,14 @@ public class Requests implements Cloneable {
     @Enumerated(EnumType.STRING)
     private GeneralReason reason;
 
+    @Column(name = "qty")
+    private Integer qty;
+
+    @ElementCollection
+    @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
     @Column(name = "inconsistency")
     @Enumerated(EnumType.STRING)
-    private Inconsistency inconsistency;
+    private Set<Inconsistency> inconsistency;
 
     @Column(name = "mlm_node")
     @Enumerated(EnumType.STRING)
@@ -173,11 +179,19 @@ public class Requests implements Cloneable {
         this.reason = reason;
     }
 
-    public Inconsistency getInconsistency() {
+    public Integer getQty() {
+        return qty;
+    }
+
+    public void setQty(Integer qty) {
+        this.qty = qty;
+    }
+
+    public Set<Inconsistency> getInconsistency() {
         return inconsistency;
     }
 
-    public void setInconsistency(Inconsistency inconsistency) {
+    public void setInconsistency(Set<Inconsistency> inconsistency) {
         this.inconsistency = inconsistency;
     }
 

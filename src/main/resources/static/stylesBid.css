@@ -287,6 +287,23 @@ h2 {
     padding: 40px 20px 20px; /* Увеличиваем верхний отступ для кнопки закрытия */
 }
 
+.selectable-multiple {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.selectable-multiple:hover {
+    background-color: #f0f0f0;
+}
+
+.multiple-confirm {
+    text-align: right;
+    margin-top: 15px;
+}
+
 .x {
     position: absolute;
     top: 12px;
@@ -311,4 +328,9 @@ h2 {
 
 .x:active {
     background: rgba(0, 0, 0, 0.1);
+}
+
+.selectable.selected {
+    background-color: #e0f0ff;
+    font-weight: bold;
 }

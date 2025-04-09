@@ -53,7 +53,7 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
-    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
+    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
         Requests request = new Requests();
 
         request.setTypeRequest(Requests.Type.valueOf(type));
@@ -70,6 +70,7 @@ public class UniversalService {
             request.setReason(reason);
         }
         request.setItem(item);
+        request.setQty(qty);
         request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);

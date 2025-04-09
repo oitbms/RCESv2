@@ -58,15 +58,16 @@ public class RequestController {
     }
 
     @PostMapping("/create")
-    public String createRequest(@RequestParam(value = "type") String type,
-                                @RequestParam(value = "employeeJson") String employeeJson,
-                                @RequestParam(value = "mlmNodeJson") String mlmNodeJson,
+    public String createRequest(@RequestParam String type,
+                                @RequestParam String employeeJson,
+                                @RequestParam String mlmNodeJson,
                                 @RequestParam(value = "itemNameJson") String itemJson,
-                                @RequestParam(value = "customerOrderString", required = false) String customerOrderString,
-                                @RequestParam(value = "customerOrderJson", required = false) String customerOrderJson,
-                                @RequestParam(value = "reasonsJson", required = false) String reasonsJson,
-                                @RequestParam(value = "comment", required = false) String comment,
-                                @RequestParam(value = "additionalFiles", required = false) MultipartFile[] additionalFiles,
+                                @RequestParam(required = false) Integer qty,
+                                @RequestParam(required = false) String customerOrderString,
+                                @RequestParam(required = false) String customerOrderJson,
+                                @RequestParam(required = false) String reasonsJson,
+                                @RequestParam(required = false) String comment,
+                                @RequestParam(required = false) MultipartFile[] additionalFiles,
                                 Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
 
@@ -89,7 +90,7 @@ public class RequestController {
             mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
         }
 
-        Requests request = service.createRequest(type, employee, mlmNode, item, customerOrder, reason, comment, additionalFiles, createdEmployee);
+        Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee);
 
         if (request.getTypeRequest().equals(Requests.Type.constructor)) {
             tgService.sendMessageToGroup(request);

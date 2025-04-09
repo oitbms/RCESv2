@@ -228,6 +228,70 @@ function notification(message, duration = 3000, type = 'info') {
     }, duration);
 }
 
+document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => {
+    button.addEventListener('click', () => {
+        const {modalId, inputId, hiddenEntity} = button.dataset;
+        const modal = document.getElementById(modalId);
+
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenEntity);
+
+        let selected = new Map();
+        try {
+            JSON.parse(hidden.value || "[]").forEach(e => selected.set(e.name, e));
+        } catch {}
+
+        const updateUI = () => {
+            const arr = Array.from(selected.values());
+            input.value = arr.map(e => e.name).join(', ');
+            hidden.value = JSON.stringify(arr);
+        };
+
+        const handleSaveAndClose = () => {
+            updateUI();
+            saveData();
+        };
+
+        const closeBtn = modal.querySelector('.x');
+        const closeBtnClone = closeBtn.cloneNode(true);
+        closeBtn.replaceWith(closeBtnClone);
+        closeBtnClone.addEventListener('click', handleSaveAndClose);
+
+        const onClickOutside = (e) => {
+            if (modal.classList.contains('open') && !modal.querySelector('.modal-content').contains(e.target)) {
+                modal.classList.remove('open');
+                handleSaveAndClose();
+                document.removeEventListener('click', onClickOutside);
+            }
+        };
+        document.addEventListener('click', onClickOutside);
+
+        const interval = setInterval(() => {
+            const selectables = modal.querySelectorAll('.selectable');
+            if (selectables.length > 0) {
+                clearInterval(interval);
+                selectables.forEach(li => {
+                    const clone = li.cloneNode(true);
+                    li.replaceWith(clone);
+                    const entity = JSON.parse(decodeURIComponent(clone.dataset.entity));
+                    if (selected.has(entity.name)) clone.classList.add('selected');
+
+                    clone.addEventListener('click', () => {
+                        if (selected.has(entity.name)) {
+                            selected.delete(entity.name);
+                            clone.classList.remove('selected');
+                        } else {
+                            selected.set(entity.name, entity);
+                            clone.classList.add('selected');
+                        }
+                        updateUI();
+                    });
+                });
+            }
+        }, 50);
+    });
+});
+
 document.addEventListener('DOMContentLoaded', async function () {
     const urlParams = new URLSearchParams(window.location.search);
     let type = urlParams.get('type');
@@ -237,16 +301,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (type === 'constructor') {
         if (viewForm) {
             document.getElementById("inconsistencyViewField").classList.add('hidden')
-            document.getElementById("reasonCreateField").removeAttribute("data-required")
+            document.getElementById("qtyViewField").classList.add('hidden')
         } else {
             document.getElementById('reasonCreateField').classList.add('hidden');
             document.getElementById("reasonsName").removeAttribute("data-required")
+            document.getElementById("qtyCreateField").classList.add('hidden')
+            document.getElementById("qty").removeAttribute("data-required")
         }
     }
     if (type === 'otk') {
         if (viewForm) {
             document.getElementById('mlmNodeViewField').classList.add('hidden');
             document.getElementById("descriptionViewField").classList.add('hidden');
+            document.getElementById("reasonCreateField").removeAttribute("data-required")
         } else {
             document.getElementById('mlmNodeCreateField').classList.add('hidden');
             document.getElementById('mlmNodeName').removeAttribute('data-required');
@@ -255,6 +322,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (type === 'technologist') {
         if (viewForm) {
             document.getElementById("inconsistencyViewField").classList.add('hidden')
+            document.getElementById("qtyViewField").classList.add('hidden')
+            document.getElementById("qty").removeAttribute("data-required")
+        } else {
+            document.getElementById("qtyCreateField").classList.add('hidden')
         }
     }
 });

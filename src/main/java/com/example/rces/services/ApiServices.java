@@ -5,6 +5,7 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Images;
 import com.example.rces.models.Requests;
+import com.example.rces.models.enums.Inconsistency;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
@@ -87,16 +88,12 @@ public class ApiServices {
                         CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, updaterEmployee, (String) value, null);
                         method.invoke(request, customerOrder);
                         return;
-                    }
-
-                    if (method.getParameterTypes()[0].isEnum() && value != null) {
+                    } else if (method.getParameterTypes()[0].isEnum() && value != null) {
                         Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) method.getParameterTypes()[0];
                         value = enumClass.getMethod("fromField", Object.class).invoke(null, value.toString());
                     } else if (method.getParameterTypes()[0].isAnnotationPresent(Entity.class) && value != null) {
                         value = objectMapper.readValue((String) value, method.getParameterTypes()[0]);
-                    }
-
-                    if (method.getParameterTypes()[0].isInterface() && value != null) {
+                    } else if (key.equals("images") && value != null) {
                         if (!((ArrayList<?>) value).isEmpty()) {
                             List<UUID> imageIds = ((ArrayList<?>) value).stream()
                                     .filter(LinkedHashMap.class::isInstance)
@@ -116,6 +113,8 @@ public class ApiServices {
                         }
                         handleImageCollection(request, (List<?>) value);
                         return;
+                    } else if (key.equals("inconsistency")) {
+                        value = Inconsistency.fromField(value);
                     }
 
                     method.invoke(request, value);
