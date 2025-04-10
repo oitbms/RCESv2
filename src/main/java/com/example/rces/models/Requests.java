@@ -38,6 +38,10 @@ public class Requests implements Cloneable {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createDate;
 
+    @Column(name = "update_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updateDate;
+
     @Column(name = "request_number")
     private Integer requestNumber;
 
@@ -145,6 +149,14 @@ public class Requests implements Cloneable {
 
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updateDate) {
+        this.updateDate = updateDate;
     }
 
     public Integer getRequestNumber() {

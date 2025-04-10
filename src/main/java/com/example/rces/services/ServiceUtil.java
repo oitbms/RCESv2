@@ -2,6 +2,7 @@ package com.example.rces.services;
 
 import com.example.rces.models.Images;
 import com.example.rces.models.Requests;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,13 +58,25 @@ public class ServiceUtil {
     }
 
     public static boolean isJson(Object value) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        if (value == null) {
+            return false;
+        }
+        String str;
         try {
-            objectMapper.readTree(value.toString());
-            return true;
+            str = value.toString();
         } catch (Exception e) {
             return false;
         }
-
+        str = str.trim();
+        if (!str.startsWith("{") && !str.startsWith("[")) {
+            return false;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode node = mapper.readTree(str);
+            return node.isObject() || node.isArray();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

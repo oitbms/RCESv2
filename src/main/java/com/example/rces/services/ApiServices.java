@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,6 +128,7 @@ public class ApiServices {
         });
 
         request.setUpdateBy(updaterEmployee);
+        request.setUpdateDate(LocalDateTime.now());
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
