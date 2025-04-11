@@ -10,10 +10,12 @@ import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -86,4 +88,19 @@ public class UniversalService {
         return repository.findEmployeeByChatId(chatId);
     }
 
+    public List<Requests> getRequestPage(int page, String type, int itemsPerPage) {
+        return repository.getRequestsByType(type, page, itemsPerPage);
+    }
+
+    public List<Requests> getRequestPageStatus(String type, String status, int page, int itemsPerPage) {
+        return repository.getRequestsByStatus(status, type, page, itemsPerPage);
+    }
+
+    public int getTotalRequestsCount(String type) {
+        return repository.getTotalRequestsCount(type);
+    }
+
+    public int getTotalRequestsCountByStatus(String type, String status) {
+        return repository.getTotalRequestsCountByStatus(type,status);
+    }
 }

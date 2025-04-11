@@ -6,6 +6,7 @@ import com.example.rces.models.Requests;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
+import com.example.rces.models.enums.Status;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.rces.services.ServiceUtil.formatedDate;
 
@@ -113,4 +116,54 @@ public class RequestController {
         return "/requests";
     }
 
+    @GetMapping("/requestslist/{type}/{pageNumber}")
+    public String getRequestList(@PathVariable String type, @PathVariable int pageNumber,
+                                 @RequestParam(value = "status", required = false) String status,
+                                 Model model) {
+        boolean currentPage = pageNumber > 0;
+        boolean isStatus = true;
+        int itemsPerPage = 10; // Определите количество элементов на странице
+        int totalRequestsCount;
+
+        List<Requests> requests;
+        if (status == null || status.isEmpty()) {
+            requests = service.getRequestPage(pageNumber, type, itemsPerPage); // Параметр itemsPerPage добавлен
+            totalRequestsCount = service.getTotalRequestsCount(type);
+        } else {
+            if (status.trim().equals("Новый")) {
+                status = "New";
+            }
+            if (status.trim().equals("В работе")) {
+                status = "InWork";
+            }
+            if (status.trim().equals("Закрыт")) {
+                status = "Closed";
+            }
+            if (status.trim().equals("Отменен")) {
+                status = "Cancel";
+            }
+
+            requests = service.getRequestPageStatus(type, status, pageNumber, itemsPerPage); // Параметр itemsPerPage добавлен
+            totalRequestsCount = service.getTotalRequestsCountByStatus(type, status);
+            isStatus = false;
+        }
+
+        List<Status> bidStatus = List.of(Status.values());
+        List<String> formattedDates = requests.stream()
+                .map(request -> formatedDate(request.getCreateDate()))
+                .collect(Collectors.toList());
+
+        model.addAttribute("bidList", requests);
+        model.addAttribute("formattedBidList", formattedDates);
+        model.addAttribute("bidStatus", bidStatus);
+        model.addAttribute("currentPage", pageNumber);
+        model.addAttribute("booleanCurrentPage", currentPage);
+        model.addAttribute("status", isStatus);
+        model.addAttribute("selectedStatus", status);
+
+        boolean hasNextPage = (requests.size() == itemsPerPage && totalRequestsCount > (pageNumber + 1) * itemsPerPage);
+        model.addAttribute("hasNextPage", hasNextPage);
+
+        return "requestslist";
+    }
 }
