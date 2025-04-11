@@ -141,7 +141,7 @@ public class UniversalRepository {
 
     public List<Requests> getRequestsByStatus(String status, String type, int page, int pageSize) {
         Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
-        Status requestStatus = Status.valueOf(status.toUpperCase()); // Изменено на toUpperCase(), чтобы избежать ошибок
+        Status requestStatus = Status.valueOf(status);
         return entityManager.createQuery("SELECT e FROM Requests e WHERE e.typeRequest = :type AND e.status = :status ORDER BY e.requestNumber", Requests.class)
                 .setParameter("type", requestType)
                 .setParameter("status", requestStatus)

@@ -169,80 +169,75 @@
     </div>
 </div>
 
-<#--<script>-->
-<#--    $(document).ready(function () {-->
-<#--        let selectedRequestNumber;-->
-
-<#--        $('.clickable-row').on('contextmenu', function (event) {-->
-<#--            event.preventDefault();-->
-<#--            selectedRequestNumber = $(this).data('request-number');-->
-<#--            $('#contextMenu').css({-->
-<#--                display: 'block',-->
-<#--                left: event.pageX,-->
-<#--                top: event.pageY-->
-<#--            });-->
-<#--        });-->
-
-<#--        $(document).on('click', function () {-->
-<#--            $('#contextMenu').hide();-->
-<#--        });-->
-
-<#--        $('#editRequest').on('click', function () {-->
-<#--            $('#contextMenu').hide();-->
-<#--            openRequestModal(selectedRequestNumber);-->
-<#--        });-->
-
-<#--        $(document).on('keydown', function (e) {-->
-<#--            if (e.key === 'Escape') {-->
-<#--                $('#contextMenu').hide();-->
-<#--            }-->
-<#--        });-->
-
-<#--        function openRequestModal(requestNumber) {-->
-<#--            $.get(`/view/` + requestNumber, function (data) {-->
-<#--                $('#viewContent').html(data);-->
-<#--                $('#viewRequestModal').modal('show');-->
-<#--            }).fail(function () {-->
-<#--                alert("Ошибка загрузки данных. Попробуйте еще раз.");-->
-<#--            });-->
-<#--        }-->
-
-<#--        $('#viewRequestModal').on('hidden.bs.modal', function () {-->
-<#--            location.reload();-->
-<#--        });-->
-
-<#--        $('#applyFilter').on('click', function () {-->
-<#--            const selectedStatus = $('#statusSelect').val();-->
-<#--            filterRequests(selectedStatus);-->
-<#--            $('#filterModal').modal('hide');-->
-<#--        });-->
-
-<#--        function filterRequests(selectedStatus) {-->
-<#--            const rows = $('tbody tr');-->
-<#--            rows.each(function () {-->
-<#--                const statusId = $(this).find('td[data-status-id]').data('status-id');-->
-<#--                if (selectedStatus === "" || statusId == selectedStatus) {-->
-<#--                    $(this).show();-->
-<#--                    if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {-->
-<#--                        $(this).addClass('row-closed');-->
-<#--                    } else {-->
-<#--                        $(this).removeClass('row-closed');-->
-<#--                    }-->
-<#--                } else {-->
-<#--                    $(this).hide();-->
-<#--                }-->
-<#--            });-->
-<#--        }-->
-<#--        $('tbody tr').each(function () {-->
-<#--            if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {-->
-<#--                $(this).addClass('row-closed');-->
-<#--            }-->
-<#--        });-->
-<#--    });-->
-<#--</script>-->
-
 <script>
     $(document).ready(function () {
+        let selectedRequestNumber;
+
+        $('.clickable-row').on('contextmenu', function (event) {
+            event.preventDefault();
+            selectedRequestNumber = $(this).data('request-number');
+            $('#contextMenu').css({
+                display: 'block',
+                left: event.pageX,
+                top: event.pageY
+            });
+        });
+
+        $(document).on('click', function () {
+            $('#contextMenu').hide();
+        });
+
+        $('#editRequest').on('click', function () {
+            $('#contextMenu').hide();
+            openRequestModal(selectedRequestNumber);
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') {
+                $('#contextMenu').hide();
+            }
+        });
+
+        function openRequestModal(requestNumber) {
+            $.get(`/view/` + requestNumber, function (data) {
+                $('#viewContent').html(data);
+                $('#viewRequestModal').modal('show');
+            }).fail(function () {
+                alert("Ошибка загрузки данных. Попробуйте еще раз.");
+            });
+        }
+
+        $('#viewRequestModal').on('hidden.bs.modal', function () {
+            location.reload();
+        });
+
+        $('#applyFilter').on('click', function () {
+            const selectedStatus = $('#statusSelect').val();
+            filterRequests(selectedStatus);
+            $('#filterModal').modal('hide');
+        });
+
+        function filterRequests(selectedStatus) {
+            const rows = $('tbody tr');
+            rows.each(function () {
+                const statusId = $(this).find('td[data-status-id]').data('status-id');
+                if (selectedStatus === "" || statusId == selectedStatus) {
+                    $(this).show();
+                    if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {
+                        $(this).addClass('row-closed');
+                    } else {
+                        $(this).removeClass('row-closed');
+                    }
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+        $('tbody tr').each(function () {
+            if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {
+                $(this).addClass('row-closed');
+            }
+        });
         $('#applyFilter').on('click', function () {
             let selectedStatus = $('#statusSelect').val();
             const type = 'constructor';
@@ -251,7 +246,7 @@
             window.location.href = url;
             $('#filterModal').modal('hide');
         });
-    })
+    });
 </script>
 
 </body>
