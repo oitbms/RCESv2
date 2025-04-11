@@ -326,6 +326,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById("qty").removeAttribute("data-required")
         } else {
             document.getElementById("qtyCreateField").classList.add('hidden')
+            document.getElementById("qty").removeAttribute("data-required")
         }
     }
 });

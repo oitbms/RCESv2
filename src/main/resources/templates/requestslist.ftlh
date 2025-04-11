@@ -6,56 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
+    <link rel="stylesheet" href="/stylesMain.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
-
-    <style>
-        th, td {
-            text-align: center; /* Выравнивание текста */
-            border-radius: 5px; /* Округление углов ячеек */
-        }
-        th {
-            white-space: nowrap;
-            background-color: #3a56d4; /* Цвет фона заголовков */
-            color: white; /* Цвет текста заголовков */
-            border-radius: 5px; /* Округление углов заголовков */
-        }
-        tr:hover {
-            background-color: #6c757d; /* Изменение фона строки при наведении */
-        }
-        .context-menu {
-            display: none;
-            position: absolute;
-            z-index: 1000;
-            background-color: white;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-        }
-
-        .context-menu-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .context-menu-item:hover {
-            background-color: dodgerblue;
-        }
-        .row-closed {
-            background-color: dodgerblue;
-        }
-        .pagination a {
-            margin: 0 15px; /* Увеличение расстояния между элементами пагинации */
-            text-decoration: none;
-            color: blue;
-            font-size: 16px; /* Увеличение размера шрифта пагинации */
-        }
-    </style>
 </head>
 
 <body>

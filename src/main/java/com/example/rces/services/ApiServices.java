@@ -132,13 +132,15 @@ public class ApiServices {
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
-            if (request.getStatus() != oldRequest.getStatus()) {
+            if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
+                tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
+            } else if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                tgService.sendMessageToUser(request, updaterEmployee.getChatId(), false, request.getEmployee() != oldRequest.getEmployee());
+                tgService.sendMessageToUser(request, updaterEmployee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
             }
             //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {

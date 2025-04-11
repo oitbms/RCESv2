@@ -1,129 +1,41 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 40px 40px;
-    background: #f8f9fa;
-    min-height: 100vh;
-}
-
-.content-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.filter-container {
-    width: 100%;
-    max-width: 320px;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 24px;
-}
-
-.filter-container label {
-    display: block;
-    margin-bottom: 12px;
-    font-weight: 600;
-    color: #333;
-}
-
-#statusFilter {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    background: #fff;
-    box-sizing: border-box;
-}
-
-.requests-container {
-    width: 100%;
-}
-
-h2 {
-    color: #2c3e50;
-    margin: 24px 0 16px 0;
-    font-size: 22px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    margin-bottom: 24px;
-}
-
 th, td {
-    padding: 14px 16px;
-    border: 1px solid #e9ecef;
-    text-align: left;
+    text-align: center; /* Выравнивание текста */
+    border-radius: 5px; /* Округление углов ячеек */
 }
-
 th {
-    background: #2c3e50;
-    color: white;
-    font-weight: 500;
+    white-space: nowrap;
+    background-color: #3a56d4; /* Цвет фона заголовков */
+    color: white; /* Цвет текста заголовков */
+    border-radius: 5px; /* Округление углов заголовков */
 }
-
 tr:hover {
-    background: #f8f9fa;
+    background-color: #6c757d; /* Изменение фона строки при наведении */
+}
+.context-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
 }
 
-button {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
+.context-menu-item {
+    padding: 8px 12px;
     cursor: pointer;
-    transition: background 0.2s;
+    border-bottom: 1px solid #ddd;
 }
 
-button:hover {
-    background: #2980b9;
+.context-menu-item:hover {
+    background-color: dodgerblue;
 }
-
-.create-button {
-    margin-top: 32px;
+.row-closed {
+    background-color: dodgerblue;
 }
-
-@media (max-width: 1200px) {
-    body {
-        padding: 20px;
-    }
-
-    .content-container {
-        align-items: center;
-    }
-
-    .filter-container {
-        position: static;
-        margin-bottom: 24px;
-        width: 100%;
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .filter-container {
-        padding: 16px;
-    }
-
-    #statusFilter {
-        padding: 10px;
-    }
-
-    table th, table td {
-        padding: 10px 12px;
-    }
-
-    button {
-        padding: 10px 20px;
-    }
+.pagination a {
+    margin: 0 15px; /* Увеличение расстояния между элементами пагинации */
+    text-decoration: none;
+    color: blue;
+    font-size: 16px; /* Увеличение размера шрифта пагинации */
 }
