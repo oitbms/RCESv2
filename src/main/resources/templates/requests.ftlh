@@ -331,5 +331,19 @@
 
 <!-- Уведомления -->
 <div id="notification-container"></div>
+
+<#--<script>-->
+<#--    document.addEventListener('DOMContentLoaded', function() {-->
+<#--        const button = document.getElementById('viewAllRequestsBtn');-->
+<#--        if (button) { // Проверка, что элемент существует-->
+<#--            button.addEventListener('click', function() {-->
+<#--                const bidType = "constructor"; // Получаем тип заявки-->
+<#--                // Переход на страницу со списком заявок передавая тип-->
+<#--                window.location.href = `/requestslist/` + bidType; // Измените на нужный вам путь-->
+<#--            });-->
+<#--        }-->
+<#--    });-->
+<#--</script>-->
+
 </body>
 </html>

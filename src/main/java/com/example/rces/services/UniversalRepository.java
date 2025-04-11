@@ -2,6 +2,8 @@ package com.example.rces.services;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
+import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -126,5 +128,43 @@ public class UniversalRepository {
         return entityManager.createQuery("SELECT e FROM Employee e WHERE e.chatId = :chatId", Employee.class)
                 .setParameter("chatId", chatId)
                 .getSingleResult();
+    }
+
+    public List<Requests> getRequestsByType(String type, int page, int pageSize) {
+        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
+        return entityManager.createQuery("SELECT e from Requests e WHERE e.typeRequest = :type ORDER BY e.requestNumber", Requests.class)
+                .setParameter("type", requestType)
+                .setFirstResult(page * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList();
+    }
+
+    public List<Requests> getRequestsByStatus(String status, String type, int page, int pageSize) {
+        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
+        Status requestStatus = Status.valueOf(status);
+        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.typeRequest = :type AND e.status = :status ORDER BY e.requestNumber", Requests.class)
+                .setParameter("type", requestType)
+                .setParameter("status", requestStatus)
+                .setFirstResult(page * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList();
+    }
+
+    public int getTotalRequestsCount(String type) {
+        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
+        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Requests e WHERE e.typeRequest = :type", Long.class)
+                .setParameter("type", requestType)
+                .getSingleResult();
+        return count.intValue();
+    }
+
+    public int getTotalRequestsCountByStatus(String type, String status) {
+        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
+        Status requestStatus = Status.valueOf(status);
+        Long count = entityManager.createQuery("SELECT COUNT(e) from Requests e WHERE e.typeRequest =:type and e.status =:status", Long.class)
+                .setParameter("type",requestType)
+                .setParameter("status",requestStatus)
+                .getSingleResult();
+        return count.intValue();
     }
 }
