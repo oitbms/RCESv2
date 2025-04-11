@@ -122,37 +122,27 @@ public class RequestController {
                                  Model model) {
         boolean currentPage = pageNumber > 0;
         boolean isStatus = true;
-        int itemsPerPage = 10; // Определите количество элементов на странице
+        int itemsPerPage = 20;
         int totalRequestsCount;
-
         List<Requests> requests;
         if (status == null || status.isEmpty()) {
-            requests = service.getRequestPage(pageNumber, type, itemsPerPage); // Параметр itemsPerPage добавлен
+            requests = service.getRequestPage(pageNumber, type, itemsPerPage);
             totalRequestsCount = service.getTotalRequestsCount(type);
         } else {
-            if (status.trim().equals("Новый")) {
-                status = "New";
+            switch (status.trim()) {
+                case "Новый" -> status = "New";
+                case "В работе" -> status = "InWork";
+                case "Закрыт" -> status = "Closed";
+                case "Отменен" -> status = "Cancel";
             }
-            if (status.trim().equals("В работе")) {
-                status = "InWork";
-            }
-            if (status.trim().equals("Закрыт")) {
-                status = "Closed";
-            }
-            if (status.trim().equals("Отменен")) {
-                status = "Cancel";
-            }
-
-            requests = service.getRequestPageStatus(type, status, pageNumber, itemsPerPage); // Параметр itemsPerPage добавлен
+            requests = service.getRequestPageStatus(type, status, pageNumber, itemsPerPage);
             totalRequestsCount = service.getTotalRequestsCountByStatus(type, status);
             isStatus = false;
         }
-
         List<Status> bidStatus = List.of(Status.values());
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
-
         model.addAttribute("bidList", requests);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("bidStatus", bidStatus);
@@ -160,10 +150,8 @@ public class RequestController {
         model.addAttribute("booleanCurrentPage", currentPage);
         model.addAttribute("status", isStatus);
         model.addAttribute("selectedStatus", status);
-
-        boolean hasNextPage = (requests.size() == itemsPerPage && totalRequestsCount > (pageNumber + 1) * itemsPerPage);
+        boolean hasNextPage = (requests.size() == itemsPerPage) && (totalRequestsCount > (pageNumber + 1) * itemsPerPage);
         model.addAttribute("hasNextPage", hasNextPage);
-
         return "requestslist";
     }
 }
