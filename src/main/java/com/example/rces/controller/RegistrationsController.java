@@ -2,6 +2,7 @@ package com.example.rces.controller;
 
 import com.example.rces.configuration.CustomAuthenticationProvider;
 import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
 import com.example.rces.services.UniversalRepository;
@@ -30,16 +31,16 @@ public class RegistrationsController {
 
     @GetMapping("/admin")
     public String admin(Model model) {
-//        List<Role> roles = List.of(Role.values());
         model.addAttribute("users", universalService.findAll(Employee.class));
-//        model.addAttribute("roles", roles);
         return "admin";
     }
 
     @GetMapping("/menu")
     public String menu(Principal principal, Model model) {
         Employee user = universalRepository.findByName(Employee.class,principal.getName());
+        List<Requests> requestsList = universalService.findRequestName(user);
         model.addAttribute("user",user);
+        model.addAttribute("requests",requestsList);
         return "menu";
     }
 

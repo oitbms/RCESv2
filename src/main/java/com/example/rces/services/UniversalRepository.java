@@ -167,4 +167,10 @@ public class UniversalRepository {
                 .getSingleResult();
         return count.intValue();
     }
+
+    public List<Requests> findRequestByName(Employee user) {
+        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.updateBy =:name ORDER BY e.status", Requests.class)
+                .setParameter("name",user)
+                .getResultList();
+    }
 }

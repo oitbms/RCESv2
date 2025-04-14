@@ -16,12 +16,8 @@
         .nav-link {
             font-weight: bold; /* выделение ссылок на навигацию */
         }
-        .btn-custom {
-            background-color: #007bff; /* цвет фона кнопки */
-            color: white; /* цвет текста кнопки */
-        }
-        .btn-custom:hover {
-            background-color: #0056b3;
+        .taq{
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -62,6 +58,46 @@
                 </li>
             </ul>
         </nav>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Принятые мной заявки
+        </button>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Заявки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover vertical-align: middle">
+                    <thead>
+                    <tr class="taq">
+                        <th>#</th>
+                        <th>ЗК</th>
+                        <th>Статус</th>
+                        <th>Просмотр задания</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <#list requests as req>
+                        <tr>
+                            <td>${req.requestNumber}</td>
+                            <td>${req.customerOrder.getName()}</td>
+                            <td>${req.status.getName()}</td>
+                            <td>
+                                <a href="view/${req.requestNumber}">Просмотр</a>
+                            </td>
+                        </tr>
+                    </#list>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

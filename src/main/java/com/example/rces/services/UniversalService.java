@@ -88,6 +88,10 @@ public class UniversalService {
         return repository.findEmployeeByChatId(chatId);
     }
 
+    public List<Requests> findRequestName(Employee user) {
+        return repository.findRequestByName(user);
+    }
+
     public List<Requests> getRequestPage(int page, String type, int itemsPerPage) {
         return repository.getRequestsByType(type, page, itemsPerPage);
     }
@@ -103,4 +107,5 @@ public class UniversalService {
     public int getTotalRequestsCountByStatus(String type, String status) {
         return repository.getTotalRequestsCountByStatus(type,status);
     }
+
 }
