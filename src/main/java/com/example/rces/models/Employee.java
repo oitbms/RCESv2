@@ -15,6 +15,7 @@ import java.util.Collections;
 public class Employee implements UserDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)

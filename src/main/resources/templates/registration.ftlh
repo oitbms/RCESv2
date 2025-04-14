@@ -13,15 +13,15 @@
             <h2 class="text-center">Add New User</h2>
             <form action="/registration" method="post" class="mt-4">
                 <div class="form-group">
-                    <label for="name">User Name:</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
+                    <label for="name">Имя пользователя:</label>
+                    <input type="text" class="form-control" id="name" name="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password:</label>
+                    <label for="password">Пароль:</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 <div class="form-group">
-                    <label for="role">Role:</label>
+                    <label for="role">Роль:</label>
                     <select id="role" name="role" class="form-control" required>
                         <#list userRole as role>
                             <option value="${role}">${role}</option>
@@ -36,8 +36,7 @@
                         </#list>
                     </select>
                 </div>
-<#--                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />-->
-                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <button type="submit" class="btn btn-primary">Добавить пользователя</button>
             </form>
             <div class="text-center mt-3">
                 <a href="/login">Login</a>

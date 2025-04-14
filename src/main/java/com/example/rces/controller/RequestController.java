@@ -139,6 +139,7 @@ public class RequestController {
             totalRequestsCount = service.getTotalRequestsCountByStatus(type, status);
             isStatus = false;
         }
+        boolean hasNextPage = (requests.size() == itemsPerPage) && (totalRequestsCount > (pageNumber + 1) * itemsPerPage);
         List<Status> bidStatus = List.of(Status.values());
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
@@ -149,8 +150,8 @@ public class RequestController {
         model.addAttribute("currentPage", pageNumber);
         model.addAttribute("booleanCurrentPage", currentPage);
         model.addAttribute("status", isStatus);
+        model.addAttribute("type", type);
         model.addAttribute("selectedStatus", status);
-        boolean hasNextPage = (requests.size() == itemsPerPage) && (totalRequestsCount > (pageNumber + 1) * itemsPerPage);
         model.addAttribute("hasNextPage", hasNextPage);
         return "requestslist";
     }

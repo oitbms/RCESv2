@@ -13,7 +13,6 @@
     <table class="table table-bordered" id="requestTable">
         <thead>
         <tr>
-<#--            <th>ID</th>-->
             <th>Сотрудник</th>
             <th>Состояние</th>
             <th>Должность</th>
@@ -23,10 +22,10 @@
         <tbody>
         <#list users as req>
             <tr id="req-${req.id}">
-<#--                <td>${req.id} (полный UUID проверка)</td> <!-- Добавлена проверка для отладки &ndash;&gt;-->
+
                 <td>${req.username}</td>
                 <td>${req.enabled?c}</td>
-                <td><#list req.role as role>${role}<#if role_has_next>, </#if></#list></td>
+                <td>${req.getRole()!""}</td>
                 <td>${(req.username)!" "}</td>
                 <td><button onclick="deleteReq('${req.id}')">Удалить</button></td>
             </tr>

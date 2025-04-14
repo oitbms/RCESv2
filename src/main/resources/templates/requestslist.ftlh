@@ -63,7 +63,7 @@
             <#if booleanCurrentPage>
                 <a class="btn btn-link" href="${currentPage - 1}">Предыдущая страница</a>
             </#if>
-            <#if !booleanCurrentPage>
+            <#if hasNextPage>
                 <a class="btn btn-link" href="${currentPage + 1}">Следующая страница</a>
             </#if>
         </div>
@@ -128,6 +128,7 @@
 
 <script>
     $(document).ready(function () {
+        const requestType = "${type}";
         let selectedRequestNumber;
 
         $('.clickable-row').on('contextmenu', function (event) {
@@ -197,9 +198,9 @@
         });
         $('#applyFilter').on('click', function () {
             let selectedStatus = $('#statusSelect').val();
-            const type = 'constructor';
             const pageNumber = 0;
-            const url = `/requestslist/` + type + `/` + pageNumber + (selectedStatus ? `?status=` + selectedStatus : '');
+            const url = `/requestslist/` + requestType + `/` + pageNumber + (selectedStatus ? `?status=` + selectedStatus : '');
+
             window.location.href = url;
             $('#filterModal').modal('hide');
         });

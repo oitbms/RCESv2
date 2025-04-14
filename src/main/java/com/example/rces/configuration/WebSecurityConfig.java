@@ -29,19 +29,24 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers( "/login").permitAll()
-                        .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST","OTK","CONSTRUCTOR","ADMIN","MASTER")
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
-                        .requestMatchers("/create","/requestslist/**")
-                                .hasAnyAuthority("MASTER", "ADMIN")
+                        .requestMatchers("/create", "/requestslist/**")
+                        .hasAnyAuthority("MASTER", "ADMIN")
                         .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()
-                )
-                .logout(logout -> logout.permitAll());
+                ).
+                logout()
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll();
 
         return http.build();
     }
