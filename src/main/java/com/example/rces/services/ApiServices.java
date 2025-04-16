@@ -127,20 +127,27 @@ public class ApiServices {
             }
         });
 
+
         request.setUpdateBy(updaterEmployee);
         request.setUpdateDate(LocalDateTime.now());
+        request.setDateWork(LocalDateTime.now());
+        request.setVersion(request.getVersion()+1);
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
+            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
             if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
                 tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
             } else if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request, bidType);
+                }else {
+                    //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
+                    tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                tgService.sendMessageToUser(request, updaterEmployee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
+                tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
             }
             //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {

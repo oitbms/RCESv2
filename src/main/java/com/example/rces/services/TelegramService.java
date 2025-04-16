@@ -106,12 +106,16 @@ public class TelegramService extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
             Employee employee = service.findEmployeeByChatId(update.getMessage().getChatId());
             String message = update.getMessage().getText();
-            if (message.matches("[1-5]")) {
-                Appraisal score = Appraisal.fromId(Integer.parseInt(message));
-                Requests request = service.findAllByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId()).get(0);
-                request.setScore(score);
-                service.save(request);
-                sendScoreIsSave(request.getChatId());
+            try {
+                if (message.matches("[1-5]")) {
+                    Appraisal score = Appraisal.fromId(Integer.parseInt(message));
+                    Requests request = service.findAllByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId()).get(0);
+                    request.setScore(score);
+                    service.save(request);
+                    sendScoreIsSave(request.getChatId());
+                }
+            } catch (Exception e) {
+
             }
         }
     }

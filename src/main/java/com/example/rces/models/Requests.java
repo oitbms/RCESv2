@@ -22,9 +22,20 @@ public class Requests implements Cloneable {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    @Version
+    @Column(
+            nullable = false,
+            columnDefinition = "integer default '0'"
+    )
+    private int version;
+
     @Column(name = "type_request")
     @Enumerated(EnumType.STRING)
     private Type typeRequest;
+
+    @Column(name = "workDate")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dateWork;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by")
@@ -119,12 +130,31 @@ public class Requests implements Cloneable {
         this.id = id;
     }
 
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
     public Type getTypeRequest() {
         return typeRequest;
     }
 
     public void setTypeRequest(Type typeRequest) {
         this.typeRequest = typeRequest;
+    }
+
+    public LocalDateTime getDateWork() {
+        return dateWork;
+    }
+
+    //Если старая версия не в работе и новая версия в работе
+    public void setDateWork(LocalDateTime dateWork) {
+        if (version<= 1&& status.equals(Status.InWork)) {
+            this.dateWork = dateWork;
+        }
     }
 
     public Employee getCreatedBy() {

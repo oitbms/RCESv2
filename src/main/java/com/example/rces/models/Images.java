@@ -29,7 +29,6 @@ public class Images {
     @Column(name = "request_number", insertable = false, updatable = false)
     private Integer requestNumber;
 
-
     public Images() {
     }
 

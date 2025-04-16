@@ -190,7 +190,7 @@
         </div>
 
         <div class="form-group form-group-flex" id="descriptionViewField">
-            <label>Описание:</label>
+            <label>Описание решения:</label>
             <input type="text" id="description"
                    value="${bid.description!''}"
                    class="form-input"
