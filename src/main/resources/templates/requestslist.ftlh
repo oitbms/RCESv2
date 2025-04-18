@@ -128,7 +128,7 @@
 
 <script>
     $(document).ready(function () {
-        const requestType = "${type}";
+        const requestType = "${type?lower_case}";
         let selectedRequestNumber;
 
         $('.clickable-row').on('contextmenu', function (event) {

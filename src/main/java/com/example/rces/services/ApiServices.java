@@ -9,7 +9,9 @@ import com.example.rces.models.enums.Inconsistency;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,8 +23,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.handleImageCollection;
-import static com.example.rces.services.ServiceUtil.isJson;
+import static com.example.rces.services.ServiceUtil.*;
 
 @Service
 public class ApiServices {
@@ -61,7 +62,7 @@ public class ApiServices {
     }
 
     @Transactional
-    public void update(String bidType, UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
+    public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
         Requests request = service.findById(Requests.class, id);
         Requests oldRequest = null;
         try {
@@ -126,8 +127,6 @@ public class ApiServices {
                 }
             }
         });
-
-
         request.setUpdateBy(updaterEmployee);
         request.setUpdateDate(LocalDateTime.now());
         request.setDateWork(LocalDateTime.now());
@@ -140,7 +139,7 @@ public class ApiServices {
                 tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
             } else if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getTypeRequest().equals(Requests.Type.constructor)) {
-                    tgService.sendUpdateMessageToGroup(request, bidType);
+                    tgService.sendUpdateMessageToGroup(request);
                 }else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
                     tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));

@@ -77,7 +77,7 @@ public class ApiController {
                            @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
                             @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
-        service.update(bidType, id, sendMessage, updatedFields);
+        service.update(id, sendMessage, updatedFields);
     }
 
     @GetMapping("/typeRequest")

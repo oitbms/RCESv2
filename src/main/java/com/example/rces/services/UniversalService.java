@@ -10,12 +10,10 @@ import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,8 +33,8 @@ public class UniversalService {
         return repository.findById(entity, id);
     }
 
-    public <T> T save(T entity) {
-        return repository.save(entity);
+    public <T> void save(T entity) {
+        repository.save(entity);
     }
 
     public <T> void delete(T entity) {
@@ -68,7 +66,7 @@ public class UniversalService {
             List<Images> images = saveFiles(additionalFiles, request);
             request.setImages(images);
         }
-        if (reason != null){
+        if (reason != null) {
             request.setReason(reason);
         }
         request.setItem(item);
@@ -84,28 +82,22 @@ public class UniversalService {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
     }
 
-    public Employee findEmployeeByChatId(Long chatId) {
-        return repository.findEmployeeByChatId(chatId);
-    }
+//    public Employee findEmployeeByChatId(Long chatId) {
+//        return repository.findEmployeeByChatId(chatId);
+//    }
 
-    public List<Requests> findRequestName(Employee user) {
-        return repository.findRequestByName(user);
-    }
+//    public List<Requests> findRequestName(Employee user) {
+//        return repository.findRequestByName(user);
+//    }
 
-    public List<Requests> getRequestPage(int page, String type, int itemsPerPage) {
-        return repository.getRequestsByType(type, page, itemsPerPage);
-    }
 
     public List<Requests> getRequestPageStatus(String type, String status, int page, int itemsPerPage) {
         return repository.getRequestsByStatus(status, type, page, itemsPerPage);
     }
 
-    public int getTotalRequestsCount(String type) {
-        return repository.getTotalRequestsCount(type);
-    }
 
     public int getTotalRequestsCountByStatus(String type, String status) {
-        return repository.getTotalRequestsCountByStatus(type,status);
+        return repository.getTotalRequestsCountByStatus(type, status);
     }
 
 }

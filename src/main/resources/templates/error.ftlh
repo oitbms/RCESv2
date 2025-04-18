@@ -130,6 +130,11 @@
         </div>
     </#if>
 
+    <#if RequestParameters.message??>
+        <div class="error-code">
+            ${RequestParameters.message}
+        </div>
+    </#if>
 
     <a href="/" class="home-link">Вернуться на главную</a>
 </div>

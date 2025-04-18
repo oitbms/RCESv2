@@ -13,10 +13,10 @@ async function fetchData(endpoint, param) {
 async function saveData(images, customerOrder) {
     let formData = new FormData(document.getElementById('viewRequestForm'));
     let data = Object.fromEntries(formData.entries());
-    if (images!=null) {
+    if (images != null) {
         data["images"] = images;
     }
-    if (customerOrder!=null) {
+    if (customerOrder != null) {
         data["customerOrder"] = customerOrder;
     }
 
@@ -35,6 +35,10 @@ async function saveData(images, customerOrder) {
         },
         body: JSON.stringify(data),
     }).then(r => {
+        if (r.status===403) {
+            window.location.href = `/error?message=Нет доступа к закрытию или редактированию заявки`;
+            return;
+        }
         notification('Запись сохранена', 3000, 'success');
         if (images != null) {
             renderPhotos(images);
@@ -58,7 +62,7 @@ document.querySelectorAll('.openModal').forEach(button => {
 
         modalWindow.querySelectorAll('.selectable').forEach(li => {
             li.addEventListener('click', () => {
-                const update = document.getElementById(inputId).value!==li.textContent.trim();
+                const update = document.getElementById(inputId).value !== li.textContent.trim();
                 const entity = JSON.parse(decodeURIComponent(li.dataset.entity));
                 document.getElementById(inputId).value = li.textContent.trim();
                 document.getElementById(hiddenEntity).value = JSON.stringify(entity);
@@ -70,7 +74,7 @@ document.querySelectorAll('.openModal').forEach(button => {
     });
 });
 
-document.querySelector('form').addEventListener('submit', function(event) {
+document.querySelector('form').addEventListener('submit', function (event) {
     const requiredFields = document.querySelectorAll('[data-required]');
     let valid = true;
 
@@ -97,12 +101,12 @@ if (viewForm) {
         }, 3000);
     });
 // Обработка ввода описания решения с задержкой
-        document.getElementById('description').addEventListener('input', function () {
-            clearTimeout(timeout);
-            timeout = setTimeout(function () {
-                saveData();
-            }, 3000);
-        });
+    document.getElementById('description').addEventListener('input', function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            saveData();
+        }, 3000);
+    });
 // Обработка ввода Заказа клиента с задержкой
     document.getElementById('customerOrderString').addEventListener('input', function () {
         clearTimeout(timeout);
@@ -140,12 +144,12 @@ function renderPhotos(images) {
         `;
 
         // Обработчик удаления
-        imgWrapper.querySelector('.delete-photo-btn').addEventListener('click', function() {
+        imgWrapper.querySelector('.delete-photo-btn').addEventListener('click', function () {
             deletePhoto(index);
         });
 
         // Обработчик просмотра
-        imgWrapper.querySelector('img').addEventListener('click', function() {
+        imgWrapper.querySelector('img').addEventListener('click', function () {
             const fullPhotoModal = document.getElementById('fullPhotoModal');
             const fullPhoto = document.getElementById('fullPhoto');
             fullPhoto.src = this.src;
@@ -175,7 +179,7 @@ document.getElementById('addPhotoBtn').addEventListener('click', function () {
     document.getElementById('photoInput').click();
 });
 
-document.getElementById('photoInput').addEventListener('change', async function(event) {
+document.getElementById('photoInput').addEventListener('change', async function (event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -189,7 +193,7 @@ document.getElementById('photoInput').addEventListener('change', async function(
     document.getElementById('photoContainer').prepend(tempPreview);
 
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = async function (e) {
         tempPreview.querySelector('img').src = e.target.result;
         tempPreview.querySelector('img').classList.remove('loading');
         const id = document.getElementById('id').value;
@@ -199,7 +203,7 @@ document.getElementById('photoInput').addEventListener('change', async function(
         renderPhotos(images);
     };
 
-    reader.onerror = function() {
+    reader.onerror = function () {
         tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
     };
 
@@ -239,7 +243,8 @@ document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => 
         let selected = new Map();
         try {
             JSON.parse(hidden.value || "[]").forEach(e => selected.set(e.name, e));
-        } catch {}
+        } catch {
+        }
 
         const updateUI = () => {
             const arr = Array.from(selected.values());

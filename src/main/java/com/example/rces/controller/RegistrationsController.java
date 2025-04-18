@@ -38,7 +38,7 @@ public class RegistrationsController {
     @GetMapping("/menu")
     public String menu(Principal principal, Model model) {
         Employee user = universalRepository.findByName(Employee.class,principal.getName());
-        List<Requests> requestsList = universalService.findRequestName(user);
+        List<Requests> requestsList = universalService.findAllByField(Requests.class, "updateBy", user);
         model.addAttribute("user",user);
         model.addAttribute("requests",requestsList);
         return "menu";

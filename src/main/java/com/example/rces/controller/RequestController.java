@@ -12,6 +12,7 @@ import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,8 +128,12 @@ public class RequestController {
         int totalRequestsCount;
         List<Requests> requests;
         if (status == null || status.isEmpty()) {
-            requests = service.getRequestPage(pageNumber, type, itemsPerPage);
-            totalRequestsCount = service.getTotalRequestsCount(type);
+            requests = service.findAllByField(Requests.class, "typeRequest", type)
+                    .stream().sorted(Comparator.comparing(Requests::getRequestNumber))
+                    .skip((long) pageNumber * itemsPerPage)
+                    .limit(itemsPerPage)
+                    .collect(Collectors.toList());
+            totalRequestsCount = service.findAllByField(Requests.class, "typeRequest", type).size();
         } else {
             switch (status.trim()) {
                 case "Новый" -> status = "New";

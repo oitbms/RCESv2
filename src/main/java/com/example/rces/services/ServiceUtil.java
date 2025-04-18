@@ -1,9 +1,12 @@
 package com.example.rces.services;
 
+import com.example.rces.models.Employee;
 import com.example.rces.models.Images;
 import com.example.rces.models.Requests;
+import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -38,7 +41,7 @@ public class ServiceUtil {
         List<Images> currentImages = request.getImages();
         List<Images> toRemove = new ArrayList<>(currentImages);
         if (newImages != null) {
-            toRemove.removeIf(img -> newImages.contains(img));
+            toRemove.removeIf(newImages::contains);
         }
         toRemove.forEach(img -> img.setRequest(null));
         currentImages.removeAll(toRemove);
@@ -78,5 +81,19 @@ public class ServiceUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static boolean allowedCreateOrUpdate(Object entity, Employee updaterEmployee, Boolean create) {
+        if (!(entity instanceof Requests request)) {
+            return true;
+        }
+        if (create && updaterEmployee.getRole().equals("ADMIN")) {
+            return true;
+        } else if (!request.getEmployee().getId().equals(updaterEmployee.getId()) && !updaterEmployee.getRole().equals("ADMIN")) {
+            throw new ForbiddenException();
+        } else if ((request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) && !request.getCreatedBy().equals(updaterEmployee)) {
+            throw new ForbiddenException();
+        }
+        else return true;
     }
 }

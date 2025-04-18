@@ -91,12 +91,12 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(String.format(messageUrl, botToken, chatId, "Оценка сохранена"), String.class);
     }
 
-    public void sendUpdateMessageToGroup(Requests request, String bidUrl) {
+    public void sendUpdateMessageToGroup(Requests request) {
         String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedOrRedirectMessage(request, false, false));
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToUser(Requests request, Long chatId, Boolean isCreate ,Boolean isRedirect) {
+    public void sendMessageToUser(Requests request, Long chatId, Boolean isCreate, Boolean isRedirect) {
         String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedOrRedirectMessage(request, isCreate, isRedirect));
         restTemplate.getForObject(url, String.class);
     }
@@ -104,7 +104,7 @@ public class TelegramService extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
-            Employee employee = service.findEmployeeByChatId(update.getMessage().getChatId());
+            Employee employee = service.findAllByField(Employee.class, "chatId", update.getMessage().getChatId()).get(0);
             String message = update.getMessage().getText();
             try {
                 if (message.matches("[1-5]")) {
@@ -114,26 +114,11 @@ public class TelegramService extends TelegramLongPollingBot {
                     service.save(request);
                     sendScoreIsSave(request.getChatId());
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }
     }
-
-//    private ReplyKeyboardMarkup createNumberKeyboard() {
-//        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-//        keyboardMarkup.setResizeKeyboard(true);
-//        keyboardMarkup.setOneTimeKeyboard(true);
-//        keyboardMarkup.setSelective(true);
-//        List<KeyboardRow> keyboardRows = new ArrayList<>();
-//        KeyboardRow row = new KeyboardRow();
-//        for (int i = 1; i <= 5; i++) {
-//            row.add(String.valueOf(i));
-//        }
-//        keyboardRows.add(row);
-//        keyboardMarkup.setKeyboard(keyboardRows);
-//        return keyboardMarkup;
-//    }
 
     @Override
     public String getBotUsername() {

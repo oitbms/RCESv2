@@ -11,10 +11,15 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import jakarta.ws.rs.ForbiddenException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
 
 @Repository
 public class UniversalRepository {
@@ -53,16 +58,19 @@ public class UniversalRepository {
     }
 
     public <T> T save(T entity) {
-        if (entityManager.contains(entity)) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Employee updaterCreaterEmployee = findByField(Employee.class, "name", authentication.getName()).get(0);
+        if (entityManager.contains(entity) && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
             return entityManager.merge(entity);
         }
         try {
             Object id = entityManager.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
-            if (id != null && entityManager.find(entity.getClass(), id) != null) {
+            if (id != null && entityManager.find(entity.getClass(), id) != null && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
                 return entityManager.merge(entity);
             }
         } catch (Exception ignored) {
         }
+        allowedCreateOrUpdate(entity, updaterCreaterEmployee, true);
         entityManager.persist(entity);
         return entity;
     }
@@ -124,21 +132,6 @@ public class UniversalRepository {
                 .getSingleResult();
     }
 
-    public Employee findEmployeeByChatId(Long chatId) {
-        return entityManager.createQuery("SELECT e FROM Employee e WHERE e.chatId = :chatId", Employee.class)
-                .setParameter("chatId", chatId)
-                .getSingleResult();
-    }
-
-    public List<Requests> getRequestsByType(String type, int page, int pageSize) {
-        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
-        return entityManager.createQuery("SELECT e from Requests e WHERE e.typeRequest = :type ORDER BY e.requestNumber", Requests.class)
-                .setParameter("type", requestType)
-                .setFirstResult(page * pageSize)
-                .setMaxResults(pageSize)
-                .getResultList();
-    }
-
     public List<Requests> getRequestsByStatus(String status, String type, int page, int pageSize) {
         Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
         Status requestStatus = Status.valueOf(status);
@@ -150,14 +143,6 @@ public class UniversalRepository {
                 .getResultList();
     }
 
-    public int getTotalRequestsCount(String type) {
-        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
-        Long count = entityManager.createQuery("SELECT COUNT(e) FROM Requests e WHERE e.typeRequest = :type", Long.class)
-                .setParameter("type", requestType)
-                .getSingleResult();
-        return count.intValue();
-    }
-
     public int getTotalRequestsCountByStatus(String type, String status) {
         Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
         Status requestStatus = Status.valueOf(status);
@@ -166,11 +151,5 @@ public class UniversalRepository {
                 .setParameter("status",requestStatus)
                 .getSingleResult();
         return count.intValue();
-    }
-
-    public List<Requests> findRequestByName(Employee user) {
-        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.updateBy =:name ORDER BY e.status", Requests.class)
-                .setParameter("name",user)
-                .getResultList();
     }
 }
