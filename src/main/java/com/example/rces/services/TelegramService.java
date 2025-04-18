@@ -89,7 +89,7 @@ public class TelegramService extends TelegramLongPollingBot {
 
     public void sendCompleted(Requests request) {
         restTemplate.getForObject(String.format(messageUrl, botToken, request.getCreatedBy().getChatId(),
-                "Заявка №" + request.getRequestNumber() + "Выполнена"), String.class);
+                "Заявка №" + request.getRequestNumber() + " Выполнена"), String.class);
     }
 
     private void sendScoreIsSave(Long chatId) {
