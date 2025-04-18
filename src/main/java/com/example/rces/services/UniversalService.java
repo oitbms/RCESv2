@@ -82,15 +82,6 @@ public class UniversalService {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
     }
 
-//    public Employee findEmployeeByChatId(Long chatId) {
-//        return repository.findEmployeeByChatId(chatId);
-//    }
-
-//    public List<Requests> findRequestName(Employee user) {
-//        return repository.findRequestByName(user);
-//    }
-
-
     public List<Requests> getRequestPageStatus(String type, String status, int page, int itemsPerPage) {
         return repository.getRequestsByStatus(status, type, page, itemsPerPage);
     }

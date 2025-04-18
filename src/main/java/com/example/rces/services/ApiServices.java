@@ -138,7 +138,10 @@ public class ApiServices {
             if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
                 tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
             } else if (request.getStatus() != oldRequest.getStatus()) {
-                if (request.getTypeRequest().equals(Requests.Type.constructor)) {
+                if (request.getStatus().equals(Status.Completed)) {
+                    tgService.sendCompleted(request);
+                }
+                else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request);
                 }else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена

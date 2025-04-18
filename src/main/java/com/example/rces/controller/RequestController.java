@@ -12,7 +12,6 @@ import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -100,7 +99,7 @@ public class RequestController {
         if (request.getTypeRequest().equals(Requests.Type.constructor)) {
             tgService.sendMessageToGroup(request);
         } else {
-            tgService.sendMessageToUser(request, employee.getChatId(), true,false);
+            tgService.sendMessageToUser(request, employee.getChatId(), true, false);
         }
 
         model.addAttribute("requestNumber", request.getRequestNumber());
