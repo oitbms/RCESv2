@@ -109,7 +109,7 @@ public class RequestController {
 
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
-        Requests requests = service.findByRequestNumber(Requests.class, requestNumber);
+        Requests requests = service.findSingleByField(Requests.class, "requestNumber", requestNumber);
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreateDate()));
@@ -142,8 +142,16 @@ public class RequestController {
                 case "Закрыт" -> status = "Closed";
                 case "Отменен" -> status = "Cancel";
             }
-            requests = service.getRequestPageStatus(type, status, pageNumber, itemsPerPage);
-            totalRequestsCount = service.getTotalRequestsCountByStatus(type, status);
+            String finalStatus = status;
+            requests = service.findAllByField(Requests.class, "typeRequest", type)
+                    .stream()
+                    .filter(r -> r.getStatus().equals(Status.valueOf(finalStatus)))
+                    .sorted(Comparator.comparing(Requests::getRequestNumber))
+                    .toList();
+            totalRequestsCount = service.findAllByField(Requests.class, "typeRequest", type)
+                    .stream()
+                    .filter(r -> r.getStatus().equals(Status.valueOf(finalStatus)))
+                    .toList().size();
             isStatus = false;
         }
         if (customerOrder != null && !customerOrder.isEmpty()) {

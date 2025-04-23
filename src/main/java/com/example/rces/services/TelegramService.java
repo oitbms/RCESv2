@@ -109,12 +109,12 @@ public class TelegramService extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
-            Employee employee = service.findAllByField(Employee.class, "chatId", update.getMessage().getChatId()).get(0);
+            Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
             String message = update.getMessage().getText();
             try {
                 if (message.matches("[1-5]")) {
                     Appraisal score = Appraisal.fromId(Integer.parseInt(message));
-                    Requests request = service.findAllByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId()).get(0);
+                    Requests request = service.findSingleByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId());
                     request.setScore(score);
                     service.save(request);
                     sendScoreIsSave(request.getChatId());

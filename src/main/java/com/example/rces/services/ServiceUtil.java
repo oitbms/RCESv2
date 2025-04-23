@@ -10,7 +10,6 @@ import jakarta.ws.rs.ForbiddenException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,8 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ServiceUtil {
-
-    static String[] types = {"constructor", "otk", "technologist"};
 
     // Сохранение коллекции изображений
     public static List<Images> saveFiles(MultipartFile[] files, Requests requests) {
@@ -61,7 +58,7 @@ public class ServiceUtil {
     }
 
     public static String formatedDate(LocalDateTime date) {
-        if (date==null) {
+        if (date == null) {
             return "-";
         }
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
@@ -112,7 +109,7 @@ public class ServiceUtil {
     public static Map<String, Double> averageTimeRequests(List<Requests> requests) {
         Map<String, Double> mapAverageTime = new HashMap<>();
 
-        for (String key : types) {
+        for (String key : Arrays.stream(Requests.Type.values()).map(Enum::name).toList()) {
             long requestsCount = 0;
             long time = 0;
 
@@ -120,13 +117,13 @@ public class ServiceUtil {
 
             for (Requests req : requests) {
                 if (req.getDateWork() != null && req.getTypeRequest().equals(type)) {
-                    Duration duration = Duration.between(req.getCreateDate(),req.getDateWork());
+                    Duration duration = Duration.between(req.getCreateDate(), req.getDateWork());
                     time += duration.toMinutes();
                     requestsCount++;
                 }
             }
 
-            Double averageTime = (requestsCount > 0) ? (double) (time/requestsCount)/60 : 0.0;
+            Double averageTime = (requestsCount > 0) ? (double) (time / requestsCount) / 60 : 0.0;
             mapAverageTime.put(key, averageTime);
         }
 
@@ -134,36 +131,34 @@ public class ServiceUtil {
     }
 
     //Вычисление среднего времени закрытия заявки в часах
-    public static Map<String,Double> averageClosedRequests(List<Requests> requests) {
+    public static Map<String, Double> averageClosedRequests(List<Requests> requests) {
         Map<String, Double> mapAverageClosed = new HashMap<>();
 
-        for (String key : types) {
+        for (String key : Arrays.stream(Requests.Type.values()).map(Enum::name).toList()) {
             long requestsCount = 0;
             long time = 0;
             Requests.Type type = Requests.Type.valueOf(key);
 
             for (Requests req : requests) {
                 if (req.getDateWork() != null && req.getTypeRequest().equals(type)) {
-                    Duration duration = Duration.between(req.getDateWork(),req.getCloseDate());
+                    Duration duration = Duration.between(req.getDateWork(), req.getCloseDate());
                     time += duration.toMinutes();
                     requestsCount++;
                 }
             }
-            double averageTimeRequest = (requestsCount > 0) ? (double) (time/requestsCount)/60 : 0.0;
+            double averageTimeRequest = (requestsCount > 0) ? (double) (time / requestsCount) / 60 : 0.0;
             mapAverageClosed.put(key, averageTimeRequest);
         }
         return mapAverageClosed;
     }
 
-
-    public static Employee getUser(Principal principal, UniversalRepository universalRepository) {
-        return universalRepository.findByName(Employee.class, principal.getName());
-    }
-
-    public static Map<String,List<Integer>> getCountDays(UniversalRepository universalRepository) {
-        Map<String,List<Integer>> map = new HashMap<>();
-        for (String type : types) {
-            List<Requests> requestsOfType = universalRepository.getRequestType(type);
+    public static Map<String, List<Integer>> getCountDays(List<Requests> requests) {
+        Map<String, List<Integer>> map = new HashMap<>();
+        for (String type : Arrays.stream(Requests.Type.values()).map(Enum::name).toList()) {
+            List<Requests> requestsOfType = requests
+                    .stream()
+                    .filter(r -> r.getTypeRequest().equals(Requests.Type.valueOf(type)))
+                    .toList();
             List<Requests> filterRequests = filterRequestsByCurrentMonth(requestsOfType, LocalDate.now());
             int[] dailyCounts = countDailyRequests(filterRequests);
             map.put(type, Arrays.stream(dailyCounts).boxed().toList());
@@ -176,15 +171,15 @@ public class ServiceUtil {
         return Arrays.stream(dailyCounts).boxed().toList();
     }
 
-    public static Map<String,Integer> countRequest (List<Requests> filteredRequests) {
-        Map<String,Integer> qtuRequests = new HashMap<>();
+    public static Map<String, Integer> countRequest(List<Requests> filteredRequests) {
+        Map<String, Integer> qtuRequests = new HashMap<>();
         List<Requests> requsets;
-        for (String type : types ) {
+        for (String type : Arrays.stream(Requests.Type.values()).map(Enum::name).toList()) {
             Requests.Type reqType = Requests.Type.valueOf(type);
             requsets = filteredRequests.stream()
                     .filter(requests -> requests.getTypeRequest() == reqType)
                     .toList();
-            qtuRequests.put(type,requsets.size());
+            qtuRequests.put(type, requsets.size());
         }
         return qtuRequests;
     }

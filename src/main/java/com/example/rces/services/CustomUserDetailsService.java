@@ -14,7 +14,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public Employee loadUserByUsername(String username) throws UsernameNotFoundException {
-        Employee employee = universalRepository.findByName(Employee.class, username);
+        Employee employee = universalRepository.findSingleByField(Employee.class, "name", username);
         if (employee == null) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }

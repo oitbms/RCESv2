@@ -1,15 +1,12 @@
 package com.example.rces.controller;
 
-import com.example.rces.configuration.CustomAuthenticationProvider;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
-import com.example.rces.services.UniversalRepository;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -27,27 +24,24 @@ import static com.example.rces.services.ServiceUtil.*;
 public class RegistrationsController {
 
     @Autowired
-    private UniversalRepository universalRepository;
-
-    @Autowired
-    private UniversalService universalService;
+    private UniversalService service;
 
     @GetMapping("/admin")
     public String admin(Model model) {
-        model.addAttribute("users", universalService.findAll(Employee.class));
+        model.addAttribute("users", service.findAll(Employee.class));
         return "admin";
     }
 
     @GetMapping("/menu")
     public String menu(Principal principal, Model model) {
-        List<Requests> requestsOfDate = universalService.findAll(Requests.class);
-        Employee user = getUser(principal, universalRepository);
-        List<Requests> requestsList = universalService.findRequestName(user);
-        Map<String, List<Integer>> dailyCountsMap = getCountDays(universalRepository);
-        Map<String,Integer> qtyRequests = countRequest(requestsOfDate);
-        Map<String,Double> averageTime = averageTimeRequests(requestsList);
+        List<Requests> requestsOfDate = service.findAll(Requests.class);
+        Employee user = service.findSingleByField(Employee.class, "name", principal.getName());
+        List<Requests> requestsList = service.findAllByField(Requests.class, "createdBy", user);
+        Map<String, List<Integer>> dailyCountsMap = getCountDays(service.findAll(Requests.class));
+        Map<String, Integer> qtyRequests = countRequest(requestsOfDate);
+        Map<String, Double> averageTime = averageTimeRequests(requestsList);
         List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
-                universalService.findAll(Requests.class), LocalDate.now());
+                service.findAll(Requests.class), LocalDate.now());
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
         model.addAttribute("user", user);
         model.addAttribute("requests", requestsList);
@@ -55,12 +49,12 @@ public class RegistrationsController {
         model.addAttribute("dailyCountsConstructor", dailyCountsMap.get("constructor"));
         model.addAttribute("dailyCountOtk", dailyCountsMap.get("otk"));
         model.addAttribute("dailyCountTechnologist", dailyCountsMap.get("technologist"));
-        model.addAttribute("time",averageTime.get("constructor"));
-        model.addAttribute("timeOtk",averageTime.get("otk"));
-        model.addAttribute("timeTechnologist",averageTime.get("technologist"));
-        model.addAttribute("qtuRequests",qtyRequests.get("constructor"));
-        model.addAttribute("qtuRequestsOtk",qtyRequests.get("otk"));
-        model.addAttribute("qtuRequestTechnologist",qtyRequests.get("technologist"));
+        model.addAttribute("time", averageTime.get("constructor"));
+        model.addAttribute("timeOtk", averageTime.get("otk"));
+        model.addAttribute("timeTechnologist", averageTime.get("technologist"));
+        model.addAttribute("qtuRequests", qtyRequests.get("constructor"));
+        model.addAttribute("qtuRequestsOtk", qtyRequests.get("otk"));
+        model.addAttribute("qtuRequestTechnologist", qtyRequests.get("technologist"));
         return "menu";
     }
 
@@ -83,7 +77,7 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           Map<String, Object> model) {
-        Employee userFromDb = universalRepository.findByName(Employee.class, username);
+        Employee userFromDb = service.findSingleByField(Employee.class, "name", " username");
         if (userFromDb != null) {
             model.put("message", "Пользователь уже существует!");
             return "registration";
@@ -97,16 +91,16 @@ public class RegistrationsController {
 
         employee.setPassword(password);
 
-        universalService.save(employee);
+        service.save(employee);
 
         return "redirect:/admin";
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
-        Employee user = universalService.findById(Employee.class, id);
+        Employee user = service.findById(Employee.class, id);
         if (user != null) {
-            universalService.delete(user);
+            service.delete(user);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();

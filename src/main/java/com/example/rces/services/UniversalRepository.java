@@ -7,7 +7,6 @@ import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -41,23 +40,9 @@ public class UniversalRepository {
         return entityManager.createQuery(cq).getResultList();
     }
 
-    public List<Requests> getRequestType(String type) {
-        Requests.Type reqtype = Requests.Type.valueOf(type.toLowerCase());
-        return entityManager.createQuery("select e from Requests e where e.typeRequest =:type", Requests.class)
-                .setParameter("type",reqtype)
-                .getResultList();
+    public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
+        return findByField(entityClass, fieldName, fieldValue).get(0);
     }
-
-    public <T> T findByName(Class<T> entityClass, String name) {
-        String className = entityClass.getSimpleName();
-
-        TypedQuery<T> query = entityManager.createQuery("SELECT e FROM " + className + " e WHERE e.name = :name", entityClass);
-        query.setParameter("name", name);
-
-        List<T> results = query.getResultList();
-        return results.isEmpty() ? null : results.get(0);
-    }
-
 
     public <T> T findById(Class<T> entityClass, Object id) {
         return entityManager.find(entityClass, id);
@@ -65,7 +50,7 @@ public class UniversalRepository {
 
     public <T> T save(T entity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Employee updaterCreaterEmployee = findByField(Employee.class, "name", authentication.getName()).get(0);
+        Employee updaterCreaterEmployee = findSingleByField(Employee.class, "name", authentication.getName());
         if (entityManager.contains(entity) && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
             return entityManager.merge(entity);
         }
@@ -90,14 +75,6 @@ public class UniversalRepository {
         CriteriaQuery<T> cq = cb.createQuery(entityClass);
         cq.select(cq.from(entityClass));
         return entityManager.createQuery(cq).getResultList();
-    }
-
-    public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        Root<T> root = cq.from(entityClass);
-        cq.select(root).where(cb.equal(root.get("requestNumber"), requestNumber));
-        return entityManager.createQuery(cq).getSingleResult();
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
@@ -136,32 +113,5 @@ public class UniversalRepository {
         return (Integer) entityManager
                 .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM Requests e")
                 .getSingleResult();
-    }
-
-    public List<Requests> getRequestsByStatus(String status, String type, int page, int pageSize) {
-        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
-        Status requestStatus = Status.valueOf(status);
-        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.typeRequest = :type AND e.status = :status ORDER BY e.requestNumber", Requests.class)
-                .setParameter("type", requestType)
-                .setParameter("status", requestStatus)
-                .setFirstResult(page * pageSize)
-                .setMaxResults(pageSize)
-                .getResultList();
-    }
-
-    public int getTotalRequestsCountByStatus(String type, String status) {
-        Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
-        Status requestStatus = Status.valueOf(status);
-        Long count = entityManager.createQuery("SELECT COUNT(e) from Requests e WHERE e.typeRequest =:type and e.status =:status", Long.class)
-                .setParameter("type", requestType)
-                .setParameter("status", requestStatus)
-                .getSingleResult();
-        return count.intValue();
-    }
-
-    public List<Requests> findRequestByName(Employee user) {
-        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.updateBy =:name ORDER BY e.status", Requests.class)
-                .setParameter("name",user)
-                .getResultList();
     }
 }

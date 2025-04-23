@@ -22,7 +22,7 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
         Matcher matcher = pattern.matcher(request.getRequestURI());
         if (matcher.matches()) {
             String requestNumber = matcher.group(1);
-            String type = String.valueOf(service.findByRequestNumber(Requests.class, requestNumber).getTypeRequest());
+            String type = String.valueOf(service.findSingleByField(Requests.class, "requestNumber", requestNumber).getTypeRequest());
 
             return switch (type) {
                 case "otk" -> request.isUserInRole("OTK") ||

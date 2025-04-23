@@ -49,13 +49,8 @@ public class UniversalService {
         return repository.findByField(entityClass, fieldName, fieldValue);
     }
 
-    public <T> T findByRequestNumber(Class<T> entityClass, Object requestNumber) {
-        return repository.findByRequestNumber(entityClass, requestNumber);
-    }
-
-
-    public List<Requests> findRequestName(Employee user) {
-        return repository.findRequestByName(user);
+    public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
+        return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
     public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
@@ -85,15 +80,6 @@ public class UniversalService {
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
-    }
-
-    public List<Requests> getRequestPageStatus(String type, String status, int page, int itemsPerPage) {
-        return repository.getRequestsByStatus(status, type, page, itemsPerPage);
-    }
-
-
-    public int getTotalRequestsCountByStatus(String type, String status) {
-        return repository.getTotalRequestsCountByStatus(type, status);
     }
 
 }
