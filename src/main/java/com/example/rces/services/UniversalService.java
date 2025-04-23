@@ -53,6 +53,11 @@ public class UniversalService {
         return repository.findByRequestNumber(entityClass, requestNumber);
     }
 
+
+    public List<Requests> findRequestName(Employee user) {
+        return repository.findRequestByName(user);
+    }
+
     public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
         Requests request = new Requests();
 

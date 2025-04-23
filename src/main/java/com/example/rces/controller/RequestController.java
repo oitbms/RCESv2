@@ -121,7 +121,9 @@ public class RequestController {
     @GetMapping("/requestslist/{type}/{pageNumber}")
     public String getRequestList(@PathVariable String type, @PathVariable int pageNumber,
                                  @RequestParam(value = "status", required = false) String status,
+                                 @RequestParam(value = "customerOrder", required = false) String customerOrder,
                                  Model model) {
+        List<CustomerOrder> cust = service.findAll(CustomerOrder.class);
         boolean currentPage = pageNumber > 0;
         boolean isStatus = true;
         int itemsPerPage = 20;
@@ -145,13 +147,23 @@ public class RequestController {
             totalRequestsCount = service.getTotalRequestsCountByStatus(type, status);
             isStatus = false;
         }
+        if (customerOrder != null && !customerOrder.isEmpty()) {
+            requests = requests.stream()
+                    .filter(req -> req.getCustomerOrder().getName().equals(customerOrder))
+                        .skip((long) pageNumber * itemsPerPage)
+                    .limit(itemsPerPage)
+                    .toList();
+        }
         boolean hasNextPage = (requests.size() == itemsPerPage) && (totalRequestsCount > (pageNumber + 1) * itemsPerPage);
         List<Status> bidStatus = List.of(Status.values());
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
+        List<String> updateDate = requests.stream()
+                        .map(req -> formatedDate(req.getUpdateDate())).toList();
         model.addAttribute("bidList", requests);
         model.addAttribute("formattedBidList", formattedDates);
+        model.addAttribute("updateDateList", updateDate);
         model.addAttribute("bidStatus", bidStatus);
         model.addAttribute("currentPage", pageNumber);
         model.addAttribute("booleanCurrentPage", currentPage);
@@ -159,6 +171,7 @@ public class RequestController {
         model.addAttribute("type", type);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("hasNextPage", hasNextPage);
+        model.addAttribute("customerOrder",cust);
         return "requestslist";
     }
 }

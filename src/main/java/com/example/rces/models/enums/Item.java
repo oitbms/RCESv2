@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public enum Item {
 
-    Item1("ТМЦ1"),
-    Item2("ТМЦ2"),
-    Item3("ТМЦ3"),
-    Item4("ТМЦ4"),
-    Item5("ТМЦ5"),
-    Item6("ТМЦ6"),
-    Item7("ТМЦ7");
+    Item1("Всп. материал"),
+    Item2("Двигатель"),
+    Item3("Днища"),
+    Item4("Заготовка"),
+    Item5("Инструмент"),
+    Item6("Крепеж"),
+    Item7("Труба"),
+    Item8("Фланцы,Полукольца"),
+    Item9("Тройники,отводы"),
+    Item10("Стенка боковая секции"),
+    Item11("Металлоконструкция");
 
     private final String name;
 

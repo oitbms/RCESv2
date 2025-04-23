@@ -197,26 +197,27 @@
                    name="description">
         </div>
 
-        <div class="form-group" id="qtyViewField">
-            <label>Кол-во деталей к контролю: ${(bid.qty)!0}</label>
-        </div>
+        <#if type == 'otk'>
+            <div class="form-group form-group-flex" id="inconsistencyViewField">
+                <label>Несоответствия:</label>
+                <input type="text" id="inconsistencyName" readonly class="form-input"
+                       value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
+                <input type="hidden" id="inconsistencyJson" name="inconsistency"
+                       value='[<#list bid.inconsistency as i>{"name": "${i.getName()}"<#if i_has_next>, </#if></#list>]'>
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="inconsistency"
+                        data-input-id="inconsistencyName"
+                        data-hidden-entity="inconsistencyJson"
+                        data-modal-id="inconsistencyModal"
+                        data-multiple="true">
+                    Изменить
+                </button>
+            </div>
 
-
-        <div class="form-group form-group-flex" id="inconsistencyViewField">
-            <label>Несоответствия:</label>
-            <input type="text" id="inconsistencyName" readonly class="form-input"
-                   value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
-            <input type="hidden" id="inconsistencyJson" name="inconsistency"
-                   value='[<#list bid.inconsistency as i>{"name": "${i.getName()}"<#if i_has_next>, </#if></#list>]'>
-            <button type="button" class="openModal btn-modern"
-                    data-endpoint="inconsistency"
-                    data-input-id="inconsistencyName"
-                    data-hidden-entity="inconsistencyJson"
-                    data-modal-id="inconsistencyModal"
-                    data-multiple="true">
-                Изменить
-            </button>
-        </div>
+            <div class="form-group" id="qtyViewField">
+                <label>Кол-во деталей к контролю: ${(bid.qty)!0}</label>
+            </div>
+        </#if>
 
         <div class="form-group form-group-flex">
             <label>Комментарий:</label>

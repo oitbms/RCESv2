@@ -42,6 +42,13 @@ public class UniversalRepository {
         return entityManager.createQuery(cq).getResultList();
     }
 
+    public List<Requests> getRequestType(String type) {
+        Requests.Type reqtype = Requests.Type.valueOf(type.toLowerCase());
+        return entityManager.createQuery("select e from Requests e where e.typeRequest =:type", Requests.class)
+                .setParameter("type",reqtype)
+                .getResultList();
+    }
+
     public <T> T findByName(Class<T> entityClass, String name) {
         String className = entityClass.getSimpleName();
 
@@ -151,5 +158,11 @@ public class UniversalRepository {
                 .setParameter("status",requestStatus)
                 .getSingleResult();
         return count.intValue();
+    }
+
+    public List<Requests> findRequestByName(Employee user) {
+        return entityManager.createQuery("SELECT e FROM Requests e WHERE e.updateBy =:name ORDER BY e.status", Requests.class)
+                .setParameter("name",user)
+                .getResultList();
     }
 }

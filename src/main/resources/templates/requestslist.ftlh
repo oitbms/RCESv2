@@ -19,7 +19,6 @@
 
 <div class="container mt-5">
     <h1 class="text-center">Список заявок</h1>
-
     <div>
         <div class="card-body">
             <table class="table">
@@ -27,7 +26,10 @@
                 <tr>
                     <th>Вызывающий</th>
                     <th>Номер заявки</th>
-                    <th>Заказ клиента</th>
+                    <th class="position-relative">
+                        Заказ клиента
+                        <button class="btn btn-sm btn-secondary filter-button" data-toggle="modal" data-target="#customerOrderModal">▼</button>
+                    </th>
                     <th>Цех</th>
                     <th>Причина вызова</th>
                     <th class="position-relative">
@@ -43,15 +45,15 @@
                 <#list bidList as req>
                     <#assign reqIndex = req_index>
                     <tr class="clickable-row" data-request-number="${req.requestNumber}">
-                        <td>${req.getEmployee().getName()}</td>
+                        <td>${req.getCreatedBy().getName()}</td>
                         <td>${req.getRequestNumber()}</td>
                         <td>${req.customerOrder.getName()}</td>
                         <td>${(req.mlmNode.getName())!""}</td>
-                        <td>${req.getComment()}</td>
+                        <td>${(req.reason.getName())!""}</td>
                         <td data-status-id="${req.getStatus().getId()}">${req.getStatus().getName()}</td>
-                        <td>${""}</td>
+                        <td>${updateDateList[reqIndex]!""}</td>
                         <td>${formattedBidList[reqIndex]!""}</td>
-                        <td>${(req.getUpdateBy().getName())!""}</td>
+                        <td>${(req.getUpdateBy().getName())!"-"}</td>
                     </tr>
                 </#list>
                 </tbody>
@@ -78,6 +80,30 @@
         </div>
     </#if>
 
+</div>
+
+<div class="modal fade" id="customerOrderModal" tabindex="-1" role="dialog" aria-labelledby="filterCustomerOrderLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterCustomerOrderLabel">Фильтр по заказу клиента</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="customerOrderSelect">Заказ клиента:</label>
+                <select id="customerOrderSelect" class="form-control">
+                    <#list customerOrder as customer>
+                        <option value="${customer.getName()}">${customer.getName()}</option>
+                    </#list>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="apply">Применить фильтр</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel" aria-hidden="true">
@@ -204,8 +230,17 @@
             window.location.href = url;
             $('#filterModal').modal('hide');
         });
+        $('#apply').on('click',function () {
+            let customerOrderSelect = $('#customerOrderSelect').val();
+            const pageNumber = 0;
+            const url = `/requestslist/` + requestType + `/` + pageNumber + (customerOrderSelect ? `?customerOrder=` + customerOrderSelect : '');
+
+            window.location.href = url;
+            $('#customerOrderModal').modal('hide');
+        });
     });
 </script>
+<script src="js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

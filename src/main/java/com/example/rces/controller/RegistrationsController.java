@@ -16,9 +16,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.example.rces.services.ServiceUtil.*;
 
 @Controller
 public class RegistrationsController {
@@ -37,10 +40,27 @@ public class RegistrationsController {
 
     @GetMapping("/menu")
     public String menu(Principal principal, Model model) {
-        Employee user = universalRepository.findByName(Employee.class,principal.getName());
-        List<Requests> requestsList = universalService.findAllByField(Requests.class, "updateBy", user);
-        model.addAttribute("user",user);
-        model.addAttribute("requests",requestsList);
+        List<Requests> requestsOfDate = universalService.findAll(Requests.class);
+        Employee user = getUser(principal, universalRepository);
+        List<Requests> requestsList = universalService.findRequestName(user);
+        Map<String, List<Integer>> dailyCountsMap = getCountDays(universalRepository);
+        Map<String,Integer> qtyRequests = countRequest(requestsOfDate);
+        Map<String,Double> averageTime = averageTimeRequests(requestsList);
+        List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
+                universalService.findAll(Requests.class), LocalDate.now());
+        List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
+        model.addAttribute("user", user);
+        model.addAttribute("requests", requestsList);
+        model.addAttribute("dailyCounts", dailyCountsList);
+        model.addAttribute("dailyCountsConstructor", dailyCountsMap.get("constructor"));
+        model.addAttribute("dailyCountOtk", dailyCountsMap.get("otk"));
+        model.addAttribute("dailyCountTechnologist", dailyCountsMap.get("technologist"));
+        model.addAttribute("time",averageTime.get("constructor"));
+        model.addAttribute("timeOtk",averageTime.get("otk"));
+        model.addAttribute("timeTechnologist",averageTime.get("technologist"));
+        model.addAttribute("qtuRequests",qtyRequests.get("constructor"));
+        model.addAttribute("qtuRequestsOtk",qtyRequests.get("otk"));
+        model.addAttribute("qtuRequestTechnologist",qtyRequests.get("technologist"));
         return "menu";
     }
 
