@@ -11,7 +11,6 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import jakarta.ws.rs.ForbiddenException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
@@ -154,8 +153,8 @@ public class UniversalRepository {
         Requests.Type requestType = Requests.Type.valueOf(type.toLowerCase());
         Status requestStatus = Status.valueOf(status);
         Long count = entityManager.createQuery("SELECT COUNT(e) from Requests e WHERE e.typeRequest =:type and e.status =:status", Long.class)
-                .setParameter("type",requestType)
-                .setParameter("status",requestStatus)
+                .setParameter("type", requestType)
+                .setParameter("status", requestStatus)
                 .getSingleResult();
         return count.intValue();
     }

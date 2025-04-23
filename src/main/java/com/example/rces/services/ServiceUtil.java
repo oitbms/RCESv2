@@ -93,7 +93,6 @@ public class ServiceUtil {
             throw new ForbiddenException();
         } else if ((request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) && !request.getCreatedBy().equals(updaterEmployee)) {
             throw new ForbiddenException();
-        }
-        else return true;
+        } else return true;
     }
 }
