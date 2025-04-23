@@ -10,12 +10,16 @@ import jakarta.ws.rs.ForbiddenException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ServiceUtil {
+
+    static String[] types = {"constructor", "otk", "technologist"};
 
     // Сохранение коллекции изображений
     public static List<Images> saveFiles(MultipartFile[] files, Requests requests) {
@@ -57,6 +61,9 @@ public class ServiceUtil {
     }
 
     public static String formatedDate(LocalDateTime date) {
+        if (date==null) {
+            return "-";
+        }
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
 
@@ -81,6 +88,105 @@ public class ServiceUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static List<Requests> filterRequestsByCurrentMonth(List<Requests> requests, LocalDate now) {
+        return requests.stream()
+                .filter(req -> req.getCreateDate().getMonth() == now.getMonth() &&
+                        req.getCreateDate().getYear() == now.getYear())
+                .toList();
+    }
+
+    public static int[] countDailyRequests(List<Requests> requests) {
+        int daysInMonth = LocalDate.now().getDayOfMonth();
+        int[] dailyCounts = new int[daysInMonth];
+
+        for (Requests req : requests) {
+            int day = req.getCreateDate().getDayOfMonth();
+            dailyCounts[day - 1]++;
+        }
+        return dailyCounts;
+    }
+
+    //Вычисление среднего времени обработки заявки в часах
+    public static Map<String, Double> averageTimeRequests(List<Requests> requests) {
+        Map<String, Double> mapAverageTime = new HashMap<>();
+
+        for (String key : types) {
+            long requestsCount = 0;
+            long time = 0;
+
+            Requests.Type type = Requests.Type.valueOf(key);
+
+            for (Requests req : requests) {
+                if (req.getDateWork() != null && req.getTypeRequest().equals(type)) {
+                    Duration duration = Duration.between(req.getCreateDate(),req.getDateWork());
+                    time += duration.toMinutes();
+                    requestsCount++;
+                }
+            }
+
+            Double averageTime = (requestsCount > 0) ? (double) (time/requestsCount)/60 : 0.0;
+            mapAverageTime.put(key, averageTime);
+        }
+
+        return mapAverageTime;
+    }
+
+    //Вычисление среднего времени закрытия заявки в часах
+    public static Map<String,Double> averageClosedRequests(List<Requests> requests) {
+        Map<String, Double> mapAverageClosed = new HashMap<>();
+
+        for (String key : types) {
+            long requestsCount = 0;
+            long time = 0;
+            Requests.Type type = Requests.Type.valueOf(key);
+
+            for (Requests req : requests) {
+                if (req.getDateWork() != null && req.getTypeRequest().equals(type)) {
+                    Duration duration = Duration.between(req.getDateWork(),req.getCloseDate());
+                    time += duration.toMinutes();
+                    requestsCount++;
+                }
+            }
+            double averageTimeRequest = (requestsCount > 0) ? (double) (time/requestsCount)/60 : 0.0;
+            mapAverageClosed.put(key, averageTimeRequest);
+        }
+        return mapAverageClosed;
+    }
+
+
+    public static Employee getUser(Principal principal, UniversalRepository universalRepository) {
+        return universalRepository.findByName(Employee.class, principal.getName());
+    }
+
+    public static Map<String,List<Integer>> getCountDays(UniversalRepository universalRepository) {
+        Map<String,List<Integer>> map = new HashMap<>();
+        for (String type : types) {
+            List<Requests> requestsOfType = universalRepository.getRequestType(type);
+            List<Requests> filterRequests = filterRequestsByCurrentMonth(requestsOfType, LocalDate.now());
+            int[] dailyCounts = countDailyRequests(filterRequests);
+            map.put(type, Arrays.stream(dailyCounts).boxed().toList());
+        }
+        return map;
+    }
+
+    public static List<Integer> countDailyRequestsList(List<Requests> filteredRequests) {
+        int[] dailyCounts = countDailyRequests(filteredRequests);
+        return Arrays.stream(dailyCounts).boxed().toList();
+    }
+
+    public static Map<String,Integer> countRequest (List<Requests> filteredRequests) {
+        Map<String,Integer> qtuRequests = new HashMap<>();
+        List<Requests> requsets;
+        for (String type : types ) {
+            Requests.Type reqType = Requests.Type.valueOf(type);
+            requsets = filteredRequests.stream()
+                    .filter(requests -> requests.getTypeRequest() == reqType)
+                    .toList();
+            qtuRequests.put(type,requsets.size());
+        }
+        return qtuRequests;
     }
 
     public static boolean allowedCreateOrUpdate(Object entity, Employee updaterEmployee, Boolean create) {
