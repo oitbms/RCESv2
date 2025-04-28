@@ -86,4 +86,10 @@ public class ApiController {
         return "\"" + service.getTypeRequest(param) + "\"";
     }
 
+    @GetMapping("/updater")
+    @ResponseBody
+    public Employee getUpdater() {
+        return service.getUpdater();
+    }
+
 }

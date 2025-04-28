@@ -107,4 +107,19 @@ public class RegistrationsController {
         }
     }
 
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable UUID id,
+                                        @RequestParam(required = false) String username,
+                                        @RequestParam(required = false) Boolean state) {
+        Employee user = service.findById(Employee.class, id);
+        if (user != null) {
+            user.setName(username);
+            user.setActive(state);
+            service.save(user);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

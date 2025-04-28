@@ -21,7 +21,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.*;
+import static com.example.rces.services.ServiceUtil.handleImageCollection;
+import static com.example.rces.services.ServiceUtil.isJson;
 
 @Service
 public class ApiServices {
@@ -69,8 +70,7 @@ public class ApiServices {
             throw new RuntimeException(e);
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Employee updaterEmployee = userDetailsService.loadUserByUsername(authentication.getName());
+        Employee updaterEmployee = getUpdater();
 
         List<Field> fields = List.of(request.getClass().getDeclaredFields());
 
@@ -128,7 +128,7 @@ public class ApiServices {
         request.setUpdateBy(updaterEmployee);
         request.setUpdateDate(LocalDateTime.now());
         request.setDateWork(LocalDateTime.now());
-        request.setVersion(request.getVersion()+1);
+        request.setVersion(request.getVersion() + 1);
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
@@ -138,10 +138,9 @@ public class ApiServices {
             } else if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getStatus().equals(Status.Completed)) {
                     tgService.sendCompleted(request);
-                }
-                else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
+                } else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                     tgService.sendUpdateMessageToGroup(request);
-                }else {
+                } else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
                     tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
                 }
@@ -158,4 +157,10 @@ public class ApiServices {
     public String getTypeRequest(UUID id) {
         return service.findById(Requests.class, id).getTypeRequest().name();
     }
+
+    public Employee getUpdater() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userDetailsService.loadUserByUsername(authentication.getName());
+    }
+
 }
