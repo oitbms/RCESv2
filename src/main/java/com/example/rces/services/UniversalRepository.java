@@ -78,14 +78,6 @@ public class UniversalRepository {
         return entityManager.createQuery(cq).getResultList();
     }
 
-    public List<Requests> findByType(String type) {
-        List<Requests> requests;
-        requests = entityManager.createQuery("SELECT e FROM Requests e WHERE e.typeRequest = :type", Requests.class)
-                .setParameter("type",  Requests.Type.valueOf(type))
-                .getResultList();
-        return requests;
-    }
-
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         try {
             CustomerOrder existingOrder = null;

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,95 +12,88 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
-    <style>
-        .custom-bg-info {
-            background-color: #17a2b8; /* голубой цвет */
-            color: white; /* цвет текста */
-        }
-    </style>
 </head>
 <body>
-
 <div class="container mt-5">
     <h1 class="text-center">Список заявок</h1>
-    <div class="d-flex justify-content-center" style=" width: 100%;"> <!-- Используем flexbox для центрирования с отступом -->
-        <table id="requestTable" class="table table-hover" style="max-width: 100%; width: auto;">
+    <div class="d-flex justify-content-center">
+        <table id="requestTable" class="table table-hover">
             <thead class="custom-bg-info">
             <tr>
-                <th style="position: relative;">
+                <th>
                     Создал
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="createBy">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Ответственный
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="employeeBy">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Тип детали
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="item">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Номер заявки
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="requestNumber">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Заказ клиента
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="customerOrder">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Цех
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="workShop">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Причина вызова
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="reason">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Статус
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="status">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Дата изменения
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="date">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Дата создания заявки
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="dateCreate">
                     </div>
                 </th>
-                <th style="position: relative;">
+                <th>
                     Изменил
-                    <button type="button" class="toggleInput" style="margin-left: 5px;">↑</button>
-                    <div class="inputContainer" style="display: none; margin-top: 5px;">
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
                         <input type="text" class="form-control" id="changedBy">
                     </div>
                 </th>
@@ -127,7 +119,7 @@
             </tbody>
         </table>
     </div>
-    <div id="pagination" class="d-flex justify-content-center pagination mt-4"></div>
+    <div id="pagination" class="pagination mt-4"></div>
 </div>
 
 <div class="context-menu" id="contextMenu">
@@ -153,7 +145,7 @@
         const rowsPerPage = 15;
         let filteredRows = [];
 
-        // Обработчик правого клика для контекстного меню
+        // Контекстное меню
         $('.clickable-row').on('contextmenu', function (event) {
             event.preventDefault();
             selectedRequestNumber = $(this).data('request-number');
@@ -164,95 +156,40 @@
             });
         });
 
-        // Скрыть контекстное меню при клике
         $(document).on('click', function () {
             $('#contextMenu').hide();
         });
 
-        // Открытие модального окна для редактирования запроса
         $('#editRequest').on('click', function () {
             $('#contextMenu').hide();
             openRequestModal(selectedRequestNumber);
         });
 
-        // Закрытие меню по нажатию клавиши Escape
         $(document).on('keydown', function (e) {
             if (e.key === 'Escape') {
                 $('#contextMenu').hide();
             }
         });
 
-        // Функция для открытия модального окна запроса
         function openRequestModal(requestNumber) {
             $.get(`/view/` + requestNumber, function (data) {
                 $('#viewContent').html(data);
                 $('#viewRequestModal').modal('show');
             }).fail(function () {
-                alert("Ошибка загрузки данных. Попробуйте еще раз.");
+                alert("Ошибка загрузки данных.");
             });
         }
 
-        // Перезагрузка страницы при закрытии модального окна
         $('#viewRequestModal').on('hidden.bs.modal', function () {
             location.reload();
         });
 
-        // Фильтрация запросов
-        $('#applyFilter').on('click', function () {
-            const selectedStatus = $('#statusSelect').val();
-            filterRequests(selectedStatus);
-            $('#filterModal').modal('hide');
-        });
-
-        function filterRequests(selectedStatus) {
-            const rows = $('tbody tr');
-            rows.each(function () {
-                const statusId = $(this).find('td[data-status-id]').data('status-id');
-                if (selectedStatus === "" || statusId == selectedStatus) {
-                    $(this).show();
-                    if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {
-                        $(this).addClass('row-closed');
-                    } else {
-                        $(this).removeClass('row-closed');
-                    }
-                } else {
-                    $(this).hide();
-                }
-            });
-        }
-
-        // Инициализация статусов "Закрыт"
-        $('tbody tr').each(function () {
-            if ($(this).find('td[data-status-id]').text().trim() === "Закрыт") {
-                $(this).addClass('row-closed');
-            }
-        });
-
-        // Перенаправление с применением фильтра
-        $('#applyFilter, #apply').on('click', function () {
-            const selectedStatus = $('#statusSelect').val();
-            let customerOrderSelect = $('#customerOrderSelect').val();
-            const pageNumber = 0;
-            const url = `/requestslist/` + requestType + `/` + pageNumber +
-                (selectedStatus ? `?status=` + selectedStatus : '') +
-                (customerOrderSelect ? `&customerOrder=` + customerOrderSelect : '');
-
-            window.location.href = url;
-            $('#filterModal').modal('hide');
-            $('#customerOrderModal').modal('hide');
-        });
-
-        // Функция для фильтрации данных в таблице с пагинацией
+        // Фильтрация и пагинация
         const filterData = () => {
             filteredRows = $('#requestTable tbody tr').filter((index, row) => {
                 return checkRowFilters(row);
             });
-
-            const totalFilteredRows = filteredRows.length;
-            const totalFilteredPages = Math.ceil(totalFilteredRows / rowsPerPage);
-
-            renderPagination(1); // Сбрасываем пагинацию на первую страницу после фильтрации
-            showPage(1); // Отображаем первую страницу отфильтрованных результатов
+            showPage(1);
         };
 
         const checkRowFilters = (row) => {
@@ -284,16 +221,15 @@
         };
 
         const showPage = (page) => {
-            $('#requestTable tbody tr').hide(); // Скрываем все строки
+            $('#requestTable tbody tr').hide();
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            filteredRows.slice(start, end).show(); // Показываем только нужные строки
+            filteredRows.slice(start, end).show();
             renderPagination(page);
         };
 
         const renderPagination = (currentPage) => {
-            const pagination = $('#pagination');
-            pagination.empty();
+            $('#pagination').empty();
             const totalFilteredRows = filteredRows.length;
             const totalFilteredPages = Math.ceil(totalFilteredRows / rowsPerPage);
             for (let i = 1; i <= totalFilteredPages; i++) {
@@ -301,25 +237,19 @@
                     .text(i)
                     .addClass('btn btn-secondary mx-1')
                     .click(() => showPage(i));
-                if (i === currentPage) {
-                    pageLink.addClass('active');
-                }
-                pagination.append(pageLink);
+                if (i === currentPage) pageLink.addClass('active');
+                $('#pagination').append(pageLink);
             }
         };
 
-        // Обработчик событий для фильтров
+        // Инициализация
         $('#createBy, #employeeBy, #item, #requestNumber, #customerOrder, #workShop, #reason, #status, #date, #dateCreate, #changedBy').on('keyup change', filterData);
-
-        // Показать первую страницу при загрузке
         filterData();
 
         $('.toggleInput').on('click', function () {
-            const inputContainer = $(this).next('.inputContainer'); // Найти следующий контейнер ввода
-            inputContainer.toggle(); // Переключить видимость
+            $(this).next('.inputContainer').toggle();
         });
     });
 </script>
-
 </body>
 </html>

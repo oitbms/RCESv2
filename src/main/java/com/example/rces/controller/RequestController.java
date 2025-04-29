@@ -125,7 +125,7 @@ public class RequestController {
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
                                  Model model) {
-        List<Requests> requests = service.findByType(type);
+        List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());

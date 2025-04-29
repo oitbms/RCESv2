@@ -45,10 +45,6 @@ public class UniversalService {
         return repository.findAll(entityClass);
     }
 
-    public List<Requests> findByType(String type) {
-        return repository.findByType(type);
-    }
-
     public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
         return repository.findByField(entityClass, fieldName, fieldValue);
     }
