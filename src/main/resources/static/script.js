@@ -308,8 +308,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById("inconsistencyViewField").classList.add('hidden')
             document.getElementById("qtyViewField").classList.add('hidden')
         } else {
-            document.getElementById('reasonCreateField').classList.add('hidden');
-            document.getElementById("reasonsName").removeAttribute("data-required")
+            // document.getElementById('reasonCreateField').classList.add('hidden');
+            // document.getElementById("reasonsName").removeAttribute("data-required")
             document.getElementById("qtyCreateField").classList.add('hidden')
             document.getElementById("qty").removeAttribute("data-required")
         }

@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.rces.services.ServiceUtil.formatedDate;
@@ -82,9 +80,16 @@ public class RequestController {
         CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, employee, customerOrderString, customerOrderJson);
 
         GeneralReason reason = null;
-        if (!reasonsJson.isBlank()) {
-            reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+        String reasonText = null;
+        if (Objects.equals(type, "otk"))
+        {
+            reasonText = String.valueOf(reasonsJson);
+        } else {
+            if (!reasonsJson.isBlank()) {
+                reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+            }
         }
+
         Item item = null;
         if (itemJson != null) {
             item = objectMapper.readValue(itemJson, Item.class);
@@ -94,7 +99,7 @@ public class RequestController {
             mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
         }
 
-        Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee);
+        Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee,reasonText);
 
         if (request.getTypeRequest().equals(Requests.Type.constructor)) {
             tgService.sendMessageToGroup(request);
@@ -117,52 +122,10 @@ public class RequestController {
         return "/requests";
     }
 
-    @GetMapping("/requestslist/{type}/{pageNumber}")
-    public String getRequestList(@PathVariable String type, @PathVariable int pageNumber,
-                                 @RequestParam(value = "status", required = false) String status,
-                                 @RequestParam(value = "customerOrder", required = false) String customerOrder,
+    @GetMapping("/requestslist/{type}")
+    public String getRequestList(@PathVariable String type,
                                  Model model) {
-        List<CustomerOrder> cust = service.findAll(CustomerOrder.class);
-        boolean currentPage = pageNumber > 0;
-        boolean isStatus = true;
-        int itemsPerPage = 20;
-        int totalRequestsCount;
-        List<Requests> requests;
-        if (status == null || status.isEmpty()) {
-            requests = service.findAllByField(Requests.class, "typeRequest", type)
-                    .stream().sorted(Comparator.comparing(Requests::getRequestNumber))
-                    .skip((long) pageNumber * itemsPerPage)
-                    .limit(itemsPerPage)
-                    .collect(Collectors.toList());
-            totalRequestsCount = service.findAllByField(Requests.class, "typeRequest", type).size();
-        } else {
-            switch (status.trim()) {
-                case "Новый" -> status = "New";
-                case "В работе" -> status = "InWork";
-                case "Закрыт" -> status = "Closed";
-                case "Отменен" -> status = "Cancel";
-            }
-            String finalStatus = status;
-            requests = service.findAllByField(Requests.class, "typeRequest", type)
-                    .stream()
-                    .filter(r -> r.getStatus().equals(Status.valueOf(finalStatus)))
-                    .sorted(Comparator.comparing(Requests::getRequestNumber))
-                    .toList();
-            totalRequestsCount = service.findAllByField(Requests.class, "typeRequest", type)
-                    .stream()
-                    .filter(r -> r.getStatus().equals(Status.valueOf(finalStatus)))
-                    .toList().size();
-            isStatus = false;
-        }
-        if (customerOrder != null && !customerOrder.isEmpty()) {
-            requests = requests.stream()
-                    .filter(req -> req.getCustomerOrder().getName().equals(customerOrder))
-                        .skip((long) pageNumber * itemsPerPage)
-                    .limit(itemsPerPage)
-                    .toList();
-        }
-        boolean hasNextPage = (requests.size() == itemsPerPage) && (totalRequestsCount > (pageNumber + 1) * itemsPerPage);
-        List<Status> bidStatus = List.of(Status.values());
+        List<Requests> requests = service.findByType(type);
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
@@ -171,14 +134,7 @@ public class RequestController {
         model.addAttribute("bidList", requests);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("updateDateList", updateDate);
-        model.addAttribute("bidStatus", bidStatus);
-        model.addAttribute("currentPage", pageNumber);
-        model.addAttribute("booleanCurrentPage", currentPage);
-        model.addAttribute("status", isStatus);
         model.addAttribute("type", type);
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("hasNextPage", hasNextPage);
-        model.addAttribute("customerOrder",cust);
         return "requestslist";
     }
 }

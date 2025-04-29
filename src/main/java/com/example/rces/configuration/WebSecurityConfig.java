@@ -33,7 +33,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")
-                        .hasAnyAuthority("MASTER", "ADMIN")
+                        .hasAnyAuthority("MASTER", "ADMIN","CONSTRUCTOR")
                         .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
                         .anyRequest().authenticated()
                 )

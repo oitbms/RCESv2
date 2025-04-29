@@ -45,6 +45,10 @@ public class UniversalService {
         return repository.findAll(entityClass);
     }
 
+    public List<Requests> findByType(String type) {
+        return repository.findByType(type);
+    }
+
     public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
         return repository.findByField(entityClass, fieldName, fieldValue);
     }
@@ -53,7 +57,7 @@ public class UniversalService {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
-    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee) {
+    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee,String reasonText) {
         Requests request = new Requests();
 
         request.setTypeRequest(Requests.Type.valueOf(type));
@@ -74,7 +78,9 @@ public class UniversalService {
         request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);
-
+        if (reasonText != null) {
+            request.setReason_wr(reasonText);
+        }
         return repository.save(request);
     }
 

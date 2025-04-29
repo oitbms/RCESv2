@@ -70,7 +70,7 @@
                             Среднее время выполнения заявки:${timeTechnologist}<br>
                             Среднее время закрытия заявки:
                         </p>
-                        <a href="requestslist/technologist/0" class="btn btn-primary">Просмотр заявок</a>
+                        <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                             Среднее время выполнения заявки:${time}<br>
                             Среднее время закрытия заявки:
                         </p>
-                        <a href="requestslist/constructor/0" class="btn btn-primary">Просмотр заявок</a>
+                        <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                             Среднее время выполнения заявки:${timeOtk}<br>
                             Среднее время закрытия заявки:
                         </p>
-                        <a href="requestslist/otk/0" class="btn btn-primary">Просмотр заявок</a>
+                        <a href="requestslist/otk" class="btn btn-primary">Просмотр заявок</a>
                     </div>
                 </div>
             </div>

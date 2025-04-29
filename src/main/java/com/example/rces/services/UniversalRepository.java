@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
@@ -75,6 +76,14 @@ public class UniversalRepository {
         CriteriaQuery<T> cq = cb.createQuery(entityClass);
         cq.select(cq.from(entityClass));
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    public List<Requests> findByType(String type) {
+        List<Requests> requests;
+        requests = entityManager.createQuery("SELECT e FROM Requests e WHERE e.typeRequest = :type", Requests.class)
+                .setParameter("type",  Requests.Type.valueOf(type))
+                .getResultList();
+        return requests;
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {

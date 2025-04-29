@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 public enum GeneralReason {
 
     one("Первая причина"),
-    two("Вторая причина");
+    two("Вторая причина"),
+    three("ВИК"),
+    four("УДС"),
+    five("УЗД");
 
     private final String name;
 

@@ -90,6 +90,9 @@ public class Requests implements Cloneable {
     @Column(name = "comment")
     private String comment;
 
+    @Column(name = "reason_wr")
+    private String reason_wr;
+
     @Column(name = "description")
     private String description;
 
@@ -113,6 +116,14 @@ public class Requests implements Cloneable {
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     private Appraisal score;
+
+    public String getReason_wr() {
+        return reason_wr;
+    }
+
+    public void setReason_wr(String reason_wr) {
+        this.reason_wr = reason_wr;
+    }
 
     public Item getItem() {
         return item;

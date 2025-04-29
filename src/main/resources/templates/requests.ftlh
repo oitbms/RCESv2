@@ -95,21 +95,29 @@
         </div>
 
         <!-- Причина -->
-        <div class="form-group" id="reasonCreateField">
-            <label>Причина</label>
-            <div class="form-group-flex">
-                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input"
-                       data-required="true">
-                <input type="hidden" id="reasonsJson" name="reasonsJson">
-                <button type="button" class="openModal btn-modern"
-                        data-endpoint="reasons"
-                        data-input-id="reasonsName"
-                        data-hidden-entity="reasonsJson"
-                        data-modal-id="reasonsModal">
-                    Выбрать
-                </button>
+        <#if type == 'constructor' || type == 'technologist'>
+            <div class="form-group" id="reasonCreateField">
+                <label>Причина</label>
+                <div class="form-group-flex">
+                    <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input" data-required="true">
+                    <input type="hidden" id="reasonsJson" name="reasonsJson">
+                    <button type="button" class="openModal btn-modern"
+                            data-endpoint="reasons"
+                            data-input-id="reasonsName"
+                            data-hidden-entity="reasonsJson"
+                            data-modal-id="reasonsModal">
+                        Выбрать
+                    </button>
+                </div>
             </div>
-        </div>
+        <#else>
+            <div class="form-group">
+                <label>Причина</label>
+                <div class="form-group-flex">
+                    <input type="text" id="reasonsJson" name="reasonsJson" placeholder="Комментарий" class="form-input">
+                </div>
+            </div>
+        </#if>
 
         <div class="form-group">
             <label>Комментарий</label>
