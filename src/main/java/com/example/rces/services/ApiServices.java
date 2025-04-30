@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.handleImageCollection;
-import static com.example.rces.services.ServiceUtil.isJson;
+import static com.example.rces.services.ServiceUtil.*;
 
 @Service
 public class ApiServices {
@@ -53,7 +52,7 @@ public class ApiServices {
         return images.stream()
                 .map(image -> new ImagesPayload(
                         image.getId(),
-                        image.getFileName(),
+                        image.getName(),
                         image.getBase64Data(),
                         image.getRequest().getId()
                 ))
@@ -129,6 +128,7 @@ public class ApiServices {
         request.setUpdateDate(LocalDateTime.now());
         request.setDateWork(LocalDateTime.now());
         request.setVersion(request.getVersion() + 1);
+        createLog(oldRequest, request, updaterEmployee, service);
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {

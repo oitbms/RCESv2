@@ -1,0 +1,82 @@
+package com.example.rces.models;
+
+import com.example.rces.configuration.HashMapConverter;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@Entity
+@Table(name = "request_log")
+public class RequestLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    private Requests request;
+
+    LocalDateTime date;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    Employee user;
+
+    @Column(columnDefinition = "JSON")
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, String> metadata = new HashMap<>();
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public Requests getRequest() {
+        return request;
+    }
+
+    public void setRequest(Requests request) {
+        this.request = request;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
+
+    public Employee getUser() {
+        return user;
+    }
+
+    public void setUser(Employee user) {
+        this.user = user;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
+    public RequestLog(Requests request, Employee user, Map<String, String> metadata) {
+        this.request = request;
+        this.date = LocalDateTime.now();
+        this.user = user;
+        this.metadata = metadata;
+    }
+
+    public RequestLog() {
+    }
+}

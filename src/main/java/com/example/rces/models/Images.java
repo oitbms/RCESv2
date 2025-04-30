@@ -1,4 +1,3 @@
-//сущность прикрепляемые изображения к вызову технолога
 package com.example.rces.models;
 
 import jakarta.persistence.*;
@@ -16,8 +15,8 @@ public class Images {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "file_name")
-    private String fileName;
+    @Column(name = "name")
+    private String name;
 
     @Lob
     private byte[] data;
@@ -26,15 +25,12 @@ public class Images {
     @JoinColumn(name = "request_id")
     private Requests request;
 
-    @Column(name = "request_number", insertable = false, updatable = false)
-    private Integer requestNumber;
-
     public Images() {
     }
 
     public Images(String base64, Requests request) {
         setBase64Data(base64);
-        setFileName("Фото от " + LocalDateTime.now());
+        setName("Фото от " + LocalDateTime.now());
         setRequest(request);
     }
 
@@ -54,12 +50,12 @@ public class Images {
         this.id = id;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getName() {
+        return name;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public byte[] getData() {
@@ -76,13 +72,5 @@ public class Images {
 
     public void setRequest(Requests request) {
         this.request = request;
-    }
-
-    public Integer getRequestNumber() {
-        return requestNumber;
-    }
-
-    public void setRequestNumber(Integer requestNumber) {
-        this.requestNumber = requestNumber;
     }
 }

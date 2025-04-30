@@ -59,7 +59,7 @@ public class Requests implements Cloneable {
     @ManyToOne(fetch = FetchType.EAGER)
     private Employee employee;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private CustomerOrder customerOrder;
 
     @Column(name = "reason")
@@ -116,6 +116,9 @@ public class Requests implements Cloneable {
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     private Appraisal score;
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestLog> log = new ArrayList<>();
 
     public String getReason_wr() {
         return reason_wr;
@@ -334,6 +337,14 @@ public class Requests implements Cloneable {
 
     public void setScore(Appraisal score) {
         this.score = score;
+    }
+
+    public List<RequestLog> getLog() {
+        return log;
+    }
+
+    public void setLog(List<RequestLog> log) {
+        this.log = log;
     }
 
     @Override

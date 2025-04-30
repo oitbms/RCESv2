@@ -2,14 +2,18 @@ package com.example.rces.services;
 
 import com.example.rces.models.Employee;
 import com.example.rces.models.Images;
+import com.example.rces.models.RequestLog;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.Entity;
 import jakarta.ws.rs.ForbiddenException;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +28,7 @@ public class ServiceUtil {
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
                 Images imageEntity = new Images();
-                imageEntity.setFileName(file.getOriginalFilename());
+                imageEntity.setName(file.getOriginalFilename());
                 try {
                     imageEntity.setData(file.getBytes());
                 } catch (IOException e) {
@@ -201,5 +205,52 @@ public class ServiceUtil {
             throw new ForbiddenException();
         }
         else return true;
+    }
+
+    public static void createLog(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {
+        try {
+            Map<String, String> metadata = new HashMap<>();
+            Class<?> clazz = oldRequest.getClass();
+
+            for (Field field : clazz.getDeclaredFields()) {
+                switch (field.getName()) {
+                    case "version", "updateBy", "updateDate", "log" -> {
+                        continue;
+                    }
+                }
+
+                field.setAccessible(true);
+                String fieldName = field.getName();
+                String oldStr = field.get(oldRequest) == null ? "null" :
+                        (field.getType().isAnnotationPresent(Entity.class) ?
+                                getEntityFieldValue(field.get(oldRequest)) :
+                                field.get(oldRequest).toString());
+                String newStr = field.get(newRequest) == null ? "null" :
+                        (field.getType().isAnnotationPresent(Entity.class) ?
+                                getEntityFieldValue(field.get(newRequest)) :
+                                field.get(newRequest).toString());
+
+                if (!Objects.equals(oldStr, newStr)) {
+                    metadata.put(fieldName, oldStr + "->" + newStr);
+                }
+            }
+
+            if (!metadata.isEmpty()) {
+                service.save(new RequestLog(newRequest, updaterUser, metadata));
+            }
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при создании лога", e);
+        }
+    }
+
+    private static String getEntityFieldValue(Object entity) {
+        try {
+            Field nameField = entity.getClass().getDeclaredField("name");
+            nameField.setAccessible(true);
+            Object value = nameField.get(entity);
+            return value != null ? value.toString() : "null";
+        } catch (Exception e) {
+            return entity.toString();
+        }
     }
 }
