@@ -32,8 +32,9 @@ public class ApiController {
     }
 
     @GetMapping("/reasons")
-    public List<ReasonPayload> getReasons() {
+    public List<ReasonPayload> getReasons(@RequestParam String param) {
         return Arrays.stream(GeneralReason.values())
+                .filter(reason -> reason.getRequestType().equals(param))
                 .map(reason -> new ReasonPayload(reason.getName()))
                 .collect(Collectors.toList());
     }

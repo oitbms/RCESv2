@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ import static com.example.rces.services.ServiceUtil.*;
 public class ApiServices {
 
     @Autowired
-    private UniversalService service;
+    private  UniversalService service;
 
     @Autowired
     private TelegramService tgService;

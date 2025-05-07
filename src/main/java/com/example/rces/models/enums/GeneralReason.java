@@ -6,20 +6,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public enum GeneralReason {
 
-    one("Первая причина"),
-    two("Вторая причина"),
-    three("ВИК"),
-    four("УДС"),
-    five("УЗД");
+    tech1("Первая причина", "technologist"),
+    tech2("Вторая причина", "technologist"),
+    cons1("Первая причина", "constructor"),
+    cons2("Вторая причина", "constructor"),
+    otk1("ВИК", "otk"),
+    otk2("УДС", "otk"),
+    otk3("УЗД", "otk");
 
     private final String name;
 
-    GeneralReason(String name) {
+    private final String requestType;
+
+    GeneralReason(String name, String requestType) {
         this.name = name;
+        this.requestType = requestType;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getRequestType() {
+        return requestType;
     }
 
     @JsonCreator
