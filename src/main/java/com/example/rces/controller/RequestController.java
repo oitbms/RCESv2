@@ -99,16 +99,19 @@ public class RequestController {
             mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
         }
 
-        Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee,reasonText);
+        try {
+            Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee,reasonText);
 
-        if (request.getTypeRequest().equals(Requests.Type.constructor)) {
-            tgService.sendMessageToGroup(request);
-        } else {
-            tgService.sendMessageToUser(request, employee.getChatId(), true, false);
+            if (request.getTypeRequest().equals(Requests.Type.constructor)) {
+                tgService.sendMessageToGroup(request);
+            } else {
+                tgService.sendMessageToUser(request, employee.getChatId(), true, false);
+            }
+
+            model.addAttribute("requestNumber", request.getRequestNumber());
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно отправить сообщение пользователю.");
         }
-
-        model.addAttribute("requestNumber", request.getRequestNumber());
-
         return "success";
     }
 

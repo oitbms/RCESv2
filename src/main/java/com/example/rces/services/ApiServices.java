@@ -62,7 +62,7 @@ public class ApiServices {
     @Transactional
     public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
         Requests request = service.findById(Requests.class, id);
-        Requests oldRequest = null;
+        Requests oldRequest;
         try {
             oldRequest = (Requests) request.clone();
         } catch (CloneNotSupportedException e) {

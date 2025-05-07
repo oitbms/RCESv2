@@ -33,8 +33,6 @@
                 <span>${user.getName()}</span><br>
                 <label class="fw-bold">Рабочее место:</label>
                 <span>${(user.mlmNode.getName())!""}</span><br>
-                <label class="fw-bold">Должность:</label>
-                <span>${user.getRole()}</span>
             </div>
         <nav class="mb-4">
             <ul class="nav justify-content-center">
@@ -64,11 +62,13 @@
                 <div class="card text-center">
                     <img src="" class="card-img-top">
                     <div class="card-body">
-                        <h5 class="card-title">ОГТ</h5>
+                        <h5 class="card-title">Список заявок для ОГТ</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequestTechnologist}<br>
-                            Среднее время выполнения заявки:${timeTechnologist}<br>
-                            Среднее время закрытия заявки:
+                            <#if user.getRole() == 'ADMIN'>
+                                Среднее время выполнения заявки:${timeTechnologist}<br>
+<#--                                Среднее время закрытия заявки:-->
+                            </#if>
                         </p>
                         <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
                     </div>
@@ -78,11 +78,13 @@
                 <div class="card text-center">
                     <img src="" class="card-img-top">
                     <div class="card-body">
-                        <h5 class="card-title">Карточка ОГК</h5>
+                        <h5 class="card-title">Список заявок для ОГК</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequests}<br>
-                            Среднее время выполнения заявки:${time}<br>
-                            Среднее время закрытия заявки:
+                            <#if user.getRole() == 'ADMIN'>
+                                Среднее время выполнения заявки:${time}<br>
+<#--                                Среднее время закрытия заявки:-->
+                            </#if>
                         </p>
                         <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>
                     </div>
@@ -92,11 +94,13 @@
                 <div class="card text-center">
                     <img src="" class="card-img-top">
                     <div class="card-body">
-                        <h5 class="card-title">Карточка ОТК</h5>
+                        <h5 class="card-title">Список заявок для ОТК</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequestsOtk}<br>
+                            <#if user.getRole() == 'ADMIN'>
                             Среднее время выполнения заявки:${timeOtk}<br>
-                            Среднее время закрытия заявки:
+<#--                            Среднее время закрытия заявки:-->
+                            </#if>
                         </p>
                         <a href="requestslist/otk" class="btn btn-primary">Просмотр заявок</a>
                     </div>

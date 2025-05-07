@@ -54,12 +54,13 @@ public class TelegramService extends TelegramLongPollingBot {
                     request.getReason() != null ? request.getReason().getName() : "Причина не указана",
                     "192.168.0.67:2520/view/" + request.getRequestNumber());
         } else {
-            return String.format("Заявка обновлена: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+            return String.format("Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
                     request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName(),
                     request.getCustomerOrder().getName(), request.getItem().getName(),
                     !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
                     request.getComment() != null ? request.getComment() : "",
                     request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                    request.getStatus().getName(),
                     "192.168.0.67:2520/view/" + request.getRequestNumber());
         }
     }

@@ -108,8 +108,12 @@
                     <td>${req.getItem().getName()}</td>
                     <td>${req.getRequestNumber()}</td>
                     <td>${req.customerOrder.getName()}</td>
-                    <td>${""}</td>
-                    <td>${req.getReason_wr()!""}</td>
+                    <td>${(req.getMlmNode().getName()!"")}</td>
+                    <#if type == 'otk'>
+                            <td>${req.getReason_wr()}</td>
+                        <#else >
+                            <td>${req.getReason().getName()!""}</td>
+                    </#if>
                     <td data-status-id="${req.getStatus().getId()}">${req.getStatus().getName()}</td>
                     <td>${updateDateList[reqIndex]!""}</td>
                     <td>${formattedBidList[reqIndex]!""}</td>

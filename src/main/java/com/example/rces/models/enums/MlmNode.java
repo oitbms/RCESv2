@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public enum MlmNode {
 
-    workShop1("№1"),
-    workShop2("№3"),
-    workShop3("№4"),
-    workShop4("№5"),
-    workShop5("№6"),
-    workShop6("№7"),
-    workShop7("№8");
+    workShop1("Цех №1"),
+    workShop2("Цех №3"),
+    workShop3("Цех №4"),
+    workShop4("Цех №5"),
+    workShop5("Цех №6"),
+    workShop6("Цех №7"),
+    workShop7("Цех №8");
 
     private final String name;
 

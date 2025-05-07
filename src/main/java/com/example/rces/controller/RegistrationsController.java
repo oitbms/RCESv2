@@ -36,7 +36,7 @@ public class RegistrationsController {
     public String menu(Principal principal, Model model) {
         List<Requests> requestsOfDate = service.findAll(Requests.class);
         Employee user = service.findSingleByField(Employee.class, "name", principal.getName());
-        List<Requests> requestsList = service.findAllByField(Requests.class, "createdBy", user);
+        List<Requests> requestsList = service.findAllByField(Requests.class, "updateBy", user);
         Map<String, List<Integer>> dailyCountsMap = getCountDays(service.findAll(Requests.class));
         Map<String, Integer> qtyRequests = countRequest(requestsOfDate);
         Map<String, Double> averageTime = averageTimeRequests(requestsList);
@@ -77,11 +77,11 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           Map<String, Object> model) {
-        Employee userFromDb = service.findSingleByField(Employee.class, "name", " username");
-        if (userFromDb != null) {
-            model.put("message", "Пользователь уже существует!");
-            return "registration";
-        }
+//        Employee userFromDb = service.findSingleByField(Employee.class, "name", " username");
+//        if (userFromDb != null) {
+//            model.put("message", "Пользователь уже существует!");
+//            return "registration";
+//        }
         Employee employee = new Employee();
         employee.setName(username);
         employee.setActive(true);

@@ -259,6 +259,7 @@
                 Изменить и уведомить
             </button>
         </div>
+        <a href="/menu" class="btn-modern">Перейти в меню</a>
     </form>
 </#if>
 

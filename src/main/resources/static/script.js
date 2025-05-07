@@ -320,8 +320,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById("descriptionViewField").classList.add('hidden');
             document.getElementById("reasonCreateField").removeAttribute("data-required")
         } else {
-            document.getElementById('mlmNodeCreateField').classList.add('hidden');
-            document.getElementById('mlmNodeName').removeAttribute('data-required');
+            // document.getElementById('mlmNodeCreateField').classList.add('hidden');
+            // document.getElementById('mlmNodeName').removeAttribute('data-required');
         }
     }
     if (type === 'technologist') {
