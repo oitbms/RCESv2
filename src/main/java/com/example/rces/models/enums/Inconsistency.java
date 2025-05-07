@@ -10,22 +10,28 @@ import java.util.stream.Collectors;
 
 public enum Inconsistency {
 
-    Inconsistency1("1"),
-    Inconsistency2("2"),
-    Inconsistency3("3"),
-    Inconsistency4("4"),
-    Inconsistency5("5"),
-    Inconsistency6("6"),
-    Inconsistency7("7");
+    Inconsistency1("Несоответствие геометрии","ВИК"),
+    Inconsistency2("Наружный дефект; сварные соединения","ВИК"),
+    Inconsistency3("Несоответствие чертежу","ВИК"),
+    Inconsistency4("Несоответствие консервации","ВИК"),
+    Inconsistency5("Какое то несоответствие","ВИК"),
+    Inconsistency6("Несоответствие материала","ЛНК"),
+    Inconsistency7("Дефекты сварочных соединений","ЛНК");
 
     private final String name;
 
-    Inconsistency(String name) {
+    private final String controlType;
+
+    Inconsistency(String name,String controlType) {
         this.name = name;
+        this.controlType = controlType;
     }
 
     public String getName() {
         return name;
+    }
+    public String getControlType() {
+        return controlType;
     }
 
     public static Set<Inconsistency> fromField(Object field) {

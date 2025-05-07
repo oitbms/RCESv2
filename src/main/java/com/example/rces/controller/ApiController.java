@@ -40,8 +40,9 @@ public class ApiController {
     }
 
     @GetMapping("/inconsistency")
-    public List<InconsistencyPayload> getInconsistency() {
+    public List<InconsistencyPayload> getInconsistency(@RequestParam String param) {
         return Arrays.stream(Inconsistency.values())
+                .filter(req -> req.getControlType().equals(param))
                 .map(inconsistency -> new InconsistencyPayload(inconsistency.getName()))
                 .collect(Collectors.toList());
     }

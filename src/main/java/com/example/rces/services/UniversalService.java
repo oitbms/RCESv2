@@ -53,7 +53,7 @@ public class UniversalService {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
-    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee,String reasonText) {
+    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee,String reasonText,String control) {
         Requests request = new Requests();
 
         request.setTypeRequest(Requests.Type.valueOf(type));
@@ -71,6 +71,7 @@ public class UniversalService {
         }
         request.setItem(item);
         request.setQty(qty);
+        request.setControl(control);
         request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);

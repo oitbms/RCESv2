@@ -77,6 +77,19 @@
             </div>
         </div>
 
+        <!-- Тип контроля -->
+        <div class="form-group">
+            <label>Тип контроля</label>
+            <div class="form-group-flex">
+                <select id="control" name="control" class="form-input" data-required="true">
+                    <option value="">Выберите тип контроля</option>
+                    <option value="ВИК">ВИК</option>
+                    <option value="ЛНК">ЛНК</option>
+                </select>
+                <input type="hidden" id="hiddenСontrol" placeholder="Тип контроля" class="form-input">
+            </div>
+        </div>
+
         <!-- Заказ клиента -->
         <div class="form-group">
             <label>Заказ клиента</label>
@@ -146,19 +159,25 @@
         </div>
 
         <div class="form-group">
-            <label>Дата создания:</label>
-            <span class="form-value">${date}</span>
+            <label>Дата создания: ${date}</label>
+<#--            <span class="form-value">${date}</span>-->
         </div>
 
         <div class="form-group" id="mlmNodeViewField">
-            <label>Цех:</label>
-            <span class="form-value">${(bid.mlmNode.getName())!""}</span>
+            <label>Цех: ${(bid.mlmNode.getName())!""}</label>
+<#--            <span class="form-value">${(bid.mlmNode.getName())!""}</span>-->
         </div>
 
         <div class="form-group">
-            <label>Тип ТМЦ:</label>
-            <span class="form-value">${(bid.item.getName())!""}</span>
+            <label>Тип ТМЦ: ${(bid.item.getName())!""}</label>
+<#--            <span class="form-value">${(bid.item.getName())!""}</span>-->
         </div>
+
+        <#if bid.typeRequest == 'otk'>
+        <div class="form-group">
+            <label>Тип контроля: ${bid.getControl()}</label>
+        </div>
+        </#if>
 
         <div class="form-group form-group-flex">
             <label>Заказ клиента:</label>
@@ -217,7 +236,9 @@
                         data-input-id="inconsistencyName"
                         data-hidden-entity="inconsistencyJson"
                         data-modal-id="inconsistencyModal"
-                        data-multiple="true">
+                        data-multiple="true"
+                        data-param="${bid.getControl()!""}"
+                >
                     Изменить
                 </button>
             </div>

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -65,6 +66,7 @@ public class RequestController {
                                 @RequestParam String mlmNodeJson,
                                 @RequestParam(value = "itemNameJson") String itemJson,
                                 @RequestParam(required = false) Integer qty,
+                                @RequestParam(required = false) String control,
                                 @RequestParam(required = false) String customerOrderString,
                                 @RequestParam(required = false) String customerOrderJson,
                                 @RequestParam(required = false) String reasonsJson,
@@ -100,7 +102,11 @@ public class RequestController {
         }
 
         try {
-            Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee,reasonText);
+            if (employee.getChatId() == null) {
+                throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
+            }
+
+            Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText,control);
 
             if (request.getTypeRequest().equals(Requests.Type.constructor)) {
                 tgService.sendMessageToGroup(request);
@@ -109,8 +115,11 @@ public class RequestController {
             }
 
             model.addAttribute("requestNumber", request.getRequestNumber());
-        } catch (NullPointerException e) {
-            throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно отправить сообщение пользователю.");
+
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Ошибка при отправке сообщения через Telegram: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Произошла ошибка при обработке запроса: " + e.getMessage(), e);
         }
         return "success";
     }

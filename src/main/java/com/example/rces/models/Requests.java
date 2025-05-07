@@ -120,6 +120,17 @@ public class Requests implements Cloneable {
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequestLog> log = new ArrayList<>();
 
+    @Column(name = "control")
+    private String control;
+
+    public String getControl() {
+        return control;
+    }
+
+    public void setControl(String control) {
+        this.control = control;
+    }
+
     public String getReason_wr() {
         return reason_wr;
     }
