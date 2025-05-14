@@ -6,10 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public enum GeneralReason {
 
-    tech1("Первая причина", "technologist"),
-    tech2("Вторая причина", "technologist"),
-    cons1("Первая причина", "constructor"),
-    cons2("Вторая причина", "constructor"),
+    tech1("", "technologist"),
+    tech2("", "technologist"),
+    cons1("Неполнота данных в ркд", "constructor"),
+    cons2("Необходимость уточнения в ркд", "constructor"),
+//    cons3("Требуется корректировка ркд", "constructor"),
     otk1("ВИК", "otk"),
     otk2("УДС", "otk"),
     otk3("УЗД", "otk");

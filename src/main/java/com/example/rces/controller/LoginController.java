@@ -48,7 +48,7 @@ public class LoginController {
 
             if (authentication.isAuthenticated()) {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                return "redirect:/registration";
+                return "registration";
             }
         } catch (AuthenticationException e) {
             model.addAttribute("error", "Ошибка аутентификации: " + e.getMessage());

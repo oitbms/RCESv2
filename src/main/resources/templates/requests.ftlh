@@ -78,6 +78,7 @@
         </div>
 
         <!-- Тип контроля -->
+        <#if type == 'otk'>
         <div class="form-group">
             <label>Тип контроля</label>
             <div class="form-group-flex">
@@ -89,6 +90,7 @@
                 <input type="hidden" id="hiddenСontrol" placeholder="Тип контроля" class="form-input">
             </div>
         </div>
+        </#if>
 
         <!-- Заказ клиента -->
         <div class="form-group">
@@ -175,7 +177,7 @@
 
         <#if bid.typeRequest == 'otk'>
         <div class="form-group">
-            <label>Тип контроля: ${bid.getControl()}</label>
+            <label>Тип контроля: ${bid.getControl()!""}</label>
         </div>
         </#if>
 

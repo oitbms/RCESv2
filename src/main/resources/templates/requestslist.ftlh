@@ -19,84 +19,93 @@
     <div class="d-flex justify-content-center">
         <table id="requestTable" class="table table-hover">
             <thead class="custom-bg-info">
-            <tr>
-                <th>
+            <tr class="form-check-input">
+                <th style="background-color: #007bff; color: white;">
                     Создал
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="createBy">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Ответственный
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="employeeBy">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Тип детали
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="item">
                     </div>
                 </th>
-                <th>
-                    Номер заявки
+                <th style="background-color: #007bff; color: white;">
+                    Номер
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="requestNumber">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Заказ клиента
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="customerOrder">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Цех
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="workShop">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Причина вызова
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="reason">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Статус
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="status">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Дата изменения
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="date">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Дата создания заявки
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="dateCreate">
                     </div>
                 </th>
-                <th>
+                <th style="background-color: #007bff; color: white;">
                     Изменил
                     <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width=16><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
                     <div class="inputContainer">
                         <input type="text" class="form-control" id="changedBy">
                     </div>
                 </th>
+                <#if type == 'otk'>
+                <th style="background-color: #007bff; color: white;">
+                    Тип контроля
+                    <button type="button" class="toggleInput"><svg onclick="filter()" viewBox="0 0 24 24" width="16"><path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/></svg></button>
+                    <div class="inputContainer">
+                        <input type="text" class="form-control" id="control">
+                    </div>
+                </th>
+                </#if>
             </tr>
             </thead>
             <tbody class="table-group-divider">
@@ -118,6 +127,9 @@
                     <td>${updateDateList[reqIndex]!""}</td>
                     <td>${formattedBidList[reqIndex]!""}</td>
                     <td>${(req.getUpdateBy().getName())!"-"}</td>
+                    <#if type == 'otk'>
+                        <td>${req.getControl()!""}</td>
+                    </#if>
                 </tr>
             </#list>
             </tbody>
@@ -197,6 +209,7 @@
         };
 
         const checkRowFilters = (row) => {
+
             const createBy = $(row).find('td:nth-child(1)').text().toLowerCase();
             const employeeBy = $(row).find('td:nth-child(2)').text().toLowerCase();
             const item = $(row).find('td:nth-child(3)').text().toLowerCase();
@@ -208,6 +221,15 @@
             const date = $(row).find('td:nth-child(9)').text().toLowerCase();
             const dateCreate = $(row).find('td:nth-child(10)').text().toLowerCase();
             const changedBy = $(row).find('td:nth-child(11)').text().toLowerCase();
+            // Проверка наличия поля "Тип контроля" и его значения
+            let controlMatch = true; // По умолчанию считаем, что совпадение есть
+            const controlInput = $('#control'); // Получаем элемент ввода для типа контроля
+            if (controlInput.length > 0) { // Проверяем, существует ли элемент
+                const control = $(row).find('td:nth-child(12)').text().toLowerCase(); // Получаем текст из ячейки
+                controlMatch = control.includes(controlInput.val().toLowerCase()); // Проверяем совпадение
+            }
+
+
 
             return (
                 createBy.includes($('#createBy').val().toLowerCase()) &&
@@ -220,7 +242,8 @@
                 status.includes($('#status').val().toLowerCase()) &&
                 date.includes($('#date').val().toLowerCase()) &&
                 dateCreate.includes($('#dateCreate').val().toLowerCase()) &&
-                changedBy.includes($('#changedBy').val().toLowerCase())
+                changedBy.includes($('#changedBy').val().toLowerCase()) &&
+                controlMatch // Включаем результат проверки типа контроля
             );
         };
 
@@ -246,8 +269,15 @@
             }
         };
 
-        // Инициализация
+        // Инициализация слушателей событий для фильтров
         $('#createBy, #employeeBy, #item, #requestNumber, #customerOrder, #workShop, #reason, #status, #date, #dateCreate, #changedBy').on('keyup change', filterData);
+
+        // Добавляем слушатель для поля "Тип контроля" только если оно существует
+        const controlInput = $('#control');
+        if (controlInput.length > 0) {
+            controlInput.on('keyup change', filterData);
+        }
+
         filterData();
 
         $('.toggleInput').on('click', function () {

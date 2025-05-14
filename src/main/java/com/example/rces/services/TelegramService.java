@@ -66,7 +66,7 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken, "764495337", createdOrUpdatedOrRedirectMessage(request, true, false));
+        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedOrRedirectMessage(request, true, false));
         restTemplate.getForObject(url, String.class);
     }
 

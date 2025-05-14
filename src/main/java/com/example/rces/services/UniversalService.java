@@ -71,7 +71,9 @@ public class UniversalService {
         }
         request.setItem(item);
         request.setQty(qty);
-        request.setControl(control);
+        if (control!=null){
+            request.setControl(control);
+        }
         request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);
