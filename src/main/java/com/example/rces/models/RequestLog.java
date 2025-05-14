@@ -21,10 +21,10 @@ public class RequestLog {
     @JoinColumn(name = "request_id")
     private Requests request;
 
-    LocalDateTime date;
+    private LocalDateTime date;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    Employee user;
+    private Employee user;
 
     @Column(columnDefinition = "JSON")
     @Convert(converter = HashMapConverter.class)

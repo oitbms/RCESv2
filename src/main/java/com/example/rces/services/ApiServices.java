@@ -1,10 +1,7 @@
 package com.example.rces.services;
 
 import com.example.rces.controller.payload.ImagesPayload;
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.Inconsistency;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,7 +24,7 @@ import static com.example.rces.services.ServiceUtil.*;
 public class ApiServices {
 
     @Autowired
-    private  UniversalService service;
+    private UniversalService service;
 
     @Autowired
     private TelegramService tgService;
@@ -139,11 +135,11 @@ public class ApiServices {
             } else if (request.getStatus() != oldRequest.getStatus()) {
                 if (request.getStatus().equals(Status.Completed)) {
                     tgService.sendCompleted(request);
-                } else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
-                    tgService.sendUpdateMessageToGroup(request);
+//                } else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
+//                    tgService.sendUpdateMessageToGroup(request);
                 } else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                    tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
+                    tgService.sendMessageToGroup(request);
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
@@ -162,6 +158,10 @@ public class ApiServices {
     public Employee getUpdater() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userDetailsService.loadUserByUsername(authentication.getName());
+    }
+
+    public List<RequestLog> getLogs(String requestNumber) {
+        return service.findAllByField(RequestLog.class, "request", service.findSingleByField(Requests.class, "requestNumber", requestNumber).getId());
     }
 
 }

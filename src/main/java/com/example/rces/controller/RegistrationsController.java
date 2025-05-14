@@ -58,11 +58,6 @@ public class RegistrationsController {
         return "menu";
     }
 
-    @GetMapping("/logout")
-    public String logout() {
-        return "redirect:/login";
-    }
-
     @GetMapping("/registration")
     public String registration(Model model) {
         model.addAttribute("userRole", Role.values());

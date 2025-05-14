@@ -36,16 +36,9 @@ public class LoginController {
     public String login(@RequestParam String username, Model model) {
         try {
             UserDetails user = customUserDetailsService.loadUserByUsername(username);
-            if (user == null) {
-                model.addAttribute("error", "Пользователь не найден");
-                return "login";
-            }
-
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
-
             Authentication authentication = customAuthenticationProvider.authenticate(authRequest);
-
             if (authentication.isAuthenticated()) {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 return "registration";

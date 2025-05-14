@@ -24,8 +24,14 @@ public class TelegramService extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    @Value("${telegram.chat.id}")
+    @Value("${telegram.chat.constructor.id}")
     private String constructorGroupChatId;
+
+    @Value("${telegram.chat.technologist.id}")
+    private String technologistGroupChatId;
+
+    @Value("${telegram.chat.otk.id}")
+    private String otkGroupChatId;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -66,7 +72,14 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedOrRedirectMessage(request, true, false));
+        String url = String.format(messageUrl, botToken,
+                switch (request.getTypeRequest().name()) {
+                    case "constructor" -> constructorGroupChatId;
+                    case "otk" -> otkGroupChatId;
+                    case "technologist" -> technologistGroupChatId ;
+                    default -> throw new IllegalStateException("Unexpected value: " + request.getTypeRequest().name());
+                },
+                createdOrUpdatedOrRedirectMessage(request, true, false));
         restTemplate.getForObject(url, String.class);
     }
 

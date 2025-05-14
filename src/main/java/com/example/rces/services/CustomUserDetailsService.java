@@ -13,11 +13,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UniversalRepository universalRepository;
 
     @Override
-    public Employee loadUserByUsername(String username) throws UsernameNotFoundException {
-        Employee employee = universalRepository.findSingleByField(Employee.class, "name", username);
-        if (employee == null) {
+    public Employee loadUserByUsername(String username) {
+        try {
+            return universalRepository.findSingleByField(Employee.class, "name", username);
+        } catch (Exception e) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }
-        return employee;
     }
 }

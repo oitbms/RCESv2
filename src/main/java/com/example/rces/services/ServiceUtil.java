@@ -215,13 +215,11 @@ public class ServiceUtil {
         try {
             Map<String, String> metadata = new HashMap<>();
             Class<?> clazz = oldRequest.getClass();
+            List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
+                    .filter(f -> !Set.of("version", "updateBy", "updateDate", "log").contains(f.getName()))
+                    .toList();
 
-            for (Field field : clazz.getDeclaredFields()) {
-                switch (field.getName()) {
-                    case "version", "updateBy", "updateDate", "log" -> {
-                        continue;
-                    }
-                }
+            for (Field field : fieldList) {
 
                 field.setAccessible(true);
                 String fieldName = field.getName();

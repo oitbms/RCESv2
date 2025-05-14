@@ -2,8 +2,6 @@ package com.example.rces.services;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.models.Requests;
-import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -15,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
@@ -32,8 +29,7 @@ public class UniversalRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> cq = cb.createQuery(entityClass);
         Root<T> root = cq.from(entityClass);
-        if (fieldValue instanceof List<?>) {
-            List<?> values = (List<?>) fieldValue;
+        if (fieldValue instanceof List<?> values) {
             cq.select(root).where(root.get(fieldName).in(values));
         } else {
             cq.select(root).where(cb.equal(root.get(fieldName), fieldValue));

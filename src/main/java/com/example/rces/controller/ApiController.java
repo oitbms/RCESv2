@@ -3,9 +3,11 @@ package com.example.rces.controller;
 import com.example.rces.controller.payload.*;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
+import com.example.rces.models.RequestLog;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -77,7 +79,7 @@ public class ApiController {
     public void updateData(@RequestParam String bidType,// Имя класса bid
                            @RequestParam UUID id, // id класса bid
                            @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
-                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
+                           @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
         service.update(id, sendMessage, updatedFields);
     }
@@ -92,6 +94,14 @@ public class ApiController {
     @ResponseBody
     public Employee getUpdater() {
         return service.getUpdater();
+    }
+
+    @GetMapping("/requests/{requestNumber}/logs")
+    public ResponseEntity<List<LogPayload>> getLogs(@PathVariable String requestNumber) {
+        List<RequestLog> logs = service.getLogs(requestNumber);
+        return ResponseEntity.ok(logs.stream()
+                .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
+                .collect(Collectors.toList()));
     }
 
 }
