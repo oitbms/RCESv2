@@ -76,7 +76,7 @@ public class TelegramService extends TelegramLongPollingBot {
                 switch (request.getTypeRequest().name()) {
                     case "constructor" -> constructorGroupChatId;
                     case "otk" -> otkGroupChatId;
-                    case "technologist" -> technologistGroupChatId ;
+                    case "technologist" -> technologistGroupChatId;
                     default -> throw new IllegalStateException("Unexpected value: " + request.getTypeRequest().name());
                 },
                 createdOrUpdatedOrRedirectMessage(request, true, false));
@@ -111,7 +111,13 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendUpdateMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken, constructorGroupChatId, createdOrUpdatedOrRedirectMessage(request, false, false));
+        String url = String.format(messageUrl, botToken,
+                switch (request.getTypeRequest().name()) {
+                    case "constructor" -> constructorGroupChatId;
+                    case "otk" -> otkGroupChatId;
+                    case "technologist" -> technologistGroupChatId;
+                    default -> throw new IllegalStateException("Unexpected value: " + request.getTypeRequest().name());
+                }, createdOrUpdatedOrRedirectMessage(request, false, false));
         restTemplate.getForObject(url, String.class);
     }
 
