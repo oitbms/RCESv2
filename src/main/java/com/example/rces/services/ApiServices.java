@@ -139,7 +139,7 @@ public class ApiServices {
 //                    tgService.sendUpdateMessageToGroup(request);
                 } else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                    tgService.sendMessageToGroup(request);
+                    tgService.sendUpdateMessageToGroup(request);
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
