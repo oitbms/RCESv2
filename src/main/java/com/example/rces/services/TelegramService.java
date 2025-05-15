@@ -33,6 +33,12 @@ public class TelegramService extends TelegramLongPollingBot {
     @Value("${telegram.chat.otk.id}")
     private String otkGroupChatId;
 
+    @Value("${url.mobile}")
+    private String urlMobile;
+
+    @Value("${url.computer}")
+    private String urlComputer;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
@@ -47,7 +53,7 @@ public class TelegramService extends TelegramLongPollingBot {
                     !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
                     request.getComment() != null ? request.getComment() : "",
                     request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+                    urlMobile + "/view/" + request.getRequestNumber());
         } else if (isRedirect) {
             return String.format("%s переадресовал заявку %d в вашу ответственность \nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
                     request.getUpdateBy().getName(),
@@ -58,7 +64,7 @@ public class TelegramService extends TelegramLongPollingBot {
                     !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
                     request.getComment() != null ? request.getComment() : "",
                     request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+                    urlMobile + "/view/" + request.getRequestNumber());
         } else {
             return String.format("Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
                     request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName(),
@@ -67,18 +73,13 @@ public class TelegramService extends TelegramLongPollingBot {
                     request.getComment() != null ? request.getComment() : "",
                     request.getReason() != null ? request.getReason().getName() : "Причина не указана",
                     request.getStatus().getName(),
-                    "192.168.0.67:2520/view/" + request.getRequestNumber());
+                    urlMobile + "/view/" + request.getRequestNumber());
         }
     }
 
     public void sendMessageToGroup(Requests request) {
         String url = String.format(messageUrl, botToken,
-                switch (request.getTypeRequest().name()) {
-                    case "constructor" -> constructorGroupChatId;
-                    case "otk" -> otkGroupChatId;
-                    case "technologist" -> technologistGroupChatId;
-                    default -> throw new IllegalStateException("Unexpected value: " + request.getTypeRequest().name());
-                },
+                getGroupId(request.getTypeRequest().name()),
                 createdOrUpdatedOrRedirectMessage(request, true, false));
         restTemplate.getForObject(url, String.class);
     }
@@ -102,7 +103,7 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendCompleted(Requests request) {
-        restTemplate.getForObject(String.format(messageUrl, botToken, request.getCreatedBy().getChatId(),
+        restTemplate.getForObject(String.format(messageUrl, botToken, getGroupId(request.getTypeRequest().name()),
                 "Заявка №" + request.getRequestNumber() + " Выполнена"), String.class);
     }
 
@@ -111,13 +112,8 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendUpdateMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken,
-                switch (request.getTypeRequest().name()) {
-                    case "constructor" -> constructorGroupChatId;
-                    case "otk" -> otkGroupChatId;
-                    case "technologist" -> technologistGroupChatId;
-                    default -> throw new IllegalStateException("Unexpected value: " + request.getTypeRequest().name());
-                }, createdOrUpdatedOrRedirectMessage(request, false, false));
+        String url = String.format(messageUrl, botToken, getGroupId(request.getTypeRequest().name()),
+                createdOrUpdatedOrRedirectMessage(request, false, false));
         restTemplate.getForObject(url, String.class);
     }
 
@@ -143,6 +139,15 @@ public class TelegramService extends TelegramLongPollingBot {
 
             }
         }
+    }
+
+    private String getGroupId(String typeRequest) {
+        return switch (typeRequest) {
+            case "constructor" -> constructorGroupChatId;
+            case "otk" -> otkGroupChatId;
+            case "technologist" -> technologistGroupChatId;
+            default -> throw new IllegalStateException("Unexpected value: " + typeRequest);
+        };
     }
 
     @Override
