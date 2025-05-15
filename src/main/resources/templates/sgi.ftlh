@@ -15,50 +15,37 @@
             <th>№ п/п</th>
             <th>
                 № цеха
-                <div><input type="text" id="workShop"></div>
             </th>
             <th>
                 Мероприятие
-                <div><input type="text" id="event"></div>
             </th>
             <th>
                 Сопутствующие действия
-                <div><input type="text" id="actions"></div>
             </th>
             <th>
                 Ответственный отдел
-                <div><input type="text" id="department"></div>
             </th>
             <th>
                 Ответственное лицо
-                <div><input type="text" id="employee"></div>
             </th>
             <th>
                 Желаемый срок
-                <div><input type="text" id="desiredDate"></div>
             </th>
             <th>
                 Планируемый срок
-                <div><input type="text" id="planDate"></div>
             </th>
             <th>
                 Факт выполнения
-                <div><input type="text" id="executions"></div>
             </th>
             <th>
                 Примечание
-                <div><input type="text" id="comment"></div>
-            </th>
-            <th>
-                Создать
-                <div><button></button></div>
             </th>
         </tr>
         </thead>
         <tbody>
         <#list sgiList as sgi>
             <tr>
-                <td>${sgi?index + 1}</td>
+                <td>${sgi.number}</td>
                 <td>${sgi.workShop}</td>
                 <td>${sgi.event}</td>
                 <td>${sgi.actions}</td>

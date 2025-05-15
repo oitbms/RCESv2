@@ -21,6 +21,9 @@ public class SGI {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    @Column(name = "number")
+    private int number;
+
     @Column(name = "workshop")
     private String workShop;
 
@@ -57,6 +60,14 @@ public class SGI {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public String getWorkShop() {
