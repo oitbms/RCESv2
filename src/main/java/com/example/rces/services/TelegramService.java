@@ -5,6 +5,7 @@ import com.example.rces.models.Requests;
 import com.example.rces.models.enums.Appraisal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -144,6 +145,30 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         }
     }
+
+//    @Scheduled(cron = "0 0 9 * * *") // каждый день в 09:00
+//    public void notifyExpiredDeviations() {
+//        Date today = new Date();
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//
+//        List<Item> items = itemRepository.findAllWithDeviations();
+//
+//        for (Item item : items) {
+//            for (Deviations deviation : item.getDeviations()) {
+//                boolean isDateToday = deviation.getDate() != null && sdf.format(deviation.getDate()).equals(sdf.format(today));
+//                boolean isNotFixed = !deviation.isSuccess();
+//
+//                if (isDateToday && isNotFixed) {
+//                    String message = String.format("‼️ По акту №%s (Заказ: %s) вышел срок устранения замечания #%d",
+//                            item.getNumber(),
+//                            item.getZkNumber(),
+//                            deviation.getDeviationNumber());
+//                    sendMessageToBothGroups(message);
+//                }
+//            }
+//        }
+//    }
+
 
     private String getGroupId(String typeRequest) {
         return switch (typeRequest) {

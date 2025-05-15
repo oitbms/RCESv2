@@ -25,6 +25,10 @@ public class Images {
     @JoinColumn(name = "request_id")
     private Requests request;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sgi_id")
+    private FactExecutionSGI sgi;
+
     public Images() {
     }
 
@@ -72,5 +76,13 @@ public class Images {
 
     public void setRequest(Requests request) {
         this.request = request;
+    }
+
+    public FactExecutionSGI getSgi() {
+        return sgi;
+    }
+
+    public void setSgi(FactExecutionSGI sgi) {
+        this.sgi = sgi;
     }
 }
