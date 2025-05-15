@@ -142,7 +142,7 @@
     <div class="context-menu-item" id="editRequest">Редактировать</div>
 </div>
 <div class="modal fade" id="viewRequestModal" tabindex="-1" role="dialog" aria-labelledby="viewRequestModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewRequestModalLabel">Просмотр заявки</h5>

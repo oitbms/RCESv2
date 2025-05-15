@@ -31,8 +31,8 @@
             <div class="user-info mb-4">
                 <label class="fw-bold">Имя пользователя:</label>
                 <span>${user.getName()}</span><br>
-                <label class="fw-bold">Рабочее место:</label>
-                <span>${(user.mlmNode.getName())!""}</span><br>
+<#--                <label class="fw-bold">Рабочее место:</label>-->
+<#--                <span>${(user.mlmNode.getName())!""}</span><br>-->
             </div>
         <nav class="mb-4">
             <ul class="nav justify-content-center">
@@ -66,8 +66,7 @@
                         <p class="card-text">
                             Количество заявок:${qtuRequestTechnologist}<br>
                             <#if user.getRole() == 'ADMIN'>
-                                Среднее время выполнения заявки:${timeTechnologist}<br>
-<#--                                Среднее время закрытия заявки:-->
+<#--                                Среднее время выполнения заявки:${timeTechnologist}<br>-->
                             </#if>
                         </p>
                         <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
@@ -82,8 +81,7 @@
                         <p class="card-text">
                             Количество заявок:${qtuRequests}<br>
                             <#if user.getRole() == 'ADMIN'>
-                                Среднее время выполнения заявки:${time}<br>
-<#--                                Среднее время закрытия заявки:-->
+<#--                                Среднее время выполнения заявки:${time}<br>-->
                             </#if>
                         </p>
                         <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>
@@ -98,8 +96,7 @@
                         <p class="card-text">
                             Количество заявок:${qtuRequestsOtk}<br>
                             <#if user.getRole() == 'ADMIN'>
-                            Среднее время выполнения заявки:${timeOtk}<br>
-<#--                            Среднее время закрытия заявки:-->
+<#--                            Среднее время выполнения заявки:${timeOtk}<br>-->
                             </#if>
                         </p>
                         <a href="requestslist/otk" class="btn btn-primary">Просмотр заявок</a>

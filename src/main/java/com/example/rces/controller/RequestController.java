@@ -101,12 +101,7 @@ public class RequestController {
             mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
         }
 
-        try {
-            if (employee.getChatId() == null) {
-                throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
-            }
-
-            Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText,control);
+        Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText,control);
 
 //            if (request.getTypeRequest().equals(Requests.Type.constructor)) {
 //                tgService.sendMessageToGroup(request);
@@ -117,11 +112,6 @@ public class RequestController {
 
             model.addAttribute("requestNumber", request.getRequestNumber());
 
-        } catch (HttpClientErrorException e) {
-            throw new RuntimeException("Ошибка при отправке сообщения через Telegram: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Произошла ошибка при обработке запроса: " + e.getMessage(), e);
-        }
         return "success";
     }
 

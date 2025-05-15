@@ -86,7 +86,6 @@ h2 {
     background: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
-    overflow-y: auto;
 }
 
 .modal.open {
@@ -100,6 +99,10 @@ h2 {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     width: 90%;
     max-width: 1000px;
+    max-height: 80vh; /* или другое значение по желанию */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 /* Список внутри модалок */
@@ -107,6 +110,8 @@ h2 {
     list-style: none;
     padding: 0;
     margin: 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .modal-list li {

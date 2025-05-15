@@ -27,7 +27,7 @@
                 <td>${req.enabled?c}</td>
                 <td>${req.getRole()!""}</td>
                 <td>${(req.username)!" "}</td>
-                <td><button onclick="deleteReq('${req.id}')">Удалить</button></td>
+<#--                <td><button onclick="deleteReq('${req.id}')">Удалить</button></td>-->
             </tr>
         </#list>
         </tbody>

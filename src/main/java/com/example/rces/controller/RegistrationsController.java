@@ -39,7 +39,7 @@ public class RegistrationsController {
         List<Requests> requestsList = service.findAllByField(Requests.class, "updateBy", user);
         Map<String, List<Integer>> dailyCountsMap = getCountDays(service.findAll(Requests.class));
         Map<String, Integer> qtyRequests = countRequest(requestsOfDate);
-        Map<String, Double> averageTime = averageTimeRequests(requestsList);
+//        Map<String, Double> averageTime = averageTimeRequests(requestsList);
         List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
                 service.findAll(Requests.class), LocalDate.now());
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
@@ -49,9 +49,9 @@ public class RegistrationsController {
         model.addAttribute("dailyCountsConstructor", dailyCountsMap.get("constructor"));
         model.addAttribute("dailyCountOtk", dailyCountsMap.get("otk"));
         model.addAttribute("dailyCountTechnologist", dailyCountsMap.get("technologist"));
-        model.addAttribute("time", averageTime.get("constructor"));
-        model.addAttribute("timeOtk", averageTime.get("otk"));
-        model.addAttribute("timeTechnologist", averageTime.get("technologist"));
+//        model.addAttribute("time", averageTime.get("constructor"));
+//        model.addAttribute("timeOtk", averageTime.get("otk"));
+//        model.addAttribute("timeTechnologist", averageTime.get("technologist"));
         model.addAttribute("qtuRequests", qtyRequests.get("constructor"));
         model.addAttribute("qtuRequestsOtk", qtyRequests.get("otk"));
         model.addAttribute("qtuRequestTechnologist", qtyRequests.get("technologist"));
