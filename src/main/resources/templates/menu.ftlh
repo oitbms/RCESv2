@@ -42,6 +42,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Выйти</a>
                 </li>
+                <#if user.getRole() == 'ADMIN'>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sgi">Просмотр заданий</a>
+                    </li>
+                </#if>
             </ul>
         </nav>
         <#if user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'OTK'>
@@ -58,9 +63,10 @@
 </div>
     <div class="container mb-4">
         <div class="row">
-            <div class="col-md-4"> <!-- Укажите количество колонок в зависимости от размера экрана -->
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST'>
+            <div class="col-md-4">
                 <div class="card text-center">
-                    <img src="" class="card-img-top">
+<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОГТ</h5>
                         <p class="card-text">
@@ -71,11 +77,13 @@
                         </p>
                         <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
                     </div>
-                </div>
             </div>
+            </div>
+            </#if>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR'>
             <div class="col-md-4">
                 <div class="card text-center">
-                    <img src="" class="card-img-top">
+<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОГК</h5>
                         <p class="card-text">
@@ -88,9 +96,11 @@
                     </div>
                 </div>
             </div>
+            </#if>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK'>
             <div class="col-md-4">
                 <div class="card text-center">
-                    <img src="" class="card-img-top">
+<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОТК</h5>
                         <p class="card-text">
@@ -103,6 +113,7 @@
                     </div>
                 </div>
             </div>
+            </#if>
         </div>
     </div>
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

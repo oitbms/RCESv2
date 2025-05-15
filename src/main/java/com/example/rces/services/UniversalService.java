@@ -1,9 +1,6 @@
 package com.example.rces.services;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
@@ -14,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.example.rces.services.ServiceUtil.formatedDate;
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
 @Service
@@ -81,6 +80,19 @@ public class UniversalService {
             request.setReason_wr(reasonText);
         }
         return repository.save(request);
+    }
+
+    public SGI createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate,LocalDateTime planDate) {
+        SGI sgi = new SGI();
+        sgi.setWorkShop(workShop);
+        sgi.setEvent(event);
+        sgi.setActions(actions);
+        sgi.setDepartment(SGI.Department.valueOf(department));
+        sgi.setComment(comment);
+        sgi.setDesiredDate(desiredDate);
+        sgi.setPlanDate(planDate);
+        sgi.setNumber(repository.generateRequestNumber());
+        return repository.save(sgi);
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
