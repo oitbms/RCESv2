@@ -1,5 +1,5 @@
 /* Модальные окна - Modern Style */
-.modalCustom {
+.modal-custom {
     display: none;
     position: fixed;
     inset: 0;
@@ -12,7 +12,7 @@
     transition: opacity 0.3s ease;
 }
 
-.modal.open {
+.modal-custom.open {
     display: flex;
     opacity: 1;
 }

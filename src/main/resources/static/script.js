@@ -350,7 +350,7 @@ Array.from(document.getElementsByName('square')).forEach(button => {
     button.addEventListener('click', async () => {
         const modalWindow = document.getElementById("executionsModal");
 
-        const list = modalWindow.querySelector('.modal-list');
+        const list = modalWindow.querySelector('.modal-list-custom');
         const data = await fetchData("executions", button.dataset.param);
 
         const tableRows = data.map(item => `
