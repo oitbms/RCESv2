@@ -21,8 +21,12 @@ public class SGI {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    @Column(name = "created_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createDate;
+
     @Column(name = "number")
-    private int number;
+    private int requestNumber;
 
     @Column(name = "workshop")
     private String workShop;
@@ -62,12 +66,20 @@ public class SGI {
         this.id = id;
     }
 
-    public int getNumber() {
-        return number;
+    public LocalDateTime getCreateDate() {
+        return createDate;
     }
 
-    public void setNumber(int number) {
-        this.number = number;
+    public void setCreateDate(LocalDateTime createDate) {
+        this.createDate = createDate;
+    }
+
+    public int getRequestNumber() {
+        return requestNumber;
+    }
+
+    public void setRequestNumber(int requestNumber) {
+        this.requestNumber = requestNumber;
     }
 
     public String getWorkShop() {

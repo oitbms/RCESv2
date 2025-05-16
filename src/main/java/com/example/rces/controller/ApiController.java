@@ -3,6 +3,7 @@ package com.example.rces.controller;
 import com.example.rces.controller.payload.*;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
+import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.RequestLog;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
@@ -101,6 +102,14 @@ public class ApiController {
         List<RequestLog> logs = service.getLogs(requestNumber);
         return ResponseEntity.ok(logs.stream()
                 .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/executions")
+    public ResponseEntity<List<ExecutionsPayload>> getExecutions(@RequestParam UUID param) {
+        List<FactExecutionSGI> executions = service.getExecutions(param);
+        return ResponseEntity.ok(executions.stream()
+                .map(ex -> new ExecutionsPayload(ex.getExecutionDate(), ex.getReport()))
                 .collect(Collectors.toList()));
     }
 

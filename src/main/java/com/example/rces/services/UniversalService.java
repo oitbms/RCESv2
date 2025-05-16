@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.example.rces.services.ServiceUtil.formatedDate;
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
 @Service
@@ -52,13 +50,13 @@ public class UniversalService {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
-    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee,String reasonText,String control) {
+    public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee, String reasonText, String control) {
         Requests request = new Requests();
 
         request.setTypeRequest(Requests.Type.valueOf(type));
         request.setCreatedBy(createdEmployee);
         request.setCreateDate(LocalDateTime.now());
-        request.setRequestNumber(repository.generateRequestNumber());
+        request.setRequestNumber(repository.generateRequestNumber(Requests.class));
         request.setEmployee(employee);
         request.setCustomerOrder(customerOrder);
         if (additionalFiles != null) {
@@ -70,20 +68,18 @@ public class UniversalService {
         }
         request.setItem(item);
         request.setQty(qty);
-        if (control!=null){
-            request.setControl(control);
-        }
+        request.setControl(control);
         request.setMlmNode(mlmNode);
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);
-        if (reasonText != null) {
-            request.setReason_wr(reasonText);
-        }
+        request.setReason_wr(reasonText);
+
         return repository.save(request);
     }
 
-    public SGI createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate,LocalDateTime planDate) {
+    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate, LocalDateTime planDate) {
         SGI sgi = new SGI();
+
         sgi.setWorkShop(workShop);
         sgi.setEvent(event);
         sgi.setActions(actions);
@@ -91,8 +87,10 @@ public class UniversalService {
         sgi.setComment(comment);
         sgi.setDesiredDate(desiredDate);
         sgi.setPlanDate(planDate);
-        sgi.setNumber(repository.generateRequestNumber());
-        return repository.save(sgi);
+        sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
+        sgi.setCreateDate(LocalDateTime.now());
+
+        repository.save(sgi);
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {

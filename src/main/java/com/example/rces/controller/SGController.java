@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/sgi")
@@ -38,18 +40,24 @@ public class SGController {
         return "sgi";
     }
 
-    @PostMapping("/createSGI")
-    public String createSGI(SGI sgi,
-                            @RequestParam("workshop") String workshop,
-                            @RequestParam("event")  String event,
-                            @RequestParam("actions") String actions,
-                            @RequestParam("department") String department,
+    @PostMapping("/create")
+    public String createSGI(
+            @RequestParam() String workshop,
+            @RequestParam() String event,
+            @RequestParam() String actions,
+            @RequestParam() String department,
 //                            @RequestParam("responsiblePerson") String responsiblePerson,
-                            @RequestParam("comment") String comment,
-                            @RequestParam("desiredDate") LocalDateTime desiredDate,
-                            @RequestParam("planDate") LocalDateTime planDate) {
-       SGI requestSGI = service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate);
-       return "redirect:/sgi";
+            @RequestParam(required = false) String comment,
+            @RequestParam() LocalDateTime desiredDate,
+            @RequestParam() LocalDateTime planDate) {
+        service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate);
+        return "redirect:/sgi";
+    }
+
+    @PostMapping("/delete")
+    public String deleteSGI(@RequestParam("id") UUID id) {
+        service.delete(service.findById(SGI.class, id));
+        return "redirect:/sgi";
     }
 
 

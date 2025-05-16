@@ -106,9 +106,9 @@ public class UniversalRepository {
         return null;
     }
 
-    public Integer generateRequestNumber() {
+    public Integer generateRequestNumber(Class<?> entityClass) {
         return (Integer) entityManager
-                .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM Requests e")
+                .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM " + entityClass.getSimpleName() + " e")
                 .getSingleResult();
     }
 }

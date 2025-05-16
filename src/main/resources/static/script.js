@@ -11,8 +11,15 @@ async function fetchData(endpoint, param) {
 
 // Обновление полей
 async function saveData(images, customerOrder) {
-    let formData = new FormData(document.getElementById('viewRequestForm'));
-    let data = Object.fromEntries(formData.entries());
+    let data;
+    if (document.title.includes("Заявка на вызов")) {
+        let formData = new FormData(document.getElementById('viewRequestForm'));
+        data = Object.fromEntries(formData.entries());
+    } else {
+        data = document.querySelectorAll('td[name]');
+        data["sendToTelegram"] = false;
+    }
+
     if (images != null) {
         data["images"] = images;
     }
@@ -35,7 +42,7 @@ async function saveData(images, customerOrder) {
         },
         body: JSON.stringify(data),
     }).then(r => {
-        if (r.status===403) {
+        if (r.status === 403) {
             window.location.href = `/error?message=Нет доступа к закрытию или редактированию заявки`;
             return;
         }
@@ -73,7 +80,7 @@ document.querySelectorAll('.openModal').forEach(button => {
         modalWindow.classList.add('open')
     });
 });
-
+//Запрет submit если required поля не заполнены
 document.querySelector('form').addEventListener('submit', function (event) {
     const requiredFields = document.querySelectorAll('[data-required]');
     let valid = true;
@@ -92,34 +99,78 @@ document.querySelector('form').addEventListener('submit', function (event) {
     }
 });
 
-if (viewForm) {
-    // Обработка ввода комментария с задержкой
-    document.getElementById('comment').addEventListener('input', function () {
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            saveData();
-        }, 3000);
-    });
+if (document.title.includes("Заявка на вызов")) {
+    if (viewForm) {
+        // Обработка ввода комментария с задержкой
+        document.getElementById('comment').addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                saveData();
+            }, 3000);
+        });
 // Обработка ввода описания решения с задержкой
-    document.getElementById('description').addEventListener('input', function () {
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            saveData();
-        }, 3000);
-    });
+        document.getElementById('description').addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                saveData();
+            }, 3000);
+        });
 // Обработка ввода Заказа клиента с задержкой
-    document.getElementById('customerOrderString').addEventListener('input', function () {
-        clearTimeout(timeout);
-        const customerOrderString = this.value;
-        timeout = setTimeout(function () {
-            saveData(null, customerOrderString);
-        }, 3000);
+        document.getElementById('customerOrderString').addEventListener('input', function () {
+            clearTimeout(timeout);
+            const customerOrderString = this.value;
+            timeout = setTimeout(function () {
+                saveData(null, customerOrderString);
+            }, 3000);
+        });
+        // Обработчик для кнопки "Прикрепленные фото"
+        document.getElementById('openPhotoModal').addEventListener('click', async function () {
+            const images = await fetchData("images", entityId.value); // Получаем список фото
+            renderPhotos(images);
+            document.getElementById('photoModal').classList.add('open'); // Открываем модальное окно
+        });
+    }
+
+    // Закрытие модального окна при клике на крестик или вне изображения
+    document.getElementById('fullPhotoModal').addEventListener('click', function (event) {
+        if (event.target === this || event.target.classList.contains('close')) {
+            this.classList.remove('open');
+        }
     });
-    // Обработчик для кнопки "Прикрепленные фото"
-    document.getElementById('openPhotoModal').addEventListener('click', async function () {
-        const images = await fetchData("images", entityId.value); // Получаем список фото
-        renderPhotos(images);
-        document.getElementById('photoModal').classList.add('open'); // Открываем модальное окно
+
+    document.getElementById('addPhotoBtn').addEventListener('click', function () {
+        document.getElementById('photoInput').click();
+    });
+
+    document.getElementById('photoInput').addEventListener('change', async function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Временное превью
+        const tempPreview = document.createElement('div');
+        tempPreview.className = 'photo-wrapper temporary';
+        tempPreview.innerHTML = `
+        <img src="" class="attached-photo loading">
+        <button class="delete-photo-btn" disabled>Удалить</button>
+    `;
+        document.getElementById('photoContainer').prepend(tempPreview);
+
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            tempPreview.querySelector('img').src = e.target.result;
+            tempPreview.querySelector('img').classList.remove('loading');
+            const id = document.getElementById('id').value;
+            let images = await fetchData("images", id) || [];
+            images.unshift(e.target.result);
+            await saveData(images);
+            renderPhotos(images);
+        };
+
+        reader.onerror = function () {
+            tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
+        };
+
+        reader.readAsDataURL(file);
     });
 }
 
@@ -166,49 +217,6 @@ async function deletePhoto(index) {
     images.splice(index, 1);
     await saveData(images);
 }
-
-// Закрытие модального окна при клике на крестик или вне изображения
-document.getElementById('fullPhotoModal').addEventListener('click', function (event) {
-    if (event.target === this || event.target.classList.contains('close')) {
-        this.classList.remove('open');
-    }
-});
-
-
-document.getElementById('addPhotoBtn').addEventListener('click', function () {
-    document.getElementById('photoInput').click();
-});
-
-document.getElementById('photoInput').addEventListener('change', async function (event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Временное превью
-    const tempPreview = document.createElement('div');
-    tempPreview.className = 'photo-wrapper temporary';
-    tempPreview.innerHTML = `
-        <img src="" class="attached-photo loading">
-        <button class="delete-photo-btn" disabled>Удалить</button>
-    `;
-    document.getElementById('photoContainer').prepend(tempPreview);
-
-    const reader = new FileReader();
-    reader.onload = async function (e) {
-        tempPreview.querySelector('img').src = e.target.result;
-        tempPreview.querySelector('img').classList.remove('loading');
-        const id = document.getElementById('id').value;
-        let images = await fetchData("images", id) || [];
-        images.unshift(e.target.result);
-        await saveData(images);
-        renderPhotos(images);
-    };
-
-    reader.onerror = function () {
-        tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
-    };
-
-    reader.readAsDataURL(file);
-});
 
 // Закрытие модальных окон
 function closeModal(modalId) {
@@ -297,41 +305,87 @@ document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => 
     });
 });
 
-document.addEventListener('DOMContentLoaded', async function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    let type = urlParams.get('type');
-    if (viewForm) {
-        type = await fetchData("typeRequest", entityId.value);
-    }
-    if (type === 'constructor') {
+if (document.title.includes("Заявка на вызов")) {
+    document.addEventListener('DOMContentLoaded', async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        let type = urlParams.get('type');
         if (viewForm) {
-            document.getElementById("inconsistencyViewField").classList.add('hidden')
-            document.getElementById("qtyViewField").classList.add('hidden')
-        } else {
-            // document.getElementById('reasonCreateField').classList.add('hidden');
-            // document.getElementById("reasonsName").removeAttribute("data-required")
-            document.getElementById("qtyCreateField").classList.add('hidden')
-            document.getElementById("qty").removeAttribute("data-required")
+            type = await fetchData("typeRequest", entityId.value);
         }
-    }
-    if (type === 'otk') {
-        if (viewForm) {
-            document.getElementById('mlmNodeViewField').classList.add('hidden');
-            document.getElementById("descriptionViewField").classList.add('hidden');
-            document.getElementById("reasonCreateField").removeAttribute("data-required")
-        } else {
-            // document.getElementById('mlmNodeCreateField').classList.add('hidden');
-            // document.getElementById('mlmNodeName').removeAttribute('data-required');
+        if (type === 'constructor') {
+            if (viewForm) {
+                document.getElementById("inconsistencyViewField").classList.add('hidden')
+                document.getElementById("qtyViewField").classList.add('hidden')
+            } else {
+                // document.getElementById('reasonCreateField').classList.add('hidden');
+                // document.getElementById("reasonsName").removeAttribute("data-required")
+                document.getElementById("qtyCreateField").classList.add('hidden')
+                document.getElementById("qty").removeAttribute("data-required")
+            }
         }
-    }
-    if (type === 'technologist') {
-        if (viewForm) {
-            document.getElementById("inconsistencyViewField").classList.add('hidden')
-            document.getElementById("qtyViewField").classList.add('hidden')
-            document.getElementById("qty").removeAttribute("data-required")
-        } else {
-            document.getElementById("qtyCreateField").classList.add('hidden')
-            document.getElementById("qty").removeAttribute("data-required")
+        if (type === 'otk') {
+            if (viewForm) {
+                document.getElementById('mlmNodeViewField').classList.add('hidden');
+                document.getElementById("descriptionViewField").classList.add('hidden');
+                document.getElementById("reasonCreateField").removeAttribute("data-required")
+            } else {
+                // document.getElementById('mlmNodeCreateField').classList.add('hidden');
+                // document.getElementById('mlmNodeName').removeAttribute('data-required');
+            }
         }
-    }
+        if (type === 'technologist') {
+            if (viewForm) {
+                document.getElementById("inconsistencyViewField").classList.add('hidden')
+                document.getElementById("qtyViewField").classList.add('hidden')
+                document.getElementById("qty").removeAttribute("data-required")
+            } else {
+                document.getElementById("qtyCreateField").classList.add('hidden')
+                document.getElementById("qty").removeAttribute("data-required")
+            }
+        }
+    });
+}
+
+Array.from(document.getElementsByName('square')).forEach(button => {
+    button.addEventListener('click', async () => {
+        const modalWindow = document.getElementById("executionsModal");
+
+        const list = modalWindow.querySelector('.modal-list');
+        const data = await fetchData("executions", button.dataset.param);
+
+        const tableRows = data.map(item => `
+        <tr>
+          <td class="selectable">${item.executionDate}</td>
+          <td class="selectable">${item.report}</td>
+        </tr>
+      `).join('');
+
+        if (data.length > 0) {
+            list.innerHTML = `
+        <div class="modal-header">
+          <h3 class="modal-title">Список фактов</h3>
+        </div>
+        <table class="info-table">
+          <thead>
+            <tr>
+              <th>Дата выполнения</th>
+              <th>Отчет</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <button class="create-btn" onclick="saveData()">Добавить запись</button>
+      `;
+        } else {
+            list.innerHTML = `
+        <div class="modal-header">
+          <h3 class="modal-title">Список фактов</h3>
+        </div>
+        <button class="create-btn" onclick="saveData()">Добавить запись</button>`
+        }
+
+        modalWindow.classList.add('open');
+    });
 });

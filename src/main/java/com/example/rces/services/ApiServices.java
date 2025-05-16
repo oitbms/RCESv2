@@ -164,4 +164,8 @@ public class ApiServices {
         return service.findAllByField(RequestLog.class, "request", service.findSingleByField(Requests.class, "requestNumber", requestNumber).getId());
     }
 
+    public List<FactExecutionSGI> getExecutions(UUID id) {
+        return service.findAllByField(FactExecutionSGI.class, "sgi", service.findById(SGI.class, id));
+    }
+
 }
