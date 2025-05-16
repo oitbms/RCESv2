@@ -112,5 +112,4 @@ public class ApiController {
                 .map(ex -> new ExecutionsPayload(ex.getExecutionDate(), ex.getReport()))
                 .collect(Collectors.toList()));
     }
-
 }

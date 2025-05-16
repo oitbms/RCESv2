@@ -1,9 +1,6 @@
 package com.example.rces.services;
 
-import com.example.rces.models.Employee;
-import com.example.rces.models.Images;
-import com.example.rces.models.RequestLog;
-import com.example.rces.models.Requests;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +32,24 @@ public class ServiceUtil {
                     throw new RuntimeException(e);
                 }
                 imageEntity.setRequest(requests);
+                images.add(imageEntity);
+            }
+        }
+        return images;
+    }
+
+    public static List<Images> saveFiles(MultipartFile[] files, FactExecutionSGI sgi) {
+        List<Images> images = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                imageEntity.setSgi(sgi);
                 images.add(imageEntity);
             }
         }

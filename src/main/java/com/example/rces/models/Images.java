@@ -38,6 +38,13 @@ public class Images {
         setRequest(request);
     }
 
+    public Images(String base64, FactExecutionSGI sgi) {
+        setBase64Data(base64);
+        setName("Фото от " + LocalDateTime.now());
+        setSgi(sgi);
+    }
+
+
     public String getBase64Data() {
         return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
     }

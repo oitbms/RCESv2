@@ -2,7 +2,7 @@ const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
 
 // Функция для получения данных по API
-async function fetchData(endpoint, param) {
+export async function fetchData(endpoint, param) {
     const url = new URL(/api/ + endpoint, window.location.origin);
     url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
@@ -80,6 +80,7 @@ document.querySelectorAll('.openModal').forEach(button => {
         modalWindow.classList.add('open')
     });
 });
+
 //Запрет submit если required поля не заполнены
 document.querySelector('form').addEventListener('submit', function (event) {
     const requiredFields = document.querySelectorAll('[data-required]');
@@ -219,7 +220,7 @@ async function deletePhoto(index) {
 }
 
 // Закрытие модальных окон
-function closeModal(modalId) {
+export function closeModal(modalId) {
     document.getElementById(modalId)?.classList.remove('open');
 }
 
@@ -346,46 +347,3 @@ if (document.title.includes("Заявка на вызов")) {
     });
 }
 
-Array.from(document.getElementsByName('square')).forEach(button => {
-    button.addEventListener('click', async () => {
-        const modalWindow = document.getElementById("executionsModal");
-
-        const list = modalWindow.querySelector('.modal-list-custom');
-        const data = await fetchData("executions", button.dataset.param);
-
-        const tableRows = data.map(item => `
-        <tr>
-          <td class="selectable">${item.executionDate}</td>
-          <td class="selectable">${item.report}</td>
-        </tr>
-      `).join('');
-
-        if (data.length > 0) {
-            list.innerHTML = `
-        <div class="modal-header">
-          <h3 class="modal-title">Список фактов</h3>
-        </div>
-        <table class="info-table">
-          <thead>
-            <tr>
-              <th>Дата выполнения</th>
-              <th>Отчет</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
-        <button class="create-btn" onclick="saveData()">Добавить запись</button>
-      `;
-        } else {
-            list.innerHTML = `
-        <div class="modal-header">
-          <h3 class="modal-title">Список фактов</h3>
-        </div>
-        <button class="create-btn" onclick="saveData()">Добавить запись</button>`
-        }
-
-        modalWindow.classList.add('open');
-    });
-});

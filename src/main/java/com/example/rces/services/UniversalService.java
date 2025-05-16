@@ -1,5 +1,6 @@
 package com.example.rces.services;
 
+import com.example.rces.controller.payload.ExecutionsPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
@@ -77,7 +79,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate, LocalDateTime planDate,Employee employee) {
+    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate, LocalDateTime planDate, Employee employee) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
@@ -93,6 +95,22 @@ public class UniversalService {
 
         repository.save(sgi);
     }
+
+    public FactExecutionSGI createFactExecutionSGI(UUID sgiId, ExecutionsPayload payload, MultipartFile[] additionalFiles) {
+        FactExecutionSGI factExecutionSGI = new FactExecutionSGI();
+
+        factExecutionSGI.setSgi(repository.findById(SGI.class, sgiId));
+        factExecutionSGI.setExecutionDate(payload.executionDate());
+        factExecutionSGI.setReport(payload.report());
+
+        if (additionalFiles != null) {
+            List<Images> images = saveFiles(additionalFiles, factExecutionSGI);
+            factExecutionSGI.setImages(images);
+        }
+
+        return repository.save(factExecutionSGI);
+    }
+
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);

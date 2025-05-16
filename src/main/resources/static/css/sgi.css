@@ -22,7 +22,7 @@
     padding: 24px;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    width: min(90%, 400px);
+    width: min(90%, 600px);
     max-height: 80vh;
     display: flex;
     flex-direction: column;
@@ -186,4 +186,44 @@
     font-weight: 600;
     color: #333;
     margin: 0;
+}
+
+/* Стили для кнопки "Прикрепленные фото" */
+.attached-photo-btn {
+    padding: 6px 12px;
+    background-color: #4CAF50; /* зеленый цвет */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.attached-photo-btn:hover {
+    background-color: #45a049; /* чуть темнее при наведении */
+    transform: scale(1.05); /* легкое увеличение при наведении */
+}
+
+.attached-photo-btn:active {
+    background-color: #3e8e41; /* при нажатии */
+    transform: scale(0.98);
+}
+
+/* Общий стиль для input, похожий на td.selectable */
+.input-selectable {
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-selectable:focus {
+    border-color: #4f46e5;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
 }

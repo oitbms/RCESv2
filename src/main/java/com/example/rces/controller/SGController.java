@@ -1,18 +1,15 @@
 package com.example.rces.controller;
 
+import com.example.rces.controller.payload.ExecutionsPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.SGI;
-import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,12 +25,6 @@ public class SGController {
     @Autowired
     private TelegramService tgService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-
     @GetMapping()
     public String getSGIForm(Model model) {
         List<SGI> sgiList = service.findAll(SGI.class);
@@ -45,24 +36,31 @@ public class SGController {
 
     @PostMapping("/create")
     public String createSGI(
-            @RequestParam() String workshop,
-            @RequestParam() String event,
-            @RequestParam() String actions,
-            @RequestParam() String department,
-            @RequestParam() String employees,
+            @RequestParam String workshop,
+            @RequestParam String event,
+            @RequestParam String actions,
+            @RequestParam String department,
+            @RequestParam String employees,
             @RequestParam(required = false) String comment,
-            @RequestParam() LocalDateTime desiredDate,
-            @RequestParam() LocalDateTime planDate) {
+            @RequestParam LocalDateTime desiredDate,
+            @RequestParam LocalDateTime planDate) {
         Employee employee = service.findSingleByField(Employee.class, "name", employees);
-        service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate,employee);
+        service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate, employee);
         return "redirect:/sgi";
     }
 
-    @PostMapping("/delete")
-    public String deleteSGI(@RequestParam("id") UUID id) {
+    @PostMapping("/create/execution")
+    public void createSGIExecution(@RequestParam UUID id,
+                                   @RequestParam LocalDateTime executionDate,
+                                   @RequestParam String report,
+                                   @RequestParam(required = false) MultipartFile[] photos) {
+        service.createFactExecutionSGI(id, new ExecutionsPayload(executionDate, report), photos);
+    }
+
+    @DeleteMapping("/delete")
+    @ResponseBody
+    public void deleteSGI(@RequestParam("id") UUID id) {
         service.delete(service.findById(SGI.class, id));
-        return "redirect:/sgi";
     }
-
 
 }
