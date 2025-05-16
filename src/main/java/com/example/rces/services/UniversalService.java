@@ -82,7 +82,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public SGI createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate,LocalDateTime planDate) {
+    public SGI createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate,LocalDateTime planDate,Employee employee) {
         SGI sgi = new SGI();
         sgi.setWorkShop(workShop);
         sgi.setEvent(event);
@@ -91,7 +91,8 @@ public class UniversalService {
         sgi.setComment(comment);
         sgi.setDesiredDate(desiredDate);
         sgi.setPlanDate(planDate);
-        sgi.setNumber(repository.generateRequestNumber());
+        sgi.setNumber(repository.generateNextNumber(SGI.class,"number"));
+        sgi.setEmployee(employee);
         return repository.save(sgi);
     }
 

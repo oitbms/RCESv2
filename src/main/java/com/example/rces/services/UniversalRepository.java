@@ -5,6 +5,7 @@ import com.example.rces.models.Employee;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -110,5 +111,18 @@ public class UniversalRepository {
         return (Integer) entityManager
                 .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM Requests e")
                 .getSingleResult();
+    }
+    //САМ ПОТОМ ПЕРЕДЕЛАЕШЬ ДЛЯ УНИВЕРСАЛЬНОСТИ
+    public <T> Integer generateNextNumber(Class<T> entityClass, String requestNumberFieldName) {
+        String entityName = entityClass.getSimpleName();
+
+        String queryStr = String.format(
+                "SELECT coalesce(MAX(e.%s) + 1, 1) FROM %s e",
+                requestNumberFieldName,
+                entityName
+        );
+
+        TypedQuery<Integer> query = (TypedQuery<Integer>) entityManager.createQuery(queryStr);
+        return query.getSingleResult();
     }
 }

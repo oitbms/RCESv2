@@ -8,6 +8,7 @@
     <title>План СГИ</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesMain.css">
+
 </head>
 <body>
 <div class="container d-flex justify-content-center">
@@ -96,10 +97,14 @@
                                 <option value="technologist">technologist</option>
                             </select>
                         </div>
-<#--                        <div class="mb-3">-->
-<#--                            <label for="responsiblePerson" class="form-label">Ответственное лицо</label>-->
-<#--                            <input type="text" class="form-control" id="responsiblePerson" name="responsiblePerson" required>-->
-<#--                        </div>-->
+                        <div class="mb-3">
+                            <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
+                            <select class="form-control" id="emploees" name="emploees" required>
+                                <#list emploeesList as emploees>
+                                    <option value="${emploees.id}">${emploees.name}</option>
+                                </#list>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label for="desiredDate" class="form-label">Желаемый срок</label>
                             <input type="datetime-local" class="form-control" id="desiredDate" name="desiredDate">

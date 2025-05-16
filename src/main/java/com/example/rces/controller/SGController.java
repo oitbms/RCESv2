@@ -1,5 +1,6 @@
 package com.example.rces.controller;
 
+import com.example.rces.models.Employee;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.TelegramService;
@@ -34,22 +35,24 @@ public class SGController {
     @GetMapping()
     public String getSGIForm(Model model) {
         List<SGI> sgiList = service.findAll(SGI.class);
+        List<Employee> employeeList = service.findAll(Employee.class);
+        model.addAttribute("emploeesList",employeeList);
         model.addAttribute("sgiList", sgiList);
         return "sgi";
     }
 
     @PostMapping("/createSGI")
-    public String createSGI(SGI sgi,
-                            @RequestParam("workshop") String workshop,
+    public String createSGI(@RequestParam("workshop") String workshop,
                             @RequestParam("event")  String event,
                             @RequestParam("actions") String actions,
                             @RequestParam("department") String department,
-//                            @RequestParam("responsiblePerson") String responsiblePerson,
+                            @RequestParam("emploees") Long emploees,
                             @RequestParam("comment") String comment,
                             @RequestParam("desiredDate") LocalDateTime desiredDate,
                             @RequestParam("planDate") LocalDateTime planDate) {
-       SGI requestSGI = service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate);
-       return "redirect:/sgi";
+        Employee employe = service.findById(Employee.class, emploees);
+        SGI requestSGI = service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, planDate,employe);
+        return "redirect:/sgi";
     }
 
 
