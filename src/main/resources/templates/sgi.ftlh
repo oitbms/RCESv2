@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/sgi.css">
     <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
 <body>
@@ -62,7 +63,7 @@
 
     <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content ">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="createModalLabel">Добавление задания</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
@@ -94,8 +95,8 @@
                             <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
                             <input
                                     type="text"
-                                    id="emploees"
-                                    name="emploees"
+                                    id="employees"
+                                    name="employees"
                                     list="employeesList"
                                     placeholder="Введите фамилию..."
                                     class="form-control"
@@ -128,11 +129,13 @@
             </div>
         </div>
     </div>
-    <div id="executionsModal" class="modal">
-        <div class="modal-content">
+    <div class="sgi-namespace">
+    <div id="executionsModal" class="modalCustom">
+        <div class="modal-content-custom">
             <button class="x" onclick="closeModal('executionsModal')">✕</button>
-            <ul id="executionsList" class="modal-list"></ul>
+            <ul id="executionsList" class="modal-list-custom"></ul>
         </div>
+    </div>
     </div>
 </div>
 
