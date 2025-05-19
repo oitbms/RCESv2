@@ -3,7 +3,6 @@ package com.example.rces.controller;
 import com.example.rces.controller.payload.ExecutionsPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.SGI;
-import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,9 +20,6 @@ public class SGController {
 
     @Autowired
     private UniversalService service;
-
-    @Autowired
-    private TelegramService tgService;
 
     @GetMapping()
     public String getSGIForm(Model model) {
@@ -54,13 +50,23 @@ public class SGController {
                                    @RequestParam LocalDateTime executionDate,
                                    @RequestParam String report,
                                    @RequestParam(required = false) MultipartFile[] photos) {
-        service.createFactExecutionSGI(id, new ExecutionsPayload(executionDate, report), photos);
+        service.createFactExecutionSGI(id, new ExecutionsPayload(null,executionDate, report), photos);
+    }
+
+    @PostMapping("/add-photo")
+    public void addPhoto(@RequestParam MultipartFile[] additionalFiles, @RequestParam UUID param) {
+        service.addPhoto(additionalFiles, param);
     }
 
     @DeleteMapping("/delete")
     @ResponseBody
     public void deleteSGI(@RequestParam("id") UUID id) {
         service.delete(service.findById(SGI.class, id));
+    }
+
+    @PostMapping("/delete-photo")
+    public void deletePhoto(@RequestParam("param") Long photoId) {
+        service.deletePhoto(photoId);
     }
 
 }

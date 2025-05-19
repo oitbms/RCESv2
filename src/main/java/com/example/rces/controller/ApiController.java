@@ -109,7 +109,7 @@ public class ApiController {
     public ResponseEntity<List<ExecutionsPayload>> getExecutions(@RequestParam UUID param) {
         List<FactExecutionSGI> executions = service.getExecutions(param);
         return ResponseEntity.ok(executions.stream()
-                .map(ex -> new ExecutionsPayload(ex.getExecutionDate(), ex.getReport()))
+                .map(ex -> new ExecutionsPayload(ex.getId(), ex.getExecutionDate(), ex.getReport()))
                 .collect(Collectors.toList()));
     }
 }

@@ -116,4 +116,12 @@ public class UniversalService {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
     }
 
+    public void addPhoto(MultipartFile[] additionalFiles, UUID id) {
+        repository.addPhoto(additionalFiles, id);
+    }
+
+    public void deletePhoto(Long photoId) {
+        repository.deletePhoto(photoId);
+    }
+
 }
