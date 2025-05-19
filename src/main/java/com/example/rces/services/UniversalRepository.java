@@ -2,6 +2,7 @@ package com.example.rces.services;
 
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
+import com.example.rces.models.FactExecutionSGI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -11,11 +12,14 @@ import jakarta.persistence.criteria.Root;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
+import static com.example.rces.services.ServiceUtil.saveFiles;
 
 @Repository
 public class UniversalRepository {
@@ -110,5 +114,15 @@ public class UniversalRepository {
         return (Integer) entityManager
                 .createQuery("SELECT coalesce(MAX(e.requestNumber) + 1, 1) FROM " + entityClass.getSimpleName() + " e")
                 .getSingleResult();
+    }
+
+    public void addPhoto(MultipartFile[] additionalFiles, UUID id) {
+        saveFiles(additionalFiles, findById(FactExecutionSGI.class, id));
+    }
+
+    public void deletePhoto(Long photoId) {
+        entityManager.createQuery("DELETE FROM Images e WHERE e.id = :photoId")
+                .setParameter("photoId", photoId)
+                .executeUpdate();
     }
 }

@@ -12,13 +12,8 @@ export async function fetchData(endpoint, param) {
 // Обновление полей
 async function saveData(images, customerOrder) {
     let data;
-    if (document.title.includes("Заявка на вызов")) {
-        let formData = new FormData(document.getElementById('viewRequestForm'));
-        data = Object.fromEntries(formData.entries());
-    } else {
-        data = document.querySelectorAll('td[name]');
-        data["sendToTelegram"] = false;
-    }
+    let formData = new FormData(document.getElementById('viewRequestForm'));
+    data = Object.fromEntries(formData.entries());
 
     if (images != null) {
         data["images"] = images;
