@@ -22,7 +22,7 @@
                 <th style="background-color: #007bff; color: white;">
                     № п/п
                     <button type="button" class="toggleInput">
-                        <svg onclick="filterData()" viewBox="0 0 24 24" width=16>
+                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -117,7 +117,7 @@
             </thead>
             <tbody>
             <#list sgiList as sgi>
-                <tr>
+                <tr id="${sgi.id}">
                     <td>${sgi.requestNumber}</td>
                     <td name="workShop">${sgi.workShop}</td>
                     <td name="event">${sgi.event}</td>
@@ -127,17 +127,22 @@
                     <td name="desiredDate">${(sgi.desiredDate)}</td>
                     <td name="planDate">${(sgi.planDate)}</td>
                     <td>
-                        <button type="button" name="square"
-                                data-endpoint="executions"
-                                data-input-id="executionsName"
-                                data-hidden-entity="executionsJson"
-                                data-modal-id="executionsModal"
-                                data-param="${sgi.id}"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                 xmlns="http://www.w3.org/2000/svg">
-                                <rect x="4" y="4" width="16" height="16" stroke="black" stroke-width="2" fill="none"/>
-                            </svg>
+<#--                        <button type="button" name="square"-->
+<#--                                data-endpoint="executions"-->
+<#--                                data-input-id="executionsName"-->
+<#--                                data-hidden-entity="executionsJson"-->
+<#--                                data-modal-id="executionsModal"-->
+<#--                                data-param="${sgi.id}"-->
+<#--                        >-->
+<#--                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"-->
+<#--                                 xmlns="http://www.w3.org/2000/svg">-->
+<#--                                <rect x="4" y="4" width="16" height="16" stroke="black" stroke-width="2" fill="none"/>-->
+<#--                            </svg>-->
+<#--                        </button>-->
+<#--                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fackModal">✔-->
+<#--                        </button>-->
+                        <button type="button" class="btn btn-info btn-sm" onclick="openFactExecution('${sgi.id}')">
+                            ✔
                         </button>
                     </td>
                     <td>${sgi.comment!''}</td>
@@ -149,6 +154,83 @@
             новое задание
         </button>
         <div id="pagination" class="pagination mt-4"></div>
+
+        <div class="modal fade" id="fackModal" tabindex="-1" aria-labelledby="fackModalLable" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="fackModalLable">Факт выполнения задания</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>
+                                    Дата выполнения
+                                </th>
+                                <th>
+                                    Отчет
+                                </th>
+                                <th>
+                                    Прикрепленные фото
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <#if fact??>
+                                <tr>
+                                    <td>${fact.executionDate?string("dd.MM.yyyy HH:mm")}</td>
+                                    <td>${fact.report}</td>
+                                    <td>${fact.photos?if_exists?string("Да")?default("Нет")}</td>
+                                </tr>
+                            <#else>
+                                <tr><td colspan="3">Нет данных</td></tr>
+                            </#if>
+                            </tbody>
+                        </table>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal">Отметить факт выполнения</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Отметка</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addSubTaskId" action="/sgi/create/execution" method="post">
+                            <div class="mb-3">
+                                <label for="id" class="form-label">Отчет</label>
+                                <input type="text" class="form-control" id="id" name="id">
+                            </div>
+                            <div class="mb-3">
+                                <label for="executionDate" class="form-label">Желаемый срок</label>
+                                <input type="datetime-local" class="form-control" id="executionDate" name="executionDate">
+                            </div>
+                            <div class="mb-3">
+                                <label for="report" class="form-label">Отчет</label>
+                                <input type="text" class="form-control" id="report" name="report">
+                            </div>
+                            <div class="mb-3">
+                                <label for="images" class="form-label">Фото</label>
+                                <input type="file" class="form-control" id="images" name="images" accept="image/*" multiple>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" data-bs-target="#fackModal" data-bs-toggle="modal">Назад</button>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -230,14 +312,53 @@
         </div>
 </div>
 
+<div id="customContextMenu" style="display:none; position:absolute; z-index:1000; background:white; border:1px solid #ccc; padding:5px; border-radius:4px;">
+    <button id="deleteRowBtn" class="btn btn-danger btn-sm">Удалить</button>
+</div>
 
 <!-- Уведомления -->
 <div id="notification-container"></div>
 
 <script>
+    function openFactExecution(rowId) {
+        currentRowId = rowId;
+
+        fetchFactExecutions(rowId);
+
+        $('#fackModal').modal('show');
+    }
+    function fetchFactExecutions(sgiId) {
+        $.ajax({
+            url: '/sgi/fact-executions',
+            method: 'GET',
+            data: { sgiId: sgiId },
+            success: function(data) {
+                populateFactExecutionTable(data);
+            },
+            error: function() {
+                alert('Ошибка при загрузке фактов выполнения');
+            }
+        });
+    }
+
+    function populateFactExecutionTable(fact) {
+        const tbody = $('#fackModal tbody');
+        tbody.empty();
+        if (!fact) {
+            tbody.append('<tr><td colspan="3">Нет данных</td></tr>');
+            return;
+        }
+        const row = `<tr>
+        <td>${(fact.executionDate)!""}</td>
+        <td>${(fact.report)!""}</td>
+        <td>${(fact.photos)!""}</td>
+    </tr>`;
+        tbody.append(row);
+    }
     $(document).ready(function () {
         const rowsPerPage = 16;
         let filteredRows = [];
+        let currentRowId = null;
 
         const filterData = () => {
             filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
@@ -297,10 +418,62 @@
         $('.toggleInput').on('click', function () {
             $(this).next('.inputContainer').toggle();
         });
+
+        $('#sgiTable tbody').on('contextmenu', 'tr', function(e) {
+            e.preventDefault();
+            currentRow = $(this);
+            $('#customContextMenu').css({
+                top: e.pageY + 'px',
+                left: e.pageX + 'px',
+                display: 'block'
+            });
+        });
+
+        $('#deleteRowBtn').on('click', function() {
+            if (currentRow) {
+                const rowId = currentRow.attr('id');
+                deleteSgi(rowId);
+                $('#customContextMenu').hide();
+            }
+        });
+
+        function deleteSgi(rowId) {
+            $.ajax({
+                url: '/sgi/delete',
+                type: 'DELETE',
+                data: { id: rowId },
+                success: function() {
+                    currentRow.remove();
+                },
+                error: function() {
+                    alert('Ошибка при удалении');
+                }
+            });
+        }
+
+        $(document).on('click', function() {
+            $('#customContextMenu').hide();
+        });
+
+        $('#executionsList').on('contextmenu', 'li', function(e) {
+            e.preventDefault();
+            currentRow = $(this);
+            $('#customContextMenu').css({
+                top: e.pageY + 'px',
+                left: e.pageX + 'px',
+                display: 'block'
+            });
+        });
+
+        $('#deleteRowBtn').on('click', () => {
+            if (currentRow) {
+                currentRow.remove();
+                $('#customContextMenu').hide();
+            }
+        });
     });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="/sgi.js" defer></script>
 </body>
 </html>

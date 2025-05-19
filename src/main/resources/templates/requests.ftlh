@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/stylesBid.css">
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
-    <script src="/script.js" defer></script>
+    <script type="module" src="/script.js" defer></script>
 </head>
 <body>
 <#if createForm!false>

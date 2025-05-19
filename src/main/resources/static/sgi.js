@@ -11,7 +11,7 @@ Array.from(document.getElementsByName('square')).forEach(button => {
 
         // Формируем строки таблицы с добавлением двух input после заполненных строк
         const tableRows = data.map(item => `
-            <tr>
+            <tr id="${item.id}">
               <td class="selectable">${item.executionDate}</td>
               <td class="selectable">${item.report}</td>
               <td>
