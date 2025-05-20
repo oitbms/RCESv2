@@ -3,10 +3,11 @@ package com.example.rces.controller;
 import com.example.rces.controller.payload.ExecutionsPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
 import com.example.rces.models.SGI;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -57,16 +58,19 @@ public class SGController {
     }
 
     @PostMapping("/create/execution")
-    public void createSGIExecution(@RequestParam UUID id,
-                                   @RequestParam LocalDateTime executionDate,
-                                   @RequestParam String report,
-                                   @RequestParam(required = false) MultipartFile[] photos) {
-        service.createFactExecutionSGI(id, new ExecutionsPayload(null,executionDate, report), photos);
+    public ResponseEntity<Void> createSGIExecution(
+            @RequestParam UUID id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime executionDate,
+            @RequestParam String report,
+            @RequestParam(required = false) MultipartFile[] images) {
+            service.createFactExecutionSGI(id, new ExecutionsPayload(null, executionDate, report), images);
+            return ResponseEntity.ok().build();
     }
 
     @PostMapping("/add-photo")
-    public void addPhoto(@RequestParam MultipartFile[] additionalFiles, @RequestParam UUID param) {
-        service.addPhoto(additionalFiles, param);
+    public ResponseEntity<Void> addPhoto(@RequestParam() UUID id, @RequestParam() MultipartFile[] additionalFiles) {
+        service.addPhoto(id, additionalFiles);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete")
@@ -75,9 +79,14 @@ public class SGController {
         service.delete(service.findById(SGI.class, id));
     }
 
-    @PostMapping("/delete-photo")
-    public void deletePhoto(@RequestParam("param") Long photoId) {
-        service.deletePhoto(photoId);
+    @DeleteMapping("/delete-fact")
+    public ResponseEntity<Void> deleteFactSGI(@RequestParam("id") UUID id) {
+        service.delete(service.findById(FactExecutionSGI.class, id));
+        return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/delete-photo")
+    public void deletePhoto(@RequestParam("id") UUID id) {
+        service.deletePhoto(id);
+    }
 }

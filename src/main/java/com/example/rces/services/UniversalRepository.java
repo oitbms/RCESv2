@@ -1,8 +1,10 @@
 package com.example.rces.services;
 
+import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
+import com.example.rces.models.Images;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -14,12 +16,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
-import static com.example.rces.services.ServiceUtil.saveFiles;
+import static com.example.rces.services.ServiceUtil.*;
 
 @Repository
 public class UniversalRepository {
@@ -116,11 +118,23 @@ public class UniversalRepository {
                 .getSingleResult();
     }
 
-    public void addPhoto(MultipartFile[] additionalFiles, UUID id) {
-        saveFiles(additionalFiles, findById(FactExecutionSGI.class, id));
+    public void addPhoto( UUID id, MultipartFile[] additionalFiles) {
+        for (MultipartFile file : additionalFiles) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                imageEntity.setSgi(findById(FactExecutionSGI.class, id));
+                save(imageEntity);
+            }
+        }
     }
 
-    public void deletePhoto(Long photoId) {
+    public void deletePhoto(UUID photoId) {
         entityManager.createQuery("DELETE FROM Images e WHERE e.id = :photoId")
                 .setParameter("photoId", photoId)
                 .executeUpdate();

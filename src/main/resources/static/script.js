@@ -2,7 +2,7 @@ const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
 
 // Функция для получения данных по API
-export async function fetchData(endpoint, param) {
+async function fetchData(endpoint, param) {
     const url = new URL(/api/ + endpoint, window.location.origin);
     url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
@@ -121,9 +121,9 @@ if (document.title.includes("Заявка на вызов")) {
         });
         // Обработчик для кнопки "Прикрепленные фото"
         document.getElementById('openPhotoModal').addEventListener('click', async function () {
-            const images = await fetchData("images", entityId.value); // Получаем список фото
+            const images = await fetchData("images", entityId.value);
             renderPhotos(images);
-            document.getElementById('photoModal').classList.add('open'); // Открываем модальное окно
+            document.getElementById('photoModal').classList.add('open');
         });
     }
 
@@ -147,8 +147,8 @@ if (document.title.includes("Заявка на вызов")) {
         tempPreview.className = 'photo-wrapper temporary';
         tempPreview.innerHTML = `
         <img src="" class="attached-photo loading">
-        <button class="delete-photo-btn" disabled>Удалить</button>
-    `;
+        <button class="delete-photo-btn" disabled>Удалить</button>`;
+
         document.getElementById('photoContainer').prepend(tempPreview);
 
         const reader = new FileReader();
