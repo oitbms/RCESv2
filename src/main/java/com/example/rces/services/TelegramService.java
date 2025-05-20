@@ -2,9 +2,11 @@ package com.example.rces.services;
 
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
+import com.example.rces.models.SGI;
 import com.example.rces.models.enums.Appraisal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -13,7 +15,9 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Component
 public class TelegramService extends TelegramLongPollingBot {
@@ -32,6 +36,9 @@ public class TelegramService extends TelegramLongPollingBot {
 
     @Value("${telegram.chat.otk.id}")
     private String otkGroupChatId;
+
+    @Value("${telegram.chat.control.id}")
+    private String controlChatId;
 
     @Value("${url.mobile}")
     private String urlMobile;
@@ -122,6 +129,17 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
+    public void sendMessageToControl(String requestsNumbers) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(controlChatId);
+        sendMessage.setText("Срок выполнения мероприятий №" + requestsNumbers + " истекает через 2 дня");
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
@@ -141,28 +159,18 @@ public class TelegramService extends TelegramLongPollingBot {
         }
     }
 
-//    @Scheduled(cron = "0 0 9 * * *") // каждый день в 09:00
-//    public void notifyExpiredDeviations() {
-//        Date today = new Date();
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//
-//        List<Item> items = itemRepository.findAllWithDeviations();
-//
-//        for (Item item : items) {
-//            for (Deviations deviation : item.getDeviations()) {
-//                boolean isDateToday = deviation.getDate() != null && sdf.format(deviation.getDate()).equals(sdf.format(today));
-//                boolean isNotFixed = !deviation.isSuccess();
-//
-//                if (isDateToday && isNotFixed) {
-//                    String message = String.format("‼️ По акту №%s (Заказ: %s) вышел срок устранения замечания #%d",
-//                            item.getNumber(),
-//                            item.getZkNumber(),
-//                            deviation.getDeviationNumber());
-//                    sendMessageToBothGroups(message);
-//                }
-//            }
-//        }
-//    }
+    @Scheduled(cron = "0 0 9 * * *") // каждый день в 09:00
+    public void notifyExpiredDeviations() {
+        LocalDate today = LocalDate.now();
+        String requestsNumbers = service.findAll(SGI.class).stream()
+                .filter(sgi -> today.isAfter(sgi.getPlanDate().plusDays(2)))
+                .map(SGI::getRequestNumber)
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        if (!requestsNumbers.isBlank()) {
+            sendMessageToControl(requestsNumbers);
+        }
+    }
 
 
     private String getGroupId(String typeRequest) {

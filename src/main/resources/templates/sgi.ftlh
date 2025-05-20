@@ -118,15 +118,16 @@
             </thead>
             <tbody>
             <#list sgiList as sgi>
+                <#assign reqIndex = sgi_index>
                 <tr id="${sgi.id}">
                     <td>${sgi.requestNumber}</td>
                     <td name="workShop">${sgi.workShop}</td>
                     <td name="event">${sgi.event}</td>
                     <td name="actions">${sgi.actions}</td>
-                    <td name="department">${sgi.department.name()}</td>
+                    <td name="department">${sgi.department.getName()}</td>
                     <td name="employee">${(sgi.employee.getName())!""}</td>
-                    <td name="desiredDate">${(sgi.desiredDate)}</td>
-                    <td name="planDate">${(sgi.planDate)}</td>
+                    <td name="desiredDate">${updateDesiredDate[reqIndex]}</td>
+                    <td name="planDate">${updatePlanDate[reqIndex]}</td>
                     <td><button type="button" class="btn btn-info btn-sm" onclick="openFactExecutionModal('${sgi.id}')">✔</button></td>
                     <td>${sgi.comment!''}</td>
                 </tr>
@@ -157,7 +158,7 @@
                             <tbody>
                             <#if fact??>
                                 <tr>
-                                    <td>${fact.executionDate?string("dd.MM.yyyy HH:mm")}</td>
+                                    <td>${fact.executionDate?string("dd.MM.yyyy")}</td>
                                     <td>${fact.report}</td>
                                     <div class="modal-footer">
                                         <button class="btn btn-primary" data-fact-id="${fact.id}" data-bs-target="#photoModal" data-bs-toggle="modal">фото</button>
@@ -187,7 +188,7 @@
                         <form id="addSubTaskId" action="/sgi/create/execution" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="executionDate" class="form-label">Желаемый срок</label>
-                                <input type="datetime-local" class="form-control" id="executionDate" name="executionDate">
+                                <input type="date" class="form-control" id="executionDate" name="executionDate">
                             </div>
                             <div class="mb-3">
                                 <label for="report" class="form-label">Отчет</label>
@@ -246,9 +247,8 @@
                                 <label for="department" class="form-label">Ответственный отдел</label>
                                 <select class="form-control" id="department" name="department" data-required="true">
                                     <option value="">Выберите отдел</option>
-                                    <option value="constructor">ОГК</option>
-                                    <option value="otk">ОТК</option>
-                                    <option value="technologist">ОГТ</option>
+                                    <option value="mechanic">ОГМ</option>
+                                    <option value="builder">ОГС</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -270,12 +270,12 @@
                             </div>
                             <div class="mb-3">
                                 <label for="desiredDate" class="form-label">Желаемый срок</label>
-                                <input type="datetime-local" class="form-control" id="desiredDate" name="desiredDate"
+                                <input type="date" class="form-control" id="desiredDate" name="desiredDate"
                                        data-required="true">
                             </div>
                             <div class="mb-3">
                                 <label for="planDate" class="form-label">Планируемый срок</label>
-                                <input type="datetime-local" class="form-control" id="planDate" name="planDate"
+                                <input type="date" class="form-control" id="planDate" name="planDate"
                                        data-required="true">
                             </div>
                             <div class="mb-3">

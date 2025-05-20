@@ -3,7 +3,7 @@ package com.example.rces.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,16 @@ import java.util.UUID;
 public class SGI {
 
     public enum Department {
-        constructor, otk, technologist
+        mechanic("ОГМ"), builder("ОГС");
+
+        private final String name;
+
+        Department(String name) {
+            this.name = name;
+        }
+        public String getName() {
+            return name;
+        }
     }
 
     @Id
@@ -23,7 +32,7 @@ public class SGI {
 
     @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createDate;
+    private LocalDate createDate;
 
     @Column(name = "number")
     private int requestNumber;
@@ -45,12 +54,10 @@ public class SGI {
     private Employee employee;
 
     @Column(name = "desired_date")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime desiredDate;
+    private LocalDate desiredDate;
 
     @Column(name = "plan_date")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime planDate;
+    private LocalDate planDate;
 
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FactExecutionSGI> executions = new ArrayList<>();
@@ -66,11 +73,11 @@ public class SGI {
         this.id = id;
     }
 
-    public LocalDateTime getCreateDate() {
+    public LocalDate getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
+    public void setCreateDate(LocalDate createDate) {
         this.createDate = createDate;
     }
 
@@ -122,19 +129,19 @@ public class SGI {
         this.employee = employee;
     }
 
-    public LocalDateTime getDesiredDate() {
+    public LocalDate getDesiredDate() {
         return desiredDate;
     }
 
-    public void setDesiredDate(LocalDateTime desiredDate) {
+    public void setDesiredDate(LocalDate desiredDate) {
         this.desiredDate = desiredDate;
     }
 
-    public LocalDateTime getPlanDate() {
+    public LocalDate getPlanDate() {
         return planDate;
     }
 
-    public void setPlanDate(LocalDateTime planDate) {
+    public void setPlanDate(LocalDate planDate) {
         this.planDate = planDate;
     }
 

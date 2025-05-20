@@ -83,6 +83,13 @@ public class ServiceUtil {
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
 
+    public static String formatedDate(LocalDate date) {
+        if (date == null) {
+            return "-";
+        }
+        return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    }
+
     public static boolean isJson(Object value) {
         if (value == null) {
             return false;

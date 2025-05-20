@@ -17,6 +17,8 @@ $('#addSubTaskId').on('submit', function (e) {
         success: function(response) {
             $(form).trigger('reset');
             $(form).find('input[type="file"]').val('');
+            $('#exampleModalToggle2').modal('hide');
+            openFactExecutionModal(entityId);
         }
     });
 });

@@ -3,7 +3,7 @@ package com.example.rces.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class FactExecutionSGI {
 
     @Column(name = "execution_date")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime executionDate;
+    private LocalDate executionDate;
 
     @Column(name = "report")
     private String report;
@@ -47,11 +47,11 @@ public class FactExecutionSGI {
         this.sgi = sgi;
     }
 
-    public LocalDateTime getExecutionDate() {
+    public LocalDate getExecutionDate() {
         return executionDate;
     }
 
-    public void setExecutionDate(LocalDateTime executionDate) {
+    public void setExecutionDate(LocalDate executionDate) {
         this.executionDate = executionDate;
     }
 

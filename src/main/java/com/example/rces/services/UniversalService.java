@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +80,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDateTime desiredDate, LocalDateTime planDate, Employee employee) {
+    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDate desiredDate, LocalDate planDate, Employee employee) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
@@ -90,7 +91,7 @@ public class UniversalService {
         sgi.setDesiredDate(desiredDate);
         sgi.setPlanDate(planDate);
         sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
-        sgi.setCreateDate(LocalDateTime.now());
+        sgi.setCreateDate(LocalDate.now());
         sgi.setEmployee(employee);
 
         repository.save(sgi);
@@ -100,7 +101,7 @@ public class UniversalService {
         FactExecutionSGI factExecutionSGI = new FactExecutionSGI();
 
         factExecutionSGI.setSgi(repository.findById(SGI.class, sgiId));
-        factExecutionSGI.setExecutionDate(payload.executionDate());
+        factExecutionSGI.setExecutionDate(LocalDate.parse(payload.executionDate()));
         factExecutionSGI.setReport(payload.report());
 
         if (additionalFiles != null) {

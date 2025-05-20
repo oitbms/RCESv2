@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +111,7 @@ public class ApiController {
     public ResponseEntity<List<ExecutionsPayload>> getExecutions(@RequestParam UUID param) {
         List<FactExecutionSGI> executions = service.getExecutions(param);
         return ResponseEntity.ok(executions.stream()
-                .map(ex -> new ExecutionsPayload(ex.getId(), ex.getExecutionDate(), ex.getReport()))
+                .map(ex -> new ExecutionsPayload(ex.getId(), ex.getExecutionDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), ex.getReport()))
                 .collect(Collectors.toList()));
     }
 }
