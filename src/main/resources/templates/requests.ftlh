@@ -6,10 +6,10 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
-    <link rel="stylesheet" href="/stylesBid.css">
+    <link rel="stylesheet" href="/css/stylesBid.css">
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
-    <script type="module" src="/script.js" defer></script>
+    <script type="module" src="/js/script.js" defer></script>
 </head>
 <body>
 <#if createForm!false>

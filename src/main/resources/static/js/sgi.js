@@ -1,6 +1,10 @@
 let currentRow;
 let entityId;
 
+function reload() {
+    return window.location.href = window.location.href;
+}
+
 $('#addSubTaskId').on('submit', function (e) {
     e.preventDefault();
     const form = this;
@@ -14,14 +18,46 @@ $('#addSubTaskId').on('submit', function (e) {
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
             $(form).trigger('reset');
             $(form).find('input[type="file"]').val('');
             $('#exampleModalToggle2').modal('hide');
             openFactExecutionModal(entityId);
+            reload();
+        },
+        error: function () {
+            $(form).trigger('reset');
+            $(form).find('input[type="file"]').val('');
+            $('#exampleModalToggle2').modal('hide');
+            alert('Вы не ответственный за мероприятие сотрудник')
         }
     });
 });
+
+function toggleAgreement(sgiId, button) {
+    const icon = $(button).find('i');
+    const isAgreed = !(icon.hasClass('bi-check-circle-fill'));
+    const formData = new FormData();
+
+    formData.append("id", sgiId);
+    formData.append("agreed", isAgreed);
+
+    $.ajax({
+        url: '/sgi/agree',
+        method: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function () {
+            icon.toggleClass('bi-check-circle-fill text-success');
+            icon.toggleClass('bi-circle');
+            reload();
+        },
+        error: function () {
+            alert('У задания нет фактов выполнения')
+        }
+    });
+}
 
 async function openFactExecutionModal(rowId) {
     entityId = rowId;
@@ -30,29 +66,42 @@ async function openFactExecutionModal(rowId) {
         method: 'GET',
         data: {param: rowId}
     })
-    const tbody = $('#fackModal tbody');
+    const thead = $('#factModal thead');
+    const tbody = $('#factModal tbody');
+
     tbody.empty();
-    if (!data) {
-        tbody.append('<tr><td colspan="3">Нет данных</td></tr>');
+    thead.empty();
+
+    if (!data || data.length === 0) {
+        tbody.append(`
+        <tr>
+            <td colspan="3" class="text-center">
+                <button class="btn btn-primary btn-lg px-5" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal">Отметить факт выполнения</button>
+            </td>
+        </tr>`);
+        $('#factModal').modal('show');
         return;
     }
-
-    const row = data.map(item =>
+    thead.append(`
+    <tr>
+        <th>Дата выполнения</th>
+        <th>Отчет</th>
+        <th>Прикрепленные фото</th>
+    </tr>
+    `);
+    tbody.append(data.map(item =>
         `<tr data-id="${item.id}">
             <td>${(item.executionDate)}</td>
             <td>${(item.report)}</td>
             <td>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" data-id="${item.id}" data-bs-target="#photoModal" data-bs-toggle="modal">фото</button>
-                   <button class="btn btn-primary btn-delete" data-id="${item.id}">удалить</button>
+                    <button class="btn btn-info" data-id="${item.id}" data-bs-target="#photoModal" data-bs-toggle="modal">фото</button>
+                   <button class="btn btn-danger btn-delete" data-id="${item.id}">удалить факт</button>
                 </div>
             </td>
-        </tr>`).join('');
+        </tr>`).join(''));
 
-    tbody.append(row);
-
-    $('#fackModal').modal('show');
-
+    $('#factModal').modal('show');
 
     tbody.off('click', '.btn-delete').on('click', '.btn-delete', function () {
         const id = $(this).data('id');
@@ -68,8 +117,9 @@ async function openFactExecutionModal(rowId) {
             data: {id: id},
             success: function () {
                 rowElement.remove();
-                if ($('#fackModal tbody tr').length === 0) {
-                    $('#fackModal tbody').html('<tr><td colspan="3">Нет данных</td></tr>');
+                if ($('#factModal tbody tr').length === 0) {
+                    thead.empty();
+                    $('#factModal tbody').html('<tr><td colspan="3">Нет данных</td></tr>');
                 }
             }
         });

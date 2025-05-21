@@ -13,7 +13,7 @@ import java.util.UUID;
 public class SGI {
 
     public enum Department {
-        mechanic("ОГМ"), builder("ОГС");
+        mechanic("ОГМ"), builder("ОРС");
 
         private final String name;
 
@@ -23,6 +23,10 @@ public class SGI {
         public String getName() {
             return name;
         }
+    }
+
+    public enum ColorSGI {
+        NONE,RED,GREEN,YELLOW,GREY
     }
 
     @Id
@@ -62,8 +66,15 @@ public class SGI {
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FactExecutionSGI> executions = new ArrayList<>();
 
+    @Column(name = "color")
+    @Enumerated(EnumType.STRING)
+    private ColorSGI color;
+
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "agreed")
+    private Boolean agreed;
 
     public UUID getId() {
         return id;
@@ -153,11 +164,27 @@ public class SGI {
         this.executions = executions;
     }
 
+    public ColorSGI getColor() {
+        return color;
+    }
+
+    public void setColor(ColorSGI color) {
+        this.color = color;
+    }
+
     public String getComment() {
         return comment;
     }
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Boolean getAgreed() {
+        return agreed;
+    }
+
+    public void setAgreed(Boolean agreed) {
+        this.agreed = agreed;
     }
 }

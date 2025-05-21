@@ -14,9 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.example.rces.services.ServiceUtil.colorCalculate;
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
 @Service
@@ -80,27 +83,29 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDate desiredDate, LocalDate planDate, Employee employee) {
+    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDate desiredDate, Employee employee) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
+        sgi.setColor(SGI.ColorSGI.NONE);
         sgi.setEvent(event);
         sgi.setActions(actions);
         sgi.setDepartment(SGI.Department.valueOf(department));
         sgi.setComment(comment);
         sgi.setDesiredDate(desiredDate);
-        sgi.setPlanDate(planDate);
         sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
         sgi.setCreateDate(LocalDate.now());
         sgi.setEmployee(employee);
+        sgi.setAgreed(false);
 
         repository.save(sgi);
     }
 
-    public FactExecutionSGI createFactExecutionSGI(UUID sgiId, ExecutionsPayload payload, MultipartFile[] additionalFiles) {
+    public FactExecutionSGI createFactExecutionSGI(SGI sgi, ExecutionsPayload payload, MultipartFile[] additionalFiles) {
         FactExecutionSGI factExecutionSGI = new FactExecutionSGI();
 
-        factExecutionSGI.setSgi(repository.findById(SGI.class, sgiId));
+        factExecutionSGI.setSgi(sgi);
+        sgi.getExecutions().add(factExecutionSGI);
         factExecutionSGI.setExecutionDate(LocalDate.parse(payload.executionDate()));
         factExecutionSGI.setReport(payload.report());
 
@@ -109,7 +114,12 @@ public class UniversalService {
             factExecutionSGI.setImages(images);
         }
 
-        return repository.save(factExecutionSGI);
+        factExecutionSGI = repository.save(factExecutionSGI);
+        sgi.setPlanDate(factExecutionSGI.getExecutionDate());
+        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+        save(sgi);
+
+        return factExecutionSGI;
     }
 
 

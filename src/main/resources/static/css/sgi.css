@@ -1,4 +1,125 @@
-/* Модальные окна - Modern Style */
+/* Общие переменные и стили */
+:root {
+    --primary-color: #3a56d4;
+    --hover-color: #6c757d;
+    --active-color: #17a2b8;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    --transition: all 0.3s ease;
+}
+
+/* Стили таблицы */
+th, td {
+    text-align: center;
+    border-radius: 5px;
+    padding: 12px;
+    transition: var(--transition);
+}
+
+th {
+    background-color: var(--primary-color);
+    color: white;
+    white-space: nowrap;
+    position: relative;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+tr:hover {
+    background-color: var(--hover-color);
+    cursor: pointer;
+}
+
+/* Контекстное меню */
+#customContextMenu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #eee;
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+.context-menu-item:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.row-closed {
+    background-color: rgba(30, 144, 255, 0.1);
+}
+
+/* Пагинация */
+.pagination {
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.pagination a {
+    margin: 0 12px;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.pagination a.active,
+.pagination a:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.custom-bg-info {
+    background-color: var(--active-color);
+    color: white;
+}
+
+.d-flex.justify-content-center {
+    width: 100%;
+}
+
+/* Фильтры таблицы */
+.inputContainer {
+    display: none;
+    margin-top: 5px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0 8px;
+}
+
+.toggleInput {
+    margin-left: 5px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.toggleInput:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+/* Модальные окна */
 .modal-custom {
     display: none;
     position: fixed;
@@ -35,6 +156,20 @@
     transform: translateY(0);
 }
 
+.modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
 /* Список внутри модалок */
 .modal-list-custom {
     list-style: none;
@@ -67,20 +202,6 @@
     border-bottom: 1px solid #eee;
 }
 
-tr:hover {
-    background-color: #fff !important;
-    cursor: pointer;
-}
-
-.info-table th {
-    font-weight: 600;
-    color: #555;
-    position: sticky;
-    top: 0;
-    background: #fff;
-    box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
-}
-
 .modal-list tr {
     transition: background 0.2s ease;
 }
@@ -89,6 +210,7 @@ tr:hover {
     background: inherit !important;
 }
 
+/* Кнопки */
 .create-btn {
     background: #4f46e5;
     color: white;
@@ -141,60 +263,10 @@ tr:hover {
     transform: scale(0.95);
 }
 
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); }
-    to { transform: translateY(0); }
-}
-
-/* Уведомления */
-#notification-container {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    width: auto;
-    z-index: 1100;
-    animation: fadeIn 0.3s ease;
-}
-
-.error {
-    color: #dc3545;
-    padding: 12px 16px;
-    background: rgba(220, 53, 69, 0.1);
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.error-field {
-    border: 2px solid #ff4d4f !important;
-    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
-}
-
-.modal-header {
-    text-align: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #eee;
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-
 /* Стили для кнопки "Прикрепленные фото" */
 .attached-photo-btn {
     padding: 6px 12px;
-    background-color: #4CAF50; /* зеленый цвет */
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 4px;
@@ -204,16 +276,16 @@ tr:hover {
 }
 
 .attached-photo-btn:hover {
-    background-color: #45a049; /* чуть темнее при наведении */
-    transform: scale(1.05); /* легкое увеличение при наведении */
+    background-color: #45a049;
+    transform: scale(1.05);
 }
 
 .attached-photo-btn:active {
-    background-color: #3e8e41; /* при нажатии */
+    background-color: #3e8e41;
     transform: scale(0.98);
 }
 
-/* Общий стиль для input, похожий на td.selectable */
+/* Стили для input */
 .input-selectable {
     padding: 12px 16px;
     border: 1px solid #ccc;
@@ -292,6 +364,7 @@ tr:hover {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
 .full-photo {
     max-width: 90%;
     max-height: 80vh;
@@ -313,4 +386,75 @@ tr:hover {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Иконки согласования */
+.toggle-agree {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.toggle-agree:hover {
+    transform: scale(1.2);
+}
+
+.toggle-agree i {
+    font-size: 1.5rem;
+}
+
+/* Уведомления */
+#notification-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: auto;
+    z-index: 1100;
+    animation: fadeIn 0.3s ease;
+}
+
+.error {
+    color: #dc3545;
+    padding: 12px 16px;
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.error-field {
+    border: 2px solid #ff4d4f !important;
+    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    .pagination a {
+        margin: 0 8px;
+        padding: 6px 10px;
+    }
+
+    .toggleInput {
+        padding: 3px 6px;
+        font-size: 12px;
+    }
 }

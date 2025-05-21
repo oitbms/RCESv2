@@ -1,6 +1,7 @@
 package com.example.rces.services;
 
 import com.example.rces.models.*;
+import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ServiceUtil {
+
+    public final static Set<String> controlRoles = Set.of(
+            Role.ADMIN.name(),
+            Role.CONTROL.name()
+    );
+
 
     // Сохранение коллекции изображений
     public static List<Images> saveFiles(MultipartFile[] files, Requests requests) {
@@ -88,6 +95,20 @@ public class ServiceUtil {
             return "-";
         }
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    }
+
+    public static SGI.ColorSGI colorCalculate(SGI sgi, LocalDate date) {
+        if (sgi.getAgreed()) {
+            return SGI.ColorSGI.GREY;
+        } else if (sgi.getPlanDate() != null && !date.isBefore(sgi.getPlanDate().plusDays(2))) {
+            return SGI.ColorSGI.RED;
+        } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
+            return SGI.ColorSGI.YELLOW;
+        } else if (!sgi.getExecutions().isEmpty()) {
+            return SGI.ColorSGI.GREEN;
+        } else {
+            return SGI.ColorSGI.NONE;
+        }
     }
 
     public static boolean isJson(Object value) {
@@ -226,8 +247,7 @@ public class ServiceUtil {
             throw new ForbiddenException();
         } else if ((request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) && !request.getCreatedBy().equals(updaterEmployee) && !updaterEmployee.getRole().equals("ADMIN")) {
             throw new ForbiddenException();
-        }
-        else return true;
+        } else return true;
     }
 
     public static void createLog(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,7 +18,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.example.rces.services.ServiceUtil.colorCalculate;
 
 @Component
 public class TelegramService extends TelegramLongPollingBot {
@@ -160,15 +164,18 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     @Scheduled(cron = "0 0 9 * * *") // каждый день в 09:00
+    @Transactional
     public void notifyExpiredDeviations() {
         LocalDate today = LocalDate.now();
-        String requestsNumbers = service.findAll(SGI.class).stream()
-                .filter(sgi -> today.isAfter(sgi.getPlanDate().plusDays(2)))
-                .map(SGI::getRequestNumber)
-                .map(String::valueOf)
-                .collect(Collectors.joining(", "));
-        if (!requestsNumbers.isBlank()) {
-            sendMessageToControl(requestsNumbers);
+        List<SGI> sgiList = service.findAll(SGI.class);
+        StringBuilder requestsNumbers = new StringBuilder();
+        for (SGI sgi : sgiList) {
+            sgi.setColor(colorCalculate(sgi, today));
+            if (sgi.getColor().equals(SGI.ColorSGI.RED))
+                requestsNumbers.append(!requestsNumbers.isEmpty() ? ", " : "").append(sgi.getRequestNumber());
+        }
+        if (!requestsNumbers.toString().isBlank()) {
+            sendMessageToControl(requestsNumbers.toString());
         }
     }
 

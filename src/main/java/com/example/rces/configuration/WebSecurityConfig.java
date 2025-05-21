@@ -34,7 +34,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")
                         .hasAnyAuthority("MASTER", "ADMIN","CONSTRUCTOR", "TECHNOLOGIST", "OTK")
-                        .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL")
+                        .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
                         .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
                         .anyRequest().authenticated()
                 )
