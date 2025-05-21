@@ -98,6 +98,17 @@
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
+                    Примечание
+                    <button type="button" class="toggleInput">
+                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                        </svg>
+                    </button>
+                    <div class="inputContainer">
+                        <input type="text" class="form-control">
+                    </div>
+                </th>
+                <th style="background-color: #007bff; color: white;">
                     Планируемый срок
                     <button type="button" class="toggleInput">
                         <svg onclick="filter()" viewBox="0 0 24 24" width=16>
@@ -109,10 +120,13 @@
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
+                    Редактировать
+                </th>
+                <th style="background-color: #007bff; color: white;">
                     Факт выполнения
                 </th>
                 <th style="background-color: #007bff; color: white;">
-                    Примечание
+                    Комментарий
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Завершено
@@ -140,7 +154,16 @@
                     <td name="department">${sgi.department.getName()}</td>
                     <td name="employee">${(sgi.employee.getName())!""}</td>
                     <td name="desiredDate">${updateDesiredDate[reqIndex]}</td>
-                    <td name="planDate"><#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if></td>
+                    <td name="node">${sgi.note!""}</td>
+                    <td name="planDate">
+                        <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
+                    </td>
+                    <td style="gap: 8px;">
+                        <button type="button" class="btn btn-info btn-sm"
+                                onclick="change('${sgi.id}','<#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>','${sgi.comment!""}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    </td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm" onclick="openFactExecutionModal('${sgi.id}')">
                             ✔
@@ -164,12 +187,40 @@
         </button>
         <div id="pagination" class="pagination mt-4"></div>
 
+        <div class="modal fade" id="planModal" tabindex="-1" aria-labelledby="planModalLable" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="margin-bottom: 0">
+                        <h1 class="modal-title fs-5" id="planModalLable">Редактирование</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();"
+                                aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Ответственный</th>
+                                <th>Плановая дата</th>
+                                <th>Комментарий</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <div class="modal-footer">
+                            </div>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="factModal" tabindex="-1" aria-labelledby="factModalLable" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="margin-bottom: 0">
                         <h1 class="modal-title fs-5" id="factModalLable">Факт выполнения задания</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();" aria-label="Закрыть"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();"
+                                aria-label="Закрыть"></button>
                     </div>
                     <div class="modal-body">
                         <table class="table">
@@ -195,7 +246,7 @@
                         <form id="addSubTaskId" action="/sgi/create/execution" method="post"
                               enctype="multipart/form-data">
                             <div class="mb-3">
-                                <label for="executionDate" class="form-label">Желаемый срок</label>
+                                <label for="executionDate" class="form-label">Дата выполнения</label>
                                 <input type="date" class="form-control" id="executionDate" name="executionDate">
                             </div>
                             <div class="mb-3">
@@ -208,7 +259,7 @@
                                        multiple>
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i></button>
                             </div>
                         </form>
                     </div>
@@ -282,8 +333,8 @@
                                        data-required="true">
                             </div>
                             <div class="mb-3">
-                                <label for="comment" class="form-label">Примечания</label>
-                                <input type="text" class="form-control" id="comment" name="comment">
+                                <label for="note" class="form-label">Примечание</label>
+                                <input type="text" class="form-control" id="note" name="note">
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

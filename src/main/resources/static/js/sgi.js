@@ -18,7 +18,7 @@ $('#addSubTaskId').on('submit', function (e) {
         data: formData,
         processData: false,
         contentType: false,
-        success: function (response) {
+        success: function () {
             $(form).trigger('reset');
             $(form).find('input[type="file"]').val('');
             $('#exampleModalToggle2').modal('hide');
@@ -57,6 +57,70 @@ function toggleAgreement(sgiId, button) {
             alert('У задания нет фактов выполнения')
         }
     });
+}
+
+async function change(rowId) {
+    const tbody = $('#planModal tbody');
+    tbody.empty();
+
+     const data = await $.ajax({
+        url: 'api/sgi',
+        method: 'GET',
+        data: {id : rowId}
+    });
+
+    tbody.append(`
+    <tr data-id="${rowId}">
+        <td>
+            <input type="text" class="form-control" name="employee" value="${data.employee}">
+        </td>
+        <td>
+            <input type="date" class="form-control" name="planDate" value="${data.planDate}">
+        </td>
+        <td>
+            <input type="text" class="form-control" name="comment" value="${data.comment!=null ? data.comment : ''}">
+        </td>
+        <td>
+            <button class="saveChangesBtn btn btn-primary btn-sm"><i class="bi bi-save"></i></button>
+        </td>
+    </tr>
+`);
+
+    // Обработчик сохранения
+    $('#planModal tbody').on('click', '.saveChangesBtn', async function() {
+        const row = $(this).closest('tr');
+        const rowId = row.data('id');
+        const employeeVal = row.find('input[name="employee"]').val();
+        const planDateVal = row.find('input[name="planDate"]').val();
+        const commentVal = row.find('input[name="comment"]').val();
+
+        await saveChange(rowId, employeeVal, planDateVal, commentVal);
+    });
+
+    $('#planModal').modal('show');
+
+    async function saveChange(rowId, employee, planDate, comment) {
+        const formData = new FormData();
+        formData.append('id', rowId);
+        formData.append('employee', employee)
+        formData.append('planDate', planDate);
+        formData.append('comment', comment);
+
+        $.ajax({
+            url: 'sgi/save-change',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {
+                reload();
+            },
+            error: function () {
+                alert('Редактировать может только создатель задачи или такого пользователя нет');
+                $('#planModal').modal('hide');
+            }
+        });
+    }
 }
 
 async function openFactExecutionModal(rowId) {
@@ -230,7 +294,6 @@ async function deletePhoto(imageId, index) {
 $(document).ready(function () {
     const rowsPerPage = 16;
     let filteredRows = [];
-    let currentRowId = null;
 
     const filterData = () => {
         filteredRows = $('#sgiTable tbody tr').filter((index, row) => {

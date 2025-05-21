@@ -175,4 +175,8 @@ public class ApiServices {
         return service.findAllByField(FactExecutionSGI.class, "sgi", service.findById(SGI.class, id));
     }
 
+    public SGI getSgi(UUID id) {
+        return service.findById(SGI.class, id);
+    }
+
 }

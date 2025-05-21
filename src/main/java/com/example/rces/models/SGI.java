@@ -70,7 +70,10 @@ public class SGI {
     @Enumerated(EnumType.STRING)
     private ColorSGI color;
 
-    @Column(name = "comment")
+    @Column(name = "note", length = 1000)
+    private String note;
+
+    @Column(name = "comment", length = 1000)
     private String comment;
 
     @Column(name = "agreed")
@@ -170,6 +173,14 @@ public class SGI {
 
     public void setColor(ColorSGI color) {
         this.color = color;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public String getComment() {

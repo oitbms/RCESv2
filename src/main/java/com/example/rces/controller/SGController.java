@@ -6,6 +6,7 @@ import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.UniversalService;
+import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -68,20 +69,36 @@ public class SGController {
             @RequestParam String actions,
             @RequestParam String department,
             @RequestParam String employees,
-            @RequestParam(required = false) String comment,
+            @RequestParam(required = false) String note,
             @RequestParam LocalDate desiredDate) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employees);
-        service.createRequestSGI(workshop, event, actions, department, comment, desiredDate, employee);
+        service.createRequestSGI(workshop, event, actions, department, note, desiredDate, employee);
         return "redirect:/sgi";
     }
 
-    @GetMapping("/fact-executions")
-    @ResponseBody
-    public List<FactExecutionSGI> getFactExecutions(@RequestParam UUID sgiId) {
-        return service.findAllByField(FactExecutionSGI.class, "sgi_id", sgiId);
+    @PostMapping("/save-change")
+    public ResponseEntity<Void> saveChanges(@RequestParam UUID id,
+                                            @RequestParam(required = false) String employee,
+                                            @RequestParam(required = false) LocalDate planDate,
+                                            @RequestParam(required = false) String comment) {
+        if (!userDetailsService.isControl()) {
+            throw new ForbiddenException("Редактировать может только создатель задачи");
+        }
+        SGI sgi = service.findById(SGI.class, id);
+        try {
+            Employee newEmployee = userDetailsService.loadUserByUsername(employee);
+            sgi.setEmployee(newEmployee);
+        } catch (Exception e) {
+            throw new NoResultException();
+        }
+        sgi.setPlanDate(planDate);
+        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+        sgi.setComment(comment);
+        service.save(sgi);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/create/execution")
@@ -132,7 +149,7 @@ public class SGController {
     @PostMapping("/agree")
     public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
         SGI sgi = service.findById(SGI.class, id);
-        if (sgi.getExecutions().isEmpty()) {
+        if (sgi.getExecutions().isEmpty() || !userDetailsService.isControl()) {
             return ResponseEntity.badRequest().build();
         }
         sgi.setAgreed(agreed);

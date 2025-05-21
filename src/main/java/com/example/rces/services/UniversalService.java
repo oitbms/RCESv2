@@ -83,7 +83,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public void createRequestSGI(String workShop, String event, String actions, String department, String comment, LocalDate desiredDate, Employee employee) {
+    public void createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
@@ -91,7 +91,7 @@ public class UniversalService {
         sgi.setEvent(event);
         sgi.setActions(actions);
         sgi.setDepartment(SGI.Department.valueOf(department));
-        sgi.setComment(comment);
+        sgi.setNote(note);
         sgi.setDesiredDate(desiredDate);
         sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
         sgi.setCreateDate(LocalDate.now());
@@ -115,7 +115,6 @@ public class UniversalService {
         }
 
         factExecutionSGI = repository.save(factExecutionSGI);
-        sgi.setPlanDate(factExecutionSGI.getExecutionDate());
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         save(sgi);
 

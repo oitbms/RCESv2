@@ -1,10 +1,7 @@
 package com.example.rces.controller;
 
 import com.example.rces.controller.payload.*;
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.RequestLog;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @RestController
 @RequestMapping("/api")
@@ -113,5 +112,11 @@ public class ApiController {
         return ResponseEntity.ok(executions.stream()
                 .map(ex -> new ExecutionsPayload(ex.getId(), ex.getExecutionDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), ex.getReport()))
                 .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/sgi")
+    public ResponseEntity<SingleSgi> getSgi(@RequestParam UUID id) {
+        SGI sgi = service.getSgi(id);
+        return ResponseEntity.ok(new SingleSgi(sgi.getEmployee().getName(), sgi.getPlanDate(),sgi.getComment()));
     }
 }
