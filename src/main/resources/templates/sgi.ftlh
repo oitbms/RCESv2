@@ -120,13 +120,12 @@
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
-                    Редактировать
+                    Комментарий
+                </th>
+                <th style="background-color: #007bff; color: white;">
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Факт выполнения
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Комментарий
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Завершено
@@ -158,6 +157,7 @@
                     <td name="planDate">
                         <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
                     </td>
+                    <td>${sgi.comment!''}</td>
                     <td style="gap: 8px;">
                         <button type="button" class="btn btn-info btn-sm"
                                 onclick="change('${sgi.id}','<#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>','${sgi.comment!""}')">
@@ -169,7 +169,6 @@
                             ✔
                         </button>
                     </td>
-                    <td>${sgi.comment!''}</td>
                     <td class="text-center">
                         <button type="button"
                                 class="btn btn-link p-0 toggle-agree"
