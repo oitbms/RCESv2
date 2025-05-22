@@ -6,11 +6,10 @@ import com.example.rces.models.SGI;
 import com.example.rces.models.enums.Appraisal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -53,46 +52,59 @@ public class TelegramService extends TelegramLongPollingBot {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String messageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
+    private final String baseMessageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
-    private String createdOrUpdatedOrRedirectMessage(Requests request, Boolean isCreate, Boolean isRedirect) {
-        if (isCreate) {
-            return String.format("Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                    request.getRequestNumber(), request.getEmployee().getName(),
-                    request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
-                    request.getCustomerOrder().getName(),
-                    request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
-                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
-                    request.getComment() != null ? request.getComment() : "",
-                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                    urlMobile + "/view/" + request.getRequestNumber());
-        } else if (isRedirect) {
-            return String.format("%s переадресовал заявку %d в вашу ответственность \nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                    request.getUpdateBy().getName(),
-                    request.getRequestNumber(), request.getEmployee().getName(),
-                    request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
-                    request.getCustomerOrder().getName(),
-                    request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
-                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
-                    request.getComment() != null ? request.getComment() : "",
-                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                    urlMobile + "/view/" + request.getRequestNumber());
+    public String typeMessageUrl(Employee employee) {
+        if (employee.getRole().equals("CONSTRUCTOR")) {
+            return "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&message_thread_id=2343&text=%s";
         } else {
-            return String.format("Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
-                    request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName(),
-                    request.getCustomerOrder().getName(), request.getItem().getName(),
-                    !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
-                    request.getComment() != null ? request.getComment() : "",
-                    request.getReason() != null ? request.getReason().getName() : "Причина не указана",
-                    request.getStatus().getName(),
-                    urlMobile + "/view/" + request.getRequestNumber());
+            return baseMessageUrl;
+        }
+    }
+
+    private String createdOrUpdatedOrRedirectMessage(Requests request, String typeMessage) {
+        switch (typeMessage) {
+            case "create" -> {
+                return String.format("Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                        request.getRequestNumber(), request.getEmployee().getName(),
+                        request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
+                        request.getCustomerOrder().getName(),
+                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                        !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                        request.getComment() != null ? request.getComment() : "",
+                        request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                        urlMobile + "/view/" + request.getRequestNumber());
+            }
+            case "redirect" -> {
+                return String.format("%s переадресовал заявку %d в вашу ответственность \nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
+                        request.getUpdateBy().getName(),
+                        request.getRequestNumber(), request.getEmployee().getName(),
+                        request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
+                        request.getCustomerOrder().getName(),
+                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                        !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                        request.getComment() != null ? request.getComment() : "",
+                        request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                        urlMobile + "/view/" + request.getRequestNumber());
+            }
+            case "update" -> {
+                return String.format("Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
+                        request.getRequestNumber(), request.getEmployee().getName(), request.getMlmNode().getName(),
+                        request.getCustomerOrder().getName(), request.getItem().getName(),
+                        !request.getImages().isEmpty() ? "Прикреплены  фото" : "Фото не прикреплены",
+                        request.getComment() != null ? request.getComment() : "",
+                        request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                        request.getStatus().getName(),
+                        urlMobile + "/view/" + request.getRequestNumber());
+            }
+            default -> throw new ApplicationContextException("Неправильный тип сообщения");
         }
     }
 
     public void sendMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken,
+        String url = String.format(typeMessageUrl(request.getEmployee()), botToken,
                 getGroupId(request.getTypeRequest().name()),
-                createdOrUpdatedOrRedirectMessage(request, true, false));
+                createdOrUpdatedOrRedirectMessage(request, "create"));
         restTemplate.getForObject(url, String.class);
     }
 
@@ -115,26 +127,26 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendCompleted(Requests request) {
-        restTemplate.getForObject(String.format(messageUrl, botToken, getGroupId(request.getTypeRequest().name()),
+        restTemplate.getForObject(String.format(typeMessageUrl(request.getEmployee()), botToken, getGroupId(request.getTypeRequest().name()),
                 "Заявка №" + request.getRequestNumber() + " Выполнена"), String.class);
     }
 
-    private void sendScoreIsSave(Long chatId) {
-        restTemplate.getForObject(String.format(messageUrl, botToken, chatId, "Оценка сохранена"), String.class);
+    private void sendScoreIsSave(Requests requests) {
+        restTemplate.getForObject(String.format(typeMessageUrl(requests.getEmployee()), botToken, requests.getChatId(), "Оценка сохранена"), String.class);
     }
 
     public void sendUpdateMessageToGroup(Requests request) {
-        String url = String.format(messageUrl, botToken, getGroupId(request.getTypeRequest().name()),
-                createdOrUpdatedOrRedirectMessage(request, false, false));
+        String url = String.format(typeMessageUrl(request.getEmployee()), botToken, getGroupId(request.getTypeRequest().name()),
+                createdOrUpdatedOrRedirectMessage(request, "update"));
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToUser(Requests request, Long chatId, Boolean isCreate, Boolean isRedirect) {
-        String url = String.format(messageUrl, botToken, chatId, createdOrUpdatedOrRedirectMessage(request, isCreate, isRedirect));
+    public void sendMessageToUser(Requests request, Long chatId, String messageType) {
+        String url = String.format(typeMessageUrl(request.getEmployee()), botToken, chatId, createdOrUpdatedOrRedirectMessage(request, messageType));
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToControl(String requestsNumbers) {
+    private void sendMessageToControl(String requestsNumbers) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(controlChatId);
         sendMessage.setText("Срок выполнения мероприятий №" + requestsNumbers + " истекает через 2 дня");
@@ -156,7 +168,7 @@ public class TelegramService extends TelegramLongPollingBot {
                     Requests request = service.findSingleByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId());
                     request.setScore(score);
                     service.save(request);
-                    sendScoreIsSave(request.getChatId());
+                    sendScoreIsSave(request);
                 }
             } catch (Exception ignored) {
 

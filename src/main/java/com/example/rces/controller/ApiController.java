@@ -99,9 +99,9 @@ public class ApiController {
         return service.getUpdater();
     }
 
-    @GetMapping("/requests/{requestNumber}/logs")
-    public ResponseEntity<List<LogPayload>> getLogs(@PathVariable String requestNumber) {
-        List<RequestLog> logs = service.getLogs(requestNumber);
+    @GetMapping("/logs")
+    public ResponseEntity<List<LogPayload>> getLogs(@RequestParam UUID id) {
+        List<RequestLog> logs = service.getLogs(id);
         return ResponseEntity.ok(logs.stream()
                 .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
                 .collect(Collectors.toList()));

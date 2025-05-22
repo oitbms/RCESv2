@@ -57,11 +57,11 @@ async function toggleAgreement(sgiId, button) {
     formData.append("id", sgiId);
     formData.append("agreed", isAgreed);
 
-    const data = await $.get('api/sgi', { id: sgiId });
+    const data = await $.get('api/sgi', {id: sgiId});
     if (data.planDate === null) return alert("Не заполнено поле планируемый срок");
-    if (!data.executions) return alert ("У задания нет фактов выполнения");
+    if (!data.executions) return alert("У задания нет фактов выполнения");
 
-   await $.ajax({
+    await $.ajax({
         url: '/sgi/agree',
         method: 'POST',
         data: formData,
@@ -79,9 +79,9 @@ async function change(rowId) {
     const container = $('#planContainer');
     container.empty();
 
-    const data = await $.get('api/sgi', { id: rowId });
+    const data = await $.get('api/sgi', {id: rowId});
     if (data.agree) return alert('Нельзя редактировать завершенную заявку');
-    
+
     container.append(`
     <div class="row mb-3 g-2 align-items-center" data-id="${rowId}">
         <div class="col-md-4">
@@ -142,16 +142,18 @@ async function change(rowId) {
 async function openFactExecutionModal(rowId) {
     entityId = rowId;
 
-    const data = await $.get('/api/executions', { param: rowId });
-    const {planDate} = await $.get('/api/sgi', { id: rowId });
+    const data = await $.get('/api/executions', {param: rowId});
+    const {planDate} = await $.get('/api/sgi', {id: rowId});
 
-    if (planDate===null) return alert("Не заполнено поле планируемый срок");
+    if (planDate === null) return alert("Не заполнено поле планируемый срок");
 
     const headContainer = $('#factHeadContainer');
     const dataContainer = $('#factDataContainer');
+    const footerContainer = $('#factModal .modal-footer');
 
     headContainer.empty();
     dataContainer.empty();
+    footerContainer.empty();
 
     if (!data || data.length === 0) {
         dataContainer.append(`
@@ -170,35 +172,38 @@ async function openFactExecutionModal(rowId) {
 
     // Заголовки
     headContainer.append(`
-      <div class="col-3 p-3 text-center">Дата выполнения</div>
-      <div class="col-4 p-3">Отчет</div>
-      <div class="col-5 p-3 text-center">Действия</div>`);
+  <div class="row g-0 border-bottom">
+      <div class="col">Дата выполнения</div>
+      <div class="col">Отчет</div>
+      <div class="col"></div>
+  </div>`);
 
     data.forEach(item => {
         dataContainer.append(`
-        <div class="row g-0 border-bottom" data-id="${item.id}">
-            <div class="col-3 p-3 text-center">${item.executionDate}</div>
-            <div class="col-4 p-3">${item.report || '-'}</div>
-            <div class="col-5 p-3">
-                <div class="d-flex justify-content-center gap-2">
-                    <button class="btn btn-info btn-sm" 
-                        data-id="${item.id}" 
-                        data-bs-target="#photoModal" 
-                        data-bs-toggle="modal">
-                  Прикрепленные фото
-                </button>
-                <button class="btn btn-danger btn-sm btn-delete" 
-                        data-id="${item.id}">
-                  Удалить факт
-                </button>
+            <div class="row g-0 border-bottom" data-id="${item.id}">
+                <div class="col">${item.executionDate}</div>
+                <div class="col">${item.report || '-'}</div>
+                <div class="col">
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-info btn-sm" 
+                            data-id="${item.id}" 
+                            data-bs-target="#photoModal" 
+                            data-bs-toggle="modal">
+                              Прикрепленные фото
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </div>`);
+            </div>`);
     });
+
+    footerContainer.append(`
+        <button class="btn btn-danger btn-sm btn-delete" data-id="${data[0].id}">
+            Удалить факт
+        </button>`);
 
     $('#factModal').modal('show');
 
-    dataContainer.off('click', '.btn-delete').on('click', '.btn-delete', function () {
+    footerContainer.off('click', '.btn-delete').on('click', '.btn-delete', function () {
         const id = $(this).data('id');
         deleteFactSgi(id, $(this).closest('tr'));
     });
@@ -212,10 +217,10 @@ async function openFactExecutionModal(rowId) {
             data: {id: id},
             success: function () {
                 rowElement.remove();
-                if (dataContainer.length === 0) {
-                    headContainer.empty();
-                    dataContainer.html('<tr><td colspan="3">Нет данных</td></tr>');
-                }
+                $('#factModal').modal('hide');
+                headContainer.empty();
+                dataContainer.html('<tr><td colspan="3">Нет данных</td></tr>');
+                footerContainer.empty();
             }
         });
     }
@@ -326,7 +331,7 @@ $(document).ready(function () {
     const rowsPerPage = 16;
     let filteredRows = [];
     let filterAgreed = '';
-    $('#statusBtn').on('click', function() {
+    $('#statusBtn').on('click', function () {
         const btn = $(this);
         const icon = btn.find('i');
         let state = btn.data('state');
@@ -430,7 +435,7 @@ $(document).ready(function () {
     };
 
     $('#number,#workshop,#events,#actions,#department,#emploes,#desiredDate,#note,#planDate,#comment').on('keyup change', filterData);
-    $('svg').on('click', function() {
+    $('svg').on('click', function () {
         filterData();
     });
     $('#clearButton').on('click', () => {
@@ -442,7 +447,7 @@ $(document).ready(function () {
     });
     filterData();
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.toggleInput').on('click', function () {
             $(this).next('.inputContainer').toggle();
         });
@@ -501,15 +506,15 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('click', function(e) {
+    $(document).on('click', function (e) {
         if (!$(e.target).closest('.inputContainer').length && !$(e.target).closest('.toggleInput').length) {
             $('.inputContainer').hide();
         }
     });
 });
 
-$('#calculateColor').on('click', function() {
-    $.post("sgi/calculate-color", function() {
+$('#calculateColor').on('click', function () {
+    $.post("sgi/calculate-color", function () {
         return alert("Цвета пересчитаны");
     });
 });

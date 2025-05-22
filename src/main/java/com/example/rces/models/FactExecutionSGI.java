@@ -25,7 +25,7 @@ public class FactExecutionSGI {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDate executionDate;
 
-    @Column(name = "report")
+    @Column(name = "report",  length = 1000)
     private String report;
 
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)

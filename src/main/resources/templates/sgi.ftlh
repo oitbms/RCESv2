@@ -201,9 +201,9 @@
         <button type="button" class="btn btn-primary" id="clearButton">
             Очистить фильтры
         </button>
-        <button type="button" class="btn btn-info" id="calculateColor">
+        <!--<button type="button" class="btn btn-info" id="calculateColor">
             Пересчитать цвета
-        </button>
+        </button>-->
     </div>
 
         <div id="pagination" class="pagination mt-4"></div>
@@ -236,7 +236,7 @@
     </div>
 
     <div class="modal fade" id="factModal" tabindex="-1" aria-labelledby="factModalLable" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="factModalLable">Факт выполнения задания</h1>
@@ -245,14 +245,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <div class="row fw-bold mb-2 text-center">
-                            <div class="col-md-3">Дата выполнения</div>
-                            <div class="col-md-4">Отчет</div>
-                            <div class="col-md-5">Прикрепленные фото</div>
+                        <div class="row align-items-start" id="factHeadContainer">
+                            <!-- Заголовки -->
                         </div>
-                        <div id="factDataContainer">
+                        <div class="row align-items-center" id="factDataContainer">
                             <!-- Данные -->
                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i></button>
                     </div>
                 </div>
             </div>

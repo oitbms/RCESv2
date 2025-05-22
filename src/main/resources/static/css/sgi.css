@@ -38,7 +38,7 @@ tr:hover {
     border: 1px solid #eee;
     box-shadow: var(--shadow);
     border-radius: 8px;
-    min-width: 160px;
+    min-width: auto;
     overflow: hidden;
 }
 

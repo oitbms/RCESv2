@@ -150,7 +150,7 @@ public class ApiServices {
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                tgService.sendMessageToUser(request, employee.getChatId(), false, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()));
+                tgService.sendMessageToUser(request, employee.getChatId(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? "redirect" : "update");
             }
             //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
@@ -167,8 +167,8 @@ public class ApiServices {
         return userDetailsService.loadUserByUsername(authentication.getName());
     }
 
-    public List<RequestLog> getLogs(String requestNumber) {
-        return service.findAllByField(RequestLog.class, "request", service.findSingleByField(Requests.class, "requestNumber", requestNumber).getId());
+    public List<RequestLog> getLogs(UUID id) {
+        return service.findAllByField(RequestLog.class, "request", service.findById(Requests.class, id));
     }
 
     public List<FactExecutionSGI> getExecutions(UUID id) {

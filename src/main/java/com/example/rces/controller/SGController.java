@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -133,7 +132,6 @@ public class SGController {
         SGI sgi = factExecutionSGI.getSgi();
         if (sgi.getExecutions().isEmpty()) {
             sgi.setAgreed(false);
-            sgi.setPlanDate(null);
         }
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         service.save(sgi);
