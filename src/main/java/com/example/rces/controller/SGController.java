@@ -64,18 +64,18 @@ public class SGController {
 
     @PostMapping("/create")
     public String createSGI(
-            @RequestParam String workshop,
-            @RequestParam String event,
-            @RequestParam String actions,
-            @RequestParam String department,
-            @RequestParam String employees,
-            @RequestParam(required = false) String note,
-            @RequestParam LocalDate desiredDate) {
+            @RequestParam String workshopModal,
+            @RequestParam String eventModal,
+            @RequestParam String actionsModal,
+            @RequestParam String departmentModal,
+            @RequestParam String employeesModal,
+            @RequestParam(required = false) String noteModal,
+            @RequestParam LocalDate desiredDateModal) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
-        Employee employee = service.findSingleByField(Employee.class, "name", employees);
-        service.createRequestSGI(workshop, event, actions, department, note, desiredDate, employee);
+        Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
+        service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
         return "redirect:/sgi";
     }
 

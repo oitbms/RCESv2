@@ -37,8 +37,11 @@
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="workshop">
+                    <div class="inputContainer" style="display: flex; align-items: center;">
+                        <input type="text" class="form-control" id="workshop" placeholder="Фильтр по цеху">
+                        <button type="button" class="btn btn-secondary btn-sm ml-2" id="clearWorkshop">
+                            Очистить
+                        </button>
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
@@ -104,7 +107,7 @@
                         </svg>
                     </button>
                     <div class="inputContainer">
-                        <input type="text" class="form-control">
+                        <input type="text" class="form-control" id="note">
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
@@ -138,7 +141,7 @@
                     Завершено
                     <button type="button" class="toggleInput">
                         <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                            <path d="M20.7 5.3a1 1 0 00-1.4 0L9 16.6l-4.3-4.3a1 1 0 00-1.4 1.4l4.9 4.9a1 1 0 001.4 0l10-10a1 1 0 000-1.4z"/>
                         </svg>
                     </button>
                     <div class="inputContainer">
@@ -166,13 +169,13 @@
                 </#if>
                 <tr id="${sgi.id}" class="${rowClass}">
                     <td>${sgi.requestNumber}</td>
-                    <td name="workShop">${sgi.workShop}</td>
+                    <td name="workshop">${sgi.workShop}</td>
                     <td name="event">${sgi.event}</td>
                     <td name="actions">${sgi.actions}</td>
                     <td name="department">${sgi.department.getName()}</td>
-                    <td name="employee">${(sgi.employee.getName())!""}</td>
+                    <td name="emploes">${(sgi.employee.getName())!""}</td>
                     <td name="desiredDate">${updateDesiredDate[reqIndex]}</td>
-                    <td name="node">${sgi.note!""}</td>
+                    <td name="note">${sgi.note!""}</td>
                     <td name="planDate">
                         <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
                     </td>
@@ -310,20 +313,19 @@
                         <form id="addTaskForm" action="/sgi/create" method="POST">
                             <div class="mb-3">
                                 <label for="shop" class="form-label">Цех</label>
-                                <input type="text" class="form-control" id="shop" name="workshop" data-required="true">
+                                <input type="text" class="form-control" id="shopId" name="workshopModal" data-required="true">
                             </div>
                             <div class="mb-3">
                                 <label for="event" class="form-label">Мероприятие</label>
-                                <input type="text" class="form-control" id="event" name="event" data-required="true">
+                                <input type="text" class="form-control" id="eventId" name="eventModal" data-required="true">
                             </div>
                             <div class="mb-3">
                                 <label for="actions" class="form-label">Сопутствующие действия</label>
-                                <input type="text" class="form-control" id="actions" name="actions"
-                                       data-required="true">
+                                <input type="text" class="form-control" id="actionsId" name="actionsModal" data-required="true">
                             </div>
                             <div class="mb-3">
                                 <label for="department" class="form-label">Ответственный отдел</label>
-                                <select class="form-control" id="department" name="department" data-required="true">
+                                <select class="form-control" id="departmentId" name="departmentModal" data-required="true">
                                     <option value="">Выберите отдел</option>
                                     <option value="mechanic">ОГМ</option>
                                     <option value="builder">ОРС</option>
@@ -333,8 +335,8 @@
                                 <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
                                 <input
                                         type="text"
-                                        id="employees"
-                                        name="employees"
+                                        id="employeesId"
+                                        name="employeesModal"
                                         list="employeesList"
                                         placeholder="Введите фамилию..."
                                         class="form-control"
@@ -348,12 +350,12 @@
                             </div>
                             <div class="mb-3">
                                 <label for="desiredDate" class="form-label">Желаемый срок</label>
-                                <input type="date" class="form-control" id="desiredDate" name="desiredDate"
+                                <input type="date" class="form-control" id="desiredDateId" name="desiredDateModal"
                                        data-required="true">
                             </div>
                             <div class="mb-3">
                                 <label for="note" class="form-label">Примечание</label>
-                                <input type="text" class="form-control" id="note" name="note">
+                                <input type="text" class="form-control" id="noteId" name="noteModal">
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
