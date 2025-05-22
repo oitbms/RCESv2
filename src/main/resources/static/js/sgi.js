@@ -508,3 +508,9 @@ $(document).ready(function () {
     });
 });
 
+$('#calculateColor').on('click', function() {
+    $.post("sgi/calculate-color", function() {
+        return alert("Цвета пересчитаны");
+    });
+});
+

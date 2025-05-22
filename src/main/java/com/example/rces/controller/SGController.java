@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -150,6 +151,17 @@ public class SGController {
         sgi.setAgreed(agreed);
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         service.save(sgi);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/calculate-color")
+    public ResponseEntity<Void> reCalculateColor() {
+        LocalDate today = LocalDate.now();
+        List<SGI> sgiList = service.findAll(SGI.class);
+        for (SGI sgi : sgiList) {
+            sgi.setColor(colorCalculate(sgi, today));
+            service.save(sgi);
+        }
         return ResponseEntity.ok().build();
     }
 

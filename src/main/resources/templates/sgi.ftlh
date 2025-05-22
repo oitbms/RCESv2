@@ -192,12 +192,15 @@
             </#list>
             </tbody>
         </table>
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center gap-2">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">Добавить
             новое задание
         </button>
         <button type="button" class="btn btn-primary" id="clearButton">
             Очистить фильтры
+        </button>
+        <button type="button" class="btn btn-info" id="calculateColor">
+            Пересчитать цвета
         </button>
     </div>
 
