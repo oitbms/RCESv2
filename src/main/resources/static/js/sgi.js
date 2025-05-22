@@ -326,23 +326,60 @@ $(document).ready(function () {
     const rowsPerPage = 16;
     let filteredRows = [];
     let filterAgreed = '';
+    $('#statusBtn').on('click', function() {
+        const btn = $(this);
+        const icon = btn.find('i');
+        let state = btn.data('state');
+
+        if (state === 'done') {
+            btn.data('state', 'not_done');
+            icon.removeClass().addClass('bi bi-x-circle-fill').css('color', 'red');
+        } else if (state === 'not_done') {
+            btn.data('state', 'none');
+            icon.removeClass().addClass('bi bi-dash-circle').css('color', 'gray');
+        } else {
+            btn.data('state', 'done');
+            icon.removeClass().addClass('bi bi-check-circle-fill').css('color', 'green');
+        }
+
+        filterData();
+    });
 
     const filterData = () => {
-        const input = $('#agreed').val().toLowerCase().trim();
-        if (input === 'выполнено') {
-            filterAgreed = 'true';
-        } else if (input === 'не выполнено') {
-            filterAgreed = 'false';
+        const state = $('#statusBtn').data('state');
+        let agreedFilter = '';
+
+        if (state === 'done') {
+            agreedFilter = 'выполнено';
+        } else if (state === 'not_done') {
+            agreedFilter = 'не выполнено';
         } else {
-            filterAgreed = '';
+            agreedFilter = '';
         }
+
+        // Получаем значения других фильтров
+        const filters = {
+            number: $('#number').val().toLowerCase(),
+            workshop: $('#workshop').val().toLowerCase(),
+            events: $('#events').val().toLowerCase(),
+            actions: $('#actions').val().toLowerCase(),
+            department: $('#department').val().toLowerCase(),
+            emploes: $('#emploes').val().toLowerCase(),
+            desiredDate: $('#desiredDate').val().toLowerCase(),
+            note: $('#note').val().toLowerCase(),
+            planDate: $('#planDate').val().toLowerCase(),
+            comment: $('#comment').val().toLowerCase()
+        };
+
+        // Фильтруем строки таблицы
         filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
-            return checkRowFilters(row);
+            return checkRowFilters(row, filters, agreedFilter);
         });
+
         showPage(1);
     };
 
-    const checkRowFilters = (row) => {
+    const checkRowFilters = (row, filters, agreedFilter) => {
         const number = $(row).find('td:nth-child(1)').text().toLowerCase();
         const workshop = $(row).find('td:nth-child(2)').text().toLowerCase();
         const events = $(row).find('td:nth-child(3)').text().toLowerCase();
@@ -353,20 +390,20 @@ $(document).ready(function () {
         const note = $(row).find('td:nth-child(8)').text().toLowerCase();
         const planDate = $(row).find('td:nth-child(9)').text().toLowerCase();
         const comment = $(row).find('td:nth-child(10)').text().toLowerCase();
-        const agreedData = $(row).find('button.toggle-agree').data('agreed') ? 'true' : 'false';
+        const agreedData = $(row).find('button.toggle-agree').data('agreed') ? 'выполнено' : 'не выполнено';
 
         return (
-            number.includes($('#number').val().toLowerCase()) &&
-            workshop.includes($('#workshop').val().toLowerCase()) &&
-            events.includes($('#events').val().toLowerCase()) &&
-            actions.includes($('#actions').val().toLowerCase()) &&
-            department.includes($('#department').val().toLowerCase()) &&
-            emploes.includes($('#emploes').val().toLowerCase()) &&
-            desiredDate.includes($('#desiredDate').val().toLowerCase()) &&
-            note.includes($('#note').val().toLowerCase()) &&
-            planDate.includes($('#planDate').val().toLowerCase()) &&
-            comment.includes($('#comment').val().toLowerCase()) &&
-            (filterAgreed === '' || agreedData === filterAgreed)
+            number.includes(filters.number) &&
+            workshop.includes(filters.workshop) &&
+            events.includes(filters.events) &&
+            actions.includes(filters.actions) &&
+            department.includes(filters.department) &&
+            emploes.includes(filters.emploes) &&
+            desiredDate.includes(filters.desiredDate) &&
+            note.includes(filters.note) &&
+            planDate.includes(filters.planDate) &&
+            comment.includes(filters.comment) &&
+            (agreedFilter === '' || agreedData === agreedFilter)
         );
     };
 
@@ -393,24 +430,22 @@ $(document).ready(function () {
     };
 
     $('#number,#workshop,#events,#actions,#department,#emploes,#desiredDate,#note,#planDate,#comment').on('keyup change', filterData);
-
-    $('#agreed').on('keyup change', () => {
-        filterData();
-    });
-
     $('svg').on('click', function() {
         filterData();
     });
-
-    $('#clearWorkshop').on('click', function() {
-        $('#workshop').val('');
+    $('#clearButton').on('click', () => {
+        $('#workshop, #number, #events, #actions, #department, #emploes, #desiredDate, #note, #planDate, #comment')
+            .val('');
+        $('#statusBtn').data('state', 'done');
+        $('#statusBtn').find('i').removeClass().addClass('bi bi-check-circle-fill').css('color', 'green');
         filterData();
     });
-
     filterData();
 
-    $('.toggleInput').on('click', function () {
-        $(this).next('.inputContainer').toggle();
+    $(document).ready(function() {
+        $('.toggleInput').on('click', function () {
+            $(this).next('.inputContainer').toggle();
+        });
     });
 
     $('#sgiTable tbody').on('contextmenu', 'tr', function (e) {
@@ -465,4 +500,11 @@ $(document).ready(function () {
             $('#customContextMenu').hide();
         }
     });
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.inputContainer').length && !$(e.target).closest('.toggleInput').length) {
+            $('.inputContainer').hide();
+        }
+    });
 });
+

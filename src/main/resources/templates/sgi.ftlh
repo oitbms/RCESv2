@@ -22,7 +22,7 @@
                 <th style="background-color: #007bff; color: white;">
                     № п/п
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -33,21 +33,18 @@
                 <th style="background-color: #007bff; color: white;">
                     № цеха
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
-                    <div class="inputContainer" style="display: flex; align-items: center;">
-                        <input type="text" class="form-control" id="workshop" placeholder="Фильтр по цеху">
-                        <button type="button" class="btn btn-secondary btn-sm ml-2" id="clearWorkshop">
-                            Очистить
-                        </button>
+                    <div class="inputContainer">
+                        <input type="text" class="form-control" id="workshop">
                     </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Мероприятие
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -58,7 +55,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Сопутствующие действия
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -69,7 +66,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Ответственный отдел
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -80,7 +77,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Ответственное лицо
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -91,7 +88,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Желаемый срок
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -102,7 +99,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Примечание
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -113,7 +110,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Планируемый срок
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -124,7 +121,7 @@
                 <th style="background-color: #007bff; color: white;">
                     Комментарий
                     <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <svg viewBox="0 0 24 24" width=16>
                             <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
                         </svg>
                     </button>
@@ -139,18 +136,9 @@
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Завершено
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M20.7 5.3a1 1 0 00-1.4 0L9 16.6l-4.3-4.3a1 1 0 00-1.4 1.4l4.9 4.9a1 1 0 001.4 0l10-10a1 1 0 000-1.4z"/>
-                        </svg>
+                    <button type="button" id="statusBtn" class="btn btn-outline-secondary" data-state="" title="Статус">
+                        <i class="bi bi-check-circle-fill" style="color: gray;"></i>
                     </button>
-                    <div class="inputContainer">
-                        <select class="form-control" id="agreed">
-                            <option value="">Все</option>
-                            <option value="выполнено">Выполнено</option>
-                            <option value="не выполнено">Не выполнено</option>
-                        </select>
-                    </div>
                 </th>
             </tr>
             </thead>
@@ -204,9 +192,15 @@
             </#list>
             </tbody>
         </table>
+    <div class="d-flex justify-content-center">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">Добавить
             новое задание
         </button>
+        <button type="button" class="btn btn-primary" id="clearButton">
+            Очистить фильтры
+        </button>
+    </div>
+
         <div id="pagination" class="pagination mt-4"></div>
 
     <div class="modal" id="planModal" tabindex="-1">
