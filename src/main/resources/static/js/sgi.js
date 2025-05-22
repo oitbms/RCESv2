@@ -34,7 +34,22 @@ $('#addSubTaskId').on('submit', function (e) {
     });
 });
 
-function toggleAgreement(sgiId, button) {
+async function loadEmployeeFields() {
+    if ($('#employeeSelect').children().length > 1) return;
+    const data = await $.ajax({
+        url: '/api/employees',
+        method: 'GET',
+        data: {param: "EVENT"}
+    });
+    const select = $('#employeeSelect');
+    select.empty();
+    select.append('<option selected disabled>Выберите сотрудника</option>');
+    data.forEach(employee => {
+        select.append(`<option value="${employee.name}">${employee.name}</option>`);
+    });
+}
+
+async function toggleAgreement(sgiId, button) {
     const icon = $(button).find('i');
     const isAgreed = !(icon.hasClass('bi-check-circle-fill'));
     const formData = new FormData();
@@ -42,7 +57,11 @@ function toggleAgreement(sgiId, button) {
     formData.append("id", sgiId);
     formData.append("agreed", isAgreed);
 
-    $.ajax({
+    const data = await $.get('api/sgi', { id: sgiId });
+    if (data.planDate === null) return alert("Не заполнено поле планируемый срок");
+    if (!data.executions) return alert ("У задания нет фактов выполнения");
+
+   await $.ajax({
         url: '/sgi/agree',
         method: 'POST',
         data: formData,
@@ -52,49 +71,46 @@ function toggleAgreement(sgiId, button) {
             icon.toggleClass('bi-check-circle-fill text-success');
             icon.toggleClass('bi-circle');
             reload();
-        },
-        error: function () {
-            alert('У задания нет фактов выполнения')
         }
     });
 }
 
 async function change(rowId) {
-    const tbody = $('#planModal tbody');
-    tbody.empty();
+    const container = $('#planContainer');
+    container.empty();
 
-     const data = await $.ajax({
-        url: 'api/sgi',
-        method: 'GET',
-        data: {id : rowId}
-    });
-
-    tbody.append(`
-    <tr data-id="${rowId}">
-        <td>
-            <input type="text" class="form-control" name="employee" value="${data.employee}">
-        </td>
-        <td>
-            <input type="date" class="form-control" name="planDate" value="${data.planDate}">
-        </td>
-        <td>
-            <input type="text" class="form-control" name="comment" value="${data.comment!=null ? data.comment : ''}">
-        </td>
-        <td>
-            <button class="saveChangesBtn btn btn-primary btn-sm"><i class="bi bi-save"></i></button>
-        </td>
-    </tr>
-`);
+    const data = await $.get('api/sgi', { id: rowId });
+    if (data.agree) return alert('Нельзя редактировать завершенную заявку');
+    
+    container.append(`
+    <div class="row mb-3 g-2 align-items-center" data-id="${rowId}">
+        <div class="col-md-4">
+            <select class="form-select text-truncate" id="employeeSelect" name="employee" 
+                    aria-label="Выбор сотрудника" onfocus="loadEmployeeFields()"
+                    style="max-width: 100%; min-width: 100%">
+                <option value="${data.employee}">${data.employee}</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control form-control-sm" name="planDate" 
+                   value="${data.planDate ? data.planDate : ''}">
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control form-control-sm" name="comment" 
+                   value="${data.comment || ''}">
+        </div>
+    </div>`);
 
     // Обработчик сохранения
-    $('#planModal tbody').on('click', '.saveChangesBtn', async function() {
-        const row = $(this).closest('tr');
+    $('#planModal .modal-footer .saveChangesBtn').off('click').on('click', async function () {
+        const row = $('#planContainer > .row');
         const rowId = row.data('id');
-        const employeeVal = row.find('input[name="employee"]').val();
-        const planDateVal = row.find('input[name="planDate"]').val();
-        const commentVal = row.find('input[name="comment"]').val();
+        const employeeVal = row.find('[name="employee"]').val();
+        const planDateVal = row.find('[name="planDate"]').val();
+        const commentVal = row.find('[name="comment"]').val();
 
         await saveChange(rowId, employeeVal, planDateVal, commentVal);
+        $('#planModal').modal('hide');
     });
 
     $('#planModal').modal('show');
@@ -125,49 +141,64 @@ async function change(rowId) {
 
 async function openFactExecutionModal(rowId) {
     entityId = rowId;
-    const data = await $.ajax({
-        url: '/api/executions',
-        method: 'GET',
-        data: {param: rowId}
-    })
-    const thead = $('#factModal thead');
-    const tbody = $('#factModal tbody');
 
-    tbody.empty();
-    thead.empty();
+    const data = await $.get('/api/executions', { param: rowId });
+    const {planDate} = await $.get('/api/sgi', { id: rowId });
+
+    if (planDate===null) return alert("Не заполнено поле планируемый срок");
+
+    const headContainer = $('#factHeadContainer');
+    const dataContainer = $('#factDataContainer');
+
+    headContainer.empty();
+    dataContainer.empty();
 
     if (!data || data.length === 0) {
-        tbody.append(`
-        <tr>
-            <td colspan="3" class="text-center">
-                <button class="btn btn-primary btn-lg px-5" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal">Отметить факт выполнения</button>
-            </td>
-        </tr>`);
+        dataContainer.append(`
+            <div class="row g-0 align-items-center justify-content-center py-5">
+              <div class="col-auto">
+                <button class="btn btn-primary px-5" 
+                        data-bs-target="#exampleModalToggle2" 
+                        data-bs-toggle="modal">
+                  Отметить факт выполнения
+                </button>
+              </div>
+            </div>`);
         $('#factModal').modal('show');
         return;
     }
-    thead.append(`
-    <tr>
-        <th>Дата выполнения</th>
-        <th>Отчет</th>
-        <th>Прикрепленные фото</th>
-    </tr>
-    `);
-    tbody.append(data.map(item =>
-        `<tr data-id="${item.id}">
-            <td>${(item.executionDate)}</td>
-            <td>${(item.report)}</td>
-            <td>
-                <div class="modal-footer">
-                    <button class="btn btn-info" data-id="${item.id}" data-bs-target="#photoModal" data-bs-toggle="modal">фото</button>
-                   <button class="btn btn-danger btn-delete" data-id="${item.id}">удалить факт</button>
+
+    // Заголовки
+    headContainer.append(`
+      <div class="col-3 p-3 text-center">Дата выполнения</div>
+      <div class="col-4 p-3">Отчет</div>
+      <div class="col-5 p-3 text-center">Действия</div>`);
+
+    data.forEach(item => {
+        dataContainer.append(`
+        <div class="row g-0 border-bottom" data-id="${item.id}">
+            <div class="col-3 p-3 text-center">${item.executionDate}</div>
+            <div class="col-4 p-3">${item.report || '-'}</div>
+            <div class="col-5 p-3">
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-info btn-sm" 
+                        data-id="${item.id}" 
+                        data-bs-target="#photoModal" 
+                        data-bs-toggle="modal">
+                  Прикрепленные фото
+                </button>
+                <button class="btn btn-danger btn-sm btn-delete" 
+                        data-id="${item.id}">
+                  Удалить факт
+                </button>
                 </div>
-            </td>
-        </tr>`).join(''));
+            </div>
+        </div>`);
+    });
 
     $('#factModal').modal('show');
 
-    tbody.off('click', '.btn-delete').on('click', '.btn-delete', function () {
+    dataContainer.off('click', '.btn-delete').on('click', '.btn-delete', function () {
         const id = $(this).data('id');
         deleteFactSgi(id, $(this).closest('tr'));
     });
@@ -181,9 +212,9 @@ async function openFactExecutionModal(rowId) {
             data: {id: id},
             success: function () {
                 rowElement.remove();
-                if ($('#factModal tbody tr').length === 0) {
-                    thead.empty();
-                    $('#factModal tbody').html('<tr><td colspan="3">Нет данных</td></tr>');
+                if (dataContainer.length === 0) {
+                    headContainer.empty();
+                    dataContainer.html('<tr><td colspan="3">Нет данных</td></tr>');
                 }
             }
         });

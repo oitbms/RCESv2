@@ -209,52 +209,56 @@
         </button>
         <div id="pagination" class="pagination mt-4"></div>
 
-        <div class="modal fade" id="planModal" tabindex="-1" aria-labelledby="planModalLable" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header" style="margin-bottom: 0">
-                        <h1 class="modal-title fs-5" id="planModalLable">Редактирование</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();"
-                                aria-label="Закрыть"></button>
+    <div class="modal" id="planModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактирование</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" onclick="reload()"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row mb-2 text-center">
+                            <div class="col-md-3">Ответственный</div>
+                            <div class="col-md-3">Плановая дата</div>
+                            <div class="col-md-4">Комментарий</div>
+                            <div class="col-md-2"></div>
+                        </div>
+                        <div id="planContainer" class="gap-2">
+                            <!-- Тут данные -->
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th>Ответственный</th>
-                                <th>Плановая дата</th>
-                                <th>Комментарий</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <div class="modal-footer">
-                            </div>
-                            </tbody>
-                        </table>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="saveChangesBtn btn btn-primary">Сохранить изменения</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="modal fade" id="factModal" tabindex="-1" aria-labelledby="factModalLable" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header" style="margin-bottom: 0">
-                        <h1 class="modal-title fs-5" id="factModalLable">Факт выполнения задания</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();"
-                                aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        <table class="table">
-                            <thead>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+    <div class="modal fade" id="factModal" tabindex="-1" aria-labelledby="factModalLable" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="factModalLable">Факт выполнения задания</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="reload();"
+                            aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row fw-bold mb-2 text-center">
+                            <div class="col-md-3">Дата выполнения</div>
+                            <div class="col-md-4">Отчет</div>
+                            <div class="col-md-5">Прикрепленные фото</div>
+                        </div>
+                        <div id="factDataContainer">
+                            <!-- Данные -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
         <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
              tabindex="-1">
@@ -333,20 +337,9 @@
                             </div>
                             <div class="mb-3">
                                 <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
-                                <input
-                                        type="text"
-                                        id="employeesId"
-                                        name="employeesModal"
-                                        list="employeesList"
-                                        placeholder="Введите фамилию..."
-                                        class="form-control"
-                                        required
-                                >
-                                <datalist id="employeesList">
-                                    <#list employeesList as emploees>
-                                        <option value="${emploees.name}"></option>
-                                    </#list>
-                                </datalist>
+                                <select class="form-select" id="employeeSelect" aria-label="Выбор сотрудника" onfocus="loadEmployeeFields()">
+                                    <option value="">Выберите сотрудника</option>
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="desiredDate" class="form-label">Желаемый срок</label>
@@ -358,7 +351,6 @@
                                 <input type="text" class="form-control" id="noteId" name="noteModal">
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                             </div>
                         </form>

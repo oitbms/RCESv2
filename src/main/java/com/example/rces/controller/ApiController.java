@@ -117,6 +117,6 @@ public class ApiController {
     @GetMapping("/sgi")
     public ResponseEntity<SingleSgi> getSgi(@RequestParam UUID id) {
         SGI sgi = service.getSgi(id);
-        return ResponseEntity.ok(new SingleSgi(sgi.getEmployee().getName(), sgi.getPlanDate(),sgi.getComment()));
+        return ResponseEntity.ok(new SingleSgi(sgi.getEmployee().getName(), sgi.getPlanDate(),sgi.getComment(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
     }
 }

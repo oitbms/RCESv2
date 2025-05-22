@@ -104,7 +104,7 @@ public class ServiceUtil {
             return SGI.ColorSGI.RED;
         } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
             return SGI.ColorSGI.YELLOW;
-        } else if (!sgi.getExecutions().isEmpty()) {
+        } else if (sgi.getPlanDate() != null && !sgi.getExecutions().isEmpty()) {
             return SGI.ColorSGI.GREEN;
         } else {
             return SGI.ColorSGI.NONE;

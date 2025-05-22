@@ -149,9 +149,6 @@ public class SGController {
     @PostMapping("/agree")
     public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
         SGI sgi = service.findById(SGI.class, id);
-        if (sgi.getExecutions().isEmpty() || !userDetailsService.isControl()) {
-            return ResponseEntity.badRequest().build();
-        }
         sgi.setAgreed(agreed);
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         service.save(sgi);
