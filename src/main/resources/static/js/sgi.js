@@ -436,8 +436,8 @@ $(document).ready(function () {
     $('#clearButton').on('click', () => {
         $('#workshop, #number, #events, #actions, #department, #emploes, #desiredDate, #note, #planDate, #comment')
             .val('');
-        $('#statusBtn').data('state', 'done');
-        $('#statusBtn').find('i').removeClass().addClass('bi bi-check-circle-fill').css('color', 'green');
+        $('#statusBtn').data('state', 'none');
+        $('#statusBtn').find('i').removeClass().addClass('bi bi-dash-circle').css('color', 'gray');
         filterData();
     });
     filterData();

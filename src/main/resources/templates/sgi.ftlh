@@ -132,10 +132,12 @@
                 <th style="background-color: #007bff; color: white;">
                 </th>
                 <th style="background-color: #007bff; color: white;">
-                    Факт выполнения
+                    <div style="position: relative; top: -4px;">
+                        Факт выполнения
+                    </div>
                 </th>
-                <th style="background-color: #007bff; color: white;">
-                    Завершено
+                <th style="background-color: #007bff; color: white; display: flex; justify-content: space-between; align-items: center; padding: 8px;">
+                    <div style="margin-right: 10px; margin-top: 5px;">Завершено</div>
                     <button type="button" id="statusBtn" class="btn btn-outline-secondary" data-state="" title="Статус">
                         <i class="bi bi-check-circle-fill" style="color: gray;"></i>
                     </button>
