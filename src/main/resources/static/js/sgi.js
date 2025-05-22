@@ -407,6 +407,12 @@ $(document).ready(function () {
         filterData();
     });
 
+    $('#clearButton').on('click', function() {
+        $('#workshop, #number, #events, #actions, #department, #emploes, #desiredDate, #note, #planDate, #comment, #agreed')
+            .val('');
+        filterData();
+    });
+
     filterData();
 
     $('.toggleInput').on('click', function () {
@@ -466,3 +472,4 @@ $(document).ready(function () {
         }
     });
 });
+

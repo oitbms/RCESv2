@@ -17,214 +17,216 @@
 <body>
 <div>
     <table id="sgiTable" class="table table-hover">
-            <thead>
-            <tr>
-                <th style="background-color: #007bff; color: white;">
-                    № п/п
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
+        <thead>
+        <tr>
+            <th style="background-color: #007bff; color: white;">
+                № п/п
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="number">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                № цеха
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="workshop">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Мероприятие
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="events">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Сопутствующие действия
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="actions">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Ответственный отдел
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="department">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Ответственное лицо
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="emploes">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Желаемый срок
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="desiredDate">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Примечание
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="note">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Планируемый срок
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="planDate">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Комментарий
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="comment">
+                </div>
+            </th>
+            <th style="background-color: #007bff; color: white;">
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Факт выполнения
+            </th>
+            <th style="background-color: #007bff; color: white;">
+                Завершено
+                <button type="button" class="toggleInput">
+                    <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                        <path d="M20.7 5.3a1 1 0 00-1.4 0L9 16.6l-4.3-4.3a1 1 0 00-1.4 1.4l4.9 4.9a1 1 0 001.4 0l10-10a1 1 0 000-1.4z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <select class="form-control" id="agreed">
+                        <option value="">Все</option>
+                        <option value="выполнено">Выполнено</option>
+                        <option value="не выполнено">Не выполнено</option>
+                    </select>
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <#list sgiList as sgi>
+            <#assign reqIndex = sgi_index>
+            <#assign rowClass = "">
+            <#if sgi.color == "RED">
+                <#assign rowClass = "table-danger">
+            <#elseif sgi.color == "GREEN">
+                <#assign rowClass = "table-success">
+            <#elseif sgi.color == "YELLOW">
+                <#assign rowClass = "table-warning">
+            <#elseif sgi.color == "GREY">
+                <#assign rowClass = "table-secondary">
+            </#if>
+            <tr id="${sgi.id}" class="${rowClass}">
+                <td>${sgi.requestNumber}</td>
+                <td name="workshop">${sgi.workShop}</td>
+                <td name="event">${sgi.event}</td>
+                <td name="actions">${sgi.actions}</td>
+                <td name="department">${sgi.department.getName()}</td>
+                <td name="emploes">${(sgi.employee.getName())!""}</td>
+                <td name="desiredDate">${updateDesiredDate[reqIndex]}</td>
+                <td name="note">${sgi.note!""}</td>
+                <td name="planDate">
+                    <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
+                </td>
+                <td name="comment">${sgi.comment!''}</td>
+                <td style="gap: 8px;">
+                    <button type="button" class="btn btn-info btn-sm"
+                            onclick="change('${sgi.id}','<#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>','${sgi.comment!""}')">
+                        <i class="bi bi-pencil-square"></i>
                     </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="number">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    № цеха
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-info btn-sm" onclick="openFactExecutionModal('${sgi.id}')">
+                        ✔
                     </button>
-                    <div class="inputContainer" style="display: flex; align-items: center;">
-                        <input type="text" class="form-control" id="workshop" placeholder="Фильтр по цеху">
-                        <button type="button" class="btn btn-secondary btn-sm ml-2" id="clearWorkshop">
-                            Очистить
-                        </button>
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Мероприятие
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
+                </td>
+                <td class="text-center" name="agreed">
+                    <button type="button"
+                            class="btn btn-link p-0 toggle-agree"
+                            data-sgi-id="${sgi.id}"
+                            data-agreed="${sgi.agreed?string('true','false')}"
+                            onclick="toggleAgreement('${sgi.id}', this)">
+                        <i class="bi ${sgi.agreed?then('bi-check-circle-fill text-success', 'bi-circle')}"></i>
                     </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="events">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Сопутствующие действия
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="actions">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Ответственный отдел
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="department">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Ответственное лицо
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="emploes">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Желаемый срок
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="desiredDate">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Примечание
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="note">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Планируемый срок
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="planDate">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Комментарий
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <input type="text" class="form-control" id="comment">
-                    </div>
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Факт выполнения
-                </th>
-                <th style="background-color: #007bff; color: white;">
-                    Завершено
-                    <button type="button" class="toggleInput">
-                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
-                            <path d="M20.7 5.3a1 1 0 00-1.4 0L9 16.6l-4.3-4.3a1 1 0 00-1.4 1.4l4.9 4.9a1 1 0 001.4 0l10-10a1 1 0 000-1.4z"/>
-                        </svg>
-                    </button>
-                    <div class="inputContainer">
-                        <select class="form-control" id="agreed">
-                            <option value="">Все</option>
-                            <option value="выполнено">Выполнено</option>
-                            <option value="не выполнено">Не выполнено</option>
-                        </select>
-                    </div>
-                </th>
+                </td>
             </tr>
-            </thead>
-            <tbody>
-            <#list sgiList as sgi>
-                <#assign reqIndex = sgi_index>
-                <#assign rowClass = "">
-                <#if sgi.color == "RED">
-                    <#assign rowClass = "table-danger">
-                <#elseif sgi.color == "GREEN">
-                    <#assign rowClass = "table-success">
-                <#elseif sgi.color == "YELLOW">
-                    <#assign rowClass = "table-warning">
-                <#elseif sgi.color == "GREY">
-                    <#assign rowClass = "table-secondary">
-                </#if>
-                <tr id="${sgi.id}" class="${rowClass}">
-                    <td>${sgi.requestNumber}</td>
-                    <td name="workshop">${sgi.workShop}</td>
-                    <td name="event">${sgi.event}</td>
-                    <td name="actions">${sgi.actions}</td>
-                    <td name="department">${sgi.department.getName()}</td>
-                    <td name="emploes">${(sgi.employee.getName())!""}</td>
-                    <td name="desiredDate">${updateDesiredDate[reqIndex]}</td>
-                    <td name="note">${sgi.note!""}</td>
-                    <td name="planDate">
-                        <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
-                    </td>
-                    <td name="comment">${sgi.comment!''}</td>
-                    <td style="gap: 8px;">
-                        <button type="button" class="btn btn-info btn-sm"
-                                onclick="change('${sgi.id}','<#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>','${sgi.comment!""}')">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-info btn-sm" onclick="openFactExecutionModal('${sgi.id}')">
-                            ✔
-                        </button>
-                    </td>
-                    <td class="text-center" name="agreed">
-                        <button type="button"
-                                class="btn btn-link p-0 toggle-agree"
-                                data-sgi-id="${sgi.id}"
-                                data-agreed="${sgi.agreed?string('true','false')}"
-                                onclick="toggleAgreement('${sgi.id}', this)">
-                            <i class="bi ${sgi.agreed?then('bi-check-circle-fill text-success', 'bi-circle')}"></i>
-                        </button>
-                    </td>
-                </tr>
-            </#list>
-            </tbody>
-        </table>
+        </#list>
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-center gap-3">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">Добавить
             новое задание
         </button>
-        <div id="pagination" class="pagination mt-4"></div>
+        <button type="button" class="btn btn-info" id="clearButton">
+            Очистить фильтры
+        </button>
+    </div>
+    <div id="pagination" class="pagination mt-4"></div>
 
     <div class="modal" id="planModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Редактирование</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" onclick="reload()"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"
+                            onclick="reload()"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="container-fluid">
-                        <div class="row mb-2 text-center">
-                            <div class="col-md-3">Ответственный</div>
-                            <div class="col-md-3">Плановая дата</div>
-                            <div class="col-md-4">Комментарий</div>
-                            <div class="col-md-2"></div>
+                    <div class="container text-center">
+                        <div class="row align-items-start">
+                            <div class="col-md-4 fs-5 fw-bold">Ответственный</div>
+                            <div class="col-md-3 fs-5 fw-bold">Плановая дата</div>
+                            <div class="col-md-4 fs-5 fw-bold">Комментарий</div>
                         </div>
-                        <div id="planContainer" class="gap-2">
+                        <div id="planContainer" class="row align-items-end">
                             <!-- Тут данные -->
                         </div>
                     </div>
@@ -245,13 +247,11 @@
                             aria-label="Закрыть"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="container-fluid">
-                        <div class="row fw-bold mb-2 text-center">
-                            <div class="col-md-3">Дата выполнения</div>
-                            <div class="col-md-4">Отчет</div>
-                            <div class="col-md-5">Прикрепленные фото</div>
+                    <div class="container text-center">
+                        <div class="row align-items-start" id="factHeadContainer">
+                            <!-- Заголовки -->
                         </div>
-                        <div id="factDataContainer">
+                        <div class="row align-items-end" id="factDataContainer">
                             <!-- Данные -->
                         </div>
                     </div>
@@ -260,104 +260,107 @@
         </div>
     </div>
 
-        <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
-             tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Отметка</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addSubTaskId" action="/sgi/create/execution" method="post"
-                              enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label for="executionDate" class="form-label">Дата выполнения</label>
-                                <input type="date" class="form-control" id="executionDate" name="executionDate">
-                            </div>
-                            <div class="mb-3">
-                                <label for="report" class="form-label">Комментарий</label>
-                                <input type="text" class="form-control" id="report" name="report">
-                            </div>
-                            <div class="mb-3">
-                                <label for="images" class="form-label">Фото</label>
-                                <input type="file" class="form-control" id="images" name="images" accept="image/*"
-                                       multiple>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i></button>
-                            </div>
-                        </form>
-                    </div>
+    <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
+         tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Отметка</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSubTaskId" action="/sgi/create/execution" method="post"
+                          enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="executionDate" class="form-label">Дата выполнения</label>
+                            <input type="date" class="form-control" id="executionDate" name="executionDate">
+                        </div>
+                        <div class="mb-3">
+                            <label for="report" class="form-label">Комментарий</label>
+                            <input type="text" class="form-control" id="report" name="report">
+                        </div>
+                        <div class="mb-3">
+                            <label for="images" class="form-label">Фото</label>
+                            <input type="file" class="form-control" id="images" name="images" accept="image/*"
+                                   multiple>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i></button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="modal fade" id="photoModal" aria-hidden="true" aria-labelledby="photoModalLabel" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="photoModalLabel">Прикрепленные фото</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body" id="photoContainer">
-                    </div>
+    <div class="modal fade" id="photoModal" aria-hidden="true" aria-labelledby="photoModalLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="photoModalLabel">Прикрепленные фото</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body" id="photoContainer">
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content ">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="createModalLabel">Добавление задания</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addTaskForm" action="/sgi/create" method="POST">
-                            <div class="mb-3">
-                                <label for="shop" class="form-label">Цех</label>
-                                <input type="text" class="form-control" id="shopId" name="workshopModal" data-required="true">
-                            </div>
-                            <div class="mb-3">
-                                <label for="event" class="form-label">Мероприятие</label>
-                                <input type="text" class="form-control" id="eventId" name="eventModal" data-required="true">
-                            </div>
-                            <div class="mb-3">
-                                <label for="actions" class="form-label">Сопутствующие действия</label>
-                                <input type="text" class="form-control" id="actionsId" name="actionsModal" data-required="true">
-                            </div>
-                            <div class="mb-3">
-                                <label for="department" class="form-label">Ответственный отдел</label>
-                                <select class="form-control" id="departmentId" name="departmentModal" data-required="true">
-                                    <option value="">Выберите отдел</option>
-                                    <option value="mechanic">ОГМ</option>
-                                    <option value="builder">ОРС</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
-                                <select class="form-select" id="employeeSelect" aria-label="Выбор сотрудника" onfocus="loadEmployeeFields()">
-                                    <option value="">Выберите сотрудника</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="desiredDate" class="form-label">Желаемый срок</label>
-                                <input type="date" class="form-control" id="desiredDateId" name="desiredDateModal"
-                                       data-required="true">
-                            </div>
-                            <div class="mb-3">
-                                <label for="note" class="form-label">Примечание</label>
-                                <input type="text" class="form-control" id="noteId" name="noteModal">
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                            </div>
-                        </form>
-                    </div>
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content ">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="createModalLabel">Добавление задания</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTaskForm" action="/sgi/create" method="POST">
+                        <div class="mb-3">
+                            <label for="shop" class="form-label">Цех</label>
+                            <input type="text" class="form-control" id="shopId" name="workshopModal"
+                                   data-required="true">
+                        </div>
+                        <div class="mb-3">
+                            <label for="event" class="form-label">Мероприятие</label>
+                            <input type="text" class="form-control" id="eventId" name="eventModal" data-required="true">
+                        </div>
+                        <div class="mb-3">
+                            <label for="actions" class="form-label">Сопутствующие действия</label>
+                            <input type="text" class="form-control" id="actionsId" name="actionsModal"
+                                   data-required="true">
+                        </div>
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Ответственный отдел</label>
+                            <select class="form-control" id="departmentId" name="departmentModal" data-required="true">
+                                <option value="">Выберите отдел</option>
+                                <option value="mechanic">ОГМ</option>
+                                <option value="builder">ОРС</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
+                            <select class="form-select" id="employeeSelect" name="employeesModal" aria-label="Выбор сотрудника"
+                                    onfocus="loadEmployeeFields()">
+                                <option value="">Выберите сотрудника</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="desiredDate" class="form-label">Желаемый срок</label>
+                            <input type="date" class="form-control" id="desiredDateId" name="desiredDateModal"
+                                   data-required="true">
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Примечание</label>
+                            <input type="text" class="form-control" id="noteId" name="noteModal">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 </div>
 
 <div id="customContextMenu"
