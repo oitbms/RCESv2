@@ -50,13 +50,11 @@ public class SGController {
                     .sorted(Comparator.comparing(SGI::getRequestNumber))
                     .collect(Collectors.toList());
         }
-        List<Employee> employees = service.findAllByField(Employee.class, "role", "EVENT");
         List<String> updateDesiredDate = sgiList.stream()
                 .map(req -> formatedDate(req.getDesiredDate())).toList();
         List<String> updatePlanDate = sgiList.stream()
                 .map(req -> formatedDate(req.getPlanDate())).toList();
         model.addAttribute("sgiList", sgiList);
-        model.addAttribute("employeesList", employees);
         model.addAttribute("updateDesiredDate", updateDesiredDate);
         model.addAttribute("updatePlanDate", updatePlanDate);
         return "sgi";

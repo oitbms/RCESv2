@@ -458,3 +458,7 @@ tr:hover {
         font-size: 12px;
     }
 }
+
+.modal-header {
+    padding-bottom: 0.1rem !important;
+}

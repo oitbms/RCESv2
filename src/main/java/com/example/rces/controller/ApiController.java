@@ -8,15 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @RestController
 @RequestMapping("/api")
@@ -117,6 +114,6 @@ public class ApiController {
     @GetMapping("/sgi")
     public ResponseEntity<SingleSgi> getSgi(@RequestParam UUID id) {
         SGI sgi = service.getSgi(id);
-        return ResponseEntity.ok(new SingleSgi(sgi.getEmployee().getName(), sgi.getPlanDate(),sgi.getComment(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
+        return ResponseEntity.ok(new SingleSgi(sgi.getEmployee().getName(), sgi.getPlanDate(), sgi.getComment(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
     }
 }
