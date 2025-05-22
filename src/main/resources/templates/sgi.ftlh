@@ -16,8 +16,7 @@
 </head>
 <body>
 <div>
-    <table class="table table-hover">
-        <table id="sgiTable" class="table table-hover">
+    <table id="sgiTable" class="table table-hover">
             <thead>
             <tr>
                 <th style="background-color: #007bff; color: white;">
@@ -121,6 +120,14 @@
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Комментарий
+                    <button type="button" class="toggleInput">
+                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                        </svg>
+                    </button>
+                    <div class="inputContainer">
+                        <input type="text" class="form-control" id="comment">
+                    </div>
                 </th>
                 <th style="background-color: #007bff; color: white;">
                 </th>
@@ -129,6 +136,18 @@
                 </th>
                 <th style="background-color: #007bff; color: white;">
                     Завершено
+                    <button type="button" class="toggleInput">
+                        <svg onclick="filter()" viewBox="0 0 24 24" width=16>
+                            <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                        </svg>
+                    </button>
+                    <div class="inputContainer">
+                        <select class="form-control" id="agreed">
+                            <option value="">Все</option>
+                            <option value="выполнено">Выполнено</option>
+                            <option value="не выполнено">Не выполнено</option>
+                        </select>
+                    </div>
                 </th>
             </tr>
             </thead>
@@ -157,7 +176,7 @@
                     <td name="planDate">
                         <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
                     </td>
-                    <td>${sgi.comment!''}</td>
+                    <td name="comment">${sgi.comment!''}</td>
                     <td style="gap: 8px;">
                         <button type="button" class="btn btn-info btn-sm"
                                 onclick="change('${sgi.id}','<#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>','${sgi.comment!""}')">
@@ -169,10 +188,11 @@
                             ✔
                         </button>
                     </td>
-                    <td class="text-center">
+                    <td class="text-center" name="agreed">
                         <button type="button"
                                 class="btn btn-link p-0 toggle-agree"
                                 data-sgi-id="${sgi.id}"
+                                data-agreed="${sgi.agreed?string('true','false')}"
                                 onclick="toggleAgreement('${sgi.id}', this)">
                             <i class="bi ${sgi.agreed?then('bi-check-circle-fill text-success', 'bi-circle')}"></i>
                         </button>

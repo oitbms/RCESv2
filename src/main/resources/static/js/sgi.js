@@ -294,8 +294,17 @@ async function deletePhoto(imageId, index) {
 $(document).ready(function () {
     const rowsPerPage = 16;
     let filteredRows = [];
+    let filterAgreed = '';
 
     const filterData = () => {
+        const input = $('#agreed').val().toLowerCase().trim();
+        if (input === 'выполнено') {
+            filterAgreed = 'true';
+        } else if (input === 'не выполнено') {
+            filterAgreed = 'false';
+        } else {
+            filterAgreed = '';
+        }
         filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
             return checkRowFilters(row);
         });
@@ -311,6 +320,8 @@ $(document).ready(function () {
         const emploes = $(row).find('td:nth-child(6)').text().toLowerCase();
         const desiredDate = $(row).find('td:nth-child(7)').text().toLowerCase();
         const planDate = $(row).find('td:nth-child(8)').text().toLowerCase();
+        const comment = $(row).find('td:nth-child(10)').text().toLowerCase();
+        const agreedData = $(row).find('button.toggle-agree').data('agreed') ? 'true' : 'false';
 
         return (
             number.includes($('#number').val().toLowerCase()) &&
@@ -320,7 +331,9 @@ $(document).ready(function () {
             department.includes($('#department').val().toLowerCase()) &&
             emploes.includes($('#emploes').val().toLowerCase()) &&
             desiredDate.includes($('#desiredDate').val().toLowerCase()) &&
-            planDate.includes($('#planDate').val().toLowerCase())
+            planDate.includes($('#planDate').val().toLowerCase()) &&
+            comment.includes($('#comment').val().toLowerCase()) &&
+            (filterAgreed === '' || agreedData === filterAgreed)
         );
     };
 
@@ -346,7 +359,15 @@ $(document).ready(function () {
         }
     };
 
-    $('#number,#workshop,#events,#actions,#department,#emploes,#desiredDate,#planDate').on('keyup change', filterData);
+    $('#number,#workshop,#events,#actions,#department,#emploes,#desiredDate,#planDate,#comment').on('keyup change', filterData);
+
+    $('#agreed').on('keyup change', () => {
+        filterData();
+    });
+
+    $('svg').on('click', function() {
+        filterData();
+    });
 
     filterData();
 
