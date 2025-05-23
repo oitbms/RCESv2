@@ -1,5 +1,6 @@
 let currentRow;
 let entityId;
+let filterData;
 
 function reload() {
     return window.location.href = window.location.href;
@@ -34,14 +35,14 @@ $('#addSubTaskId').on('submit', function (e) {
     });
 });
 
-async function loadEmployeeFields() {
+async function loadEmployeeFields(number) {
     if ($('#employeeSelect').children().length > 1) return;
     const data = await $.ajax({
         url: '/api/employees',
         method: 'GET',
         data: {param: "EVENT"}
     });
-    const select = $('#employeeSelect');
+    const select = $('#employeeSelect' + number);
     select.empty();
     select.append('<option selected disabled>Выберите сотрудника</option>');
     data.forEach(employee => {
@@ -59,7 +60,7 @@ async function toggleAgreement(sgiId, button) {
 
     const data = await $.get('api/sgi', {id: sgiId});
     if (data.planDate === null) return alert("Не заполнено поле планируемый срок");
-    if (!data.executions) return alert("У задания нет фактов выполнения");
+    if (!data.executions) return alert("У мероприятия нет факта выполнения");
 
     await $.ajax({
         url: '/sgi/agree',
@@ -350,7 +351,7 @@ $(document).ready(function () {
         filterData();
     });
 
-    const filterData = () => {
+      filterData = () => {
         const state = $('#statusBtn').data('state');
         let agreedFilter = '';
 
@@ -438,12 +439,15 @@ $(document).ready(function () {
     $('svg').on('click', function () {
         filterData();
     });
-    $('#clearButton').on('click', () => {
+    $('button[name="clearButton"]').on('click', () => {
         $('#workshop, #number, #events, #actions, #department, #emploes, #desiredDate, #note, #planDate, #comment')
             .val('');
         $('#statusBtn').data('state', 'none');
         $('#statusBtn').find('i').removeClass().addClass('bi bi-dash-circle').css('color', 'gray');
         filterData();
+        if ($('#mobileFilterModal').is(':visible')) {
+            $('#mobileFilterModal').modal('hide');
+        }
     });
     filterData();
 
@@ -519,3 +523,22 @@ $('#calculateColor').on('click', function () {
     });
 });
 
+// Применения фильтров для мобильных устройств
+function applyFilters() {
+    document.getElementById("number").value = document.getElementById('filterNumber').value;
+    document.getElementById("workshop").value = document.getElementById('filterWorkshop').value;
+    document.getElementById("department").value = document.getElementById('filterDepartment').value;
+    document.getElementById("emploes").value = document.getElementById('employeeSelect2').value;
+
+    const filterDate = document.getElementById('filterPlanDate').value;
+    if (filterDate) {
+        const [year, month, day] = filterDate.split('-');
+        const formattedDate = `${day}.${month}.${year}`;
+        document.getElementById("planDate").value = formattedDate;
+    } else {
+        document.getElementById("planDate").value = '';
+    }
+
+    filterData();
+    $('#mobileFilterModal').modal('hide');
+}

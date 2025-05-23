@@ -228,20 +228,42 @@
         </tbody>
     </table>
     <div class="d-flex justify-content-center gap-2">
-        <button type="button" class="btn btn-primary fixed-mobile-btn" data-bs-toggle="modal" data-bs-target="#createModal">
+        <!-- Мобильные кнопки -->
+        <div class="mobile-buttons-container d-block d-md-none">
+            <button type="button"
+                    class="btn btn-primary mobile-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createModal">
+                Добавить
+            </button>
+
+            <button type="button"
+                    class="btn btn-primary mobile-btn"
+                    id="mobileFilterBtn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#mobileFilterModal">
+                Фильтры
+            </button>
+        </div>
+
+        <!-- Десктопные кнопки -->
+        <button type="button"
+                class="btn btn-primary d-none d-md-inline-block"
+                data-bs-toggle="modal"
+                data-bs-target="#createModal">
             Добавить задание
         </button>
-        <button type="button" class="btn btn-primary d-none d-md-inline-block" id="clearButton">
+
+        <button type="button"
+                class="btn btn-primary d-none d-md-inline-block"
+                name="clearButton">
             Очистить фильтры
         </button>
-        <!--<button type="button" class="btn btn-info" id="calculateColor">
-            Пересчитать цвета
-        </button>-->
+
         <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions"
                 aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
             <i class="bi bi-list" style="color: black"></i>
         </button>
-
     </div>
 
     <div id="pagination" class="pagination mt-4"></div>
@@ -377,8 +399,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
-                            <select class="form-select" id="employeeSelect" aria-label="Выбор сотрудника"
-                                    onfocus="loadEmployeeFields()" name="employeesModal">
+                            <select class="form-select" id="employeeSelect1" aria-label="Выбор сотрудника"
+                                    onfocus="loadEmployeeFields(1)" name="employeesModal">
                                 <option value="">Выберите сотрудника</option>
                             </select>
                         </div>
@@ -399,6 +421,69 @@
             </div>
         </div>
     </div>
+
+    <!-- Модальное окно фильтров -->
+    <div class="modal fade" id="mobileFilterModal" tabindex="-1" aria-labelledby="mobileFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen d-md-none">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mobileFilterModalLabel">Фильтры</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="mobileFilterForm">
+                        <!-- № п/п -->
+                        <div class="mb-3">
+                            <label for="filterNumber" class="form-label">№ п/п</label>
+                            <input type="number" class="form-control" id="filterNumber">
+                        </div>
+
+                        <!-- Цех -->
+                        <div class="mb-3">
+                            <label for="filterWorkshop" class="form-label">Цех</label>
+                            <input type="text" class="form-control" id="filterWorkshop">
+                        </div>
+
+                        <!-- Ответственный отдел -->
+                        <div class="mb-3">
+                            <label for="filterDepartment" class="form-label">Ответственный отдел</label>
+                            <select class="form-select" id="filterDepartment">
+                                <option value="">Выберите отдел</option>
+                                <option value="mechanic">ОГМ</option>
+                                <option value="builder">ОРС</option>
+                            </select>
+                        </div>
+
+                        <!-- Ответственное лицо -->
+                        <div class="mb-3">
+                            <label for="filterEmployee" class="form-label">Ответственное лицо</label>
+                            <select class="form-select" id="employeeSelect2" aria-label="Выбор сотрудника"
+                                    onfocus="loadEmployeeFields(2)" name="employeesModal">
+                                <option value="">Выберите сотрудника</option>
+                            </select>
+                        </div>
+
+                        <!-- Планируемый срок -->
+                        <div class="mb-3">
+                            <label for="filterPlanDate" class="form-label">Планируемый срок</label>
+                            <input type="date" class="form-control" id="filterPlanDate">
+                        </div>
+
+                        <!-- Завершено -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="filterCompleted">
+                            <label class="form-check-label" for="filterCompleted">Завершено</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" name="clearButton">Сбросить</button>
+                    <button type="button" class="btn btn-primary" onclick="applyFilters()">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="customContextMenu"
