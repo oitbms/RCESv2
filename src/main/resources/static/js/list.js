@@ -1,0 +1,170 @@
+
+$('.history-icon').off("click").on("click", async function () {
+    const modal = $('#viewRequestLogs');
+    const head = $('#logsHead');
+    const body = $('#logsBody');
+
+    head.empty();
+    body.empty();
+
+    const data = await $.get('/api/logs', {id: $(this).data('id')});
+    if (!data || data.length === 0) {
+        head.append('<div class="col">Объект не изменялся</div>');
+        modal.modal('show');
+        return;
+    }
+
+    head.append(`
+        <div class="col">Дата изменения</div>
+        <div class="col">Пользователь</div>
+        <div class="col">Изменения</div>
+    `);
+
+    data.forEach(log => {
+
+        let metadataHtml = '';
+        Object.entries(log.metadata).forEach(([key, value]) => {
+            metadataHtml = metadataHtml + `<div class="col">${key}: ${value}</div>`;
+        });
+
+
+        body.append(`
+            <div class="row">
+                <div class="col">${data.date}</div>
+                <div class="col">${data.userName}</div>
+                ${metadataHtml}
+            </div>
+        `);
+    });
+
+    modal.modal('show');
+});
+
+$(document).ready(function () {
+    const requestType = "${type?lower_case}";
+    let selectedRequestNumber;
+    const rowsPerPage = 15;
+    let filteredRows = [];
+
+    // Контекстное меню
+    $('.clickable-row').on('contextmenu', function (event) {
+        event.preventDefault();
+        selectedRequestNumber = $(this).data('request-number');
+        $('#contextMenu').css({
+            display: 'block',
+            left: event.pageX,
+            top: event.pageY
+        });
+    });
+
+    $(document).on('click', function () {
+        $('#contextMenu').hide();
+    });
+
+    $('#editRequest').on('click', function () {
+        $('#contextMenu').hide();
+        openRequestModal(selectedRequestNumber);
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape') {
+            $('#contextMenu').hide();
+        }
+    });
+
+    function openRequestModal(requestNumber) {
+        $.get(`/view/` + requestNumber, function (data) {
+            $('#viewContent').html(data);
+            $('#viewRequestModal').modal('show');
+        }).fail(function () {
+            alert("Ошибка загрузки данных.");
+        });
+    }
+
+    $('#viewRequestModal').on('hidden.bs.modal', function () {
+        location.reload();
+    });
+
+    // Фильтрация и пагинация
+    const filterData = () => {
+        filteredRows = $('#requestTable tbody tr').filter((index, row) => {
+            return checkRowFilters(row);
+        });
+        showPage(1);
+    };
+
+    const checkRowFilters = (row) => {
+
+        const createBy = $(row).find('td:nth-child(1)').text().toLowerCase();
+        const employeeBy = $(row).find('td:nth-child(2)').text().toLowerCase();
+        const item = $(row).find('td:nth-child(3)').text().toLowerCase();
+        const requestNumber = $(row).find('td:nth-child(4)').text().toLowerCase();
+        const customerOrder = $(row).find('td:nth-child(5)').text().toLowerCase();
+        const workShop = $(row).find('td:nth-child(6)').text().toLowerCase();
+        const reason = $(row).find('td:nth-child(7)').text().toLowerCase();
+        const status = $(row).find('td:nth-child(8)').text().toLowerCase();
+        const date = $(row).find('td:nth-child(9)').text().toLowerCase();
+        const dateCreate = $(row).find('td:nth-child(10)').text().toLowerCase();
+        const changedBy = $(row).find('td:nth-child(11)').text().toLowerCase();
+        // Проверка наличия поля "Тип контроля" и его значения
+        let controlMatch = true; // По умолчанию считаем, что совпадение есть
+        const controlInput = $('#control'); // Получаем элемент ввода для типа контроля
+        if (controlInput.length > 0) { // Проверяем, существует ли элемент
+            const control = $(row).find('td:nth-child(12)').text().toLowerCase(); // Получаем текст из ячейки
+            controlMatch = control.includes(controlInput.val().toLowerCase()); // Проверяем совпадение
+        }
+
+
+        return (
+            createBy.includes($('#createBy').val().toLowerCase()) &&
+            employeeBy.includes($('#employeeBy').val().toLowerCase()) &&
+            item.includes($('#item').val().toLowerCase()) &&
+            requestNumber.includes($('#requestNumber').val().toLowerCase()) &&
+            customerOrder.includes($('#customerOrder').val().toLowerCase()) &&
+            workShop.includes($('#workShop').val().toLowerCase()) &&
+            reason.includes($('#reason').val().toLowerCase()) &&
+            status.includes($('#status').val().toLowerCase()) &&
+            date.includes($('#date').val().toLowerCase()) &&
+            dateCreate.includes($('#dateCreate').val().toLowerCase()) &&
+            changedBy.includes($('#changedBy').val().toLowerCase()) &&
+            controlMatch // Включаем результат проверки типа контроля
+        );
+    };
+
+    const showPage = (page) => {
+        $('#requestTable tbody tr').hide();
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        filteredRows.slice(start, end).show();
+        renderPagination(page);
+    };
+
+    const renderPagination = (currentPage) => {
+        $('#pagination').empty();
+        const totalFilteredRows = filteredRows.length;
+        const totalFilteredPages = Math.ceil(totalFilteredRows / rowsPerPage);
+        for (let i = 1; i <= totalFilteredPages; i++) {
+            const pageLink = $('<button>')
+                .text(i)
+                .addClass('btn btn-secondary mx-1')
+                .click(() => showPage(i));
+            if (i === currentPage) pageLink.addClass('active');
+            $('#pagination').append(pageLink);
+        }
+    };
+
+    // Инициализация слушателей событий для фильтров
+    $('#createBy, #employeeBy, #item, #requestNumber, #customerOrder, #workShop, #reason, #status, #date, #dateCreate, #changedBy').on('keyup change', filterData);
+
+    // Добавляем слушатель для поля "Тип контроля" только если оно существует
+    const controlInput = $('#control');
+    if (controlInput.length > 0) {
+        controlInput.on('keyup change', filterData);
+    }
+
+    filterData();
+
+    $('.toggleInput').on('click', function () {
+        $(this).next('.inputContainer').toggle();
+    });
+});

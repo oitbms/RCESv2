@@ -6,18 +6,14 @@ import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.example.rces.services.ServiceUtil.colorCalculate;
 
 @RestController
 @RequestMapping("/api")
