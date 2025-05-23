@@ -23,48 +23,9 @@
     </style>
 </head>
 <body>
-<div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Функции</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-        <div class="list-group" style="width: 200px;">
-            <a href="http://localhost:2520/menu" class="list-group-item list-group-item-action btn btn-primary mb-2">Меню</a>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
-                <a href="http://localhost:2520/sgi" class="list-group-item list-group-item-action btn btn-primary">СГИ</a>
-            </#if>
-            <#if user.getRole() != 'CONTROL' && user.getRole() != 'EVENT'>
-                <div class="dropdown mt-3">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Формы заявок
-                    </button>
-                    <ul class="dropdown-menu">
-                        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
-                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
-                        <#elseif user.getRole() == 'TECHNOLOGIST'>
-                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                        <#elseif user.getRole() == 'CONSTRUCTOR'>
-                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                        <#elseif user.getRole() == 'OTK'>
-                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
-                        </#if>
-                    </ul>
-                </div>
-            </#if>
-        </div>
-    </div>
-</div>
 <div class="container mb-4">
     <div class="row">
-    <h1 class="text-center mb-4">
-        Меню пользователя
-        <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
-            <i class="bi bi-list" style="color: black"></i>
-        </button>
-    </h1>
+    <h1 class="text-center mb-4">Меню пользователя</h1>
     <div class="card">
         <div class="text-center card-body">
             <div class="user-info mb-4">
@@ -76,7 +37,7 @@
         <nav class="mb-4">
             <ul class="nav justify-content-center">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Главная</a>
+                    <a class="nav-link" href="/">Создать заявку</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Выйти</a>

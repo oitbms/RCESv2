@@ -71,23 +71,8 @@ public class RegistrationsController {
                           @RequestParam String mlmNode,
                           @RequestParam String role,
                           @RequestParam String password,
-                          Map<String, Object> model) {
-//        Employee userFromDb = service.findSingleByField(Employee.class, "name", " username");
-//        if (userFromDb != null) {
-//            model.put("message", "Пользователь уже существует!");
-//            return "registration";
-//        }
-        Employee employee = new Employee();
-        employee.setName(username);
-        employee.setActive(true);
-
-        employee.setRole(role);
-        employee.setMlmNode(MlmNode.valueOf(mlmNode));
-
-        employee.setPassword(password);
-
-        service.save(employee);
-
+                          @RequestParam Long chatId) {
+        Employee employee = service.saveEmployee(username,true,role,mlmNode,password,chatId);
         return "redirect:/admin";
     }
 

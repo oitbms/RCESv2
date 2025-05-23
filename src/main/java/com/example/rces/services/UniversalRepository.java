@@ -5,6 +5,7 @@ import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;
+import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -138,5 +139,16 @@ public class UniversalRepository {
         entityManager.createQuery("DELETE FROM Images e WHERE e.id = :photoId")
                 .setParameter("photoId", photoId)
                 .executeUpdate();
+    }
+
+    public Employee saveEmployee(String username,Boolean status,String role,String mlmNode,String password,Long chatID) {
+        Employee employee = new Employee();
+        employee.setName(username);
+        employee.setRole(role);
+        employee.setActive(status);
+        employee.setMlmNode(MlmNode.valueOf(mlmNode));
+        employee.setPassword(password);
+        employee.setChatId(chatID);
+        return save(employee);
     }
 }

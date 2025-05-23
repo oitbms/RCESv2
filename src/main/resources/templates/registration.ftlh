@@ -10,7 +10,7 @@
 <div class="container">
     <div class="row justify-content-center" style="height: 100vh;">
         <div class="col-md-6">
-            <h2 class="text-center">Add New User</h2>
+            <h2 class="text-center">Добавление нового пользователя</h2>
             <form action="/registration" method="post" class="mt-4">
                 <div class="form-group">
                     <label for="name">Имя пользователя:</label>
@@ -32,14 +32,20 @@
                     <label for="mlmnode">Цех:</label>
                     <select id="mlmnode" name="mlmNode" class="form-control" required>
                         <#list mlmNode as node>
-                            <option value="${node}">${node}</option>
+                            <option value="${node.name()}">${node.getName()}</option>
                         </#list>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Добавить пользователя</button>
+                <div class="form-group">
+                    <label for="chatId">TelegramID:</label>
+                    <input type="number" class="form-control" id="chatId" name="chatId">
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary">Добавить пользователя</button>
+                </div>
             </form>
             <div class="text-center mt-3">
-                <a href="/login">Login</a>
+                <a class="btn btn-primary" href="/menu">Меню</a>
             </div>
         </div>
     </div>
