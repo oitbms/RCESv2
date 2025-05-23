@@ -38,6 +38,7 @@ public class SGController {
 
     @GetMapping
     public String getSGIForm(Model model, Principal principal) {
+        Employee employee = service.findSingleByField(Employee.class,"name", principal.getName());
         List<SGI> sgiList;
         if (!userDetailsService.isControl()) {
             sgiList = service.findAllByField(SGI.class, "employee",
@@ -54,6 +55,7 @@ public class SGController {
                 .map(req -> formatedDate(req.getDesiredDate())).toList();
         List<String> updatePlanDate = sgiList.stream()
                 .map(req -> formatedDate(req.getPlanDate())).toList();
+        model.addAttribute("user", employee);
         model.addAttribute("sgiList", sgiList);
         model.addAttribute("updateDesiredDate", updateDesiredDate);
         model.addAttribute("updatePlanDate", updatePlanDate);

@@ -34,24 +34,26 @@
             <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
                 <a href="http://localhost:2520/sgi" class="list-group-item list-group-item-action btn btn-primary">СГИ</a>
             </#if>
-            <div class="dropdown mt-3">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    Формы заявок
-                </button>
-                <ul class="dropdown-menu">
-                    <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
-                        <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                        <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                        <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
-                    <#elseif user.getRole() == 'TECHNOLOGIST'>
-                        <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                    <#elseif user.getRole() == 'CONSTRUCTOR'>
-                        <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                    <#elseif user.getRole() == 'OTK'>
-                        <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
-                    </#if>
-                </ul>
-            </div>
+            <#if user.getRole() != 'CONTROL' && user.getRole() != 'EVENT'>
+                <div class="dropdown mt-3">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Формы заявок
+                    </button>
+                    <ul class="dropdown-menu">
+                        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
+                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
+                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
+                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
+                        <#elseif user.getRole() == 'TECHNOLOGIST'>
+                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
+                        <#elseif user.getRole() == 'CONSTRUCTOR'>
+                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
+                        <#elseif user.getRole() == 'OTK'>
+                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
+                        </#if>
+                    </ul>
+                </div>
+            </#if>
         </div>
     </div>
 </div>
