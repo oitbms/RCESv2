@@ -1,40 +1,51 @@
 
 $('.history-icon').off("click").on("click", async function () {
     const modal = $('#viewRequestLogs');
-    const head = $('#logsHead');
     const body = $('#logsBody');
+    const empty = $('#logsEmpty');
 
-    head.empty();
     body.empty();
 
+
     const data = await $.get('/api/logs', {id: $(this).data('id')});
-    if (!data || data.length === 0) {
-        head.append('<div class="col">Объект не изменялся</div>');
+    if(data.length === 0) {
+        empty.removeClass('d-none');
         modal.modal('show');
         return;
     }
 
-    head.append(`
-        <div class="col">Дата изменения</div>
-        <div class="col">Пользователь</div>
-        <div class="col">Изменения</div>
-    `);
-
     data.forEach(log => {
-
-        let metadataHtml = '';
-        Object.entries(log.metadata).forEach(([key, value]) => {
-            metadataHtml = metadataHtml + `<div class="col">${key}: ${value}</div>`;
-        });
-
-
-        body.append(`
-            <div class="row">
-                <div class="col">${data.date}</div>
-                <div class="col">${data.userName}</div>
-                ${metadataHtml}
+        const changes = Object.entries(log.metadata).map(([key, value]) => `
+            <div class="d-flex align-items-baseline gap-2">
+                <span class="badge bg-primary bg-opacity-10 text-primary fs-9">${key}</span>
+                <span class="text-muted fs-8">${value}</span>
             </div>
-        `);
+        `).join('');
+
+        const item = `
+            <div class="row gx-4 py-3 align-items-center border-bottom">
+                <div class="col-3">
+                    <div class="d-flex flex-column">
+                        <span class="text-dark fs-8">${log.date}</span>
+                        <span class="text-muted fs-9">${log.date}</span>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar avatar-xs">
+                            <span class="avatar-initials bg-primary text-white">${log.userName[0]}</span>
+                        </div>
+                        <span class="text-dark fs-8">${log.userName}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex flex-column gap-2">
+                        ${changes}
+                    </div>
+                </div>
+            </div>
+        `;
+        body.append(item);
     });
 
     modal.modal('show');
