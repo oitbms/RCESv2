@@ -31,22 +31,20 @@
             <div class="user-info mb-4">
                 <label class="fw-bold">Имя пользователя:</label>
                 <span>${user.getName()}</span><br>
-<#--                <label class="fw-bold">Рабочее место:</label>-->
-<#--                <span>${(user.mlmNode.getName())!""}</span><br>-->
+                <label class="fw-bold">Рабочее место:</label>
+                <span>${(user.mlmNode.getName())!""}</span><br>
             </div>
         <nav class="mb-4">
             <ul class="nav justify-content-center">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Создать заявку</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Выйти</a>
-                </li>
-                <#if user.getRole() == 'ADMIN'>
                     <li class="nav-item">
-                        <a class="nav-link" href="/sgi">Просмотр заданий</a>
+                        <#if user.getRole() == 'ADMIN'>
+                        <a class="btn btn-primary" href="/sgi">СГИ</a>
+                        <a class="btn btn-primary" href="/admin">Пользователи</a>
+                            <#elseif user.getRole() == 'MASTER'>
+                                <a class="btn btn-primary" href="/">Создать заявку</a>
+                        </#if>
+                        <a class="btn btn-primary" href="/logout">Выйти</a>
                     </li>
-                </#if>
             </ul>
         </nav>
         <#if user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'OTK'>

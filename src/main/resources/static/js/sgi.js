@@ -518,4 +518,54 @@ $('#calculateColor').on('click', function () {
         return alert("Цвета пересчитаны");
     });
 });
+document.querySelectorAll('.sgiNumber').forEach(function(td) {
+    let timerId = null;
+    let isLongPress = false;
 
+    function handleDelete() {
+        const rowId = td.closest('tr').dataset.id;
+        if (confirm('Удалить эту строку?')) {
+            fetch('/sgi/delete?id=' + encodeURIComponent(rowId), {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        td.closest('tr').remove();
+                    } else {
+                        alert('Ошибка при удалении');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Ошибка при удалении');
+                });
+        }
+    }
+
+    function startHold(e) {
+        isLongPress = false;
+        timerId = setTimeout(function() {
+            isLongPress = true;
+            handleDelete();
+        }, 1000);
+    }
+
+    function cancelHold(e) {
+        clearTimeout(timerId);
+    }
+
+
+    td.addEventListener('touchstart', startHold);
+    td.addEventListener('touchend', function(e) {
+        clearTimeout(timerId);
+        if (!isLongPress) {
+
+        }
+    });
+    td.addEventListener('touchcancel', cancelHold);
+    td.addEventListener('touchmove', cancelHold);
+
+    td.addEventListener('mousedown', startHold);
+    td.addEventListener('mouseup', cancelHold);
+    td.addEventListener('mouseleave', cancelHold);
+});

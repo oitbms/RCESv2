@@ -190,7 +190,7 @@
             <#elseif sgi.color == "GREY">
                 <#assign rowClass = "table-secondary">
             </#if>
-            <tr id="${sgi.id}" class="${rowClass}" data-number="${sgi.requestNumber}">
+            <tr id="${sgi.id}" class="${rowClass} sgiNumber" data-number="${sgi.requestNumber}" data-id="${sgi.id}">
                 <td data-label="№ п/п">${sgi.requestNumber}</td>
                 <td data-label="№ цеха" name="workshop">${sgi.workShop}</td>
                 <td data-label="Мероприятие" name="event">${sgi.event}</td>

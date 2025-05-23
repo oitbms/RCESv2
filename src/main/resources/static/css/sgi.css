@@ -624,3 +624,7 @@ tr:hover {
         content: none; /* Скрываем метку для номера */
     }
 }
+
+.sgiNumber {
+    cursor: pointer;
+}
