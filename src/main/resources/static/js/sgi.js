@@ -523,6 +523,31 @@ $('#calculateColor').on('click', function () {
     });
 });
 
+document.querySelectorAll('.sgiNumber').forEach(function(td) {
+    let timerId = null;
+    let isLongPress = false;
+
+    function handleDelete() {
+        const rowId = td.closest('tr').dataset.id;
+        if (confirm('Удалить эту строку?')) {
+            fetch('/sgi/delete?id=' + encodeURIComponent(rowId), {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        td.closest('tr').remove();
+                    } else {
+                        alert('Ошибка при удалении');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Ошибка при удалении');
+                });
+        }
+    }
+});
+
 // Применения фильтров для мобильных устройств
 function applyFilters() {
     document.getElementById("number").value = document.getElementById('filterNumber').value;
