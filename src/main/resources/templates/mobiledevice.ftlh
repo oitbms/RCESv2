@@ -85,7 +85,7 @@
     <div class="message">
         Эта страница не доступна на мобильных устройствах.
         <br>
-        <a href="/technologistbid/create" style="flex: auto">Создать заявку</a>
+        <a href="/menu" style="flex: auto">Меню</a>
     </div>
 </div>
 </body>

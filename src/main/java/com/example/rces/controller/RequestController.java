@@ -1,5 +1,6 @@
 package com.example.rces.controller;
 
+import com.example.rces.configuration.DeviceDetector;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
@@ -11,6 +12,7 @@ import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,6 +45,9 @@ public class RequestController {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private DeviceDetector detector;
 
     @GetMapping("/create")
     public String getCreateBidForm(@RequestParam String type, Model model, Principal principal) {
@@ -132,7 +137,11 @@ public class RequestController {
 
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
+                                 HttpServletRequest httpRequest,
                                  Model model,Principal principal) {
+        if (detector.isMobile(httpRequest)) {
+            return "/mobiledevice";
+        }
         Employee employee = service.findSingleByField(Employee.class,"name",principal.getName());
         List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
         List<String> formattedDates = requests.stream()

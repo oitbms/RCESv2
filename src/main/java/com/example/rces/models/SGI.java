@@ -47,7 +47,7 @@ public class SGI {
     @Column(name = "event")
     private String event;
 
-    @Column(name = "actions")
+    @Column(name = "actions", length = 499)
     private String actions;
 
     @Column(name = "department")

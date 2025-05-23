@@ -215,7 +215,7 @@ async function deletePhoto(index) {
 }
 
 // Закрытие модальных окон
-export function closeModal(modalId) {
+function closeModal(modalId) {
     document.getElementById(modalId)?.classList.remove('open');
 }
 
