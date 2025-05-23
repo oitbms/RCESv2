@@ -523,6 +523,27 @@ $('#calculateColor').on('click', function () {
     });
 });
 
+// Применения фильтров для мобильных устройств
+function applyFilters() {
+    document.getElementById("number").value = document.getElementById('filterNumber').value;
+    document.getElementById("workshop").value = document.getElementById('filterWorkshop').value;
+    document.getElementById("department").value = document.getElementById('filterDepartment').value;
+    document.getElementById("emploes").value = document.getElementById('employeeSelect2').value;
+
+    const filterDate = document.getElementById('filterPlanDate').value;
+    if (filterDate) {
+        const [year, month, day] = filterDate.split('-');
+        const formattedDate = `${day}.${month}.${year}`;
+        document.getElementById("planDate").value = formattedDate;
+    } else {
+        document.getElementById("planDate").value = '';
+    }
+    const agreedData = document.getElementById('filterCompleted').value;
+
+    filterData();
+    $('#mobileFilterModal').modal('hide');
+}
+
 document.querySelectorAll('.sgiNumber').forEach(function(td) {
     let timerId = null;
     let isLongPress = false;
@@ -546,24 +567,31 @@ document.querySelectorAll('.sgiNumber').forEach(function(td) {
                 });
         }
     }
-});
 
-// Применения фильтров для мобильных устройств
-function applyFilters() {
-    document.getElementById("number").value = document.getElementById('filterNumber').value;
-    document.getElementById("workshop").value = document.getElementById('filterWorkshop').value;
-    document.getElementById("department").value = document.getElementById('filterDepartment').value;
-    document.getElementById("emploes").value = document.getElementById('employeeSelect2').value;
-
-    const filterDate = document.getElementById('filterPlanDate').value;
-    if (filterDate) {
-        const [year, month, day] = filterDate.split('-');
-        const formattedDate = `${day}.${month}.${year}`;
-        document.getElementById("planDate").value = formattedDate;
-    } else {
-        document.getElementById("planDate").value = '';
+    function startHold(e) {
+        isLongPress = false;
+        timerId = setTimeout(function() {
+            isLongPress = true;
+            handleDelete();
+        }, 1000);
     }
 
-    filterData();
-    $('#mobileFilterModal').modal('hide');
-}
+    function cancelHold(e) {
+        clearTimeout(timerId);
+    }
+
+
+    td.addEventListener('touchstart', startHold);
+    td.addEventListener('touchend', function(e) {
+        clearTimeout(timerId);
+        if (!isLongPress) {
+
+        }
+    });
+    td.addEventListener('touchcancel', cancelHold);
+    td.addEventListener('touchmove', cancelHold);
+
+    td.addEventListener('mousedown', startHold);
+    td.addEventListener('mouseup', cancelHold);
+    td.addEventListener('mouseleave', cancelHold);
+});

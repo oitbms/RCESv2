@@ -600,3 +600,6 @@ tr:hover {
         gap: 10px;
     }
 }
+.sgiNumber {
+    cursor: pointer;
+}
