@@ -191,30 +191,30 @@
                 <#assign rowClass = "table-secondary">
             </#if>
             <tr id="${sgi.id}" class="${rowClass}" data-number="${sgi.requestNumber}">
-                <td data-label="№ п/п">${sgi.requestNumber}</td>
+                <td data-label="№ мероприятия">${sgi.requestNumber}</td>
                 <td data-label="№ цеха" name="workshop">${sgi.workShop}</td>
                 <td data-label="Мероприятие" name="event">${sgi.event}</td>
                 <td data-label="Действия" name="actions">${sgi.actions}</td>
                 <td data-label="Отдел" name="department">${sgi.department.getName()}</td>
                 <td data-label="Ответственный" name="emploes">${(sgi.employee.getName())!""}</td>
-                <td data-label="Желаем. срок" name="desiredDate">${updateDesiredDate[reqIndex]}</td>
+                <td data-label="Желаемый срок" name="desiredDate">${updateDesiredDate[reqIndex]}</td>
                 <td data-label="Примечание" name="note">${sgi.note!""}</td>
-                <td data-label="План. срок" name="planDate">
+                <td data-label="Плановый срок" name="planDate">
                     <#if updatePlanDate[reqIndex]??>${updatePlanDate[reqIndex]}<#else></#if>
                 </td>
                 <td data-label="Комментарий" name="comment">${sgi.comment!''}</td>
-                <td style="gap: 8px;">
+                <td data-label="Указать плановый срок" style="gap: 8px;">
                     <button type="button" class="btn btn-info btn-sm"
-                            onclick="change('${sgi.id}','...')">
+                            onclick="change('${sgi.id}')">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                 </td>
-                <td>
+                <td data-label="Факт выполнения">
                     <button type="button" class="btn btn-info btn-sm" onclick="openFactExecutionModal('${sgi.id}')">
                         ✔
                     </button>
                 </td>
-                <td data-label="Статус" class="text-center" name="agreed">
+                <td data-label="Статус мероприятия" class="text-center" name="agreed">
                     <button type="button"
                             class="btn btn-link p-0 toggle-agree"
                             data-sgi-id="${sgi.id}"
@@ -228,10 +228,10 @@
         </tbody>
     </table>
     <div class="d-flex justify-content-center gap-2">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">Добавить
-            новое задание
+        <button type="button" class="btn btn-primary fixed-mobile-btn" data-bs-toggle="modal" data-bs-target="#createModal">
+            Добавить задание
         </button>
-        <button type="button" class="btn btn-primary" id="clearButton">
+        <button type="button" class="btn btn-primary d-none d-md-inline-block" id="clearButton">
             Очистить фильтры
         </button>
         <!--<button type="button" class="btn btn-info" id="calculateColor">

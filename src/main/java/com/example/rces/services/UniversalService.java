@@ -8,14 +8,13 @@ import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -134,8 +133,14 @@ public class UniversalService {
         repository.deletePhoto(photoId);
     }
 
-    public Employee saveEmployee(String name,Boolean status,String role,String mlmNode,String password,Long chatID) {
-        return repository.saveEmployee(name,status,role,mlmNode,password,chatID);
+    public Employee saveEmployee(String name, Boolean status, String role, String mlmNode, String password, Long chatID) {
+        return repository.saveEmployee(name, status, role, mlmNode, password, chatID);
+    }
+
+    @Scheduled(cron = "0 5 9 * * *") // каждый день в 09:00
+    @Transactional
+    public void notifyExpiredDeviations() {
+        List<SGI> sgiList = findAll(SGI.class);
     }
 
 }

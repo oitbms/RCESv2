@@ -17,11 +17,7 @@ public class Home {
 
     @GetMapping
     public String home(HttpServletRequest request) {
-        if (detector.isMobile(request)) {
-            return "home";
-        } else {
-            return "redirect:/menu";
-        }
+        return "redirect:/menu";
     }
 
     @GetMapping("mobiledevice")
