@@ -238,21 +238,30 @@
     </div>
 </div>
 
-<div class="modal fade" id="viewRequestLogs" tabindex="-1" role="dialog" aria-labelledby="viewRequestLogsLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+<div class="modal fade" id="viewRequestLogs" tabindex="-1" aria-labelledby="viewRequestLogsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">История изменений</h5>
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fs-5 fw-semibold">История изменений</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
-            <div class="modal-body">
-                <div class="container">
-                    <div id="logsHead" class="row align-items-start">
-                        <!-- Заголовки -->
+            <div class="modal-body p-0">
+                <div class="container-fluid">
+                    <div class="row gx-4 py-3 bg-light fw-semibold small border-bottom">
+                        <div class="col-3">Дата изменения</div>
+                        <div class="col-3">Пользователь</div>
+                        <div class="col-6">Изменения</div>
                     </div>
-                    <div id="logsBody" class="row align-items-end">
-                        <!-- Данные -->
+                    <div id="logsBody" class="divide-y" style="--bs-border-opacity: 0.1;">
+                    </div>
+                    <div id="logsEmpty" class="text-center py-5 d-none">
+                        <div class="mb-3">
+                            <svg class="bi bi-clock-history text-muted" width="48" height="48" fill="currentColor">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-muted mb-0">Нет данных об изменениях</p>
                     </div>
                 </div>
             </div>
