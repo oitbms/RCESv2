@@ -132,13 +132,15 @@ public class RequestController {
 
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
-                                 Model model) {
+                                 Model model,Principal principal) {
+        Employee employee = service.findSingleByField(Employee.class,"name",principal.getName());
         List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
         List<String> updateDate = requests.stream()
                 .map(req -> formatedDate(req.getUpdateDate())).toList();
+        model.addAttribute("user", employee);
         model.addAttribute("bidList", requests);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("updateDateList", updateDate);
