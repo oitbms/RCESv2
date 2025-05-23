@@ -16,6 +16,28 @@
 </head>
 <body>
 <div>
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Функции</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="list-group" style="width: 200px;">
+                <a href="/menu" class="list-group-item list-group-item-action btn btn-primary mb-2">Меню</a>
+                <a href="/sgi" class="list-group-item list-group-item-action btn btn-primary">СГИ</a>
+                <div class="dropdown mt-3">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Формы заявок
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ</a></li>
+                        <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
+                        <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
     <table id="sgiTable" class="table table-hover">
             <thead>
             <tr>
@@ -204,6 +226,10 @@
         <!--<button type="button" class="btn btn-info" id="calculateColor">
             Пересчитать цвета
         </button>-->
+        <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
+                <i class="bi bi-list" style="color: black"></i>
+        </button>
+
     </div>
 
         <div id="pagination" class="pagination mt-4"></div>
