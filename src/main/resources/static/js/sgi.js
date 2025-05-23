@@ -447,6 +447,13 @@ $(document).ready(function () {
         filterData();
         if ($('#mobileFilterModal').is(':visible')) {
             $('#mobileFilterModal').modal('hide');
+            //Очистка фильтров
+            document.getElementById('filterNumber').value = '';
+            document.getElementById('filterWorkshop').value = '';
+            document.getElementById('filterDepartment').value = '';
+            document.getElementById('employeeSelect2').value = '';
+            document.getElementById('filterPlanDate').value = '';
+            document.getElementById('filterDesiredDate').value = '';
         }
     });
     filterData();
@@ -530,20 +537,23 @@ function applyFilters() {
     document.getElementById("department").value = document.getElementById('filterDepartment').value;
     document.getElementById("emploes").value = document.getElementById('employeeSelect2').value;
 
-    const filterDate = document.getElementById('filterPlanDate').value;
-    if (filterDate) {
-        const [year, month, day] = filterDate.split('-');
+    const filterPlanDate = document.getElementById('filterPlanDate').value;
+    if (filterPlanDate) {
+        const [year, month, day] = filterPlanDate.split('-');
         const formattedDate = `${day}.${month}.${year}`;
         document.getElementById("planDate").value = formattedDate;
-    } else {
-        document.getElementById("planDate").value = '';
+    }
+    const filterDesiredDate = document.getElementById('filterDesiredDate').value;
+    if (filterDesiredDate) {
+        const [year, month, day] = filterDesiredDate.split('-');
+        const formattedDate = `${day}.${month}.${year}`;
+        document.getElementById("desiredDate").value = formattedDate;
     }
     const agreedData = document.getElementById('filterCompleted').value;
 
     filterData();
     $('#mobileFilterModal').modal('hide');
 }
-
 document.querySelectorAll('.sgiNumber').forEach(function(td) {
     let timerId = null;
     let isLongPress = false;

@@ -449,8 +449,8 @@
                             <label for="filterDepartment" class="form-label">Ответственный отдел</label>
                             <select class="form-select" id="filterDepartment">
                                 <option value="">Выберите отдел</option>
-                                <option value="ОГМ">ОГМ</option>
-                                <option value="ОРС">ОРС</option>
+                                <option value="mechanic">ОГМ</option>
+                                <option value="builder">ОРС</option>
                             </select>
                         </div>
 
@@ -461,6 +461,12 @@
                                     onfocus="loadEmployeeFields(2)" name="employeesModal">
                                 <option value="">Выберите сотрудника</option>
                             </select>
+                        </div>
+
+                        <!-- Желаемый срок -->
+                        <div class="mb-3">
+                            <label for="filterDesiredDate" class="form-label">Желаемый срок</label>
+                            <input type="date" class="form-control" id="filterDesiredDate">
                         </div>
 
                         <!-- Планируемый срок -->
