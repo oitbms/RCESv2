@@ -134,4 +134,8 @@ public class UniversalService {
         repository.deletePhoto(photoId);
     }
 
+    public Employee saveEmployee(String name,Boolean status,String role,String mlmNode,String password,Long chatID) {
+        return repository.saveEmployee(name,status,role,mlmNode,password,chatID);
+    }
+
 }
