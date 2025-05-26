@@ -351,17 +351,27 @@ $(document).ready(function () {
         filterData();
     });
 
-      filterData = () => {
+      filterData = (agreementStatus) => {
         const state = $('#statusBtn').data('state');
         let agreedFilter = '';
 
-        if (state === 'done') {
-            agreedFilter = 'выполнено';
-        } else if (state === 'not_done') {
-            agreedFilter = 'не выполнено';
-        } else {
-            agreedFilter = '';
-        }
+          if (agreementStatus !== undefined && agreementStatus !== null) {
+              if (agreementStatus === 'true') {
+                  agreedFilter = 'выполнено';
+              } else if (agreementStatus === 'false') {
+                  agreedFilter = 'не выполнено';
+              } else {
+                  agreedFilter = '';
+              }
+          } else {
+              if (state === 'done') {
+                  agreedFilter = 'выполнено';
+              } else if (state === 'not_done') {
+                  agreedFilter = 'не выполнено';
+              } else {
+                  agreedFilter = '';
+              }
+          }
 
         // Получаем значения других фильтров
         const filters = {
@@ -378,9 +388,9 @@ $(document).ready(function () {
         };
 
         // Фильтруем строки таблицы
-        filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
-            return checkRowFilters(row, filters, agreedFilter);
-        });
+          filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
+              return checkRowFilters(row, filters, agreedFilter);
+            });
 
         showPage(1);
     };
@@ -397,6 +407,7 @@ $(document).ready(function () {
         const planDate = $(row).find('td:nth-child(9)').text().toLowerCase();
         const comment = $(row).find('td:nth-child(10)').text().toLowerCase();
         const agreedData = $(row).find('button.toggle-agree').data('agreed') ? 'выполнено' : 'не выполнено';
+
 
         return (
             number.includes(filters.number) &&
@@ -532,6 +543,7 @@ $('#calculateColor').on('click', function () {
 
 // Применения фильтров для мобильных устройств
 function applyFilters() {
+
     document.getElementById("number").value = document.getElementById('filterNumber').value;
     document.getElementById("workshop").value = document.getElementById('filterWorkshop').value;
     document.getElementById("department").value = document.getElementById('filterDepartment').value;
@@ -549,9 +561,9 @@ function applyFilters() {
         const formattedDate = `${day}.${month}.${year}`;
         document.getElementById("desiredDate").value = formattedDate;
     }
-    const agreedData = document.getElementById('filterCompleted').value;
+    const agreementStatus = document.getElementById('filterStatusModal').value;
 
-    filterData();
+    filterData(agreementStatus);
     $('#mobileFilterModal').modal('hide');
 }
 document.querySelectorAll('.sgiNumber').forEach(function(td) {

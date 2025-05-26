@@ -476,9 +476,13 @@
                         </div>
 
                         <!-- Завершено -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="filterCompleted">
-                            <label class="form-check-label" for="filterCompleted">Завершено</label>
+                        <div class="mb-3">
+                            <label for="filterStatusModal" class="form-label">Статус задания</label>
+                            <select class="form-select" id="filterStatusModal">
+                                <option value="">Все</option>
+                                <option value="true">Завершено</option>
+                                <option value="false">Не завершено</option>
+                            </select>
                         </div>
                     </form>
                 </div>
