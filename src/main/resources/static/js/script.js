@@ -240,14 +240,17 @@ document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => 
     button.addEventListener('click', () => {
         const {modalId, inputId, hiddenEntity} = button.dataset;
         const modal = document.getElementById(modalId);
-
         const input = document.getElementById(inputId);
         const hidden = document.getElementById(hiddenEntity);
 
         let selected = new Map();
         try {
-            JSON.parse(hidden.value || "[]").forEach(e => selected.set(e.name, e));
-        } catch {
+            const rawValue = hidden.value.replace(/([,{[]|})\s*"(?!:)/g, '$1"');
+            const parsed = JSON.parse(rawValue || "[]");
+            parsed.forEach(e => e?.name && selected.set(e.name, e));
+        } catch (e) {
+            console.error('JSON recovery:', e);
+            hidden.value = "[]";
         }
 
         const updateUI = () => {
@@ -275,16 +278,18 @@ document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => 
         };
         document.addEventListener('click', onClickOutside);
 
-        const interval = setInterval(() => {
+        // Обработка появления элементов с использованием MutationObserver
+        const observer = new MutationObserver((mutations, obs) => {
             const selectables = modal.querySelectorAll('.selectable');
             if (selectables.length > 0) {
-                clearInterval(interval);
+                obs.disconnect();
                 selectables.forEach(li => {
                     const clone = li.cloneNode(true);
                     li.replaceWith(clone);
                     const entity = JSON.parse(decodeURIComponent(clone.dataset.entity));
-                    if (selected.has(entity.name)) clone.classList.add('selected');
-
+                    if (selected.has(entity.name)) {
+                        clone.classList.add('selected');
+                    }
                     clone.addEventListener('click', () => {
                         if (selected.has(entity.name)) {
                             selected.delete(entity.name);
@@ -297,7 +302,18 @@ document.querySelectorAll('.openModal[data-multiple="true"]').forEach(button => 
                     });
                 });
             }
-        }, 50);
+        });
+
+        observer.observe(modal.querySelector('.modal-list'), {
+            childList: true,
+            subtree: true
+        });
+
+        // Проверка на случай, если элементы уже загружены
+        const initialSelectables = modal.querySelectorAll('.selectable');
+        if (initialSelectables.length > 0) {
+            observer.takeRecords();
+        }
     });
 });
 

@@ -232,7 +232,7 @@
                 <input type="text" id="inconsistencyName" readonly class="form-input"
                        value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
                 <input type="hidden" id="inconsistencyJson" name="inconsistency"
-                       value='[<#list bid.inconsistency as i>{"name": "${i.getName()}"<#if i_has_next>, </#if></#list>]'>
+                       value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
                 <button type="button" class="openModal btn-modern"
                         data-endpoint="inconsistency"
                         data-input-id="inconsistencyName"

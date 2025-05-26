@@ -9,10 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -100,6 +97,7 @@ public class ApiController {
         List<RequestLog> logs = service.getLogs(id);
         return ResponseEntity.ok(logs.stream()
                 .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
+                .sorted(Comparator.comparing(LogPayload::date))
                 .collect(Collectors.toList()));
     }
 
