@@ -27,8 +27,12 @@ public class RegistrationsController {
     private UniversalService service;
 
     @GetMapping("/admin")
-    public String admin(Model model) {
+    public String admin(Model model,Principal principal) {
+        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
+        List<Role> roles = List.of(Role.values());
         model.addAttribute("users", service.findAll(Employee.class));
+        model.addAttribute("user", employee);
+        model.addAttribute("roles", roles);
         return "admin";
     }
 
@@ -77,7 +81,7 @@ public class RegistrationsController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         Employee user = service.findById(Employee.class, id);
         if (user != null) {
             service.delete(user);
@@ -87,18 +91,20 @@ public class RegistrationsController {
         }
     }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable UUID id,
-                                        @RequestParam(required = false) String username,
-                                        @RequestParam(required = false) Boolean state) {
+    @PostMapping("/update")
+    public String updateUser(@RequestParam Long id,
+                                        @RequestParam(required = false) String userName,
+                                        @RequestParam(required = false) String roleName,
+                                        @RequestParam(required = false) Long chatName,
+                                        @RequestParam(required = false) Boolean active) {
         Employee user = service.findById(Employee.class, id);
         if (user != null) {
-            user.setName(username);
-            user.setActive(state);
+            user.setName(userName);
+            user.setRole(roleName);
+            user.setChatId(chatName);
+            user.setActive(active);
             service.save(user);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
         }
+        return "redirect:/admin";
     }
 }
