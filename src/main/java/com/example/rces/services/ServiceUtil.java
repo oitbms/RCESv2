@@ -1,12 +1,14 @@
 package com.example.rces.services;
 
 import com.example.rces.models.*;
+import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import jakarta.ws.rs.ForbiddenException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +18,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServiceUtil {
 
@@ -252,46 +256,79 @@ public class ServiceUtil {
 
     public static void createLog(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {
         try {
-            Map<String, String> metadata = new HashMap<>();
+            Map<String, String> metadata = new LinkedHashMap<>();
             Class<?> clazz = oldRequest.getClass();
+            Set<String> ignoredFields = Set.of(
+                    "id", "version", "updateDate", "closeDate", "dateWork", "log", "typeRequest", "messageId",
+                    "createdBy", "updateBy", "closedEmployee", "images");
             List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
-                    .filter(f -> !Set.of("version", "updateBy", "updateDate", "log").contains(f.getName()))
+                    .filter(f -> !ignoredFields
+                            .contains(f.getName()))
                     .toList();
 
             for (Field field : fieldList) {
-
                 field.setAccessible(true);
-                String fieldName = field.getName();
-                String oldStr = field.get(oldRequest) == null ? "null" :
-                        (field.getType().isAnnotationPresent(Entity.class) ?
-                                getEntityFieldValue(field.get(oldRequest)) :
-                                field.get(oldRequest).toString());
-                String newStr = field.get(newRequest) == null ? "null" :
-                        (field.getType().isAnnotationPresent(Entity.class) ?
-                                getEntityFieldValue(field.get(newRequest)) :
-                                field.get(newRequest).toString());
+                String fieldName = field.getAnnotation(DisplayName.class) != null ? field.getAnnotation(DisplayName.class).value() : field.getName();
+                String oldStr = ObjectUtils.isEmpty(field.get(oldRequest))
+                        ? "не назначено"
+                        : getFieldValue(field, oldRequest);
+                String newStr = ObjectUtils.isEmpty(field.get(newRequest))
+                        ? "не назначено"
+                        : getFieldValue(field, newRequest);
 
                 if (!Objects.equals(oldStr, newStr)) {
-                    metadata.put(fieldName, oldStr + "->" + newStr);
+                    metadata.put(fieldName, oldStr + " -> " + newStr);
                 }
             }
 
             if (!metadata.isEmpty()) {
-                service.save(new RequestLog(newRequest, updaterUser, metadata));
+                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+                List<RequestLog> logs = service.findAllByField(RequestLog.class, "request", oldRequest)
+                        .stream()
+                        .filter(log -> log.getDate().equals(now)).toList();
+                if (logs.isEmpty()) {
+                    RequestLog log = new RequestLog(newRequest, updaterUser, metadata);
+                    service.save(log);
+                    return;
+                }
+                for (RequestLog log : logs) {
+                    log.addToMetadata(metadata);
+                    service.save(log);
+                }
             }
         } catch (Exception e) {
             throw new ApplicationContextException("Ошибка при создании лога", e);
         }
     }
 
-    private static String getEntityFieldValue(Object entity) {
-        try {
-            Field nameField = entity.getClass().getDeclaredField("name");
+    private static String getFieldValue(Field field, Object clazz) throws Exception {
+        if (field.getType().isAnnotationPresent(Entity.class)) {
+            Field entity = clazz.getClass().getDeclaredField(field.getName());
+            entity.setAccessible(true);
+            Field nameField = entity.getType().getDeclaredField("name");
             nameField.setAccessible(true);
-            Object value = nameField.get(entity);
+            Object value = nameField.get(entity.get(clazz));
             return value != null ? value.toString() : "null";
-        } catch (Exception e) {
-            return entity.toString();
+        } else if (field.getType().isEnum()) {
+            Class<?> enumClass = clazz.getClass().getDeclaredField(field.getName()).getType();
+            return enumClass.getDeclaredMethod("getName").invoke(field.get(clazz)).toString();
+        } else if (Set.class.isAssignableFrom(field.getType())) {
+            Set<?> set = (Set<?>) field.get(clazz);
+            return set.stream()
+                    .map(item -> {
+                        try {
+                            String value = item.getClass().getDeclaredMethod("getName").invoke(item).toString();
+                            return value != null && !value.isBlank() ? value : "не назначено";
+                        } catch (Exception e) {
+                            return item.toString();
+                        }
+                    }).collect(Collectors.joining(", "));
+        } else {
+            Object value = field.get(clazz);
+            if (value instanceof LocalDateTime) {
+                value = formatedDate((LocalDateTime) value);
+            }
+            return (value != null && !value.toString().isBlank()) ? value.toString() : "не назначено";
         }
     }
 }

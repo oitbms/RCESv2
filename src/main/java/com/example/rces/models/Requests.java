@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -35,6 +36,7 @@ public class Requests implements Cloneable {
 
     @Column(name = "workDate")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DisplayName("Дата начала работы")
     private LocalDateTime dateWork;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -57,70 +59,88 @@ public class Requests implements Cloneable {
     private Integer requestNumber;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @DisplayName("Ответственный")
     private Employee employee;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @DisplayName("Заказ клиента")
     private CustomerOrder customerOrder;
 
     @Column(name = "reason")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Причина вызова")
     private GeneralReason reason;
 
     @Column(name = "qty")
+    @DisplayName("Кол-во деталей к контролю")
     private Integer qty;
 
     @ElementCollection
     @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
     @Column(name = "inconsistency")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Причины несоответствий")
     private Set<Inconsistency> inconsistency;
 
     @Column(name = "mlm_node")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Цех")
     private MlmNode mlmNode;
 
     @Column(name = "item")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Тип ТМЦ")
     private Item item;
 
     @Column(name = "status_id")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Статус")
     private Status status;
 
     @Column(name = "comment")
+    @DisplayName("Комментарий")
     private String comment;
 
     @Column(name = "reason_wr")
+    @DisplayName("Тип контроля")
     private String reason_wr;
 
     @Column(name = "description")
+    @DisplayName("Описание решения")
     private String description;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DisplayName("Прикрепленные фото")
     private List<Images> images = new ArrayList<>();
 
     @Column(name = "closed_date")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DisplayName("Дата закрытия заявки")
     private LocalDateTime closeDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "closed_employee")
+    @DisplayName("Закрывший заявку")
     private Employee closedEmployee;
 
     @Column(name = "chat_id")
+    @DisplayName("Идентификатор чата ТГ")
     private Long chatId;
 
     @Column(name = "message_id")
+    @DisplayName("Идентификатор сообщения")
     private Integer messageId;
 
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Оценка работы ответственного")
     private Appraisal score;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequestLog> log = new ArrayList<>();
 
     @Column(name = "control")
+    @DisplayName("Тип контроля")
     private String control;
 
     public String getControl() {
@@ -177,7 +197,7 @@ public class Requests implements Cloneable {
 
     //Если старая версия не в работе и новая версия в работе
     public void setDateWork(LocalDateTime dateWork) {
-        if (version<= 1&& status.equals(Status.InWork)) {
+        if (version <= 1 && status.equals(Status.InWork)) {
             this.dateWork = dateWork;
         }
     }

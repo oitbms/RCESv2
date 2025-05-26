@@ -1,15 +1,23 @@
 
+// История изменений
 $('.history-icon').off("click").on("click", async function () {
     const modal = $('#viewRequestLogs');
     const body = $('#logsBody');
-    const empty = $('#logsEmpty');
 
     body.empty();
 
-
     const data = await $.get('/api/logs', {id: $(this).data('id')});
     if(data.length === 0) {
-        empty.removeClass('d-none');
+        body.append(`
+        <div id="logsEmpty" class="text-center py-5">
+            <div class="mb-3">
+                <svg class="bi bi-clock-history text-muted" width="48" height="48" fill="currentColor">
+                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>
+            </div>
+            <p class="text-muted mb-0">Нет данных об изменениях</p>
+        </div>`)
         modal.modal('show');
         return;
     }
@@ -22,12 +30,21 @@ $('.history-icon').off("click").on("click", async function () {
             </div>
         `).join('');
 
+        const formatDateTime = (dateString) => {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes}`;
+        };
+
         const item = `
             <div class="row gx-4 py-3 align-items-center border-bottom">
                 <div class="col-3">
                     <div class="d-flex flex-column">
-                        <span class="text-dark fs-8">${log.date}</span>
-                        <span class="text-muted fs-9">${log.date}</span>
+                        <span class="text-dark fs-8">${formatDateTime(log.date)}</span>
                     </div>
                 </div>
                 <div class="col-3">
@@ -118,11 +135,11 @@ $(document).ready(function () {
         const dateCreate = $(row).find('td:nth-child(10)').text().toLowerCase();
         const changedBy = $(row).find('td:nth-child(11)').text().toLowerCase();
         // Проверка наличия поля "Тип контроля" и его значения
-        let controlMatch = true; // По умолчанию считаем, что совпадение есть
-        const controlInput = $('#control'); // Получаем элемент ввода для типа контроля
-        if (controlInput.length > 0) { // Проверяем, существует ли элемент
-            const control = $(row).find('td:nth-child(12)').text().toLowerCase(); // Получаем текст из ячейки
-            controlMatch = control.includes(controlInput.val().toLowerCase()); // Проверяем совпадение
+        let controlMatch = true;
+        const controlInput = $('#control');
+        if (controlInput.length > 0) {
+            const control = $(row).find('td:nth-child(12)').text().toLowerCase();
+            controlMatch = control.includes(controlInput.val().toLowerCase());
         }
 
 
@@ -138,7 +155,7 @@ $(document).ready(function () {
             date.includes($('#date').val().toLowerCase()) &&
             dateCreate.includes($('#dateCreate').val().toLowerCase()) &&
             changedBy.includes($('#changedBy').val().toLowerCase()) &&
-            controlMatch // Включаем результат проверки типа контроля
+            controlMatch
         );
     };
 

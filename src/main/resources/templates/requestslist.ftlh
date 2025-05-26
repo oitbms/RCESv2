@@ -266,15 +266,6 @@
                     </div>
                     <div id="logsBody" class="divide-y" style="--bs-border-opacity: 0.1;">
                     </div>
-                    <div id="logsEmpty" class="text-center py-5 d-none">
-                        <div class="mb-3">
-                            <svg class="bi bi-clock-history text-muted" width="48" height="48" fill="currentColor">
-                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                            </svg>
-                        </div>
-                        <p class="text-muted mb-0">Нет данных об изменениях</p>
-                    </div>
                 </div>
             </div>
         </div>

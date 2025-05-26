@@ -4,7 +4,8 @@ import com.example.rces.configuration.HashMapConverter;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class RequestLog {
 
     @Column(columnDefinition = "JSON")
     @Convert(converter = HashMapConverter.class)
-    private Map<String, String> metadata = new HashMap<>();
+    private Map<String, String> metadata = new LinkedHashMap<>();
 
     public UUID getId() {
         return id;
@@ -70,9 +71,26 @@ public class RequestLog {
         this.metadata = metadata;
     }
 
+    public void addToMetadata(Map<String, String> newMetadata) {
+        newMetadata.forEach((key, newValue) -> {
+            if (metadata.containsKey(key)) {
+                String existingValue = metadata.get(key);
+                if (!newValue.equals(existingValue)) {
+                    int version = 2;
+                    while (metadata.containsKey(key + " v." + version)) {
+                        version++;
+                    }
+                    metadata.put(key + " v." + version, newValue);
+                }
+            } else {
+                metadata.put(key, newValue);
+            }
+        });
+    }
+
     public RequestLog(Requests request, Employee user, Map<String, String> metadata) {
         this.request = request;
-        this.date = LocalDateTime.now();
+        this.date = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         this.user = user;
         this.metadata = metadata;
     }
