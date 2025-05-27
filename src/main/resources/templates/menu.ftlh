@@ -14,16 +14,18 @@
             border-radius: 1rem; /* закругление углов */
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* тень для карточки */
         }
-        .nav-link {
-            font-weight: bold; /* выделение ссылок на навигацию */
-        }
         .taq{
             white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+            .container.mb-4 {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container mb-4">
+<div class="container mb-5">
     <div class="row">
     <h1 class="text-center mb-4">Меню пользователя</h1>
     <div class="card">
@@ -31,8 +33,8 @@
             <div class="user-info mb-4">
                 <label class="fw-bold">Имя пользователя:</label>
                 <span>${user.getName()}</span><br>
-                <label class="fw-bold">Рабочее место:</label>
-                <span>${(user.mlmNode.getName())!""}</span><br>
+<#--                <label class="fw-bold">Рабочее место:</label>-->
+<#--                <span>${(user.mlmNode.getName())!""}</span><br>-->
             </div>
         <nav class="mb-4">
             <ul class="nav justify-content-center">
@@ -40,8 +42,9 @@
                         <#if user.getRole() == 'ADMIN'>
                         <a class="btn btn-primary" href="/sgi">СГИ</a>
                         <a class="btn btn-primary" href="/admin">Пользователи</a>
+                        <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'MASTER'>
-                                <a class="btn btn-primary" href="/">Создать заявку</a>
+                                <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                         </#if>
                         <a class="btn btn-primary" href="/logout">Выйти</a>
                     </li>

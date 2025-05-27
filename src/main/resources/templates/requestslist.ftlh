@@ -35,9 +35,9 @@
                     </button>
                     <ul class="dropdown-menu">
                         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
-                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
+                            <li><a class="dropdown-item" href="/requestslist/technologist">Заявки для ОГТ </a></li>
+                            <li><a class="dropdown-item" href="/requestslist/constructor">Заявки для ОГК</a></li>
+                            <li><a class="dropdown-item" href="/requestslist/otk">Заявки для ОТК</a></li>
                         <#elseif user.getRole() == 'TECHNOLOGIST'>
                             <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
                         <#elseif user.getRole() == 'CONSTRUCTOR'>
@@ -51,7 +51,7 @@
         </div>
     </div>
 </div>
-<div class="container mt-5">
+<div class="container mt-7">
     <h1 class="text-center">
         Список заявок
         <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">

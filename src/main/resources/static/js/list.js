@@ -195,4 +195,9 @@ $(document).ready(function () {
     $('.toggleInput').on('click', function () {
         $(this).next('.inputContainer').toggle();
     });
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.inputContainer').length && !$(e.target).closest('.toggleInput').length) {
+            $('.inputContainer').hide();
+        }
+    });
 });

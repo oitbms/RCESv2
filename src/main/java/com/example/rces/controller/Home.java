@@ -20,10 +20,14 @@ public class Home {
         return "redirect:/menu";
     }
 
-    @GetMapping("mobiledevice")
-    public String erorMobile() {
-        return "mobiledevice";
+    @GetMapping("/createBid")
+    public String create() {
+        return "home";
     }
 
+    @GetMapping("mobiledevice")
+    public String errorMobile() {
+        return "mobiledevice";
+    }
 
 }

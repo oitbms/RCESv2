@@ -44,7 +44,7 @@ public class UniversalRepository {
     }
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
-        return findByField(entityClass, fieldName, fieldValue).get(0);
+        return findByField(entityClass, fieldName, fieldValue).stream().findFirst().orElse(null);
     }
 
     public <T> T findById(Class<T> entityClass, Object id) {
@@ -140,14 +140,22 @@ public class UniversalRepository {
                 .executeUpdate();
     }
 
-    public Employee saveEmployee(String username, Boolean status, String role, String mlmNode, String password, Long chatID) {
-        Employee employee = new Employee();
-        employee.setName(username);
-        employee.setRole(role);
-        employee.setActive(status);
-        employee.setMlmNode(MlmNode.valueOf(mlmNode));
-        employee.setPassword(password);
-        employee.setChatId(chatID);
+    public Employee saveEmployee(Long id,String username, Boolean status, String role, String mlmNode, String password, Long chatID) {
+        Employee employee = id != null ? findById(Employee.class, id) : null;
+        if (employee != null) {
+            employee.setName(username);
+            employee.setRole(role);
+            employee.setActive(status);
+            employee.setChatId(chatID);
+        } else {
+            employee = new Employee();
+            employee.setName(username);
+            employee.setRole(role);
+            employee.setActive(status);
+            employee.setMlmNode(MlmNode.valueOf(mlmNode));
+            employee.setPassword(password);
+            employee.setChatId(chatID);
+        }
         return save(employee);
     }
 }

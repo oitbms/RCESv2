@@ -31,9 +31,9 @@
                     </button>
                     <ul class="dropdown-menu">
                         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
-                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
+                            <li><a class="dropdown-item" href="/requestslist/technologist">Заявки для ОГТ </a></li>
+                            <li><a class="dropdown-item" href="/requestslist/constructor">Заявки для ОГК</a></li>
+                            <li><a class="dropdown-item" href="/requestslist/otk">Заявки для ОТК</a></li>
                         <#elseif user.getRole() == 'TECHNOLOGIST'>
                             <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
                         <#elseif user.getRole() == 'CONSTRUCTOR'>
@@ -136,6 +136,7 @@
         </#list>
         </tbody>
     </table>
+    <div id="pagination" class="pagination mt-4"></div>
     <div class="text-center mt-3">
         <a class="btn btn-primary" href="/registration">Добавить нового пользователя</a>
     </div>

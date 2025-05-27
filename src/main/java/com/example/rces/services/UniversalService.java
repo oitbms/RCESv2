@@ -120,7 +120,6 @@ public class UniversalService {
         return factExecutionSGI;
     }
 
-
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
     }
@@ -133,8 +132,8 @@ public class UniversalService {
         repository.deletePhoto(photoId);
     }
 
-    public Employee saveEmployee(String name, Boolean status, String role, String mlmNode, String password, Long chatID) {
-        return repository.saveEmployee(name, status, role, mlmNode, password, chatID);
+    public Employee saveEmployee(Long id,String name, Boolean status, String role, String mlmNode, String password, Long chatID) {
+        return repository.saveEmployee(id,name, status, role, mlmNode, password, chatID);
     }
 
     @Scheduled(cron = "0 5 9 * * *") // каждый день в 09:00
