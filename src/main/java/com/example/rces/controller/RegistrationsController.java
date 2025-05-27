@@ -76,7 +76,7 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           @RequestParam Long chatId) {
-        Employee employee = service.saveEmployee(username,true,role,mlmNode,password,chatId);
+        Employee employee = service.saveEmployee(null,username,true,role,mlmNode,password,chatId);
         return "redirect:/admin";
     }
 
@@ -97,14 +97,7 @@ public class RegistrationsController {
                                         @RequestParam(required = false) String roleName,
                                         @RequestParam(required = false) Long chatName,
                                         @RequestParam(required = false) Boolean active) {
-        Employee user = service.findById(Employee.class, id);
-        if (user != null) {
-            user.setName(userName);
-            user.setRole(roleName);
-            user.setChatId(chatName);
-            user.setActive(active);
-            service.save(user);
-        }
+        Employee user = service.saveEmployee(id,userName,active,roleName,null,null,chatName);
         return "redirect:/admin";
     }
 }
