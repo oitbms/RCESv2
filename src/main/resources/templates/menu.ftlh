@@ -39,12 +39,15 @@
         <nav class="mb-4">
             <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
+                        <#if user.getRole() == 'ADMIN'>
                         <a class="btn btn-primary" href="/sgi">СГИ</a>
                         <a class="btn btn-primary" href="/admin">Пользователи</a>
                         <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
+                        </#if>
+                        <#if user.getRole() == 'CONTROL'>
+                            <a class="btn btn-primary" href="/sgi">СГИ</a>
                         </#if>
                         <a class="btn btn-primary" href="/logout">Выйти</a>
                     </li>
