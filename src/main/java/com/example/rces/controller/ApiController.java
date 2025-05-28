@@ -20,7 +20,7 @@ public class ApiController {
     private ApiServices service;
 
     @GetMapping("/employees")
-    public List<Employee> getEmployees(@RequestParam String param) {
+    public List<Employee> getEmployees(@RequestParam Object param) {
         return service.findAllEmployees(param);
     }
 

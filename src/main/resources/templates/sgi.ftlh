@@ -378,28 +378,29 @@
                         <div class="mb-3">
                             <label for="shop" class="form-label">Цех</label>
                             <input type="text" class="form-control" id="shopId" name="workshopModal"
-                                   data-required="true">
+                                   required>
                         </div>
                         <div class="mb-3">
                             <label for="event" class="form-label">Мероприятие</label>
-                            <input type="text" class="form-control" id="eventId" name="eventModal" data-required="true">
+                            <input type="text" class="form-control" id="eventId" name="eventModal" required>
                         </div>
                         <div class="mb-3">
                             <label for="actions" class="form-label">Сопутствующие действия</label>
-                            <input type="text" class="form-control" id="actionsId" name="actionsModal"
-                                   data-required="true">
+                            <input type="text" class="form-control" id="actionsId" name="actionsModal">
                         </div>
                         <div class="mb-3">
                             <label for="department" class="form-label">Ответственный отдел</label>
-                            <select class="form-control" id="departmentId" name="departmentModal" data-required="true">
+                            <select class="form-control" id="departmentId" name="departmentModal" required>
                                 <option value="">Выберите отдел</option>
                                 <option value="mechanic">ОГМ</option>
                                 <option value="builder">ОРС</option>
+                                <option value="protection">ОТиПК</option>
+                                <option value="energy">ОГЭ</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="responsiblePerson" class="form-label">Ответственное лицо</label>
-                            <select class="form-select" id="employeeSelect1" aria-label="Выбор сотрудника"
+                            <select class="form-select" id="employeeSelect1" aria-label="Выбор сотрудника" required
                                     onfocus="loadEmployeeFields(1)" name="employeesModal">
                                 <option value="">Выберите сотрудника</option>
                             </select>
@@ -407,7 +408,7 @@
                         <div class="mb-3">
                             <label for="desiredDate" class="form-label">Желаемый срок</label>
                             <input type="date" class="form-control" id="desiredDateId" name="desiredDateModal"
-                                   data-required="true">
+                                   required>
                         </div>
                         <div class="mb-3">
                             <label for="note" class="form-label">Примечание</label>
@@ -451,6 +452,8 @@
                                 <option value="">Выберите отдел</option>
                                 <option value="mechanic">ОГМ</option>
                                 <option value="builder">ОРС</option>
+                                <option value="protection">ОТиПК</option>
+                                <option value="energy">ОГЭ</option>
                             </select>
                         </div>
 

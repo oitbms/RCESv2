@@ -13,7 +13,7 @@ import java.util.UUID;
 public class SGI {
 
     public enum Department {
-        mechanic("ОГМ"), builder("ОРС");
+        mechanic("ОГМ"), builder("ОРС"), protection("ОТиПК"), energy("ОГЭ");
 
         private final String name;
 

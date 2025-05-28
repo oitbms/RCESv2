@@ -35,11 +35,19 @@ public class UniversalRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> cq = cb.createQuery(entityClass);
         Root<T> root = cq.from(entityClass);
-        if (fieldValue instanceof List<?> values) {
-            cq.select(root).where(root.get(fieldName).in(values));
+
+        if (fieldValue instanceof List<?> || fieldValue.getClass().isArray()) {
+            Object[] arrayValues;
+            if (fieldValue instanceof List<?>) {
+                arrayValues = ((List<?>) fieldValue).toArray();
+            } else {
+                arrayValues = (Object[]) fieldValue;
+            }
+            cq.select(root).where(root.get(fieldName).in(arrayValues));
         } else {
             cq.select(root).where(cb.equal(root.get(fieldName), fieldValue));
         }
+
         return entityManager.createQuery(cq).getResultList();
     }
 

@@ -40,7 +40,7 @@ async function loadEmployeeFields(number) {
     const data = await $.ajax({
         url: '/api/employees',
         method: 'GET',
-        data: {param: "EVENT"}
+        data: {param: ["EVENT", "CONTROL"]}
     });
     const select = $('#employeeSelect' + number);
     select.empty();

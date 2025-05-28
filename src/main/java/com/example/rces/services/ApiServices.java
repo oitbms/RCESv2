@@ -39,7 +39,7 @@ public class ApiServices {
         return service.findAll(CustomerOrder.class);
     }
 
-    public List<Employee> findAllEmployees(String role) {
+    public List<Employee> findAllEmployees(Object role) {
         return service.findAllByField(Employee.class, "role", role);
     }
 
