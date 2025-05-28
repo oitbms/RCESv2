@@ -108,12 +108,17 @@ public class RequestController {
 
             Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText, control);
 
+            if (request.getTypeRequest().equals(Requests.Type.otk)) {
+                tgService.sendMessageToUser(request, employee.getChatId(), "create");
+            } else {
+                tgService.sendMessageToGroup(request);
+            }
+
 //            if (request.getTypeRequest().equals(Requests.Type.constructor)) {
 //                tgService.sendMessageToGroup(request);
 //            } else {
 //                tgService.sendMessageToUser(request, employee.getChatId(), true, false);
 //            }
-            tgService.sendMessageToGroup(request);
 
             model.addAttribute("requestNumber", request.getRequestNumber());
 

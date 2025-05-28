@@ -110,7 +110,11 @@ public class TelegramService extends TelegramLongPollingBot {
 
     public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(getGroupId(request.getTypeRequest().name()));
+        if (request.getTypeRequest().equals(Requests.Type.otk)){
+            sendMessage.setChatId(request.getEmployee().getChatId());
+        } else {
+            sendMessage.setChatId(getGroupId(request.getTypeRequest().name()));
+        }
         sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)", request.getRequestNumber(), request.getStatus().getName() + "a", request.getDescription()));
         try {
             Message message = execute(sendMessage);
