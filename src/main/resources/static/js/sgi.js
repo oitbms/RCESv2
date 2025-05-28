@@ -72,6 +72,9 @@ async function toggleAgreement(sgiId, button) {
             icon.toggleClass('bi-check-circle-fill text-success');
             icon.toggleClass('bi-circle');
             reload();
+        },
+        error: function () {
+            alert('Вы не можете закрывать заявку')
         }
     });
 }

@@ -46,7 +46,7 @@
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                         </#if>
-                        <#if user.getRole() == 'CONTROL'>
+                        <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
                             <a class="btn btn-primary" href="/sgi">СГИ</a>
                         </#if>
                         <a class="btn btn-primary" href="/logout">Выйти</a>

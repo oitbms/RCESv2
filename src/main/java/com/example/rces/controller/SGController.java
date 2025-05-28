@@ -23,8 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.colorCalculate;
-import static com.example.rces.services.ServiceUtil.formatedDate;
+import static com.example.rces.services.ServiceUtil.*;
 
 @Controller
 @RequestMapping("/sgi")
@@ -146,12 +145,16 @@ public class SGController {
     }
 
     @PostMapping("/agree")
-    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
+    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed, Principal principal) {
         SGI sgi = service.findById(SGI.class, id);
-        sgi.setAgreed(agreed);
-        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-        service.save(sgi);
-        return ResponseEntity.ok().build();
+        if (userDetailsService.isControl()) {
+            sgi.setAgreed(agreed);
+            sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+            service.save(sgi);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/calculate-color")
