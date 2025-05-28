@@ -39,7 +39,7 @@
         <nav class="mb-4">
             <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <#if user.getRole() == 'ADMIN'>
+                        <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
                         <a class="btn btn-primary" href="/sgi">СГИ</a>
                         <a class="btn btn-primary" href="/admin">Пользователи</a>
                         <a class="btn btn-primary" href="/createBid">Создать заявку</a>
@@ -64,7 +64,7 @@
 </div>
     <div class="container mb-4">
         <div class="row">
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST'>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
 <#--                    <img src="" class="card-img-top">-->
@@ -81,7 +81,7 @@
             </div>
             </div>
             </#if>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR'>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
 <#--                    <img src="" class="card-img-top">-->
@@ -98,7 +98,7 @@
                 </div>
             </div>
             </#if>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK'>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
 <#--                    <img src="" class="card-img-top">-->
