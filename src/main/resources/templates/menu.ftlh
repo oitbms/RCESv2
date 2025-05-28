@@ -58,7 +58,7 @@
                 Принятые мной заявки
             </button>
         </#if>
-        <#if user.getRole() == 'ADMIN'>
+        <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
             <button id="graf" class="btn btn-primary mb-4">Показать график</button>
         </#if>
     </div>
