@@ -89,8 +89,8 @@ async function change(rowId) {
     container.append(`
     <div class="row mb-3 g-2 align-items-center" data-id="${rowId}">
         <div class="col-md-4">
-            <select class="form-select text-truncate" id="employeeSelect" name="employee" 
-                    aria-label="Выбор сотрудника" onfocus="loadEmployeeFields()"
+            <select class="form-select text-truncate" id="employeeSelect3" name="employee" 
+                    aria-label="Выбор сотрудника" onfocus="loadEmployeeFields(3)"
                     style="max-width: 100%; min-width: 100%">
                 <option value="${data.employee}">${data.employee}</option>
             </select>
