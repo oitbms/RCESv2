@@ -39,10 +39,6 @@ public class UniversalService {
         repository.save(entity);
     }
 
-    public <T> void saveReceived(T entity,Requests requests) {
-        repository.saveReceived(entity, requests);
-    }
-
     public <T> void delete(T entity) {
         repository.delete(entity);
     }

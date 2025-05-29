@@ -8,6 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +25,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.colorCalculate;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
@@ -29,6 +35,9 @@ public class TelegramService extends TelegramLongPollingBot {
 
     @Autowired
     private UniversalService service;
+
+    @Autowired
+    CustomUserDetailsService userDetailsService;
 
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -162,6 +171,7 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     @Override
+    @Transactional
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
             Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
@@ -170,7 +180,14 @@ public class TelegramService extends TelegramLongPollingBot {
                 Appraisal score = Appraisal.fromId(Integer.parseInt(message));
                 Requests request = service.findSingleByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId());
                 request.setScore(score);
-                service.saveReceived(request,request);
+                Authentication anonymousAuth = new AnonymousAuthenticationToken(
+                        UUID.randomUUID().toString(),
+                        employee.getName(),
+                        List.of(new SimpleGrantedAuthority(employee.getRole())));
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(anonymousAuth);
+                SecurityContextHolder.setContext(context);
+                service.save(request);
                 sendScoreIsSave(request);
             }
         }

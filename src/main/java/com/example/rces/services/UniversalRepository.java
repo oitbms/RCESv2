@@ -1,6 +1,9 @@
 package com.example.rces.services;
 
-import com.example.rces.models.*;
+import com.example.rces.models.CustomerOrder;
+import com.example.rces.models.Employee;
+import com.example.rces.models.FactExecutionSGI;
+import com.example.rces.models.Images;
 import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,37 +59,22 @@ public class UniversalRepository {
         return entityManager.find(entityClass, id);
     }
 
-    private <T> T saveEntity(T entity, Employee updaterEmployee) {
-        if (entityManager.contains(entity) && allowedCreateOrUpdate(entity, updaterEmployee, false)) {
+    public <T> T save(T entity) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Employee updaterCreaterEmployee = findSingleByField(Employee.class, "name", authentication.getName());
+        if (entityManager.contains(entity) && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
             return entityManager.merge(entity);
         }
         try {
             Object id = entityManager.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
-            if (id != null && entityManager.find(entity.getClass(), id) != null && allowedCreateOrUpdate(entity, updaterEmployee, false)) {
+            if (id != null && entityManager.find(entity.getClass(), id) != null && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
                 return entityManager.merge(entity);
             }
         } catch (Exception ignored) {
         }
-        allowedCreateOrUpdate(entity, updaterEmployee, true);
+        allowedCreateOrUpdate(entity, updaterCreaterEmployee, true);
         entityManager.persist(entity);
         return entity;
-    }
-
-    public <T> T save(T entity) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Employee updaterCreaterEmployee = null;
-        if (authentication != null && authentication.getName() != null) {
-            updaterCreaterEmployee = findSingleByField(Employee.class, "name", authentication.getName());
-        }
-        return saveEntity(entity, updaterCreaterEmployee);
-    }
-
-    public <T> void saveReceived(T entity, Requests request) {
-        Employee updaterCreaterEmployee = null;
-        if (request != null && request.getUpdateBy() != null) {
-            updaterCreaterEmployee = findSingleByField(Employee.class, "name", request.getUpdateBy().getName());
-        }
-        saveEntity(entity, updaterCreaterEmployee);
     }
 
     public <T> void delete(T entity) {
@@ -160,7 +148,7 @@ public class UniversalRepository {
                 .executeUpdate();
     }
 
-    public Employee saveEmployee(Long id, String username, Boolean status, String role, String mlmNode, String password, Long chatID) {
+    public Employee saveEmployee(Long id,String username, Boolean status, String role, String mlmNode, String password, Long chatID) {
         Employee employee = id != null ? findById(Employee.class, id) : null;
         if (employee != null) {
             employee.setName(username);
