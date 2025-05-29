@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.example.rces.services.ServiceUtil.colorCalculate;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 @Component
 public class TelegramService extends TelegramLongPollingBot {
@@ -38,8 +39,8 @@ public class TelegramService extends TelegramLongPollingBot {
     @Value("${telegram.chat.technologist.id}")
     private String technologistGroupChatId;
 
-    @Value("${telegram.chat.otk.id}")
-    private String otkGroupChatId;
+//    @Value("${telegram.chat.otk.id}")
+//    private String otkGroupChatId;
 
     @Value("${telegram.chat.control.id}")
     private String controlChatId;
@@ -54,7 +55,8 @@ public class TelegramService extends TelegramLongPollingBot {
 
     private final String baseMessageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
-    public String typeMessageUrl(Employee employee) {
+    public String typeMessageUrl(Employee empl) {
+        Employee employee = service.findById(Employee.class,empl.getId());
         if (employee.getRole().equals("CONSTRUCTOR")) {
             return "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&message_thread_id=2343&text=%s";
         } else {
@@ -110,11 +112,7 @@ public class TelegramService extends TelegramLongPollingBot {
 
     public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
         SendMessage sendMessage = new SendMessage();
-        if (request.getTypeRequest().equals(Requests.Type.otk)){
-            sendMessage.setChatId(request.getEmployee().getChatId());
-        } else {
-            sendMessage.setChatId(getGroupId(request.getTypeRequest().name()));
-        }
+        sendMessage.setChatId(updaterEmployee.getChatId());
         sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)", request.getRequestNumber(), request.getStatus().getName() + "a", request.getDescription()));
         try {
             Message message = execute(sendMessage);
@@ -131,7 +129,8 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendCompleted(Requests request) {
-        restTemplate.getForObject(String.format(typeMessageUrl(request.getEmployee()), botToken, getGroupId(request.getTypeRequest().name()),
+//        String chatId = defaultIfNull(getGroupId(request.getTypeRequest().name()), String.valueOf(request.getCreatedBy().getChatId()));
+        restTemplate.getForObject(String.format(typeMessageUrl(request.getEmployee()), botToken, request.getCreatedBy().getChatId(),
                 "Заявка №" + request.getRequestNumber() + " Выполнена"), String.class);
     }
 
@@ -140,7 +139,8 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendUpdateMessageToGroup(Requests request) {
-        String url = String.format(typeMessageUrl(request.getEmployee()), botToken, getGroupId(request.getTypeRequest().name()),
+//        String chatId = defaultIfNull(getGroupId(request.getTypeRequest().name()), String.valueOf(request.getCreatedBy().getChatId()));
+        String url = String.format(typeMessageUrl(request.getEmployee()), botToken, request.getCreatedBy().getChatId(),
                 createdOrUpdatedOrRedirectMessage(request, "update"));
         restTemplate.getForObject(url, String.class);
     }
@@ -166,16 +166,12 @@ public class TelegramService extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
             Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
             String message = update.getMessage().getText();
-            try {
-                if (message.matches("[1-5]")) {
-                    Appraisal score = Appraisal.fromId(Integer.parseInt(message));
-                    Requests request = service.findSingleByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId());
-                    request.setScore(score);
-                    service.save(request);
-                    sendScoreIsSave(request);
-                }
-            } catch (Exception ignored) {
-
+            if (message.matches("[1-5]")) {
+                Appraisal score = Appraisal.fromId(Integer.parseInt(message));
+                Requests request = service.findSingleByField(Requests.class, "messageId", update.getMessage().getReplyToMessage().getMessageId());
+                request.setScore(score);
+                service.saveReceived(request,request);
+                sendScoreIsSave(request);
             }
         }
     }
@@ -200,9 +196,9 @@ public class TelegramService extends TelegramLongPollingBot {
     private String getGroupId(String typeRequest) {
         return switch (typeRequest) {
             case "constructor" -> constructorGroupChatId;
-            case "otk" -> otkGroupChatId;
+//            case "otk" -> otkGroupChatId;
             case "technologist" -> technologistGroupChatId;
-            default -> throw new IllegalStateException("Unexpected value: " + typeRequest);
+            default -> null;
         };
     }
 
@@ -216,3 +212,6 @@ public class TelegramService extends TelegramLongPollingBot {
         return "8093920653:AAEG_Z_wcsBWg6iDqKHQnDY0bOWUOLULJlA";
     }
 }
+
+//  sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)", request.getRequestNumber(), request.getStatus().getName() + "a", request.getDescription()));
+//  sendMessage.setText(String.format("Заявка № %d %s", request.getRequestNumber(), request.getStatus().getName()));
