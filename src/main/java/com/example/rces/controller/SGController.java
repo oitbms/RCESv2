@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.*;
+import static com.example.rces.services.ServiceUtil.colorCalculate;
+import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @Controller
 @RequestMapping("/sgi")
@@ -43,7 +44,7 @@ public class SGController {
 
     @GetMapping
     public String getSGIForm(Model model, Principal principal) {
-        Employee employee = service.findSingleByField(Employee.class,"name", principal.getName());
+        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
         List<SGI> sgiList;
         if (!userDetailsService.isControl()) {
             sgiList = service.findAllByField(SGI.class, "employee",
@@ -81,7 +82,7 @@ public class SGController {
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
         SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
-        String message = String.format("Создана новая заявка №%s\nОтветственный %s\nЖелаемый срок %s", sgi.getRequestNumber(), sgi.getEmployee().getName(), sgi.getDesiredDate());
+        String message = String.format("Создана новая заявка №%s\nНазвание: %s\nОтветственный %s\nЖелаемый срок %s", sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()));
         tgService.sendMessageToControl(message, sgi.getDepartment().getName());
         return "redirect:/sgi";
     }
