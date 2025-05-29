@@ -1,0 +1,24 @@
+package com.example.rces.services.telegram;
+
+import com.example.rces.models.Requests;
+
+public class ChatIdResolver {
+    private final String constructorGroupChatId;
+    private final String technologistGroupChatId;
+
+    public ChatIdResolver(String constructorGroupChatId, String technologistGroupChatId) {
+        this.constructorGroupChatId = constructorGroupChatId;
+        this.technologistGroupChatId = technologistGroupChatId;
+    }
+
+    public String resolveGroupId(Requests.Type typeRequest) {
+        switch (typeRequest) {
+            case constructor:
+                return constructorGroupChatId;
+            case technologist:
+                return technologistGroupChatId;
+            default:
+                return null;
+        }
+    }
+}

@@ -5,8 +5,8 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
-import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
+import com.example.rces.services.telegram.TelegramService;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -82,7 +82,8 @@ public class SGController {
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
         SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
-        String message = String.format("Новое мероприятие №%s\nМероприятие: %s\nОтветственный: %s\nЖелаемый срок: %s\nСопутствующие действия: %s\nПримечание: %s", sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()), sgi.getActions(), sgi.getNote()!=null ? sgi.getNote() : "");
+        String message = String.format("Новое мероприятие №%s\nМероприятие: %s\nОтветственный: %s\nЖелаемый срок: %s\nСопутствующие действия: %s\nПримечание: %s",
+                sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()), sgi.getActions(), sgi.getNote()!=null ? sgi.getNote() : "");
         tgService.sendMessageToControl(message, sgi.getDepartment().getName());
         return "redirect:/sgi";
     }

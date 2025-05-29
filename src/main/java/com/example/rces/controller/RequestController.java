@@ -8,8 +8,9 @@ import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.services.CustomUserDetailsService;
-import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
+import com.example.rces.services.telegram.MessageType;
+import com.example.rces.services.telegram.TelegramService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -109,7 +110,7 @@ public class RequestController {
             Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText, control);
 
             if (request.getTypeRequest().equals(Requests.Type.otk)) {
-                tgService.sendMessageToUser(request, employee.getChatId(), "create");
+                tgService.sendMessageToUser(request, employee.getChatId(), MessageType.CREATE);
             } else {
                 tgService.sendMessageToGroup(request);
             }

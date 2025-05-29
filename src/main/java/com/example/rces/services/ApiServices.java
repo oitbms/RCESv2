@@ -4,6 +4,8 @@ import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Inconsistency;
 import com.example.rces.models.enums.Status;
+import com.example.rces.services.telegram.MessageType;
+import com.example.rces.services.telegram.TelegramService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import org.apache.poi.xwpf.usermodel.*;
@@ -155,7 +157,8 @@ public class ApiServices {
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                tgService.sendMessageToUser(request, employee.getChatId(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? "redirect" : "update");
+                tgService.sendMessageToUser(request, employee.getChatId(),
+                        !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
             }
             //если закрыли или отменили заявку
         } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
