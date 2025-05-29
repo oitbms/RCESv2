@@ -40,6 +40,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private final TelegramUrlBuilder urlBuilder;
     private final ChatIdResolver chatIdResolver;
     private final String controlChatId;
+    private final String testChatId;
 
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -50,6 +51,7 @@ public class TelegramService extends TelegramLongPollingBot {
                            @Value("${telegram.chat.constructor.id}") String constructorGroupChatId,
                            @Value("${telegram.chat.technologist.id}") String technologistGroupChatId,
                            @Value("${telegram.chat.control.id}") String controlChatId,
+                           @Value("${telegram.chat.test.id}") String testChatId,
                            @Value("${url.mobile}") String urlMobile) {
         this.service = service;
         this.userDetailsService = userDetailsService;
@@ -58,6 +60,7 @@ public class TelegramService extends TelegramLongPollingBot {
         this.chatIdResolver = new ChatIdResolver(constructorGroupChatId, technologistGroupChatId);
         this.urlBuilder = new TelegramUrlBuilder();
         this.controlChatId = controlChatId;
+        this.testChatId = testChatId;
     }
     @Override
     public String getBotUsername() {
