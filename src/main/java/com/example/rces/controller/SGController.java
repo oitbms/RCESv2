@@ -82,7 +82,7 @@ public class SGController {
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
         SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
-        String message = String.format("Создана новая заявка №%s\nНазвание: %s\nОтветственный %s\nЖелаемый срок %s", sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()));
+        String message = String.format("Новое мероприятие №%s\nМероприятие: %s\nОтветственный: %s\nЖелаемый срок: %s\nСопутствующие действия: %s", sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()), sgi.getActions());
         tgService.sendMessageToControl(message, sgi.getDepartment().getName());
         return "redirect:/sgi";
     }
