@@ -82,7 +82,7 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public void createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee) {
+    public SGI createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
@@ -97,7 +97,7 @@ public class UniversalService {
         sgi.setEmployee(employee);
         sgi.setAgreed(false);
 
-        repository.save(sgi);
+        return repository.save(sgi);
     }
 
     public FactExecutionSGI createFactExecutionSGI(SGI sgi, ExecutionsPayload payload, MultipartFile[] additionalFiles) {

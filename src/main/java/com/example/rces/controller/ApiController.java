@@ -5,12 +5,21 @@ import com.example.rces.models.*;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.rces.services.ServiceUtil.formatedDate;
 
 @RestController
 @RequestMapping("/api")
@@ -112,6 +121,51 @@ public class ApiController {
     @GetMapping("/sgi")
     public ResponseEntity<SingleSgi> getSgi(@RequestParam UUID id) {
         SGI sgi = service.getSgi(id);
-        return ResponseEntity.ok(new SingleSgi(sgi.getWorkShop(), sgi.getEvent(),sgi.getActions(), sgi.getDepartment().name(), sgi.getDepartment().getName(), sgi.getEmployee().getName(), sgi.getDesiredDate(), sgi.getPlanDate(), sgi.getNote(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
+        return ResponseEntity.ok(new SingleSgi(sgi.getWorkShop(), sgi.getEvent(), sgi.getActions(), sgi.getDepartment().name(), sgi.getDepartment().getName(), sgi.getEmployee().getName(), sgi.getDesiredDate(), sgi.getPlanDate(), sgi.getNote(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
     }
+
+    @GetMapping("/print-single")
+    public ResponseEntity<Resource> openWordFile(@RequestParam UUID id) {
+        try {
+            SGI sgi = service.getSgi(id);
+            ByteArrayResource resource = service.generateWordFile(sgi);
+
+            String filename = "Мероприятие_" + sgi.getRequestNumber() + ".docx";
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+                    .replace("+", "%20");
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentLength(resource.contentLength())
+                    .body(resource);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/print-many")
+    public ResponseEntity<Resource> printManySgi(@RequestParam List<UUID> ids) {
+        try {
+            List<SGI> sgiList = service.getSgiList(ids);
+            ByteArrayResource resource = service.generateManyWordFile(sgiList);
+
+            String filename = "Мероприятия_" + formatedDate(LocalDate.now()) + ".docx";
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+                    .replace("+", "%20");
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentLength(resource.contentLength())
+                    .body(resource);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
 }

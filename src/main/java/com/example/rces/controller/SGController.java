@@ -5,10 +5,10 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
+import com.example.rces.services.TelegramService;
 import com.example.rces.services.UniversalService;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -29,11 +29,17 @@ import static com.example.rces.services.ServiceUtil.*;
 @RequestMapping("/sgi")
 public class SGController {
 
-    @Autowired
-    private UniversalService service;
+    private final UniversalService service;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final TelegramService tgService;
+
+    private final CustomUserDetailsService userDetailsService;
+
+    public SGController(UniversalService service, TelegramService tgService, CustomUserDetailsService userDetailsService) {
+        this.service = service;
+        this.tgService = tgService;
+        this.userDetailsService = userDetailsService;
+    }
 
     @GetMapping
     public String getSGIForm(Model model, Principal principal) {
@@ -74,7 +80,9 @@ public class SGController {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
-        service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
+        SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
+        String message = String.format("Создана новая заявка №%s\nОтветственный %s\nЖелаемый срок %s", sgi.getRequestNumber(), sgi.getEmployee().getName(), sgi.getDesiredDate());
+        tgService.sendMessageToControl(message, sgi.getDepartment().getName());
         return "redirect:/sgi";
     }
 
@@ -155,7 +163,7 @@ public class SGController {
     }
 
     @PostMapping("/agree")
-    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed, Principal principal) {
+    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
         SGI sgi = service.findById(SGI.class, id);
         if (userDetailsService.isControl()) {
             sgi.setAgreed(agreed);

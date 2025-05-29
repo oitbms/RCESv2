@@ -1,6 +1,7 @@
 let currentRow;
 let entityId;
 let filterData;
+let selectedRows = [];
 
 function reload() {
     return window.location.href = window.location.href;
@@ -146,7 +147,7 @@ async function change(rowId) {
     </div>`);
 
     // Автоматическая регулировка ширины
-    $('.auto-width').each(function() {
+    $('.auto-width').each(function () {
         const minWidth = $(this).data('minwidth') || 100;
         const contentWidth = $(this).val().length * 8 + minWidth;
         $(this).css('width', Math.min(Math.max(contentWidth, minWidth), 300) + 'px');
@@ -411,27 +412,27 @@ $(document).ready(function () {
         filterData();
     });
 
-      filterData = (agreementStatus) => {
+    filterData = (agreementStatus) => {
         const state = $('#statusBtn').data('state');
         let agreedFilter = '';
 
-          if (agreementStatus !== undefined && agreementStatus !== null) {
-              if (agreementStatus === 'true') {
-                  agreedFilter = 'выполнено';
-              } else if (agreementStatus === 'false') {
-                  agreedFilter = 'не выполнено';
-              } else {
-                  agreedFilter = '';
-              }
-          } else {
-              if (state === 'done') {
-                  agreedFilter = 'выполнено';
-              } else if (state === 'not_done') {
-                  agreedFilter = 'не выполнено';
-              } else {
-                  agreedFilter = '';
-              }
-          }
+        if (agreementStatus !== undefined && agreementStatus !== null) {
+            if (agreementStatus === 'true') {
+                agreedFilter = 'выполнено';
+            } else if (agreementStatus === 'false') {
+                agreedFilter = 'не выполнено';
+            } else {
+                agreedFilter = '';
+            }
+        } else {
+            if (state === 'done') {
+                agreedFilter = 'выполнено';
+            } else if (state === 'not_done') {
+                agreedFilter = 'не выполнено';
+            } else {
+                agreedFilter = '';
+            }
+        }
 
         // Получаем значения других фильтров
         const filters = {
@@ -448,9 +449,9 @@ $(document).ready(function () {
         };
 
         // Фильтруем строки таблицы
-          filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
-              return checkRowFilters(row, filters, agreedFilter);
-            });
+        filteredRows = $('#sgiTable tbody tr').filter((index, row) => {
+            return checkRowFilters(row, filters, agreedFilter);
+        });
 
         showPage(1);
     };
@@ -538,11 +539,27 @@ $(document).ready(function () {
     $('#sgiTable tbody').on('contextmenu', 'tr', function (e) {
         e.preventDefault();
         currentRow = $(this);
-        $('#customContextMenu').css({
-            top: e.pageY + 'px',
-            left: e.pageX + 'px',
-            display: 'block'
-        });
+
+        if (selectedRows.length > 0) {
+            $('#customContextMenu').css({
+                top: e.pageY + 'px',
+                left: e.pageX + 'px',
+                display: 'block'
+            });
+        }
+    });
+
+    $('#sgiTable tbody').on('dblclick', 'tr', function () {
+        const row = $(this);
+        const rowId = row.attr('id');
+
+        if (row.hasClass('selected-row')) {
+            row.removeClass('selected-row');
+            selectedRows = selectedRows.filter(id => id !== rowId);
+        } else {
+            row.addClass('selected-row');
+            selectedRows.push(rowId);
+        }
     });
 
     $('#deleteRowBtn').on('click', function () {
@@ -588,6 +605,25 @@ $(document).ready(function () {
         }
     });
 
+// Модифицируем обработчик печати
+    $('#printRowBtn').on('click', () => {
+        if (selectedRows.length > 0) {
+            window.open(`/api/print-many?ids=${selectedRows.join(',')}`);
+        } else if (currentRow) {
+            const rowId = currentRow.attr('id');
+            window.open(`/api/print-single?id=${rowId}`);
+        }
+
+        $('#customContextMenu').hide();
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+    .selected-row {
+        background-color: #d4edff !important;
+    }`;
+    document.head.appendChild(style);
+
     $(document).on('click', function (e) {
         if (!$(e.target).closest('.inputContainer').length && !$(e.target).closest('.toggleInput').length) {
             $('.inputContainer').hide();
@@ -626,7 +662,8 @@ function applyFilters() {
     filterData(agreementStatus);
     $('#mobileFilterModal').modal('hide');
 }
-document.querySelectorAll('.sgiNumber').forEach(function(td) {
+
+document.querySelectorAll('.sgiNumber').forEach(function (td) {
     let timerId = null;
     let isLongPress = false;
 
@@ -652,7 +689,7 @@ document.querySelectorAll('.sgiNumber').forEach(function(td) {
 
     function startHold(e) {
         isLongPress = false;
-        timerId = setTimeout(function() {
+        timerId = setTimeout(function () {
             isLongPress = true;
             handleDelete();
         }, 1000);
@@ -664,7 +701,7 @@ document.querySelectorAll('.sgiNumber').forEach(function(td) {
 
 
     td.addEventListener('touchstart', startHold);
-    td.addEventListener('touchend', function(e) {
+    td.addEventListener('touchend', function (e) {
         clearTimeout(timerId);
         if (!isLongPress) {
 

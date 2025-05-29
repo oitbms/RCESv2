@@ -444,10 +444,10 @@
                             <label for="filterDepartment" class="form-label">Ответственный отдел</label>
                             <select class="form-select" id="filterDepartment">
                                 <option value="">Выберите отдел</option>
-                                <option value="mechanic">ОГМ</option>
-                                <option value="builder">ОРС</option>
-                                <option value="protection">ОТиПК</option>
-                                <option value="energy">ОГЭ</option>
+                                <option value="ОГМ">ОГМ</option>
+                                <option value="ОРС">ОРС</option>
+                                <option value="ОТиПК">ОТиПК</option>
+                                <option value="ОГЭ">ОГЭ</option>
                             </select>
                         </div>
 
@@ -496,6 +496,7 @@
 <div id="customContextMenu"
      style="display:none; position:absolute; z-index:1000; background:white; border:1px solid #ccc; padding:5px; border-radius:4px;">
     <button id="deleteRowBtn" class="btn btn-danger btn-sm">Удалить</button>
+    <button id="printRowBtn" class="btn btn-info btn-sm">Печать</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

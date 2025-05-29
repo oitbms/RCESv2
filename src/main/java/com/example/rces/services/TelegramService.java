@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.colorCalculate;
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 @Component
 public class TelegramService extends TelegramLongPollingBot {
@@ -65,9 +64,11 @@ public class TelegramService extends TelegramLongPollingBot {
     private final String baseMessageUrl = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
 
     public String typeMessageUrl(Employee empl) {
-        Employee employee = service.findById(Employee.class,empl.getId());
+        Employee employee = service.findById(Employee.class, empl.getId());
         if (employee.getRole().equals("CONSTRUCTOR")) {
             return "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&message_thread_id=2343&text=%s";
+        } else if (employee.getRole().equals("CONTROL") || employee.getRole().equals("EVENT")) {
+            return "";
         } else {
             return baseMessageUrl;
         }
@@ -159,10 +160,13 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    private void sendMessageToControl(String requestsNumbers) {
+    public void sendMessageToControl(String text, String department) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(controlChatId);
-        sendMessage.setText("Срок выполнения мероприятий №" + requestsNumbers + " истекает через 2 дня");
+        if (department != null) {
+            sendMessage.setMessageThreadId(getThreadId(department));
+        }
+        sendMessage.setText(text);
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -205,7 +209,7 @@ public class TelegramService extends TelegramLongPollingBot {
                 requestsNumbers.append(!requestsNumbers.isEmpty() ? ", " : "").append(sgi.getRequestNumber());
         }
         if (!requestsNumbers.toString().isBlank()) {
-            sendMessageToControl(requestsNumbers.toString());
+            sendMessageToControl("Срок выполнения мероприятий №" + requestsNumbers + " истекает через 2 дня", null);
         }
     }
 
@@ -215,6 +219,16 @@ public class TelegramService extends TelegramLongPollingBot {
             case "constructor" -> constructorGroupChatId;
 //            case "otk" -> otkGroupChatId;
             case "technologist" -> technologistGroupChatId;
+            default -> null;
+        };
+    }
+
+    private Integer getThreadId(String department) {
+        return switch (department) {
+            case "ОГЭ" -> 6;
+            case "ОТиПК" -> 4;
+            case "ОРС" -> 3;
+            case "ОГМ" -> 2;
             default -> null;
         };
     }
