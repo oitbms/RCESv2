@@ -80,9 +80,14 @@ public class SGController {
 
     @PostMapping("/save-change")
     public ResponseEntity<Void> saveChanges(@RequestParam UUID id,
+                                            @RequestParam(required = false) String workshop,
+                                            @RequestParam(required = false) String event,
+                                            @RequestParam(required = false) String actions,
+                                            @RequestParam(required = false) String department,
+                                            @RequestParam(required = false) LocalDate desiredDate,
                                             @RequestParam(required = false) String employee,
                                             @RequestParam(required = false) LocalDate planDate,
-                                            @RequestParam(required = false) String comment) {
+                                            @RequestParam(required = false) String note) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Редактировать может только создатель задачи");
         }
@@ -93,9 +98,14 @@ public class SGController {
         } catch (Exception e) {
             throw new NoResultException();
         }
+        sgi.setWorkShop(workshop);
+        sgi.setEvent(event);
+        sgi.setActions(actions);
+        sgi.setDepartment(SGI.Department.valueOf(department));
         sgi.setPlanDate(planDate);
+        sgi.setDesiredDate(desiredDate);
+        sgi.setNote(note);
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-        sgi.setComment(comment);
         service.save(sgi);
         return ResponseEntity.ok().build();
     }

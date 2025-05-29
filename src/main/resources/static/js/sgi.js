@@ -87,44 +87,101 @@ async function change(rowId) {
     if (data.agree) return alert('Нельзя редактировать завершенную заявку');
 
     container.append(`
-    <div class="row mb-3 g-2 align-items-center" data-id="${rowId}">
-        <div class="col-md-4">
-            <select class="form-select text-truncate" id="employeeSelect3" name="employee" 
-                    aria-label="Выбор сотрудника" onfocus="loadEmployeeFields(3)"
-                    style="max-width: 100%; min-width: 100%">
+    <div class="dynamic-row" data-id="${rowId}">
+        <!-- Группировка по логическим блокам -->
+        <div class="field-group">
+            <label>№ цеха</label>
+            <input type="text" class="form-control auto-width" name="workShop" 
+                   value="${data.workshop}" data-minwidth="80">
+        </div>
+        
+        <div class="field-group">
+            <label>Мероприятие</label>
+            <input type="text" class="form-control auto-width" name="event" 
+                   value="${data.event}" data-minwidth="120">
+        </div>
+        
+        <div class="field-group">
+            <label>Сопутствующие действия</label>
+            <input type="text" class="form-control auto-width" name="actions" 
+                   value="${data.actions || ''}" data-minwidth="120">
+        </div>
+        
+        <div class="field-group">
+            <label>Ответственный отдел</label>
+            <select class="form-control auto-width" name="department" required data-minwidth="120">
+                <option value="${data.department}">${data.departmentName}</option>
+                ${data.department !== 'mechanic' ? '<option value="mechanic">ОГМ</option>' : ''}
+                ${data.department !== 'builder' ? '<option value="builder">ОРС</option>' : ''}
+                ${data.department !== 'protection' ? '<option value="protection">ОТиПК</option>' : ''}
+                ${data.department !== 'energy' ? '<option value="energy">ОГЭ</option>' : ''}
+            </select>
+        </div>
+        
+        <div class="field-group">
+            <label>Ответственный</label>
+            <select class="form-control auto-width" name="employee" id="employeeSelect3"
+                    data-minwidth="150" onfocus="loadEmployeeFields(3)">
                 <option value="${data.employee}">${data.employee}</option>
             </select>
         </div>
-        <div class="col-md-3">
-            <input type="date" class="form-control form-control-sm" name="planDate" 
-                   value="${data.planDate ? data.planDate : ''}">
+        
+        <div class="field-group">
+            <label>Желаемая дата</label>
+            <input type="date" class="form-control auto-width" name="desiredDate" 
+                    value="${data.desiredDate ? data.desiredDate : ''}" data-minwidth="120">
         </div>
-        <div class="col-md-4">
-            <input type="text" class="form-control form-control-sm" name="comment" 
-                   value="${data.comment || ''}">
+        
+        <div class="field-group">
+            <label>Плановая дата</label>
+            <input type="date" class="form-control auto-width" name="planDate" 
+                   value="${data.planDate ? data.planDate : ''}" data-minwidth="120">
+        </div>
+        
+        <div class="field-group">
+            <label>Примечание</label>
+            <input type="text" class="form-control auto-width" name="note" 
+                   value="${data.note || ''}" data-minwidth="150">
         </div>
     </div>`);
 
+    // Автоматическая регулировка ширины
+    $('.auto-width').each(function() {
+        const minWidth = $(this).data('minwidth') || 100;
+        const contentWidth = $(this).val().length * 8 + minWidth;
+        $(this).css('width', Math.min(Math.max(contentWidth, minWidth), 300) + 'px');
+    });
+
     // Обработчик сохранения
     $('#planModal .modal-footer .saveChangesBtn').off('click').on('click', async function () {
-        const row = $('#planContainer > .row');
+        const row = $('#planContainer > .dynamic-row');
         const rowId = row.data('id');
+        const workshopVal = row.find('[name="workShop"]').val();
+        const eventVal = row.find('[name="event"]').val();
+        const actionsVal = row.find('[name="actions"]').val();
+        const departmentVal = row.find('[name="department"]').val();
         const employeeVal = row.find('[name="employee"]').val();
         const planDateVal = row.find('[name="planDate"]').val();
-        const commentVal = row.find('[name="comment"]').val();
+        const desiredDateVal = row.find('[name="desiredDate"]').val();
+        const noteVal = row.find('[name="note"]').val();
 
-        await saveChange(rowId, employeeVal, planDateVal, commentVal);
+        await saveChange(rowId, workshopVal, eventVal, actionsVal, departmentVal, employeeVal, desiredDateVal, planDateVal, noteVal);
         $('#planModal').modal('hide');
     });
 
     $('#planModal').modal('show');
 
-    async function saveChange(rowId, employee, planDate, comment) {
+    async function saveChange(rowId, workshop, event, actions, department, employee, planDate, desiredDate, note) {
         const formData = new FormData();
         formData.append('id', rowId);
+        formData.append('workshop', workshop)
+        formData.append('event', event)
+        formData.append('actions', actions)
+        formData.append('department', department)
         formData.append('employee', employee)
         formData.append('planDate', planDate);
-        formData.append('comment', comment);
+        formData.append('desiredDate', desiredDate);
+        formData.append('note', note);
 
         $.ajax({
             url: 'sgi/save-change',

@@ -607,3 +607,107 @@ tr:hover {
 .sgiNumber {
     cursor: pointer;
 }
+
+/* Стили для модального окна редактирования */
+#planModal .modal-body {
+    overflow-x: auto;
+}
+
+#planModal .form-control,
+#planModal .form-select {
+    min-width: 100%;
+    font-size: 0.875rem;
+}
+
+#planModal .row > div {
+    padding: 0.25rem;
+}
+
+#planModal label.d-md-none {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #6c757d;
+}
+
+@media (max-width: 767.98px) {
+    #planModal .modal-dialog {
+        margin: 0.5rem auto;
+    }
+
+    #planModal .row > div {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    #planModal .modal-lg {
+        max-width: 1100px;
+    }
+}
+/* Кастомный размер модального окна */
+.modal-xxl {
+    max-width: 95%;
+    width: 95%;
+}
+
+/* Динамическая сетка */
+.dynamic-grid {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.dynamic-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+    flex: 1 1 auto;
+}
+
+.field-group label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+
+.auto-width {
+    transition: width 0.3s ease;
+    min-width: 80px;
+    max-width: 100%;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .dynamic-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .field-group {
+        width: 100%;
+    }
+
+    .modal-xxl {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* Для очень широких экранов */
+@media (min-width: 1600px) {
+    .modal-xxl {
+        max-width: 1400px;
+    }
+}
+

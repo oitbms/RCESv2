@@ -269,22 +269,16 @@
     <div id="pagination" class="pagination mt-4"></div>
 
     <div class="modal" id="planModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-xxl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Редактирование</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" onclick="reload()"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-0">
                     <div class="container-fluid">
-                        <div class="row g-2 d-none d-md-flex text-center mb-2">
-                            <div class="col-md-3"><small>Ответственный</small></div>
-                            <div class="col-md-3"><small>Плановая дата</small></div>
-                            <div class="col-md-4"><small>Комментарий</small></div>
-                            <div class="col-md-2"></div>
-                        </div>
-                        <div id="planContainer" class="row g-3">
-                            <!-- Данные -->
+                        <div id="planContainer" class="dynamic-grid">
+                            <!-- Данные будут здесь -->
                         </div>
                     </div>
                 </div>
