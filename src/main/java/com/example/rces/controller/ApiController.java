@@ -124,31 +124,10 @@ public class ApiController {
         return ResponseEntity.ok(new SingleSgi(sgi.getWorkShop(), sgi.getEvent(), sgi.getActions(), sgi.getDepartment().name(), sgi.getDepartment().getName(), sgi.getEmployee().getName(), sgi.getDesiredDate(), sgi.getPlanDate(), sgi.getNote(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
     }
 
-    @GetMapping("/print-single")
-    public ResponseEntity<Resource> openWordFile(@RequestParam UUID id) {
-        try {
-            SGI sgi = service.getSgi(id);
-            ByteArrayResource resource = service.generateWordFile(sgi);
-
-            String filename = "Мероприятие_" + sgi.getRequestNumber() + ".docx";
-            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
-                    .replace("+", "%20");
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .contentLength(resource.contentLength())
-                    .body(resource);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/print-many")
+    @GetMapping("/print")
     public ResponseEntity<Resource> printManySgi(@RequestParam List<UUID> ids) {
         try {
-            List<SGI> sgiList = service.getSgiList(ids);
+            List<SGI> sgiList = service.getSgiList(ids).stream().sorted(Comparator.comparing(SGI::getRequestNumber)).collect(Collectors.toList());
             ByteArrayResource resource = service.generateManyWordFile(sgiList);
 
             String filename = "Мероприятия_" + formatedDate(LocalDate.now()) + ".docx";

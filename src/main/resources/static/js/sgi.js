@@ -536,7 +536,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#sgiTable tbody').on('contextmenu', 'tr', function (e) {
+    $('#sgiTable tbody').on('contextmenu', 'tr', function(e) {
         e.preventDefault();
         currentRow = $(this);
 
@@ -549,7 +549,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#sgiTable tbody').on('dblclick', 'tr', function () {
+    $('#sgiTable tbody').on('dblclick', 'tr', function() {
         const row = $(this);
         const rowId = row.attr('id');
 
@@ -558,28 +558,46 @@ $(document).ready(function () {
             selectedRows = selectedRows.filter(id => id !== rowId);
         } else {
             row.addClass('selected-row');
-            selectedRows.push(rowId);
+            if (!selectedRows.includes(rowId)) {
+                selectedRows.push(rowId);
+            }
         }
+
+        $('#deleteRowBtn').text(selectedRows.length > 1 ?
+            `Удалить ${selectedRows.length} строк` :
+            'Удалить строку');
     });
 
-    $('#deleteRowBtn').on('click', function () {
-        if (currentRow) {
+    $('#deleteRowBtn').on('click', function() {
+        if (selectedRows.length > 0) {
+            deleteSgi(selectedRows);
+        } else if (currentRow) {
             const rowId = currentRow.attr('id');
-            deleteSgi(rowId);
-            $('#customContextMenu').hide();
+            deleteSgi([rowId]);
         }
-    });
+    })
 
-    function deleteSgi(rowId) {
+    function deleteSgi(rowIds) {
+        if (!rowIds || rowIds.length === 0) return;
+        if (!confirm(`Вы уверены, что хотите удалить ${rowIds.length > 1 ? 'выбранные строки' : 'эту строку'}?`)) {
+            return;
+        }
+
         $.ajax({
             url: '/sgi/delete',
             type: 'DELETE',
-            data: {id: rowId},
-            success: function () {
-                currentRow.remove();
+            contentType: 'application/json',
+            data: JSON.stringify(rowIds),
+            success: function() {
+                rowIds.forEach(id => {
+                    $(`#${id}`).remove();
+                });
+                selectedRows = selectedRows.filter(id => !rowIds.includes(id));
+                $('#customContextMenu').hide();
+                filterData();
             },
-            error: function () {
-                alert('Ошибка при удалении');
+            error: function(xhr) {
+                alert('Ошибка при удалении: ' + (xhr.responseJSON?.message || xhr.statusText));
             }
         });
     }
@@ -608,12 +626,8 @@ $(document).ready(function () {
 // Модифицируем обработчик печати
     $('#printRowBtn').on('click', () => {
         if (selectedRows.length > 0) {
-            window.open(`/api/print-many?ids=${selectedRows.join(',')}`);
-        } else if (currentRow) {
-            const rowId = currentRow.attr('id');
-            window.open(`/api/print-single?id=${rowId}`);
+            window.open(`/api/print?ids=${selectedRows.join(',')}`);
         }
-
         $('#customContextMenu').hide();
     });
 

@@ -142,8 +142,8 @@ public class SGController {
 
     @DeleteMapping("/delete")
     @ResponseBody
-    public void deleteSGI(@RequestParam UUID id) {
-        service.delete(service.findById(SGI.class, id));
+    public void deleteSGI(@RequestBody List<UUID> ids) {
+        ids.forEach(id -> service.delete(service.findById(SGI.class, id)));
     }
 
     @DeleteMapping("/delete-fact")
