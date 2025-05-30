@@ -227,53 +227,69 @@
         </#list>
         </tbody>
     </table>
-    <div class="d-flex justify-content-center gap-2">
-        <!-- Мобильные кнопки -->
-        <div class="mobile-buttons-container d-block d-md-none">
+
+    <div class="sticky-footer">
+        <div id="pagination" class="pagination-modern"></div>
+        <div class="button-group">
+            <!-- Десктопные кнопки -->
             <button type="button"
-                    class="btn btn-primary mobile-btn"
+                    class="btn btn-primary btn-action d-none d-md-flex"
                     data-bs-toggle="modal"
                     data-bs-target="#createModal">
-                Добавить
+                <i class="bi bi-plus-circle"></i>
+                <span class="btn-text">Добавить</span>
             </button>
 
             <button type="button"
-                    class="btn btn-primary mobile-btn"
-                    id="mobileFilterBtn"
-                    data-bs-toggle="modal"
-                    data-bs-target="#mobileFilterModal">
-                Фильтры
+                    class="btn btn-outline-primary btn-action d-none d-md-flex"
+                    name="clearButton">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <span class="btn-text">Фильтры</span>
             </button>
+
+            <button class="btn btn-outline-secondary btn-action d-none d-md-flex"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasWithBothOptions">
+                <i class="bi bi-list"></i>
+                <span class="btn-text">Меню</span>
+            </button>
+
+            <!-- Мобильные кнопки -->
+            <div class="mobile-actions d-flex d-md-none gap-2">
+                <button type="button"
+                        class="btn btn-primary btn-action"
+                        data-bs-toggle="modal"
+                        data-bs-target="#createModal">
+                    <i class="bi bi-plus"></i>
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary btn-action"
+                        id="mobileFilterBtn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#mobileFilterModal">
+                    <i class="bi bi-funnel"></i>
+                </button>
+
+                <button class="btn btn-outline-secondary btn-action"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasWithBothOptions">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
         </div>
-
-        <!-- Десктопные кнопки -->
-        <button type="button"
-                class="btn btn-primary d-none d-md-inline-block"
-                data-bs-toggle="modal"
-                data-bs-target="#createModal">
-            Добавить задание
-        </button>
-
-        <button type="button"
-                class="btn btn-primary d-none d-md-inline-block"
-                name="clearButton">
-            Очистить фильтры
-        </button>
-
-        <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions"
-                aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
-            <i class="bi bi-list" style="color: black"></i>
-        </button>
     </div>
-
-    <div id="pagination" class="pagination mt-4"></div>
 
     <div class="modal" id="planModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-xxl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Редактирование</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" onclick="reload()"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"
+                            onclick="reload()"></button>
                 </div>
                 <div class="modal-body p-0">
                     <div class="container-fluid">
@@ -418,7 +434,8 @@
     </div>
 
     <!-- Модальное окно фильтров -->
-    <div class="modal fade" id="mobileFilterModal" tabindex="-1" aria-labelledby="mobileFilterModalLabel" aria-hidden="true">
+    <div class="modal fade" id="mobileFilterModal" tabindex="-1" aria-labelledby="mobileFilterModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-fullscreen d-md-none">
             <div class="modal-content">
                 <div class="modal-header">
