@@ -53,7 +53,7 @@ public class ApiServices {
     public List<ImagesPayload> findImages(UUID param) {
         List<Images> images;
         Requests request = service.findById(Requests.class, param);
-        if (request!=null) {
+        if (request != null) {
             images = service.findAllByField(Images.class, "request", request);
         } else {
             FactExecutionSGI factExecutionSGI = service.findById(FactExecutionSGI.class, param);
@@ -65,7 +65,7 @@ public class ApiServices {
                         image.getId(),
                         image.getName(),
                         image.getBase64Data(),
-                        request!= null ? image.getRequest().getId() : image.getSgi().getId()
+                        request != null ? image.getRequest().getId() : image.getSgi().getId()
                 ))
                 .collect(Collectors.toList());
     }
@@ -191,65 +191,6 @@ public class ApiServices {
         return service.findAllByField(SGI.class, "id", ids);
     }
 
-    public ByteArrayResource generateWordFile(SGI sgi) throws Exception {
-        try (XWPFDocument document = new XWPFDocument()) {
-            XWPFParagraph title = document.createParagraph();
-            title.setAlignment(ParagraphAlignment.CENTER);
-            XWPFRun titleRun = title.createRun();
-            titleRun.setText("Мероприятие №" + sgi.getRequestNumber());
-            titleRun.setBold(true);
-            titleRun.setFontSize(20);
-
-            XWPFTable table = document.createTable(1, 2);
-            table.setWidth("100%");
-
-            CTTblPr tblPr = table.getCTTbl().getTblPr();
-            CTTblBorders borders = tblPr.addNewTblBorders();
-            borders.addNewBottom().setVal(STBorder.SINGLE);
-            borders.addNewLeft().setVal(STBorder.SINGLE);
-            borders.addNewRight().setVal(STBorder.SINGLE);
-            borders.addNewTop().setVal(STBorder.SINGLE);
-            borders.addNewInsideH().setVal(STBorder.SINGLE);
-            borders.addNewInsideV().setVal(STBorder.SINGLE);
-
-            table.removeRow(0);
-
-            addTableRow(table, "Цех:", sgi.getWorkShop());
-            addTableRow(table, "Мероприятие:", sgi.getEvent());
-            addTableRow(table, "Сопутствующие действия:", sgi.getActions());
-            addTableRow(table, "Ответственный отдел:", sgi.getDepartment() != null ? sgi.getDepartment().getName() : "");
-            addTableRow(table, "Ответственное лицо:", sgi.getEmployee() != null ? sgi.getEmployee().getName() : "");
-            addTableRow(table, "Желаемый срок:", formatedDate(sgi.getDesiredDate()));
-            addTableRow(table, "Примечание:", sgi.getNote());
-            addTableRow(table, "Планируемый срок:", formatedDate(sgi.getPlanDate()));
-            addTableRow(table, "Комментарий:", sgi.getComment());
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            document.write(out);
-            return new ByteArrayResource(out.toByteArray());
-        }
-    }
-
-    private void addTableRow(XWPFTable table, String label, String value) {
-        XWPFTableRow row = table.createRow();
-        XWPFTableCell labelCell = row.getCell(0);
-        if (labelCell == null) {
-            labelCell = row.addNewTableCell();
-        }
-        labelCell.setText(label);
-        XWPFParagraph labelPara = labelCell.getParagraphs().get(0);
-        labelPara.setAlignment(ParagraphAlignment.LEFT);
-        XWPFRun labelRun = labelPara.getRuns().get(0);
-        labelRun.setBold(true);
-        XWPFTableCell valueCell = row.getCell(1);
-        if (valueCell == null) {
-            valueCell = row.addNewTableCell();
-        }
-        valueCell.setText(value != null ? value : "");
-        XWPFParagraph valuePara = valueCell.getParagraphs().get(0);
-        valuePara.setAlignment(ParagraphAlignment.LEFT);
-    }
-
     public ByteArrayResource generateManyWordFile(List<SGI> sgiList) throws Exception {
         try (XWPFDocument document = new XWPFDocument()) {
 
@@ -328,6 +269,7 @@ public class ApiServices {
             return new ByteArrayResource(out.toByteArray());
         }
     }
+
     private void setCellBorders(XWPFTableCell cell) {
         CTTcPr tcPr = cell.getCTTc().addNewTcPr();
         CTTcBorders borders = tcPr.addNewTcBorders();

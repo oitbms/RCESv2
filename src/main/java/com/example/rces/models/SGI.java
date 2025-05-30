@@ -20,13 +20,14 @@ public class SGI {
         Department(String name) {
             this.name = name;
         }
+
         public String getName() {
             return name;
         }
     }
 
     public enum ColorSGI {
-        NONE,RED,GREEN,YELLOW,GREY
+        NONE, RED, GREEN, YELLOW, GREY
     }
 
     @Id

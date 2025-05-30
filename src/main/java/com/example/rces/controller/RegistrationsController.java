@@ -16,7 +16,6 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.*;
 
@@ -27,7 +26,7 @@ public class RegistrationsController {
     private UniversalService service;
 
     @GetMapping("/admin")
-    public String admin(Model model,Principal principal) {
+    public String admin(Model model, Principal principal) {
         Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
         List<Role> roles = List.of(Role.values());
         model.addAttribute("users", service.findAll(Employee.class));
@@ -76,7 +75,7 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           @RequestParam Long chatId) {
-        Employee employee = service.saveEmployee(null,username,true,role,mlmNode,password,chatId);
+        Employee employee = service.saveEmployee(null, username, true, role, mlmNode, password, chatId);
         return "redirect:/admin";
     }
 
@@ -93,11 +92,11 @@ public class RegistrationsController {
 
     @PostMapping("/update")
     public String updateUser(@RequestParam Long id,
-                                        @RequestParam(required = false) String userName,
-                                        @RequestParam(required = false) String roleName,
-                                        @RequestParam(required = false) Long chatName,
-                                        @RequestParam(required = false) Boolean active) {
-        Employee user = service.saveEmployee(id,userName,active,roleName,null,null,chatName);
+                             @RequestParam(required = false) String userName,
+                             @RequestParam(required = false) String roleName,
+                             @RequestParam(required = false) Long chatName,
+                             @RequestParam(required = false) Boolean active) {
+        Employee user = service.saveEmployee(id, userName, active, roleName, null, null, chatName);
         return "redirect:/admin";
     }
 }

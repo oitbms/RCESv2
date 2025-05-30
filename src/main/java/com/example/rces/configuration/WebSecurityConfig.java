@@ -33,7 +33,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")
-                        .hasAnyAuthority("MASTER", "ADMIN","CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
+                        .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
                         .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
                         .anyRequest().authenticated()
@@ -43,11 +43,11 @@ public class WebSecurityConfig {
                         .permitAll()
                 ).
                 logout()
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll();
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll();
 
         return http.build();
     }

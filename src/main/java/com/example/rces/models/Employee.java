@@ -1,7 +1,6 @@
 package com.example.rces.models;
 
 import com.example.rces.models.enums.MlmNode;
-import com.example.rces.models.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;

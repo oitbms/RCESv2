@@ -144,11 +144,11 @@ public class RequestController {
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
                                  HttpServletRequest httpRequest,
-                                 Model model,Principal principal) {
+                                 Model model, Principal principal) {
         if (detector.isMobile(httpRequest)) {
             return "/mobiledevice";
         }
-        Employee employee = service.findSingleByField(Employee.class,"name",principal.getName());
+        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
         List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))

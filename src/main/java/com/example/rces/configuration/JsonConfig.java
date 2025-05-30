@@ -16,6 +16,7 @@ public class JsonConfig {
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         return objectMapper;
     }
+
     @Bean
     public Jackson2ObjectMapperBuilder objectMapperBuilder() {
         return new Jackson2ObjectMapperBuilder()
