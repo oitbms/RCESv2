@@ -4,6 +4,7 @@ import com.example.rces.controller.payload.*;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
+import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -69,8 +71,14 @@ public class ApiController {
     }
 
     @GetMapping("/status")
-    public List<StatusPayload> getStatus() {
-        return Arrays.stream(Status.values())
+    public List<StatusPayload> getStatus(@RequestParam String param) {
+        List<Status> statuses = switch (param) {
+            case "ADMIN" -> Arrays.asList(Status.values());
+            case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
+            case "MASTER" -> Arrays.asList(Status.New, Status.Closed, Status.Cancel);
+            default -> Collections.emptyList();
+        };
+        return statuses.stream()
                 .map(status -> new StatusPayload(status.getId(), status.getName()))
                 .collect(Collectors.toList());
     }
@@ -84,9 +92,9 @@ public class ApiController {
     public void updateData(@RequestParam String bidType,// Имя класса bid
                            @RequestParam UUID id, // id класса bid
                            @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
-                           @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
+                           @RequestBody Map<String, Object> updatedFields, Principal principal) // ключ - название поля в классе bid, значение - значение поля в bid
     {
-        service.update(id, sendMessage, updatedFields);
+        service.update(id, sendMessage, updatedFields,principal);
     }
 
     @GetMapping("/typeRequest")

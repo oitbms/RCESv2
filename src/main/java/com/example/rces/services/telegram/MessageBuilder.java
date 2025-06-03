@@ -23,6 +23,12 @@ public class MessageBuilder {
     }
 
     private String buildCreateMessage(Requests request) {
+        String reason;
+        if (request.getTypeRequest().equals(Requests.Type.otk)) {
+            reason = request.getReason_wr() != null ? request.getReason_wr() : "Причина не указана";
+        } else {
+            reason = request.getReason() != null ? request.getReason().getName() : "Причина не указана";
+        }
         return String.format(
                 "Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
                 request.getRequestNumber(),
@@ -32,11 +38,17 @@ public class MessageBuilder {
                 request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
                 !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                 request.getComment() != null ? request.getComment() : "",
-                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                reason,
                 baseUrl + "/view/" + request.getRequestNumber());
     }
 
     private String buildUpdateMessage(Requests request) {
+        String reason;
+        if (request.getTypeRequest().equals(Requests.Type.otk)) {
+            reason = request.getReason_wr() != null ? request.getReason_wr() : "Причина не указана";
+        } else {
+            reason = request.getReason() != null ? request.getReason().getName() : "Причина не указана";
+        }
         return String.format(
                 "Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
                 request.getRequestNumber(),
@@ -46,7 +58,7 @@ public class MessageBuilder {
                 request.getItem().getName(),
                 !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                 request.getComment() != null ? request.getComment() : "",
-                request.getReason() != null ? request.getReason().getName() : "Причина не указана",
+                reason,
                 request.getStatus().getName(),
                 baseUrl + "/view/" + request.getRequestNumber());
     }

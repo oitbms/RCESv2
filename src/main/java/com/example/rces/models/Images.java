@@ -50,7 +50,7 @@ public class Images {
     }
 
     public void setBase64Data(String base64Image) {
-        setData(Base64.getDecoder().decode(base64Image.substring("data:image/jpeg;base64,".length())));
+        setData(Base64.getDecoder().decode(base64Image.substring("data:image/jpeg;base64,".length() - 1)));
     }
 
     public UUID getId() {

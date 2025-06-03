@@ -132,12 +132,14 @@ public class RequestController {
     }
 
     @GetMapping("/view/{requestNumber}")
-    public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
+    public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model,Principal principal) {
         Requests requests = service.findSingleByField(Requests.class, "requestNumber", requestNumber);
+        Employee employee = service.findSingleByField(Employee.class,"name", principal.getName());
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreateDate()));
         model.addAttribute("viewForm", true);
+        model.addAttribute("role",employee.getRole());
         return "/requests";
     }
 

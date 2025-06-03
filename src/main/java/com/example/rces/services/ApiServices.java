@@ -3,6 +3,7 @@ package com.example.rces.services;
 import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Inconsistency;
+import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.telegram.MessageType;
 import com.example.rces.services.telegram.TelegramService;
@@ -21,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +43,8 @@ public class ApiServices {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    Long chatId;
 
     public List<CustomerOrder> findAllCustomerOrder() {
         return service.findAll(CustomerOrder.class);
@@ -71,7 +75,7 @@ public class ApiServices {
     }
 
     @Transactional
-    public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
+    public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields, Principal principal) {
         Requests request = service.findById(Requests.class, id);
         Requests oldRequest;
         try {
@@ -143,7 +147,8 @@ public class ApiServices {
         service.save(request);
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
-            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+//            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+            Employee employee = service.findSingleByField(Employee.class, "name",principal.getName());
             if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
                 tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
             } else if (request.getStatus() != oldRequest.getStatus()) {
@@ -157,7 +162,14 @@ public class ApiServices {
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                tgService.sendMessageToUser(request, employee.getChatId(),
+
+                if (employee.getRole().equals(String.valueOf(Role.MASTER))){
+                    Employee empl = service.findById(Employee.class, request.getEmployee().getId());
+                    chatId = empl.getChatId();
+                } else {
+                    chatId = request.getCreatedBy().getChatId();
+                }
+                tgService.sendMessageToUser(request, chatId,
                         !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
             }
             //если закрыли или отменили заявку

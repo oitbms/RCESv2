@@ -217,6 +217,16 @@ public class ServiceUtil {
         return map;
     }
 
+    public static Map<String, List<Requests>> getCreateRequestsMaster(List<Requests> requests) {
+        return Arrays.stream(Requests.Type.values())
+                .collect(Collectors.toMap(
+                        Enum::name,
+                        type -> requests.stream()
+                                .filter(req -> req.getTypeRequest() == type)
+                                .collect(Collectors.toList())
+                ));
+    }
+
     public static List<Integer> countDailyRequestsList(List<Requests> filteredRequests) {
         int[] dailyCounts = countDailyRequests(filteredRequests);
         return Arrays.stream(dailyCounts).boxed().toList();

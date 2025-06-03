@@ -93,7 +93,8 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendCompleted(Requests request) {
-        String message = "Заявка №" + request.getRequestNumber() + " Выполнена";
+        String message = "Заявка №" + request.getRequestNumber() + " Выполнена + \n" +
+                "Ссылка на заявку: http://web.bormash.ru:2005/view/" + request.getRequestNumber();
         String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
                 request.getCreatedBy().getChatId().toString(), message);
         restTemplate.getForObject(url, String.class);

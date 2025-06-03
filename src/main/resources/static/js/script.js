@@ -338,7 +338,7 @@ if (document.title.includes("Заявка на вызов")) {
         if (type === 'otk') {
             if (viewForm) {
                 document.getElementById('mlmNodeViewField').classList.add('hidden');
-                document.getElementById("descriptionViewField").classList.add('hidden');
+                // document.getElementById("descriptionViewField").classList.add('hidden');
                 document.getElementById("reasonCreateField").removeAttribute("data-required")
             } else {
                 // document.getElementById('mlmNodeCreateField').classList.add('hidden');

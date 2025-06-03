@@ -259,12 +259,11 @@
         </div>
 
         <div class="form-group form-group-flex telegram-checkbox">
-            <label for="telegramCheckbox">Отправить уведомление в Telegram</label>
-            <input type="hidden" name="sendToTelegram" value="false">
-            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox" value="true">
+            <label for="telegramCheckbox">Не отправлять уведомление в Telegram</label>
+            <input type="hidden" name="sendToTelegram" value="true">
+            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox" value="false">
         </div>
 
-        <!-- Кнопка для открытия модального окна просмотра фото-->
         <button type="button" class="btn-modern" id="openPhotoModal">Прикрепленные фото</button>
 
         <div class="form-group form-group-flex">
@@ -278,7 +277,9 @@
                     data-endpoint="status"
                     data-input-id="statusName"
                     data-hidden-entity="statusJson"
-                    data-modal-id="statusModal">
+                    data-modal-id="statusModal"
+                    data-param="${role}"
+            >
                 Изменить и уведомить
             </button>
         </div>
