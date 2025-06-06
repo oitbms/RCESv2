@@ -6,6 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
@@ -135,10 +136,13 @@
         </#if>
 
         <div class="form-group">
-            <label>Комментарий</label>
-            <div class="form-group-flex">
-                <input type="text" id="comment" name="comment" placeholder="Комментарий" class="form-input">
-            </div>
+            <label for="comment">Комментарий</label>
+            <textarea
+                    class="form-control"
+                    id="comment"
+                    name="comment"
+                    rows="5"
+                    style="resize: both;"></textarea>
         </div>
 
         <!-- Фото -->
@@ -160,130 +164,152 @@
             <span class="form-value request-number">Заявка №${bid.requestNumber}</span>
         </div>
 
-        <div class="form-group">
-            <label>Дата создания: ${date}</label>
-<#--            <span class="form-value">${date}</span>-->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Информация</h5>
+                <p class="card-text mb-1"><strong>Дата создания:</strong> ${(date)!""}</p>
+                <p class="card-text mb-1"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
+                <p class="card-text mb-1"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!""}</p>
+                <#if bid.typeRequest == 'otk'>
+                    <p class="card-text mb-1"><strong>Тип контроля:</strong> ${(bid.getControl())!""}</p>
+                    <p class="card-text mb-1"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                </#if>
+            </div>
         </div>
 
-        <div class="form-group" id="mlmNodeViewField">
-            <label>Цех: ${(bid.mlmNode.getName())!""}</label>
-<#--            <span class="form-value">${(bid.mlmNode.getName())!""}</span>-->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Редактирование</h5>
+                <div class="mb-2">
+                    <label>Статус:</label>
+                    <input type="text" id="statusName" name="status" style="width: 100%; max-width: 350px;"
+                           value="${bid.status.getName()?trim}"
+                           readonly
+                           class="form-input">
+                    <input type="hidden" id="statusJson" value="${bid.status}">
+                    <button type="button" class="openModal btn-modern"
+                            data-endpoint="status"
+                            data-input-id="statusName"
+                            data-hidden-entity="statusJson"
+                            data-modal-id="statusModal"
+                            data-param="${role}"
+                    >
+                        Изменить
+                    </button>
+                </div>
+
+                <div id="descriptionViewField" style="display: none;">
+                    <div class="mb-2">
+                        <label for="description" class="form-label">Описание решения:</label>
+                        <textarea
+                                class="form-control"
+                                id="description"
+                                name="description"
+                                rows="3"
+                                style="resize: both;">${bid.description!''}</textarea>
+                    </div>
+                </div>
+
+                <div id="commentContainer" style="display: none;">
+                    <div class="mb-2 d-flex flex-column">
+                        <label for="commentNoAgreed">Причина:</label>
+                        <textarea
+                                class="form-control"
+                                id="commentAgreed"
+                                name="commentAgreed"
+                                rows="3"
+                                style="resize: both;">${bid.commentAgreed!''}</textarea>
+                    </div>
+                </div>
+
+                <#if type == 'otk'>
+                    <div id="inconsistencyViewField">
+                        <div class="mb-2">
+                        <label>Несоответствия:</label>
+                        <input type="text" id="inconsistencyName" readonly class="form-input" style="width: 282px"
+                               value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
+                        <input type="hidden" id="inconsistencyJson" name="inconsistency"
+                               value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
+                        <button type="button" class="openModal btn-modern"
+                                data-endpoint="inconsistency"
+                                data-input-id="inconsistencyName"
+                                data-hidden-entity="inconsistencyJson"
+                                data-modal-id="inconsistencyModal"
+                                data-multiple="true"
+                                data-param="${bid.getControl()!""}"
+                        >
+                            Изменить
+                        </button>
+                        </div>
+                    </div>
+                </#if>
+
+
+
+                <div class="mb-2">
+                    <label>Ответственный:</label>
+                    <input type="text" id="employeeName"
+                           value="${bid.employee.name?trim}"
+                           readonly
+                           class="form-input">
+                    <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                    <input type="hidden" id="employeeJson"
+                           value='${employeeJson}'
+                           name="employee">
+                    <button type="button" class="openModal btn-modern"
+                            data-endpoint="employees"
+                            data-input-id="employeeName"
+                            data-hidden-entity="employeeJson"
+                            data-modal-id="employeesModal">
+                        Изменить
+                    </button>
+                </div>
+
+                <div class="mb-2">
+                    <label>Заказ клиента:</label>
+                    <input type="text" id="customerOrderString"
+                           value="${bid.customerOrder.name?trim}"
+                           class="form-input">
+                    <#assign customerOrderJson = '{"id":"${bid.customerOrder.id?string}", "name":"${bid.customerOrder.name?js_string}"}'>
+                    <input type="hidden" id="customerOrderJson"
+                           value='${customerOrderJson}'
+                           name="customerOrder">
+                    <button type="button" class="openModal btn-modern"
+                            data-endpoint="customerOrders"
+                            data-input-id="customerOrderString"
+                            data-hidden-entity="customerOrderJson"
+                            data-modal-id="customerOrdersModal">
+                        Изменить
+                    </button>
+                </div>
+
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Тип ТМЦ: ${(bid.item.getName())!""}</label>
-<#--            <span class="form-value">${(bid.item.getName())!""}</span>-->
-        </div>
-
-        <#if bid.typeRequest == 'otk'>
-        <div class="form-group">
-            <label>Тип контроля: ${bid.getControl()!""}</label>
-        </div>
-        </#if>
-
-        <div class="form-group form-group-flex">
-            <label>Заказ клиента:</label>
-            <input type="text" id="customerOrderString"
-                   value="${bid.customerOrder.name?trim}"
-                   class="form-input">
-            <#assign customerOrderJson = '{"id":"${bid.customerOrder.id?string}", "name":"${bid.customerOrder.name?js_string}"}'>
-            <input type="hidden" id="customerOrderJson"
-                   value='${customerOrderJson}'
-                   name="customerOrder">
-            <button type="button" class="openModal btn-modern"
-                    data-endpoint="customerOrders"
-                    data-input-id="customerOrderString"
-                    data-hidden-entity="customerOrderJson"
-                    data-modal-id="customerOrdersModal">
-                Изменить
-            </button>
-        </div>
-
-        <div class="form-group form-group-flex">
-            <label>Ответственный:</label>
-            <input type="text" id="employeeName"
-                   value="${bid.employee.name?trim}"
-                   readonly
-                   class="form-input">
-            <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
-            <input type="hidden" id="employeeJson"
-                   value='${employeeJson}'
-                   name="employee">
-            <button type="button" class="openModal btn-modern"
-                    data-endpoint="employees"
-                    data-input-id="employeeName"
-                    data-hidden-entity="employeeJson"
-                    data-modal-id="employeesModal">
-                Изменить
-            </button>
-        </div>
-
-        <div class="form-group form-group-flex" id="descriptionViewField">
-            <label>Описание решения:</label>
-            <input type="text" id="description"
-                   value="${bid.description!''}"
-                   class="form-input"
-                   name="description">
-        </div>
-
-        <#if type == 'otk'>
-            <div class="form-group form-group-flex" id="inconsistencyViewField">
-                <label>Несоответствия:</label>
-                <input type="text" id="inconsistencyName" readonly class="form-input"
-                       value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
-                <input type="hidden" id="inconsistencyJson" name="inconsistency"
-                       value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
-                <button type="button" class="openModal btn-modern"
-                        data-endpoint="inconsistency"
-                        data-input-id="inconsistencyName"
-                        data-hidden-entity="inconsistencyJson"
-                        data-modal-id="inconsistencyModal"
-                        data-multiple="true"
-                        data-param="${bid.getControl()!""}"
-                >
-                    Изменить
-                </button>
+            <div class="mb-2">
+                <label>Комментарий:</label>
+                <textarea
+                        class="form-control"
+                        id="comment"
+                        name="comment"
+                        rows="5"
+                        style="resize: both;">${bid.comment!''}</textarea>
             </div>
 
-            <div class="form-group" id="qtyViewField">
-                <label>Кол-во деталей к контролю: ${(bid.qty)!0}</label>
+<#--        <div class="telegram-checkbox mb-3">-->
+<#--            <label for="telegramCheckbox">Не отправлять уведомление в Telegram</label>-->
+<#--            <input type="hidden" name="sendToTelegram" value="true">-->
+<#--            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox" value="false">-->
+<#--        </div>-->
+
+            <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                <input type="hidden" name="sendToTelegram" value="true">
+                <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-check-input me-2" value="false">
+                <label for="telegramCheckbox" class="mb-0">Не отправлять уведомление в Telegram</label>
             </div>
-        </#if>
 
-        <div class="form-group form-group-flex">
-            <label>Комментарий:</label>
-            <input type="text" id="comment"
-                   value="${bid.comment!''}"
-                   class="form-input"
-                   name="comment">
-        </div>
-
-        <div class="form-group form-group-flex telegram-checkbox">
-            <label for="telegramCheckbox">Не отправлять уведомление в Telegram</label>
-            <input type="hidden" name="sendToTelegram" value="true">
-            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox" value="false">
-        </div>
-
-        <button type="button" class="btn-modern" id="openPhotoModal">Прикрепленные фото</button>
-
-        <div class="form-group form-group-flex">
-            <label>Статус</label>
-            <input type="text" id="statusName" name="status"
-                   value="${bid.status.getName()?trim}"
-                   readonly
-                   class="form-input">
-            <input type="hidden" id="statusJson" value="${bid.status}">
-            <button type="button" class="openModal btn-modern"
-                    data-endpoint="status"
-                    data-input-id="statusName"
-                    data-hidden-entity="statusJson"
-                    data-modal-id="statusModal"
-                    data-param="${role}"
-            >
-                Изменить и уведомить
-            </button>
-        </div>
-        <a href="/menu" class="btn-modern">Перейти в меню</a>
+        <button class="btn btn-primary mb-2" type="button" id="openPhotoModal">Прикрепленные фото</button>
+            <a href="/menu" class="btn btn-primary mb-2">Меню</a>
     </form>
 </#if>
 
@@ -351,7 +377,7 @@
         <h2>Прикрепленные фото</h2>
         <div id="photoContainer" class="photo-container"></div>
         <button type="button" id="addPhotoBtn" class="btn-modern">Добавить фото</button>
-        <input type="file" id="photoInput" accept="image/*" style="display: none;">
+        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;">
     </div>
 </div>
 

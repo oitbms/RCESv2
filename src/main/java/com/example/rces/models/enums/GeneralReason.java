@@ -10,7 +10,7 @@ public enum GeneralReason {
     tech2("Оказание помощи производству", "technologist"),
     tech3("Освоение новых технологий", "technologist"),
     cons1("Неполнота данных в ркд", "constructor"),
-    cons2("Необходимость уточнения в ркд", "constructor"),
+    cons2("Ошибка исполнителя", "constructor"),
     cons3("Требуется корректировка ркд", "constructor"),
     otk1("ВИК", "otk"),
     otk2("УДС", "otk"),

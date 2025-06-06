@@ -1,5 +1,9 @@
 const entityId = document.getElementById('id');  // Id сущности
 let timeout; // Таймаут
+const statusSelect = document.getElementById('statusName');
+const commentContainer = document.getElementById('commentContainer');
+const descriptionViewField = document.getElementById('descriptionViewField');
+const inconsistencyViewField = document.getElementById('inconsistencyViewField')
 
 // Функция для получения данных по API
 async function fetchData(endpoint, param) {
@@ -70,6 +74,8 @@ document.querySelectorAll('.openModal').forEach(button => {
                 document.getElementById(hiddenEntity).value = JSON.stringify(entity);
                 if (viewForm && update) saveData();
                 closeModal(modalId);
+                toggleCommentField();
+                toggleDescriptionField();
             });
         });
         modalWindow.classList.add('open')
@@ -106,6 +112,12 @@ if (document.title.includes("Заявка на вызов")) {
         });
 // Обработка ввода описания решения с задержкой
         document.getElementById('description').addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                saveData();
+            }, 3000);
+        });
+        document.getElementById('commentAgreed').addEventListener('input', function () {
             clearTimeout(timeout);
             timeout = setTimeout(function () {
                 saveData();
@@ -357,4 +369,26 @@ if (document.title.includes("Заявка на вызов")) {
         }
     });
 }
+function toggleCommentField() {
+    if (statusSelect.value === 'Не согласовано') {
+        commentContainer.style.display = 'flex';
+    } else {
+        commentContainer.style.display = 'none';
+    }
+    if (statusSelect.value !== 'Новый') {
+        descriptionViewField.style.display = 'flex';
+        inconsistencyViewField.style.display = 'flex'
+    } else {
+        descriptionViewField.style.display = 'none';
+        inconsistencyViewField.style.display = 'none'
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    toggleCommentField();
+});
+
+statusSelect.addEventListener('change', () => {
+    toggleCommentField();
+});
 

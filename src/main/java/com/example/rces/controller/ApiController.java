@@ -4,7 +4,6 @@ import com.example.rces.controller.payload.*;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.*;
 import com.example.rces.services.ApiServices;
-import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -75,7 +74,7 @@ public class ApiController {
         List<Status> statuses = switch (param) {
             case "ADMIN" -> Arrays.asList(Status.values());
             case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
-            case "MASTER" -> Arrays.asList(Status.New, Status.Closed, Status.Cancel);
+            case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel,Status.NoAgreed);
             default -> Collections.emptyList();
         };
         return statuses.stream()
@@ -94,7 +93,7 @@ public class ApiController {
                            @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
                            @RequestBody Map<String, Object> updatedFields, Principal principal) // ключ - название поля в классе bid, значение - значение поля в bid
     {
-        service.update(id, sendMessage, updatedFields,principal);
+        service.update(id, sendMessage, updatedFields, principal);
     }
 
     @GetMapping("/typeRequest")

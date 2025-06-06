@@ -7,7 +7,8 @@ public enum Status {
     InWork(2L, "В работе"),
     Closed(3L, "Закрыт"),
     Cancel(4L, "Отменен"),
-    Completed(5L, "Выполнен");
+    Completed(5L, "Выполнен"),
+    NoAgreed(6L,"Не согласовано");
 
     private final Long id;
     private final String name;

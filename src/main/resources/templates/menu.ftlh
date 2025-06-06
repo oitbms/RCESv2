@@ -22,104 +22,108 @@
                 display: none;
             }
         }
+        @media (max-width: 768px) {
+            .bottom-margin {
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="container mb-5">
     <div class="row">
-    <h1 class="text-center mb-4">Меню пользователя</h1>
-    <div class="card">
-        <div class="text-center card-body">
-            <div class="user-info mb-4">
-                <label class="fw-bold">Имя пользователя:</label>
-                <span>${user.getName()}</span><br>
-<#--                <label class="fw-bold">Рабочее место:</label>-->
-<#--                <span>${(user.mlmNode.getName())!""}</span><br>-->
-            </div>
-        <nav class="mb-4">
-            <ul class="nav justify-content-center">
-                    <li class="nav-item">
-                        <#if user.getRole() == 'ADMIN'>
-                        <a class="btn btn-primary" href="/sgi">СГИ</a>
-                        <a class="btn btn-primary" href="/admin">Пользователи</a>
-                        <a class="btn btn-primary" href="/createBid">Создать заявку</a>
+        <h1 class="text-center mb-4">Меню пользователя</h1>
+        <div class="card">
+            <div class="text-center card-body">
+                <div class="user-info mb-4">
+                    <label class="fw-bold">Имя пользователя:</label>
+                    <span>${user.getName()}</span><br>
+                </div>
+                <nav class="mb-4">
+                    <ul class="nav justify-content-center">
+                        <li class="nav-item">
+                            <#if user.getRole() == 'ADMIN'>
+                                    <a class="btn btn-primary bottom-margin" href="/sgi">СГИ</a>
+                                    <a class="btn btn-primary bottom-margin" href="/admin">Пользователи</a>
+                                    <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
-                        </#if>
-                        <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
-                            <a class="btn btn-primary" href="/sgi">СГИ</a>
-                        </#if>
-                        <a class="btn btn-primary" href="/logout">Выйти</a>
-                    </li>
-            </ul>
-        </nav>
-        <#if user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'OTK'>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Принятые мной заявки
-            </button>
-        </#if>
-        <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
-            <button id="graf" class="btn btn-primary mb-4">Показать график</button>
-        </#if>
-    </div>
-    </div>
+                            </#if>
+                            <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
+                                <a class="btn btn-primary" href="/sgi">СГИ</a>
+                            </#if>
+                            <a class="btn btn-primary bottom-margin" href="/logout">Выйти</a>
+                        </li>
+                    </ul>
+                </nav>
+                <#if user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'OTK'>
+                    <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Принятые мной заявки
+                    </button>
+                </#if>
+                <#if user.getRole() == 'MASTER'>
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="technologist">
+                        Созданные заявки для ОГТ
+                    </button>
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="constructor">
+                        Созданные заявки для ОГК
+                    </button>
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="otk">
+                        Созданные заявки для ОТК
+                    </button>
+                </#if>
+                <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
+                    <button id="graf" class="btn btn-primary mb-4">Показать график</button>
+                </#if>
+            </div>
+        </div>
     </div>
 </div>
-    <div class="container mb-4">
-        <div class="row">
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
+
+<div class="container mb-4">
+    <div class="row">
+        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
-<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОГТ</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequestTechnologist}<br>
-                            <#if user.getRole() == 'ADMIN'>
-<#--                                Среднее время выполнения заявки:${timeTechnologist}<br>-->
-                            </#if>
                         </p>
                         <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
                     </div>
+                </div>
             </div>
-            </div>
-            </#if>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>
+        </#if>
+        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
-<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОГК</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequests}<br>
-                            <#if user.getRole() == 'ADMIN'>
-<#--                                Среднее время выполнения заявки:${time}<br>-->
-                            </#if>
                         </p>
                         <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>
                     </div>
                 </div>
             </div>
-            </#if>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
+        </#if>
+        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
-<#--                    <img src="" class="card-img-top">-->
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОТК</h5>
                         <p class="card-text">
                             Количество заявок:${qtuRequestsOtk}<br>
-                            <#if user.getRole() == 'ADMIN'>
-<#--                            Среднее время выполнения заявки:${timeOtk}<br>-->
-                            </#if>
                         </p>
                         <a href="requestslist/otk" class="btn btn-primary">Просмотр заявок</a>
                     </div>
                 </div>
             </div>
-            </#if>
-        </div>
+        </#if>
     </div>
+</div>
+
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -128,6 +132,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <input type="hidden" id="modalDataValue" name="type" />
                 <table class="table table-hover vertical-align: middle">
                     <thead>
                     <tr class="taq">
@@ -137,15 +142,29 @@
                         <th>Просмотр задания</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <#list requests as req>
-                        <tr>
-                            <td>${req.requestNumber}</td>
-                            <td>${req.customerOrder.getName()}</td>
-                            <td>${req.status.getName()}</td>
-                            <td>
-                                <a href="view/${req.requestNumber}">Просмотр</a>
-                            </td>
+                    <tbody id="requestsTableBody">
+                    <#list requestsMaster['constructor'] as request>
+                        <tr data-type="constructor">
+                            <td>${request.requestNumber}</td>
+                            <td>${request.customerOrder.getName()}</td>
+                            <td>${request.status.getName()}</td>
+                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                        </tr>
+                    </#list>
+                    <#list requestsMaster['otk'] as request>
+                        <tr data-type="otk">
+                            <td>${request.requestNumber}</td>
+                            <td>${request.customerOrder.getName()}</td>
+                            <td>${request.status.getName()}</td>
+                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                        </tr>
+                    </#list>
+                    <#list requestsMaster['technologist'] as request>
+                        <tr data-type="technologist">
+                            <td>${request.requestNumber}</td>
+                            <td>${request.customerOrder.getName()}</td>
+                            <td>${request.status.getName()}</td>
+                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
                     </#list>
                     </tbody>
@@ -178,13 +197,6 @@
                 data: {
                     labels: [...Array(dailyCounts.length).keys()].map(i => i + 1), // От 1 до N
                     datasets: [
-                        // {
-                        //     label: 'Количество заявок за день',
-                        //     backgroundColor: 'rgba(255, 99, 132, 1)',
-                        //     borderColor: 'rgba(255, 99, 132, 1)',
-                        //     data: dailyCounts,
-                        //     fill: true
-                        // },
                         {
                             label: 'ОГК',
                             backgroundColor: 'rgba(0, 0, 0, 1)',
@@ -230,8 +242,26 @@
             this.textContent = 'Показать график';
         }
     });
-</script>
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('sendButton')) {
+            const dataValue = e.target.getAttribute('data-value');
+            console.log('Выбранный тип:', dataValue);
+            document.getElementById('modalDataValue').value = dataValue;
+            filterRequestsByType(dataValue);
+        }
+    });
 
+    function filterRequestsByType(type) {
+        const rows = document.querySelectorAll('#requestsTableBody tr');
+        rows.forEach(row => {
+            if (row.getAttribute('data-type') === type) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

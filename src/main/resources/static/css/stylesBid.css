@@ -340,3 +340,37 @@ h2 {
     background-color: #e0f0ff;
     font-weight: bold;
 }
+@media (max-width: 600px) {
+    #statusName,
+    #employeeName,
+    #customerOrderString {
+        width: 100%;
+        font-size: 14px;
+    }
+}
+
+    .btn-modern {
+        font-size: 14px;
+        padding: 5px 10px;
+    }
+#description,#commentAgreed {
+    width: 529px !important;
+}
+
+@media (max-width: 768px) {
+    #description,#commentAgreed {
+        width: 300px !important;
+    }
+}
+#employeeName {
+    width: 286px !important;
+}
+#customerOrderString {
+    width: 294px !important;
+}
+
+@media (max-width: 768px) {
+    #employeeName,#customerOrderString{
+        width: 305px !important;
+    }
+}

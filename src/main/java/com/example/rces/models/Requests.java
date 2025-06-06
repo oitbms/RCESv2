@@ -143,6 +143,18 @@ public class Requests implements Cloneable {
     @DisplayName("Тип контроля")
     private String control;
 
+    @Column(name = "comment_agreed")
+    @DisplayName("Причина не согласования")
+    private String commentAgreed;
+
+    public String getCommentAgreed() {
+        return commentAgreed;
+    }
+
+    public void setCommentAgreed(String commentAgreed) {
+        this.commentAgreed = commentAgreed;
+    }
+
     public String getControl() {
         return control;
     }

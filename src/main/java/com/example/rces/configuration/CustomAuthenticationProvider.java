@@ -19,11 +19,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
-        if (username == null || username.isEmpty()) {
-            throw new BadCredentialsException("Некорректное имя пользователя");
-        }
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        try {
+            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        } catch (NullPointerException e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
     }
 
     @Override

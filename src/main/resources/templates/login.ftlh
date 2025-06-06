@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизация</title>
-<#--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
     <style>
         :root {
             --primary: #4361ee;
@@ -45,23 +44,6 @@
             padding: 2rem;
             width: 100%;
         }
-
-        .login-header {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .login-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .login-subtitle {
-            color: #6c757d;
-            font-size: 0.875rem;
-        }
-
         .form-group {
             margin-bottom: 1.5rem;
         }
