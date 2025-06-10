@@ -51,14 +51,14 @@
         </div>
     </div>
 </div>
-<div class="container mt-7">
+<div>
     <h1 class="text-center">
         Список заявок
         <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
             <i class="bi bi-list" style="color: black"></i>
         </button>
     </h1>
-    <div class="d-flex justify-content-center">
+    <div class="table-responsive">
         <table id="requestTable" class="table table-hover">
             <thead class="custom-bg-info">
             <tr class="form-check-input">
@@ -207,7 +207,7 @@
                 <tr class="clickable-row" data-request-number="${req.requestNumber}">
                     <td>${req.getCreatedBy().getName()}</td>
                     <td>${req.getEmployee().getName()}</td>
-                    <td>${req.getItem().getName()}</td>
+                    <td>${(req.getItem().getName())!"Тип не задан"}</td>
                     <td>${req.getRequestNumber()}</td>
                     <td>${req.customerOrder.getName()}</td>
                     <td>${(req.getMlmNode().getName()!"")}</td>

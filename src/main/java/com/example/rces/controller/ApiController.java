@@ -39,6 +39,8 @@ public class ApiController {
         return service.findAllCustomerOrder();
     }
 
+
+
     @GetMapping("/reasons")
     public List<ReasonPayload> getReasons(@RequestParam String param) {
         return Arrays.stream(GeneralReason.values())
@@ -85,6 +87,13 @@ public class ApiController {
     @GetMapping("/images")
     public List<ImagesPayload> getImages(@RequestParam UUID param) {
         return service.findImages(param);
+    }
+
+    @PostMapping("/inwork")
+    public void inWork(@RequestParam UUID param,
+                       @RequestParam(required = false) String description,
+                       @RequestParam(required = false) Boolean status) {
+        service.getRequest(param, description);
     }
 
     @PostMapping("/update")

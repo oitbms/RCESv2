@@ -94,7 +94,7 @@ public class RequestController {
         }
 
         Item item = null;
-        if (itemJson != null) {
+        if (itemJson != null && !itemJson.isBlank()) {
             item = objectMapper.readValue(itemJson, Item.class);
         }
         MlmNode mlmNode = null;

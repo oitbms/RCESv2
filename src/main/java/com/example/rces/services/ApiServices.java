@@ -184,6 +184,20 @@ public class ApiServices {
         return service.findById(Requests.class, id).getTypeRequest().name();
     }
 
+    public void getRequest(UUID id,String description) {
+        Requests requests =  service.findById(Requests.class, id);
+        if (requests.getStatus().equals(Status.New)){
+            requests.setStatus(Status.InWork);
+            tgService.sendMessageToUser(requests,requests.getCreatedBy().getChatId(),MessageType.UPDATE);
+        } else if (requests.getStatus().equals(Status.InWork)){
+            requests.setDescription(description);
+            requests.setStatus(Status.Completed);
+            tgService.sendCompleted(requests);
+        }
+        service.save(requests);
+
+    }
+
     public Employee getUpdater() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userDetailsService.loadUserByUsername(authentication.getName());

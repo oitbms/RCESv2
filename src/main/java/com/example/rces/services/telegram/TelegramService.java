@@ -4,7 +4,6 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import com.example.rces.models.enums.Appraisal;
-import com.example.rces.models.enums.Status;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,6 +62,7 @@ public class TelegramService extends TelegramLongPollingBot {
         this.controlChatId = controlChatId;
         this.testChatId = testChatId;
     }
+
     @Override
     public String getBotUsername() {
         return "BormashRequestBot";
@@ -135,8 +134,8 @@ public class TelegramService extends TelegramLongPollingBot {
             request.setMessageId(message.getMessageId());
 
             SendMessage completionMessage = new SendMessage();
-            Employee employee = service.findById(Employee.class,request.getEmployee().getId());
-            if (request.getTypeRequest().equals(Requests.Type.otk)){
+            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+            if (request.getTypeRequest().equals(Requests.Type.otk)) {
                 completionMessage.setChatId(employee.getChatId());
             } else {
                 completionMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
@@ -236,7 +235,6 @@ public class TelegramService extends TelegramLongPollingBot {
 //            }
 //        }
 //    }
-
 
 
     private String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {

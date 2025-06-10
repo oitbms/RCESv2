@@ -35,7 +35,7 @@ public class MessageBuilder {
                 request.getEmployee().getName(),
                 request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
                 request.getCustomerOrder().getName(),
-                request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "Тип не задан",
                 !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                 request.getComment() != null ? request.getComment() : "",
                 reason,
@@ -50,12 +50,12 @@ public class MessageBuilder {
             reason = request.getReason() != null ? request.getReason().getName() : "Причина не указана";
         }
         return String.format(
-                "Заявка обновлена: %d \nОтветственный: %s %s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
+                "Заявка обновлена: %d \nОтветственный: %s \n%s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
                 request.getRequestNumber(),
                 request.getEmployee().getName(),
                 request.getMlmNode().getName(),
                 request.getCustomerOrder().getName(),
-                request.getItem().getName(),
+                request.getItem() != null ? request.getItem().getName() : "Тип не задан",
                 !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                 request.getComment() != null ? request.getComment() : "",
                 reason,
@@ -71,7 +71,7 @@ public class MessageBuilder {
                 request.getEmployee().getName(),
                 request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
                 request.getCustomerOrder().getName(),
-                request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "",
+                request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "Тип не задан",
                 !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                 request.getComment() != null ? request.getComment() : "",
                 request.getReason() != null ? request.getReason().getName() : "Причина не указана",
