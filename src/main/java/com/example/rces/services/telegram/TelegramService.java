@@ -101,13 +101,13 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendNoAgreed(Requests request) {
-        String message = "Заявка №" + request.getRequestNumber() + " Не согласована + \n" +
-                "Ссылка на заявку: http://web.bormash.ru:2005/view/" + request.getRequestNumber();
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
-                request.getEmployee().getChatId().toString(), message);
-        restTemplate.getForObject(url, String.class);
-    }
+//    public void sendNoAgreed(Requests request) {
+//        String message = "Заявка №" + request.getRequestNumber() + " Не согласована + \n" +
+//                "Ссылка на заявку: http://web.bormash.ru:2005/view/" + request.getRequestNumber();
+//        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
+//                request.getEmployee().getChatId().toString(), message);
+//        restTemplate.getForObject(url, String.class);
+//    }
 
 //    public void sendCheckBid(Requests requests) {
 //        Long chatId;

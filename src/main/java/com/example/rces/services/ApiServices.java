@@ -156,8 +156,6 @@ public class ApiServices {
                     tgService.sendCompleted(request);
 //                } else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
 //                    tgService.sendUpdateMessageToGroup(request);
-                } else if (request.getStatus().equals(Status.NoAgreed)) {
-                    tgService.sendNoAgreed(request);
                 } else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
                     tgService.sendUpdateMessageToGroup(request);
