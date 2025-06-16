@@ -76,7 +76,7 @@ public class ApiController {
         List<Status> statuses = switch (param) {
             case "ADMIN" -> Arrays.asList(Status.values());
             case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
-            case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel,Status.NoAgreed);
+            case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel);
             default -> Collections.emptyList();
         };
         return statuses.stream()
