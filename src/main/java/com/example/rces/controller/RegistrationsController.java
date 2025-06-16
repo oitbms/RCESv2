@@ -29,8 +29,10 @@ public class RegistrationsController {
     public String admin(Model model, Principal principal) {
         Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
         List<Role> roles = List.of(Role.values());
+        List<MlmNode> mlmNodes = List.of(MlmNode.values());
         model.addAttribute("users", service.findAll(Employee.class));
         model.addAttribute("user", employee);
+        model.addAttribute("mlmNodes", mlmNodes);
         model.addAttribute("roles", roles);
         return "admin";
     }
@@ -78,7 +80,7 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           @RequestParam Long chatId) {
-        service.saveEmployee(null, username, true, role, mlmNode, password, chatId);
+        service.saveEmployee(null, username, mlmNode,true, role, mlmNode, password, chatId);
         return "redirect:/admin";
     }
 
@@ -96,10 +98,11 @@ public class RegistrationsController {
     @PostMapping("/update")
     public String updateUser(@RequestParam Long id,
                              @RequestParam(required = false) String userName,
+                             @RequestParam(required = false) String mlmNodeName,
                              @RequestParam(required = false) String roleName,
                              @RequestParam(required = false) Long chatName,
                              @RequestParam(required = false) Boolean active) {
-        service.saveEmployee(id, userName, active, roleName, null, null, chatName);
+        service.saveEmployee(id, userName, mlmNodeName, active, roleName, null, null, chatName);
         return "redirect:/admin";
     }
 }

@@ -13,7 +13,11 @@ public enum MlmNode {
     workShop4("Цех №5"),
     workShop5("Цех №6"),
     workShop6("Цех №7"),
-    workShop7("Цех №8");
+    workShop7("Цех №8"),
+    mechanic("ОГМ"),
+    builder("ОРС"),
+    protection("ОТиПК"),
+    energy("ОГЭ");
 
     private final String name;
 

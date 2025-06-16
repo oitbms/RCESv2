@@ -169,12 +169,14 @@
                     Факт выполнения
                 </div>
             </th>
-            <th style="background-color: #007bff; color: white; display: flex; justify-content: space-between; align-items: center; padding: 8px;">
-                <div style="margin-right: 10px; margin-top: 5px;">Завершено</div>
-                <button type="button" id="statusBtn" class="btn btn-outline-secondary" data-state="" title="Статус">
-                    <i class="bi bi-check-circle-fill" style="color: gray;"></i>
-                </button>
-            </th>
+            <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
+                <th style="background-color: #007bff; color: white; display: flex; justify-content: space-between; align-items: center; padding: 8px;">
+                    <div style="margin-right: 10px; margin-top: 5px;">Завершено</div>
+                    <button type="button" id="statusBtn" class="btn btn-outline-secondary" data-state="" title="Статус">
+                        <i class="bi bi-check-circle-fill" style="color: gray;"></i>
+                    </button>
+                </th>
+            </#if>
         </tr>
         </thead>
         <tbody>
@@ -214,15 +216,17 @@
                         ✔
                     </button>
                 </td>
-                <td data-label="Статус мероприятия" class="text-center" name="agreed">
-                    <button type="button"
-                            class="btn btn-link p-0 toggle-agree"
-                            data-sgi-id="${sgi.id}"
-                            data-agreed="${sgi.agreed?string('true','false')}"
-                            onclick="toggleAgreement('${sgi.id}', this)">
-                        <i class="bi ${sgi.agreed?then('bi-check-circle-fill text-success', 'bi-circle')}"></i>
-                    </button>
-                </td>
+                <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
+                    <td data-label="Статус мероприятия" class="text-center" name="agreed">
+                        <button type="button"
+                                class="btn btn-link p-0 toggle-agree"
+                                data-sgi-id="${sgi.id}"
+                                data-agreed="${sgi.agreed?string('true','false')}"
+                                onclick="toggleAgreement('${sgi.id}', this)">
+                            <i class="bi ${sgi.agreed?then('bi-check-circle-fill text-success', 'bi-circle')}"></i>
+                        </button>
+                    </td>
+                </#if>
             </tr>
         </#list>
         </tbody>

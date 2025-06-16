@@ -148,21 +148,23 @@ public class UniversalRepository {
                 .executeUpdate();
     }
 
-    public Employee saveEmployee(Long id, String username, Boolean status, String role, String mlmNode, String password, Long chatID) {
+    public Employee saveEmployee(Long id, String username, String mlmNodeName, Boolean status, String role, String mlmNode, String password, Long chatID) {
         Employee employee = id != null ? findById(Employee.class, id) : null;
         if (employee != null) {
             employee.setName(username);
+            employee.setMlmNode(MlmNode.valueOf(mlmNodeName));
             employee.setRole(role);
             employee.setActive(status);
-            employee.setChatId(chatID);
+            employee.setChatId(chatID!=-1?chatID:employee.getChatId());
         } else {
             employee = new Employee();
             employee.setName(username);
+            employee.setMlmNode(MlmNode.valueOf(mlmNodeName));
             employee.setRole(role);
             employee.setActive(status);
             employee.setMlmNode(MlmNode.valueOf(mlmNode));
             employee.setPassword(password);
-            employee.setChatId(chatID);
+            employee.setChatId(chatID!=-1?chatID:null);
         }
         return save(employee);
     }

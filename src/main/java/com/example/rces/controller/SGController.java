@@ -47,8 +47,8 @@ public class SGController {
         Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
         List<SGI> sgiList;
         if (!userDetailsService.isControl()) {
-            sgiList = service.findAllByField(SGI.class, "employee",
-                            userDetailsService.loadUserByUsername(principal.getName()))
+            sgiList = service.findAllByField(SGI.class, "department",
+                            userDetailsService.loadUserByUsername(principal.getName()).getMlmNode())
                     .stream()
                     .sorted(Comparator.comparing(SGI::getRequestNumber))
                     .collect(Collectors.toList());

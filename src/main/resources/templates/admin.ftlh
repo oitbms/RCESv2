@@ -70,6 +70,16 @@
                 </div>
             </th>
             <th>
+                <button type="button" class="toggleInput">
+                    <svg viewBox="0 0 24 24" width=16>
+                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
+                    </svg>
+                </button>
+                <div class="inputContainer">
+                    <input type="text" class="form-control" id="mlmNode">
+                </div>
+            </th>
+            <th>
                 Состояние
                 <button type="button" class="toggleInput">
                     <svg viewBox="0 0 24 24" width=16>
@@ -109,6 +119,7 @@
         <#list users as req>
             <tr id="req-${req.id}">
                 <td>${req.username}</td>
+                <td>${req.mlmNode.getName()}</td>
                 <#if req.enabled>
                     <td>Активный</td>
                     <#else >
@@ -161,6 +172,14 @@
                             <input type="text" class="form-control" id="userNameId" name="userName">
                         </div>
                         <div class="mb-3">
+                            <label for="shop" class="d-flex justify-content-center form-label">Отдел</label>
+                            <select id="mlmNode" name="mlmNodeName" class="d-flex justify-content-center form-control" required>
+                                <#list mlmNodes as mlmNode>
+                                    <option value="${mlmNode}">${mlmNode.getName()}</option>
+                                </#list>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">Статус</label>
                             <select id="activeId" name="active" class="form-control">
                                 <option value="true">Активный</option>
@@ -177,7 +196,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">ChatId</label>
-                            <input type="number" class="form-control" id="chatId" name="chatName">
+                            <input type="number" class="form-control" id="chatId" name="chatName" value="${user.chatId!-1}">
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary" id="saveId">Сохранить изменения</button>

@@ -131,7 +131,7 @@ public class UniversalService {
         repository.deletePhoto(photoId);
     }
 
-    public Employee saveEmployee(Long id, String name, Boolean status, String role, String mlmNode, String password, Long chatID) {
-        return repository.saveEmployee(id, name, status, role, mlmNode, password, chatID);
+    public Employee saveEmployee(Long id, String name, String mlmNodeName, Boolean status, String role, String mlmNode, String password, Long chatID) {
+        return repository.saveEmployee(id, name, mlmNodeName, status, role, mlmNode, password, chatID);
     }
 }
