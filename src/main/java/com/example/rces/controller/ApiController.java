@@ -93,7 +93,7 @@ public class ApiController {
     public void inWork(@RequestParam UUID param,
                        @RequestParam(required = false) String description,
                        @RequestParam(required = false) Boolean status) {
-        service.getRequest(param, description);
+        service.getRequest(param, description, status);
     }
 
     @PostMapping("/update")
@@ -123,7 +123,7 @@ public class ApiController {
         return ResponseEntity.ok(logs.stream()
                 .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
                 .sorted(Comparator.comparing(LogPayload::date))
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     @GetMapping("/executions")

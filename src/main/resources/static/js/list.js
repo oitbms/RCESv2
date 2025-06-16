@@ -37,7 +37,8 @@ $('.history-icon').off("click").on("click", async function () {
             const year = date.getFullYear();
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${day}.${month}.${year} ${hours}:${minutes}`;
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
         };
 
         const item = `
@@ -91,7 +92,7 @@ $(document).ready(function () {
 
     $('#editRequest').on('click', function () {
         $('#contextMenu').hide();
-        openRequestModal(selectedRequestNumber);
+        window.location.href = '/view/' + selectedRequestNumber;
     });
 
     $(document).on('keydown', function (e) {
@@ -99,15 +100,6 @@ $(document).ready(function () {
             $('#contextMenu').hide();
         }
     });
-
-    function openRequestModal(requestNumber) {
-        $.get(`/view/` + requestNumber, function (data) {
-            $('#viewContent').html(data);
-            $('#viewRequestModal').modal('show');
-        }).fail(function () {
-            alert("Ошибка загрузки данных.");
-        });
-    }
 
     $('#viewRequestModal').on('hidden.bs.modal', function () {
         location.reload();

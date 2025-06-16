@@ -148,7 +148,7 @@ public class ApiServices {
         //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
 //            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-            Employee employee = service.findSingleByField(Employee.class, "name",principal.getName());
+            Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
             if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
                 tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
             } else if (request.getStatus() != oldRequest.getStatus()) {
@@ -158,14 +158,14 @@ public class ApiServices {
 //                    tgService.sendUpdateMessageToGroup(request);
                 } else if (request.getStatus().equals(Status.NoAgreed)) {
                     tgService.sendNoAgreed(request);
-            } else {
+                } else {
                     //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
                     tgService.sendUpdateMessageToGroup(request);
                 }
             } else {
                 //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
 
-                if (employee.getRole().equals(String.valueOf(Role.MASTER))){
+                if (employee.getRole().equals(String.valueOf(Role.MASTER))) {
                     Employee empl = service.findById(Employee.class, request.getEmployee().getId());
                     chatId = empl.getChatId();
                 } else {
@@ -184,18 +184,43 @@ public class ApiServices {
         return service.findById(Requests.class, id).getTypeRequest().name();
     }
 
-    public void getRequest(UUID id,String description) {
-        Requests requests =  service.findById(Requests.class, id);
-        if (requests.getStatus().equals(Status.New)){
-            requests.setStatus(Status.InWork);
-            tgService.sendMessageToUser(requests,requests.getCreatedBy().getChatId(),MessageType.UPDATE);
-        } else if (requests.getStatus().equals(Status.InWork)){
-            requests.setDescription(description);
-            requests.setStatus(Status.Completed);
-            tgService.sendCompleted(requests);
-        }
-        service.save(requests);
+    @Transactional
+    public void getRequest(UUID id, String description, Boolean status) {
+        Requests requests = service.findById(Requests.class, id);
+        Requests oldRequest;
+        Employee updaterEmployee = getUpdater();
 
+        try {
+            oldRequest = (Requests) requests.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (status == null) {
+            if (requests.getStatus() == Status.New) {
+                requests.setStatus(Status.InWork);
+                tgService.sendMessageToUser(requests, requests.getCreatedBy().getChatId(), MessageType.UPDATE);
+            } else if (requests.getStatus() == Status.InWork) {
+                requests.setDescription(description);
+                requests.setStatus(Status.Completed);
+                tgService.sendCompleted(requests);
+            }
+        } else {
+            if (status) {
+                requests.setStatus(Status.Closed);
+                tgService.closeOrCanceledRequestMessage(requests, requests.getCreatedBy());
+            } else {
+                requests.setStatus(Status.New);
+                tgService.sendMessageToUser(requests, requests.getEmployee().getChatId(), MessageType.UPDATE);
+            }
+        }
+
+        requests.setUpdateBy(updaterEmployee);
+        requests.setUpdateDate(LocalDateTime.now());
+        requests.setDateWork(LocalDateTime.now());
+        requests.setVersion(requests.getVersion() + 1);
+        createLog(oldRequest, requests, updaterEmployee, service);
+        service.save(requests);
     }
 
     public Employee getUpdater() {

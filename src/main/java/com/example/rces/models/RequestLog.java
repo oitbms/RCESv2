@@ -90,7 +90,7 @@ public class RequestLog {
 
     public RequestLog(Requests request, Employee user, Map<String, String> metadata) {
         this.request = request;
-        this.date = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        this.date = LocalDateTime.now();
         this.user = user;
         this.metadata = metadata;
     }

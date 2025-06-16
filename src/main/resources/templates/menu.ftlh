@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         body {
-            background-color: #f8f9fa; /* светлый фон для всего документа */
+            background-color: #f8f9fa;
         }
         .card {
-            border-radius: 1rem; /* закругление углов */
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* тень для карточки */
+            border-radius: 1rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
         .taq{
             white-space: nowrap;
@@ -62,13 +62,13 @@
                     </button>
                 </#if>
                 <#if user.getRole() == 'MASTER'>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="technologist">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal1">
                         Созданные заявки для ОГТ
                     </button>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="constructor">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal2">
                         Созданные заявки для ОГК
                     </button>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal" data-value="otk">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal3">
                         Созданные заявки для ОТК
                     </button>
                 </#if>
@@ -143,6 +143,74 @@
                     </tr>
                     </thead>
                     <tbody id="requestsTableBody">
+                    <#list requests as request>
+                        <tr>
+                            <td>${request.requestNumber}</td>
+                            <td>${request.customerOrder.getName()}</td>
+                            <td>${request.status.getName()}</td>
+                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                        </tr>
+                    </#list>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModal1Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModal1Label">Заявки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalDataValue" name="type" />
+                <table class="table table-hover vertical-align: middle">
+                    <thead>
+                    <tr class="taq">
+                        <th>#</th>
+                        <th>ЗК</th>
+                        <th>Статус</th>
+                        <th>Просмотр задания</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <#list requestsMaster['technologist'] as request>
+                        <tr data-type="technologist">
+                            <td>${request.requestNumber}</td>
+                            <td>${request.customerOrder.getName()}</td>
+                            <td>${request.status.getName()}</td>
+                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                        </tr>
+                    </#list>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModal2Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModal2Label">Заявки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalDataValue" name="type" />
+                <table class="table table-hover vertical-align: middle">
+                    <thead>
+                    <tr class="taq">
+                        <th>#</th>
+                        <th>ЗК</th>
+                        <th>Статус</th>
+                        <th>Просмотр задания</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     <#list requestsMaster['constructor'] as request>
                         <tr data-type="constructor">
                             <td>${request.requestNumber}</td>
@@ -151,16 +219,34 @@
                             <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
                     </#list>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModal3Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModal3Label">Заявки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalDataValue" name="type" />
+                <table class="table table-hover vertical-align: middle">
+                    <thead>
+                    <tr class="taq">
+                        <th>#</th>
+                        <th>ЗК</th>
+                        <th>Статус</th>
+                        <th>Просмотр задания</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     <#list requestsMaster['otk'] as request>
                         <tr data-type="otk">
-                            <td>${request.requestNumber}</td>
-                            <td>${request.customerOrder.getName()}</td>
-                            <td>${request.status.getName()}</td>
-                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
-                        </tr>
-                    </#list>
-                    <#list requestsMaster['technologist'] as request>
-                        <tr data-type="technologist">
                             <td>${request.requestNumber}</td>
                             <td>${request.customerOrder.getName()}</td>
                             <td>${request.status.getName()}</td>
@@ -242,25 +328,6 @@
             this.textContent = 'Показать график';
         }
     });
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.classList.contains('sendButton')) {
-            const dataValue = e.target.getAttribute('data-value');
-            console.log('Выбранный тип:', dataValue);
-            document.getElementById('modalDataValue').value = dataValue;
-            filterRequestsByType(dataValue);
-        }
-    });
-
-    function filterRequestsByType(type) {
-        const rows = document.querySelectorAll('#requestsTableBody tr');
-        rows.forEach(row => {
-            if (row.getAttribute('data-type') === type) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>

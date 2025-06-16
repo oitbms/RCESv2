@@ -33,6 +33,29 @@
             max-width: 90%;
             max-height: 80vh;
         }
+        #modalSearchInput {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            height: 0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        #modalSearchInput.visible {
+            opacity: 1;
+            visibility: visible;
+            height: auto;
+            padding: 0.375rem 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ced4da;
+        }
+        #employeeName,#mlmNodeName,#itemName {
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -47,9 +70,9 @@
             <!-- Сотрудник -->
             <div class="mb-3">
                 <label class="form-label">Сотрудник</label>
-                <div class="input-group">
+                <div class="input-group has-validation">
                     <input type="text" id="employeeName" class="form-control" placeholder="Имя сотрудника" required>
-                    <input type="hidden" id="employeeJson" name="employeeJson">
+                    <input type="hidden" id="employeeJson" name="employeeJson" required>
                     <button type="button" class="btn btn-outline-primary openModal"
                             data-endpoint="employees"
                             data-input-id="employeeName"
@@ -81,7 +104,7 @@
             <div class="mb-3">
                 <label class="form-label">Тип ДСЕ</label>
                 <div class="input-group">
-                    <input type="text" id="itemName" class="form-control" placeholder="ДСЕ" readonly>
+                    <input type="text" id="itemName" class="form-control" placeholder="ДСЕ">
                     <input type="hidden" id="itemNameJson" name="itemNameJson">
                     <button type="button" class="btn btn-outline-primary openModal"
                             data-endpoint="item"
@@ -136,7 +159,7 @@
                 <div class="mb-3" id="reasonCreateField">
                     <label class="form-label">Причина</label>
                     <div class="input-group">
-                        <input type="text" id="reasonsName" class="form-control" placeholder="Причина" required>
+                        <input type="text" id="reasonsName" class="form-control" placeholder="Причина" readonly>
                         <input type="hidden" id="reasonsJson" name="reasonsJson">
                         <button type="button" class="btn btn-outline-primary openModal"
                                 data-endpoint="reasons"
@@ -192,14 +215,25 @@
                 Информация
             </div>
             <div class="card-body">
+                <#if bid.status.getName() != "Новый">
+                    <p class="mb-2"><strong>Ответственный:</strong> ${(bid.getEmployee().getName())!""}</p>
+                </#if>
                 <p class="mb-2"><strong>Дата создания:</strong> ${(date)!""}</p>
                 <p class="mb-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
                 <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!""}</p>
                 <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!""}</p>
-
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!""}</p>
                     <p class="mb-2"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                </#if>
+                <#if bid.status.getName() == "В работе">
+                <p class="mb-2"><strong>Комментарий:</strong>
+                    <textarea class="form-control"
+                              id="comment"
+                              name="comment"
+                              rows="5"
+                              style="resize: both;"
+                              readonly>${bid.comment!''}</textarea>
                 </#if>
             </div>
         </div>
@@ -259,8 +293,8 @@
                 <#if role == ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
                     <label for="closed" class="form-label">Описание решения</label>
                     <textarea class="form-control"
-                              name="closed"
-                              id="closed"
+                              name="description"
+                              id="description"
                               rows="5"
                               readonly>${bid.getDescription()!""}
                     </textarea>
@@ -286,6 +320,10 @@
 
                 <#elseif role != ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
                     <p class="text-success fs-3 fw-bold">Решение отправлено</p>
+                </#if>
+
+                <#if bid.getStatus().getName() == 'Закрыт'>
+                    <p class="text-success fs-3 fw-bold">Заявка закрыта!</p>
                 </#if>
 
                 <!-- Модальное окно "Выполнение заявки" -->
@@ -344,21 +382,22 @@
                     </div>
                 </div>
 
+                <#if (bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER">
+                    <div class="mb-1 mt-2">
+                        <label for="comment" class="form-label">Комментарий:</label>
+                        <textarea class="form-control"
+                                  id="comment"
+                                  name="comment"
+                                  rows="5"
+                                  style="resize: both;">${bid.comment!''}</textarea>
+                    </div>
+                </#if>
+
             </div>
         </div>
 
-        <!-- Комментарий -->
-        <div class="mb-4">
-            <label for="comment" class="form-label">Комментарий:</label>
-            <textarea class="form-control"
-                      id="comment"
-                      name="comment"
-                      rows="5"
-                      style="resize: both;">${bid.comment!''}</textarea>
-        </div>
-
         <!-- Telegram уведомление -->
-        <div class="form-check form-switch mb-4">
+        <div class="form-check form-switch mb-4 d-none">
             <input type="hidden" name="sendToTelegram" value="true">
             <input class="form-check-input" type="checkbox" id="telegramCheckbox" name="sendToTelegram" value="false">
             <label class="form-check-label" for="telegramCheckbox">
@@ -432,54 +471,37 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('workId');
-        const onebtn = document.getElementById('successId');
-        const cancelBtn = document.getElementById('canceledBtn');
-        const closedBtn = document.getElementById('successBtn')
+        const actionButtons = document.querySelectorAll('button[data-param]');
 
-        const handleClick = (button) => {
-            const param = button.getAttribute('data-param');
-            const description = document.getElementById('description').value;
-            const status = document.getElementById('')
-            fetch('/api/inwork', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({param, description,status})
+        const handleClick = async (button) => {
 
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка при отправке запроса');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    console.log('Ответ от сервера:', data);
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Произошла ошибка при отправке запроса');
+                const param = button.dataset.param;
+                const status = button.dataset.status;
+                const description = document.getElementById('description')?.value || '';
+
+                const formData = new URLSearchParams();
+                formData.append('param', param);
+                formData.append('description', description);
+                if (status !== undefined && status !== null) {
+                    formData.append('status', status);
+                }
+
+                const response = await fetch('/api/inwork', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
                 });
+
+                if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
+
+                location.reload();
         };
 
-        if (btn) {
-            btn.addEventListener('click', () => handleClick(btn));
-        }
-
-        if (onebtn) {
-            onebtn.addEventListener('click', () => handleClick(onebtn));
-        }
-
-        if (cancelBtn) {
-            onebtn.addEventListener('click', () => handleClick(onebtn));
-        }
-
-        if (closedBtn) {
-            onebtn.addEventListener('click', () => handleClick(onebtn));
-        }
+        actionButtons.forEach(button => {
+            button.addEventListener('click', () => handleClick(button));
+        });
     });
 </script>
 
@@ -496,6 +518,10 @@
         let selected = new Map();
         let originalData = [];
         let inputId, hiddenId;
+
+        // Инициализация - скрываем поле поиска
+        searchInput.classList.remove('visible');
+
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.toLowerCase();
             renderList(originalData.filter(item => item.name.toLowerCase().includes(query)));
@@ -503,14 +529,17 @@
 
         function renderList(data) {
             listElement.innerHTML = '';
+
             data.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item list-group-item-action selectable';
                 li.textContent = item.name;
                 li.dataset.entity = encodeURIComponent(JSON.stringify(item));
+
                 if (multiple && selected.has(item.name)) {
-                    li.classList.add('active'); // Используем bootstrap класс
+                    li.classList.add('active');
                 }
+
                 li.addEventListener('click', () => {
                     if (multiple) {
                         if (selected.has(item.name)) {
@@ -520,7 +549,6 @@
                             selected.set(item.name, item);
                             li.classList.add('active');
                         }
-                        // Обновляем input и скрытое поле сразу
                         const arr = Array.from(selected.values());
                         document.getElementById(inputId).value = arr.map(e => e.name).join(', ');
                         document.getElementById(hiddenId).value = JSON.stringify(arr);
@@ -533,10 +561,10 @@
                         toggleDescriptionField?.();
                     }
                 });
+
                 listElement.appendChild(li);
             });
         }
-
 
         window.openUniversalModal = async function
             ({
@@ -554,6 +582,7 @@
             errorBlock.classList.add('d-none');
             loadingIndicator.classList.remove('d-none');
             footer.classList.toggle('d-none', !multiple);
+
             if (multiple) {
                 try {
                     const raw = document.getElementById(hiddenId).value;
@@ -563,12 +592,20 @@
                     console.warn('Ошибка парсинга выбранных значений:', e);
                 }
             }
+
             try {
                 const url = new URL('/api/' + endpoint, window.location.origin);
                 url.searchParams.append('param', param || '');
                 const response = await fetch(url);
                 const data = await response.json();
                 originalData = Array.isArray(data) ? data : [];
+
+                if (originalData.length > 5) {
+                    searchInput.classList.add('visible');
+                } else {
+                    searchInput.classList.remove('visible');
+                }
+
                 renderList(originalData);
             } catch (e) {
                 console.error('Ошибка загрузки данных:', e);
@@ -578,6 +615,7 @@
                 modal.show();
             }
         };
+
         saveBtn.addEventListener('click', () => {
             const arr = Array.from(selected.values());
             document.getElementById(inputId).value = arr.map(e => e.name).join(', ');
@@ -607,6 +645,9 @@
             });
         });
     });
+</script>
+<script>
+
 </script>
 </body>
 </html>

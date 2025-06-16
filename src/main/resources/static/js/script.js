@@ -89,7 +89,7 @@ function renderPhotos(images) {
 
         imgWrapper.innerHTML = `
             <img src="${imageUrl}" class="attached-photo">
-            <button class="delete-photo-btn" data-index="${index}">Удалить</button>
+            <button class="btn btn-danger delete-photo-btn" data-index="${index}">Удалить</button>
         `;
 
         // Обработчики
@@ -121,7 +121,6 @@ if (document.title.includes("Заявка на вызов") && viewForm) {
     };
 
     document.getElementById('comment')?.addEventListener('input', () => delayedSave(() => saveData()));
-    // document.getElementById('description')?.addEventListener('input', () => delayedSave(() => saveData()));
     document.getElementById('commentAgreed')?.addEventListener('input', () => delayedSave(() => saveData()));
 
     document.getElementById('customerOrderString')?.addEventListener('input', function () {

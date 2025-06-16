@@ -43,7 +43,7 @@ public class RegistrationsController {
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
             requestsList = service.findAllByField(Requests.class,"createdBy",user);
         } else {
-            requestsList = service.findAllByField(Requests.class,"updateBy",user);
+            requestsList = service.findAllByField(Requests.class,"employee",user);
         }
         Map<String, List<Requests>> createMasterRequest = getCreateRequestsMaster(requestsList);
         Map<String, List<Integer>> dailyCountsMap = getCountDays(service.findAll(Requests.class));
@@ -78,7 +78,7 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           @RequestParam Long chatId) {
-        Employee employee = service.saveEmployee(null, username, true, role, mlmNode, password, chatId);
+        service.saveEmployee(null, username, true, role, mlmNode, password, chatId);
         return "redirect:/admin";
     }
 
@@ -99,7 +99,7 @@ public class RegistrationsController {
                              @RequestParam(required = false) String roleName,
                              @RequestParam(required = false) Long chatName,
                              @RequestParam(required = false) Boolean active) {
-        Employee user = service.saveEmployee(id, userName, active, roleName, null, null, chatName);
+        service.saveEmployee(id, userName, active, roleName, null, null, chatName);
         return "redirect:/admin";
     }
 }
