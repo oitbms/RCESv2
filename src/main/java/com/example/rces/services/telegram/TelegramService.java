@@ -38,7 +38,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private final CustomUserDetailsService userDetailsService;
     private final RestTemplate restTemplate;
     private final MessageBuilder messageBuilder;
-    private final TelegramUrlBuilder urlBuilder;
+//    private final TelegramUrlBuilder urlBuilder;
     private final ChatIdResolver chatIdResolver;
     private final String controlChatId;
     private final String testChatId;
@@ -59,7 +59,7 @@ public class TelegramService extends TelegramLongPollingBot {
         this.restTemplate = new RestTemplate();
         this.messageBuilder = new MessageBuilder(urlMobile);
         this.chatIdResolver = new ChatIdResolver(constructorGroupChatId, technologistGroupChatId);
-        this.urlBuilder = new TelegramUrlBuilder();
+//        this.urlBuilder = new TelegramUrlBuilder();
         this.controlChatId = controlChatId;
         this.testChatId = testChatId;
     }
@@ -79,21 +79,21 @@ public class TelegramService extends TelegramLongPollingBot {
         if (entity instanceof Requests request) {
             sendMessage.setText(messageBuilder.buildRequestMessage(request, messageType));
             if (messageType.equals(MessageType.CREATE) || messageType.equals(MessageType.UPDATE)) {
-                if (request.getTypeRequest().equals("otk")) {
-                    sendMessage.setChatId(updaterEmployee.getChatId());
-                } else if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
+                if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
                     sendMessage.setMessageThreadId(2343);
                     sendMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
+                } else {
+                    sendMessage.setChatId(updaterEmployee.getChatId());
                 }
-            }
-            else if (messageType.equals(MessageType.COMPLETED)) {
+            } else if (messageType.equals(MessageType.COMPLETED)) {
                 sendMessage.setChatId(request.getCreatedBy().getChatId());
-            }
-            else if (messageType.equals(MessageType.CANCEL) || messageType.equals(MessageType.CLOSE)) {
+            } else if (messageType.equals(MessageType.CANCEL) || messageType.equals(MessageType.CLOSE)) {
                 sendMessage.setChatId(updaterEmployee.getChatId());
             }
         } else if (entity instanceof SGI sgi) {
-
+            sendMessage.setChatId(this.controlChatId);
+            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment()!=null ? sgi.getDepartment().getName() : ""));
+            sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
         }
         try {
             Message message = execute(sendMessage);
@@ -109,34 +109,6 @@ public class TelegramService extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             throw new RuntimeException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s",sendMessage.getText(), e.getMessage()));
         }
-    }
-
-    public void sendMessageToGroup(Requests request) {
-        String message = messageBuilder.buildRequestMessage(request, MessageType.CREATE);
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
-                chatIdResolver.resolveGroupId(request.getTypeRequest()), message);
-        restTemplate.getForObject(url, String.class);
-    }
-
-    public void sendUpdateMessageToGroup(Requests request) {
-        String message = messageBuilder.buildRequestMessage(request, MessageType.UPDATE);
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
-                request.getCreatedBy().getChatId().toString(), message);
-        restTemplate.getForObject(url, String.class);
-    }
-
-    public void sendMessageToUser(Requests request, Long chatId, MessageType messageType) {
-        String message = messageBuilder.buildRequestMessage(request, messageType);
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken, chatId.toString(), message);
-        restTemplate.getForObject(url, String.class);
-    }
-
-    public void sendCompleted(Requests request) {
-        String message = "Заявка №" + request.getRequestNumber() + " Выполнена + \n" +
-                "Ссылка на заявку: http://web.bormash.ru:2005/view/" + request.getRequestNumber() + "\nОписание решения: " + request.getDescription();
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
-                request.getCreatedBy().getChatId().toString(), message);
-        restTemplate.getForObject(url, String.class);
     }
 
 //    public void sendNoAgreed(Requests request) {
@@ -156,83 +128,38 @@ public class TelegramService extends TelegramLongPollingBot {
 //        restTemplate.getForObject(url, String.class);
 //    }
 
-//    public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
-//        SendMessage sendMessage = new SendMessage();
-//        sendMessage.setChatId(updaterEmployee.getChatId());
-//        sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)",
-//                request.getRequestNumber(),
-//                request.getStatus().getName() + "a",
-//                request.getDescription()));
-//        try {
-//            Message message = execute(sendMessage);
-//            request.setCloseDate(LocalDateTime.now());
-//            request.setClosedEmployee(updaterEmployee);
-//            request.setChatId(message.getChatId());
-//            request.setMessageId(message.getMessageId());
-//
-//            SendMessage completionMessage = new SendMessage();
-//            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-//            if (request.getTypeRequest().equals(Requests.Type.otk)) {
-//                completionMessage.setChatId(employee.getChatId());
-//            } else {
-//                completionMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
-//            }
-//            completionMessage.setText(String.format("Заявка № %d %s",
-//                    request.getRequestNumber(),
-//                    request.getStatus().getName() + "а"));
-//
-//            execute(completionMessage);
-//
-//            service.save(request);
-//        } catch (TelegramApiException e) {
-//            throw new RuntimeException(e);
-//        }
+//    private void sendScoreIsSave(Requests request) {
+//        String message = "Оценка сохранена";
+//        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
+//                request.getChatId().toString(), message);
+//        restTemplate.getForObject(url, String.class);
 //    }
-
-    private void sendScoreIsSave(Requests request) {
-        String message = "Оценка сохранена";
-        String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
-                request.getChatId().toString(), message);
-        restTemplate.getForObject(url, String.class);
-    }
-
-    public void sendMessageToControl(SGI sgi, MessageType messageType) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(this.controlChatId);
-        sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi != null ? sgi.getDepartment().getName() : ""));
-        sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     @Transactional
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
-            handleReplyMessage(update);
+//            handleReplyMessage(update);
         }
     }
 
-    private void handleReplyMessage(Update update) {
-        Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
-        String messageText = update.getMessage().getText();
-        if (messageText.matches("[1-5]")) {
-            processRating(employee, messageText, update.getMessage().getReplyToMessage().getMessageId());
-        }
-    }
+//    private void handleReplyMessage(Update update) {
+//        Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
+//        String messageText = update.getMessage().getText();
+//        if (messageText.matches("[1-5]")) {
+//            processRating(employee, messageText, update.getMessage().getReplyToMessage().getMessageId());
+//        }
+//    }
 
-    private void processRating(Employee employee, String rating, Integer replyToMessageId) {
-        Appraisal score = Appraisal.fromId(Integer.parseInt(rating));
-        Requests request = service.findSingleByField(Requests.class, "messageId", replyToMessageId);
-        request.setScore(score);
-
-        setSecurityContext(employee);
-        service.save(request);
-        sendScoreIsSave(request);
-    }
+//    private void processRating(Employee employee, String rating, Integer replyToMessageId) {
+//        Appraisal score = Appraisal.fromId(Integer.parseInt(rating));
+//        Requests request = service.findSingleByField(Requests.class, "messageId", replyToMessageId);
+//        request.setScore(score);
+//
+//        setSecurityContext(employee);
+//        service.save(request);
+//        sendScoreIsSave(request);
+//    }
 
     private void setSecurityContext(Employee employee) {
         Authentication anonymousAuth = new AnonymousAuthenticationToken(
@@ -252,7 +179,7 @@ public class TelegramService extends TelegramLongPollingBot {
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
         if (!requestsNumbers.isEmpty()) {
             AppProperties.setString(requestsNumbers);
-            sendMessageToControl(null, MessageType.REGULAR);
+            sendMessage(new SGI(), null, MessageType.REGULAR);
         }
     }
 
@@ -269,7 +196,6 @@ public class TelegramService extends TelegramLongPollingBot {
 //            }
 //        }
 //    }
-
 
     private String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {
         StringBuilder requestsNumbers = new StringBuilder();

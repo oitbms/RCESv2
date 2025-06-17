@@ -104,9 +104,9 @@ public class ServiceUtil {
     public static SGI.ColorSGI colorCalculate(SGI sgi, LocalDate date) {
         if (sgi.getAgreed()) {
             return SGI.ColorSGI.GREY;
-        } else if (sgi.getPlanDate() != null && !date.isBefore(sgi.getPlanDate().plusDays(2)) && !sgi.getExecutions().isEmpty()) {
+        } else if (sgi.getPlanDate() != null && !date.isBefore(sgi.getPlanDate().plusDays(2))) {
             return SGI.ColorSGI.RED;
-        } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1))) && !sgi.getExecutions().isEmpty()) {
+        } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
             return SGI.ColorSGI.YELLOW;
         } else if (sgi.getPlanDate() != null && !sgi.getExecutions().isEmpty()) {
             return SGI.ColorSGI.GREEN;

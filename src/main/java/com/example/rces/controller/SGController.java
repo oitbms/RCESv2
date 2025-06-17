@@ -83,7 +83,7 @@ public class SGController {
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
         SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
-        tgService.sendMessageToControl(sgi, MessageType.CREATE);
+        tgService.sendMessage(sgi, null, MessageType.CREATE);
         return "redirect:/sgi";
     }
 
@@ -118,9 +118,9 @@ public class SGController {
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         service.save(sgi);
         if (!planDateExist && planDate != null) {
-            tgService.sendMessageToControl(sgi, MessageType.WORK);
+            tgService.sendMessage(sgi, null, MessageType.WORK);
         } else {
-            tgService.sendMessageToControl(sgi, MessageType.UPDATE);
+            tgService.sendMessage(sgi, null, MessageType.UPDATE);
         }
         return ResponseEntity.ok().build();
     }
@@ -150,7 +150,7 @@ public class SGController {
     public void deleteSGI(@RequestBody List<UUID> ids) {
         ids.forEach(id -> {
             service.delete(service.findById(SGI.class, id));
-            tgService.sendMessageToControl(service.findById(SGI.class, id), MessageType.DELETE);
+            tgService.sendMessage(service.findById(SGI.class, id), null, MessageType.DELETE);
         });
     }
 
@@ -179,7 +179,7 @@ public class SGController {
             sgi.setAgreed(agreed);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             service.save(sgi);
-            tgService.sendMessageToControl(sgi, MessageType.CLOSE);
+            tgService.sendMessage(sgi, null, MessageType.CLOSE);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().build();
