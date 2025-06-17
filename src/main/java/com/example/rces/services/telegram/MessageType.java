@@ -1,5 +1,5 @@
 package com.example.rces.services.telegram;
 
 public enum MessageType {
-    CREATE, UPDATE, REDIRECT
+    CREATE, WORK, UPDATE, REDIRECT, CLOSE, DELETE, REGULAR, CANCEL, COMPLETED
 }

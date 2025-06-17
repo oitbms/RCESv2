@@ -12,13 +12,10 @@ public class ChatIdResolver {
     }
 
     public String resolveGroupId(Requests.Type typeRequest) {
-        switch (typeRequest) {
-            case constructor:
-                return constructorGroupChatId;
-            case technologist:
-                return technologistGroupChatId;
-            default:
-                return null;
-        }
+        return switch (typeRequest) {
+            case constructor -> constructorGroupChatId;
+            case technologist -> technologistGroupChatId;
+            default -> null;
+        };
     }
 }

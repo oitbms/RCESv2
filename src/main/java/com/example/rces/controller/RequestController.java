@@ -92,7 +92,6 @@ public class RequestController {
                 reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
             }
         }
-
         Item item = null;
         if (itemJson != null && !itemJson.isBlank()) {
             item = objectMapper.readValue(itemJson, Item.class);
@@ -101,33 +100,19 @@ public class RequestController {
         if (!mlmNodeJson.isBlank()) {
             mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
         }
-
         try {
             if (employee.getChatId() == null) {
                 throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
             }
-
             Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText, control);
-
-            if (request.getTypeRequest().equals(Requests.Type.otk)) {
-                tgService.sendMessageToUser(request, employee.getChatId(), MessageType.CREATE);
-            } else {
-                tgService.sendMessageToGroup(request);
-            }
-
-//            if (request.getTypeRequest().equals(Requests.Type.constructor)) {
-//                tgService.sendMessageToGroup(request);
-//            } else {
-//                tgService.sendMessageToUser(request, employee.getChatId(), true, false);
-//            }
-
+            tgService.sendMessage(request, employee, MessageType.CREATE);
             model.addAttribute("requestNumber", request.getRequestNumber());
-
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("Ошибка при отправке сообщения через Telegram: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new RuntimeException("Произошла ошибка при обработке запроса: " + e.getMessage(), e);
         }
+
         return "success";
     }
 

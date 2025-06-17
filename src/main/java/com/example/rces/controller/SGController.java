@@ -6,6 +6,7 @@ import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.UniversalService;
+import com.example.rces.services.telegram.MessageType;
 import com.example.rces.services.telegram.TelegramService;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
@@ -82,9 +83,7 @@ public class SGController {
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
         SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
-        String message = String.format("Новое мероприятие №%s\nМероприятие: %s\nОтветственный: %s\nЖелаемый срок: %s\nСопутствующие действия: %s\nПримечание: %s",
-                sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()), sgi.getActions(), sgi.getNote() != null ? sgi.getNote() : "");
-        tgService.sendMessageToControl(message, sgi.getDepartment().getName());
+        tgService.sendMessageToControl(sgi, MessageType.CREATE);
         return "redirect:/sgi";
     }
 
@@ -102,6 +101,7 @@ public class SGController {
             throw new ForbiddenException("Редактировать может только создатель задачи");
         }
         SGI sgi = service.findById(SGI.class, id);
+        boolean planDateExist = !(sgi.getPlanDate()==null);
         try {
             Employee newEmployee = userDetailsService.loadUserByUsername(employee);
             sgi.setEmployee(newEmployee);
@@ -117,6 +117,11 @@ public class SGController {
         sgi.setNote(note);
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         service.save(sgi);
+        if (!planDateExist && planDate != null) {
+            tgService.sendMessageToControl(sgi, MessageType.WORK);
+        } else {
+            tgService.sendMessageToControl(sgi, MessageType.UPDATE);
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -143,7 +148,10 @@ public class SGController {
     @DeleteMapping("/delete")
     @ResponseBody
     public void deleteSGI(@RequestBody List<UUID> ids) {
-        ids.forEach(id -> service.delete(service.findById(SGI.class, id)));
+        ids.forEach(id -> {
+            service.delete(service.findById(SGI.class, id));
+            tgService.sendMessageToControl(service.findById(SGI.class, id), MessageType.DELETE);
+        });
     }
 
     @DeleteMapping("/delete-fact")
@@ -171,6 +179,7 @@ public class SGController {
             sgi.setAgreed(agreed);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             service.save(sgi);
+            tgService.sendMessageToControl(sgi, MessageType.CLOSE);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().build();

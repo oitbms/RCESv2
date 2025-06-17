@@ -1,6 +1,10 @@
 package com.example.rces.services.telegram;
 
+import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.Requests;
+import com.example.rces.models.SGI;
+
+import static com.example.rces.services.ServiceUtil.formatedDate;
 
 public class MessageBuilder {
     private final String baseUrl;
@@ -10,16 +14,27 @@ public class MessageBuilder {
     }
 
     public String buildRequestMessage(Requests request, MessageType type) {
-        switch (type) {
-            case CREATE:
-                return buildCreateMessage(request);
-            case UPDATE:
-                return buildUpdateMessage(request);
-            case REDIRECT:
-                return buildRedirectMessage(request);
-            default:
-                throw new IllegalArgumentException("Unsupported message type");
-        }
+        return switch (type) {
+            case CREATE -> buildCreateMessage(request);
+            case UPDATE -> buildUpdateMessage(request);
+            case REDIRECT -> buildRedirectMessage(request);
+            case CLOSE -> buildCloseMessage(request);
+            case CANCEL -> buildCancelMessage(request);
+            case COMPLETED -> buildCompletedMessage(request);
+            default -> throw new IllegalArgumentException("Unsupported message type");
+        };
+    }
+
+    public String buildRequestMessage(SGI sgi, MessageType type) {
+        return switch (type) {
+            case CREATE -> buildCreateMessage(sgi);
+            case WORK -> buildWorkMessage(sgi);
+            case UPDATE -> buildUpdateMessage(sgi);
+            case CLOSE -> buildCloseMessage(sgi);
+            case DELETE -> buildDeleteMessage(sgi);
+            case REGULAR -> buildRegularMessage(sgi);
+            default -> throw new IllegalArgumentException("Unsupported message type");
+        };
     }
 
     private String buildCreateMessage(Requests request) {
@@ -76,5 +91,43 @@ public class MessageBuilder {
                 request.getComment() != null ? request.getComment() : "",
                 request.getReason() != null ? request.getReason().getName() : "Причина не указана",
                 baseUrl + "/view/" + request.getRequestNumber());
+    }
+
+    private String buildCloseMessage(Requests request) {
+        return String.format("Заявка № %d закрыта\nОписание: %s)", request.getRequestNumber(), request.getDescription());
+    }
+
+    private String buildCancelMessage(Requests request) {
+        return String.format("Заявка № %d отменена\nОписание: %s)", request.getRequestNumber(), request.getDescription());
+    }
+
+    private String buildCompletedMessage(Requests request) {
+        return String.format("Заявка №%d Выполнена\nСсылка на заявку %s/view/%d\nОписание решения: %s",
+                request.getRequestNumber(), baseUrl, request.getRequestNumber(), request.getDescription());
+    }
+
+    private String buildCreateMessage(SGI sgi) {
+        return String.format("Новое мероприятие №%d\nМероприятие: %s\nОтветственный: %s\nЖелаемый срок: %s\nСопутствующие действия: %s\nПримечание: %s",
+                sgi.getRequestNumber(), sgi.getEvent(), sgi.getEmployee().getName(), formatedDate(sgi.getDesiredDate()), sgi.getActions(), sgi.getNote() != null ? sgi.getNote() : "");
+    }
+
+    private String buildWorkMessage(SGI sgi) {
+        return String.format("На мероприятие №%d установлена плановая дата - %s", sgi.getRequestNumber(), sgi.getPlanDate());
+    }
+
+    private String buildUpdateMessage(SGI sgi) {
+        return String.format("Мероприятие №%d обновлено", sgi.getRequestNumber());
+    }
+
+    private String buildCloseMessage(SGI sgi) {
+        return sgi.getAgreed() ? String.format("Мероприятие №%d закрыто", sgi.getRequestNumber()) : String.format("Мероприятие №%s снова открыто", sgi.getRequestNumber());
+    }
+
+    private String buildDeleteMessage(SGI sgi) {
+        return String.format("Мероприятие №%d удалено", sgi.getRequestNumber());
+    }
+
+    private String buildRegularMessage(SGI sgi) {
+        return String.format("Срок выполнения мероприятий №%s истекает через 2 дня", AppProperties.getString());
     }
 }

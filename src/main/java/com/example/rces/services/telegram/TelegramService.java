@@ -1,5 +1,6 @@
 package com.example.rces.services.telegram;
 
+import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
@@ -73,6 +74,43 @@ public class TelegramService extends TelegramLongPollingBot {
         return botToken;
     }
 
+    public void sendMessage(Object entity, Employee updaterEmployee, MessageType messageType) {
+        SendMessage sendMessage = new SendMessage();
+        if (entity instanceof Requests request) {
+            sendMessage.setText(messageBuilder.buildRequestMessage(request, messageType));
+            if (messageType.equals(MessageType.CREATE) || messageType.equals(MessageType.UPDATE)) {
+                if (request.getTypeRequest().equals("otk")) {
+                    sendMessage.setChatId(updaterEmployee.getChatId());
+                } else if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
+                    sendMessage.setMessageThreadId(2343);
+                    sendMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
+                }
+            }
+            else if (messageType.equals(MessageType.COMPLETED)) {
+                sendMessage.setChatId(request.getCreatedBy().getChatId());
+            }
+            else if (messageType.equals(MessageType.CANCEL) || messageType.equals(MessageType.CLOSE)) {
+                sendMessage.setChatId(updaterEmployee.getChatId());
+            }
+        } else if (entity instanceof SGI sgi) {
+
+        }
+        try {
+            Message message = execute(sendMessage);
+            if ((messageType.equals(MessageType.CLOSE) || messageType.equals(MessageType.CANCEL)) && entity instanceof Requests request) {
+                request.setCloseDate(LocalDateTime.now());
+                request.setClosedEmployee(updaterEmployee);
+                request.setChatId(message.getChatId());
+                request.setMessageId(message.getMessageId());
+                sendMessage.setChatId(request.getEmployee().getChatId());
+                execute(sendMessage);
+                service.save(request);
+            }
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s",sendMessage.getText(), e.getMessage()));
+        }
+    }
+
     public void sendMessageToGroup(Requests request) {
         String message = messageBuilder.buildRequestMessage(request, MessageType.CREATE);
         String url = urlBuilder.buildUrl(request.getEmployee(), botToken,
@@ -118,39 +156,38 @@ public class TelegramService extends TelegramLongPollingBot {
 //        restTemplate.getForObject(url, String.class);
 //    }
 
-    public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(updaterEmployee.getChatId());
-        sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)",
-                request.getRequestNumber(),
-                request.getStatus().getName() + "a",
-                request.getDescription()));
-
-        try {
-            Message message = execute(sendMessage);
-            request.setCloseDate(LocalDateTime.now());
-            request.setClosedEmployee(updaterEmployee);
-            request.setChatId(message.getChatId());
-            request.setMessageId(message.getMessageId());
-
-            SendMessage completionMessage = new SendMessage();
-            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-            if (request.getTypeRequest().equals(Requests.Type.otk)) {
-                completionMessage.setChatId(employee.getChatId());
-            } else {
-                completionMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
-            }
-            completionMessage.setText(String.format("Заявка № %d %s",
-                    request.getRequestNumber(),
-                    request.getStatus().getName() + "а"));
-
-            execute(completionMessage);
-
-            service.save(request);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    public void closeOrCanceledRequestMessage(Requests request, Employee updaterEmployee) {
+//        SendMessage sendMessage = new SendMessage();
+//        sendMessage.setChatId(updaterEmployee.getChatId());
+//        sendMessage.setText(String.format("Заявка № %d %s\nОписание: %s\nОцените работу сотрудника (от 1 до 5)",
+//                request.getRequestNumber(),
+//                request.getStatus().getName() + "a",
+//                request.getDescription()));
+//        try {
+//            Message message = execute(sendMessage);
+//            request.setCloseDate(LocalDateTime.now());
+//            request.setClosedEmployee(updaterEmployee);
+//            request.setChatId(message.getChatId());
+//            request.setMessageId(message.getMessageId());
+//
+//            SendMessage completionMessage = new SendMessage();
+//            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+//            if (request.getTypeRequest().equals(Requests.Type.otk)) {
+//                completionMessage.setChatId(employee.getChatId());
+//            } else {
+//                completionMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
+//            }
+//            completionMessage.setText(String.format("Заявка № %d %s",
+//                    request.getRequestNumber(),
+//                    request.getStatus().getName() + "а"));
+//
+//            execute(completionMessage);
+//
+//            service.save(request);
+//        } catch (TelegramApiException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void sendScoreIsSave(Requests request) {
         String message = "Оценка сохранена";
@@ -159,13 +196,11 @@ public class TelegramService extends TelegramLongPollingBot {
         restTemplate.getForObject(url, String.class);
     }
 
-    public void sendMessageToControl(String text, String department) {
+    public void sendMessageToControl(SGI sgi, MessageType messageType) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(this.controlChatId);
-        if (department != null) {
-            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(department));
-        }
-        sendMessage.setText(text);
+        sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi != null ? sgi.getDepartment().getName() : ""));
+        sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -184,7 +219,6 @@ public class TelegramService extends TelegramLongPollingBot {
     private void handleReplyMessage(Update update) {
         Employee employee = service.findSingleByField(Employee.class, "chatId", update.getMessage().getChatId());
         String messageText = update.getMessage().getText();
-
         if (messageText.matches("[1-5]")) {
             processRating(employee, messageText, update.getMessage().getReplyToMessage().getMessageId());
         }
@@ -216,9 +250,9 @@ public class TelegramService extends TelegramLongPollingBot {
         LocalDate today = LocalDate.now();
         List<SGI> sgiList = service.findAll(SGI.class);
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
-
         if (!requestsNumbers.isEmpty()) {
-            sendMessageToControl("Срок выполнения мероприятий №" + requestsNumbers + " истекает через 2 дня", null);
+            AppProperties.setString(requestsNumbers);
+            sendMessageToControl(null, MessageType.REGULAR);
         }
     }
 

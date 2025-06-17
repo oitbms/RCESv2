@@ -75,7 +75,7 @@ public class ApiServices {
     }
 
     @Transactional
-    public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields, Principal principal) {
+    public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
         Requests request = service.findById(Requests.class, id);
         Requests oldRequest;
         try {
@@ -145,36 +145,22 @@ public class ApiServices {
         request.setVersion(request.getVersion() + 1);
         createLog(oldRequest, request, updaterEmployee, service);
         service.save(request);
-        //Если нажали галку отправить в ТГ и поменяли статус
         if (sendMessage) {
-//            Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-            Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
-            if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
-                tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
-            } else if (request.getStatus() != oldRequest.getStatus()) {
-                if (request.getStatus().equals(Status.Completed)) {
-                    tgService.sendCompleted(request);
-//                } else if (request.getTypeRequest().equals(Requests.Type.constructor)) {
-//                    tgService.sendUpdateMessageToGroup(request);
+            if (request.getStatus().equals(Status.Completed)) {
+                tgService.sendMessage(request, updaterEmployee, MessageType.COMPLETED);
+            } else if (!request.getStatus().equals(Status.Closed) || !request.getStatus().equals(Status.Cancel)) {
+                if (updaterEmployee.getRole().equals(String.valueOf(Role.MASTER))) {
+                    Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+                    tgService.sendMessage(request, employee, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
                 } else {
-                    //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-                    tgService.sendUpdateMessageToGroup(request);
+                    tgService.sendMessage(request, request.getCreatedBy(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
                 }
-            } else {
-                //если поменяли ответственного -> редирект сообщения иначе заявка обновлена
-
-                if (employee.getRole().equals(String.valueOf(Role.MASTER))) {
-                    Employee empl = service.findById(Employee.class, request.getEmployee().getId());
-                    chatId = empl.getChatId();
-                } else {
-                    chatId = request.getCreatedBy().getChatId();
-                }
-                tgService.sendMessageToUser(request, chatId,
-                        !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
             }
-            //если закрыли или отменили заявку
-        } else if (request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) {
-            tgService.closeOrCanceledRequestMessage(request, updaterEmployee);
+        }
+        if (request.getStatus().equals(Status.Closed)) {
+            tgService.sendMessage(request, updaterEmployee, MessageType.CLOSE);
+        } else if (request.getStatus().equals(Status.Cancel)) {
+            tgService.sendMessage(request, updaterEmployee, MessageType.CANCEL);
         }
     }
 
@@ -206,9 +192,10 @@ public class ApiServices {
         } else {
             if (status) {
                 requests.setStatus(Status.Closed);
-                tgService.closeOrCanceledRequestMessage(requests, requests.getCreatedBy());
+                tgService.sendMessage(requests, requests.getCreatedBy(), MessageType.CLOSE);
             } else {
                 requests.setStatus(Status.New);
+                tgService.sendMessage(requests, requests.getEmployee(), MessageType.UPDATE);
                 tgService.sendMessageToUser(requests, requests.getEmployee().getChatId(), MessageType.UPDATE);
             }
         }
