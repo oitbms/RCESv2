@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.models.annotation.DisplayName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "plan_sgi")
-public class SGI {
+public class SGI implements Cloneable {
 
     public enum Department {
         mechanic("ОГМ"), builder("ОРС"), protection("ОТиПК"), energy("ОГЭ");
@@ -43,28 +44,36 @@ public class SGI {
     private int requestNumber;
 
     @Column(name = "workshop")
+    @DisplayName("№ цеха")
     private String workShop;
 
     @Column(name = "event")
+    @DisplayName("Мероприятие")
     private String event;
 
     @Column(name = "actions", length = 499)
+    @DisplayName("Действия")
     private String actions;
 
     @Column(name = "department")
     @Enumerated(EnumType.STRING)
+    @DisplayName("Ответственный отдел")
     private SGI.Department department;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @DisplayName("Ответственный сотрудник")
     private Employee employee;
 
     @Column(name = "desired_date")
+    @DisplayName("Желаемая дата")
     private LocalDate desiredDate;
 
     @Column(name = "plan_date")
+    @DisplayName("Планируемая дата")
     private LocalDate planDate;
 
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DisplayName("Факт выполнения")
     private List<FactExecutionSGI> executions = new ArrayList<>();
 
     @Column(name = "color")
@@ -72,13 +81,19 @@ public class SGI {
     private ColorSGI color;
 
     @Column(name = "note", length = 1000)
+    @DisplayName("Примечание")
     private String note;
 
     @Column(name = "comment", length = 1000)
+    @DisplayName("Комментарий")
     private String comment;
 
     @Column(name = "agreed")
+    @DisplayName("Согласовано")
     private Boolean agreed;
+
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SgiLog> log = new ArrayList<>();
 
     public UUID getId() {
         return id;
@@ -198,5 +213,18 @@ public class SGI {
 
     public void setAgreed(Boolean agreed) {
         this.agreed = agreed;
+    }
+
+    public List<SgiLog> getLog() {
+        return log;
+    }
+
+    public void setLog(List<SgiLog> log) {
+        this.log = log;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

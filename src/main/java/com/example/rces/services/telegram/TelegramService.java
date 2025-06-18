@@ -4,17 +4,11 @@ import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
-import com.example.rces.models.enums.Appraisal;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -27,7 +21,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.example.rces.services.ServiceUtil.colorCalculate;
 
@@ -38,7 +31,7 @@ public class TelegramService extends TelegramLongPollingBot {
     private final CustomUserDetailsService userDetailsService;
     private final RestTemplate restTemplate;
     private final MessageBuilder messageBuilder;
-//    private final TelegramUrlBuilder urlBuilder;
+    //    private final TelegramUrlBuilder urlBuilder;
     private final ChatIdResolver chatIdResolver;
     private final String controlChatId;
     private final String testChatId;
@@ -91,8 +84,9 @@ public class TelegramService extends TelegramLongPollingBot {
                 sendMessage.setChatId(updaterEmployee.getChatId());
             }
         } else if (entity instanceof SGI sgi) {
-            sendMessage.setChatId(this.controlChatId);
-            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment()!=null ? sgi.getDepartment().getName() : ""));
+            sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
+            sendMessage.setChatId(this.testChatId);
+//            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
         }
         try {
@@ -107,7 +101,7 @@ public class TelegramService extends TelegramLongPollingBot {
                 service.save(request);
             }
         } catch (TelegramApiException e) {
-            throw new RuntimeException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s",sendMessage.getText(), e.getMessage()));
+            throw new RuntimeException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s", sendMessage.getText(), e.getMessage()));
         }
     }
 
@@ -138,9 +132,9 @@ public class TelegramService extends TelegramLongPollingBot {
     @Override
     @Transactional
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
+//        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().isReply()) {
 //            handleReplyMessage(update);
-        }
+//        }
     }
 
 //    private void handleReplyMessage(Update update) {
@@ -160,16 +154,6 @@ public class TelegramService extends TelegramLongPollingBot {
 //        service.save(request);
 //        sendScoreIsSave(request);
 //    }
-
-    private void setSecurityContext(Employee employee) {
-        Authentication anonymousAuth = new AnonymousAuthenticationToken(
-                UUID.randomUUID().toString(),
-                employee.getName(),
-                List.of(new SimpleGrantedAuthority(employee.getRole())));
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(anonymousAuth);
-        SecurityContextHolder.setContext(context);
-    }
 
     @Scheduled(cron = "0 0 9 * * *")
     @Transactional

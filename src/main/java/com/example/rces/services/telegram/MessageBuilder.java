@@ -133,6 +133,6 @@ public class MessageBuilder {
     }
 
     private String buildRegularMessage(SGI sgi) {
-        return String.format("Срок выполнения мероприятий №%s истекает через 2 дня", AppProperties.getString());
+        return String.format("Просрочен срок выполнения мероприятий: №%s", AppProperties.getString());
     }
 }

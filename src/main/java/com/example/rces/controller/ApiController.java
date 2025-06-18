@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -38,8 +37,6 @@ public class ApiController {
     public List<CustomerOrder> getCustomerOrders() {
         return service.findAllCustomerOrder();
     }
-
-
 
     @GetMapping("/reasons")
     public List<ReasonPayload> getReasons(@RequestParam String param) {

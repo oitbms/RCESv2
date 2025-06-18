@@ -166,7 +166,7 @@ async function change(rowId) {
         const desiredDateVal = row.find('[name="desiredDate"]').val();
         const noteVal = row.find('[name="note"]').val();
 
-        await saveChange(rowId, workshopVal, eventVal, actionsVal, departmentVal, employeeVal, desiredDateVal, planDateVal, noteVal);
+        await saveChange(rowId, workshopVal, eventVal, actionsVal, departmentVal, employeeVal, planDateVal, desiredDateVal, noteVal);
         $('#planModal').modal('hide');
     });
 
@@ -536,7 +536,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#sgiTable tbody').on('contextmenu', 'tr', function(e) {
+    $('#sgiTable tbody').on('contextmenu', 'tr', function (e) {
         e.preventDefault();
         currentRow = $(this);
 
@@ -549,7 +549,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#sgiTable tbody').on('dblclick', 'tr', function() {
+    $('#sgiTable tbody').on('dblclick', 'tr', function () {
         const row = $(this);
         const rowId = row.attr('id');
 
@@ -568,7 +568,7 @@ $(document).ready(function () {
             'Удалить строку');
     });
 
-    $('#deleteRowBtn').on('click', function() {
+    $('#deleteRowBtn').on('click', function () {
         if (selectedRows.length > 0) {
             deleteSgi(selectedRows);
         } else if (currentRow) {
@@ -588,7 +588,7 @@ $(document).ready(function () {
             type: 'DELETE',
             contentType: 'application/json',
             data: JSON.stringify(rowIds),
-            success: function() {
+            success: function () {
                 rowIds.forEach(id => {
                     $(`#${id}`).remove();
                 });
@@ -596,7 +596,7 @@ $(document).ready(function () {
                 $('#customContextMenu').hide();
                 filterData();
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert('Ошибка при удалении: ' + (xhr.responseJSON?.message || xhr.statusText));
             }
         });

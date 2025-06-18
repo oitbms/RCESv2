@@ -253,40 +253,29 @@ public class ServiceUtil {
             return true;
         }
         //у ОТК может закрывать только отк и редактировать после принятие в работу только отк
-         else if (!request.getEmployee().getId().equals(updaterEmployee.getId()) && (!updaterEmployee.getRole().equals("ADMIN") && !updaterEmployee.getRole().equals("MASTER"))) {
+        else if (!request.getEmployee().getId().equals(updaterEmployee.getId()) && (!updaterEmployee.getRole().equals("ADMIN") && !updaterEmployee.getRole().equals("MASTER"))) {
             throw new ForbiddenException();
         } else if ((request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) && !request.getCreatedBy().equals(updaterEmployee) && !updaterEmployee.getRole().equals("ADMIN")) {
             throw new ForbiddenException();
         } else return true;
     }
 
-    public static void createLog(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {
+    public static void createLog(Object oldEntity, Object newEntity, Employee updaterUser, UniversalService service) {
+        if (oldEntity instanceof Requests oldRequests && newEntity instanceof Requests newRequest) {
+            createLogForRequest(oldRequests, newRequest, updaterUser, service);
+        } else if (oldEntity instanceof SGI oldSgi && newEntity instanceof SGI newSgi) {
+            createLogForSgi(oldSgi, newSgi, updaterUser, service);
+        }
+    }
+
+    private static void createLogForRequest(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {
         try {
             Map<String, String> metadata = new LinkedHashMap<>();
             Class<?> clazz = oldRequest.getClass();
             Set<String> ignoredFields = Set.of(
                     "id", "version", "updateDate", "closeDate", "dateWork", "log", "typeRequest", "messageId",
                     "createdBy", "updateBy", "closedEmployee", "images");
-            List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
-                    .filter(f -> !ignoredFields
-                            .contains(f.getName()))
-                    .toList();
-
-            for (Field field : fieldList) {
-                field.setAccessible(true);
-                String fieldName = field.getAnnotation(DisplayName.class) != null ? field.getAnnotation(DisplayName.class).value() : field.getName();
-                String oldStr = ObjectUtils.isEmpty(field.get(oldRequest))
-                        ? "не назначено"
-                        : getFieldValue(field, oldRequest);
-                String newStr = ObjectUtils.isEmpty(field.get(newRequest))
-                        ? "не назначено"
-                        : getFieldValue(field, newRequest);
-
-                if (!Objects.equals(oldStr, newStr)) {
-                    metadata.put(fieldName, oldStr + " -> " + newStr);
-                }
-            }
-
+            addToMetadata(clazz, ignoredFields, oldRequest, newRequest, metadata);
             if (!metadata.isEmpty()) {
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
                 List<RequestLog> logs = service.findAllByField(RequestLog.class, "request", oldRequest)
@@ -303,7 +292,59 @@ public class ServiceUtil {
                 }
             }
         } catch (Exception e) {
-            throw new ApplicationContextException("Ошибка при создании лога", e);
+            throw new ApplicationContextException("Ошибка при создании лога заявки", e);
+        }
+    }
+
+    private static void createLogForSgi(SGI oldSgi, SGI newSgi, Employee updaterUser, UniversalService service) {
+        try {
+            Map<String, String> metadata = new LinkedHashMap<>();
+            Class<?> clazz = oldSgi.getClass();
+            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log");
+            addToMetadata(clazz, ignoredFields, oldSgi, newSgi, metadata);
+            if (!metadata.isEmpty()) {
+                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                List<SgiLog> logs = service.findAllByField(SgiLog.class, "sgi", oldSgi)
+                        .stream()
+                        .filter(log -> log.getDate().equals(now)).toList();
+                if (logs.isEmpty()) {
+                    SgiLog log = new SgiLog(newSgi, updaterUser, metadata);
+                    service.save(log);
+                    return;
+                }
+                for (SgiLog log : logs) {
+                    log.addToMetadata(metadata);
+                    service.save(log);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при создании лога сги", e);
+        }
+    }
+
+    private static void addToMetadata(Class<?> clazz, Set<String> ignoredFields, Object oldEntity, Object newEntity, Map<String, String> metadata) {
+        try {
+            List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
+                    .filter(f -> !ignoredFields
+                            .contains(f.getName()))
+                    .toList();
+            for (Field field : fieldList) {
+                field.setAccessible(true);
+                String fieldName = field.getAnnotation(DisplayName.class) != null ? field.getAnnotation(DisplayName.class).value() : field.getName();
+                String oldStr = ObjectUtils.isEmpty(field.get(oldEntity))
+                        ? "не назначено"
+                        : getFieldValue(field, oldEntity);
+                String newStr = ObjectUtils.isEmpty(field.get(newEntity))
+                        ? "не назначено"
+                        : getFieldValue(field, newEntity);
+
+                if (!Objects.equals(oldStr, newStr)) {
+                    metadata.put(fieldName, oldStr + " -> " + newStr);
+                }
+            }
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при добавлении в metadata", e);
         }
     }
 

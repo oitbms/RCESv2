@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.colorCalculate;
-import static com.example.rces.services.ServiceUtil.formatedDate;
+import static com.example.rces.services.ServiceUtil.*;
 
 @Controller
 @RequestMapping("/sgi")
@@ -96,11 +95,12 @@ public class SGController {
                                             @RequestParam(required = false) LocalDate desiredDate,
                                             @RequestParam(required = false) String employee,
                                             @RequestParam(required = false) LocalDate planDate,
-                                            @RequestParam(required = false) String note) {
+                                            @RequestParam(required = false) String note) throws CloneNotSupportedException {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Редактировать может только создатель задачи");
         }
         SGI sgi = service.findById(SGI.class, id);
+        SGI oldSgi = (SGI) sgi.clone();
         boolean planDateExist = !(sgi.getPlanDate()==null);
         try {
             Employee newEmployee = userDetailsService.loadUserByUsername(employee);
@@ -122,6 +122,7 @@ public class SGController {
         } else {
             tgService.sendMessage(sgi, null, MessageType.UPDATE);
         }
+        createLog(oldSgi, sgi, userDetailsService.getUpdater(),service);
         return ResponseEntity.ok().build();
     }
 
@@ -173,13 +174,15 @@ public class SGController {
     }
 
     @PostMapping("/agree")
-    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
+    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) throws CloneNotSupportedException {
         SGI sgi = service.findById(SGI.class, id);
+        SGI oldSgi = (SGI) sgi.clone();
         if (userDetailsService.isControl()) {
             sgi.setAgreed(agreed);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             service.save(sgi);
             tgService.sendMessage(sgi, null, MessageType.CLOSE);
+            createLog(oldSgi, sgi, userDetailsService.getUpdater(),service);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().build();

@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "request_log")
-public class RequestLog {
+@Table(name = "sgi_log")
+public class SgiLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,8 +18,8 @@ public class RequestLog {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
-    private Requests request;
+    @JoinColumn(name = "sgi_id")
+    private SGI sgi;
 
     private LocalDateTime date;
 
@@ -38,12 +38,12 @@ public class RequestLog {
         this.id = id;
     }
 
-    public Requests getRequest() {
-        return request;
+    public SGI getSgi() {
+        return sgi;
     }
 
-    public void setRequest(Requests request) {
-        this.request = request;
+    public void setSgi(SGI sgi) {
+        this.sgi = sgi;
     }
 
     public LocalDateTime getDate() {
@@ -87,13 +87,13 @@ public class RequestLog {
         });
     }
 
-    public RequestLog(Requests request, Employee user, Map<String, String> metadata) {
-        this.request = request;
+    public SgiLog(SGI sgi, Employee user, Map<String, String> metadata) {
+        this.sgi = sgi;
         this.date = LocalDateTime.now();
         this.user = user;
         this.metadata = metadata;
     }
 
-    public RequestLog() {
+    public SgiLog() {
     }
 }

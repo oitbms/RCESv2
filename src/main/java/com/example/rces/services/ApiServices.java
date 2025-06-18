@@ -208,8 +208,7 @@ public class ApiServices {
     }
 
     public Employee getUpdater() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return userDetailsService.loadUserByUsername(authentication.getName());
+        return userDetailsService.getUpdater();
     }
 
     public List<RequestLog> getLogs(UUID id) {
