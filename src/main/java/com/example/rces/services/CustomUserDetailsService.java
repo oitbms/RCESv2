@@ -43,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return responsobleEmployee.getId().equals(employee.getId());
     }
 
-    public Employee getUpdater() {
+    public Employee currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return loadUserByUsername(authentication.getName());
     }

@@ -17,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -43,12 +42,12 @@ public class SGController {
     }
 
     @GetMapping
-    public String getSGIForm(Model model, Principal principal) {
-        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
+    public String getSGIForm(Model model) {
+        Employee updater = userDetailsService.currentUser();
         List<SGI> sgiList;
         if (!userDetailsService.isControl()) {
             sgiList = service.findAllByField(SGI.class, "department",
-                            userDetailsService.loadUserByUsername(principal.getName()).getMlmNode())
+                            updater.getMlmNode())
                     .stream()
                     .sorted(Comparator.comparing(SGI::getRequestNumber))
                     .collect(Collectors.toList());
@@ -61,7 +60,7 @@ public class SGController {
                 .map(req -> formatedDate(req.getDesiredDate())).toList();
         List<String> updatePlanDate = sgiList.stream()
                 .map(req -> formatedDate(req.getPlanDate())).toList();
-        model.addAttribute("user", employee);
+        model.addAttribute("user", updater);
         model.addAttribute("sgiList", sgiList);
         model.addAttribute("updateDesiredDate", updateDesiredDate);
         model.addAttribute("updatePlanDate", updatePlanDate);
@@ -101,7 +100,7 @@ public class SGController {
         }
         SGI sgi = service.findById(SGI.class, id);
         SGI oldSgi = (SGI) sgi.clone();
-        boolean planDateExist = !(sgi.getPlanDate()==null);
+        boolean planDateExist = !(sgi.getPlanDate() == null);
         try {
             Employee newEmployee = userDetailsService.loadUserByUsername(employee);
             sgi.setEmployee(newEmployee);
@@ -122,7 +121,7 @@ public class SGController {
         } else {
             tgService.sendMessage(sgi, null, MessageType.UPDATE);
         }
-        createLog(oldSgi, sgi, userDetailsService.getUpdater(),service);
+        createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
         return ResponseEntity.ok().build();
     }
 
@@ -182,7 +181,7 @@ public class SGController {
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             service.save(sgi);
             tgService.sendMessage(sgi, null, MessageType.CLOSE);
-            createLog(oldSgi, sgi, userDetailsService.getUpdater(),service);
+            createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().build();

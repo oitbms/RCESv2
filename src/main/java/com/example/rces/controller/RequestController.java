@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +50,7 @@ public class RequestController {
     private DeviceDetector detector;
 
     @GetMapping("/create")
-    public String getCreateBidForm(@RequestParam String type, Model model, Principal principal) {
+    public String getCreateBidForm(@RequestParam String type, Model model) {
         if (!Arrays.stream(Requests.Type.values()).map(Enum::name).toList().contains(type)) {
             model.addAttribute("type", type);
             return "error";
@@ -59,7 +58,7 @@ public class RequestController {
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
         model.addAttribute(type, true);
-        model.addAttribute("employeeName", principal.getName());
+        model.addAttribute("employeeName", userDetailsService.currentUser().getName());
         return "/requests";
     }
 
@@ -75,10 +74,9 @@ public class RequestController {
                                 @RequestParam(required = false) String reasonsJson,
                                 @RequestParam(required = false) String comment,
                                 @RequestParam(required = false) MultipartFile[] additionalFiles,
-                                Model model,
-                                Principal principal) throws JsonProcessingException {
+                                Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
-        Employee createdEmployee = userDetailsService.loadUserByUsername(principal.getName());
+        Employee createdEmployee = userDetailsService.currentUser();
 
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
         CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, employee, customerOrderString, customerOrderJson);
@@ -117,32 +115,32 @@ public class RequestController {
     }
 
     @GetMapping("/view/{requestNumber}")
-    public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model,Principal principal) {
+    public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
         Requests requests = service.findSingleByField(Requests.class, "requestNumber", requestNumber);
-        Employee employee = service.findSingleByField(Employee.class,"name", principal.getName());
+        Employee user = userDetailsService.currentUser();
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreateDate()));
         model.addAttribute("viewForm", true);
-        model.addAttribute("role",employee.getRole());
+        model.addAttribute("role",user.getRole());
         return "/requests";
     }
 
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
                                  HttpServletRequest httpRequest,
-                                 Model model, Principal principal) {
+                                 Model model) {
         if (detector.isMobile(httpRequest)) {
             return "/mobiledevice";
         }
-        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
+        Employee user = userDetailsService.currentUser();
         List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
         List<String> formattedDates = requests.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
         List<String> updateDate = requests.stream()
                 .map(req -> formatedDate(req.getUpdateDate())).toList();
-        model.addAttribute("user", employee);
+        model.addAttribute("user", user);
         model.addAttribute("bidList", requests);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("updateDateList", updateDate);

@@ -80,7 +80,7 @@ public class TelegramService extends TelegramLongPollingBot {
                 }
             } else if (messageType.equals(MessageType.COMPLETED)) {
                 sendMessage.setChatId(request.getCreatedBy().getChatId());
-            } else if (messageType.equals(MessageType.CANCEL) || messageType.equals(MessageType.CLOSE)) {
+            } else if (messageType.equals(MessageType.CANCEL) || messageType.equals(MessageType.CLOSE) || messageType.equals(MessageType.WORK)) {
                 sendMessage.setChatId(updaterEmployee.getChatId());
             }
         } else if (entity instanceof SGI sgi) {
