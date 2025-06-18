@@ -103,12 +103,12 @@ public class MessageBuilder {
     }
 
     private String buildCompletedMessage(Requests request) {
-        return String.format("Заявка №%d Выполнена\nСсылка на заявку %s/view/%d\nОписание решения: %s",
+        return String.format("Заявка №%d Выполнена\nСсылка на заявку \n%s/view/%d\nОписание решения: %s",
                 request.getRequestNumber(), baseUrl, request.getRequestNumber(), request.getDescription());
     }
 
     private String buildWorkMessage(Requests request) {
-        return String.format("Заявка №%d взять в работу", request.getRequestNumber());
+        return String.format("Заявка №%d взято в работу", request.getRequestNumber());
     }
 
     private String buildCreateMessage(SGI sgi) {

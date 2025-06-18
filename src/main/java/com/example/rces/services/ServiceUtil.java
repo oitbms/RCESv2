@@ -1,5 +1,6 @@
 package com.example.rces.services;
 
+import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.*;
 import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Role;
@@ -284,11 +285,17 @@ public class ServiceUtil {
                 if (logs.isEmpty()) {
                     RequestLog log = new RequestLog(newRequest, updaterUser, metadata);
                     service.save(log);
+                    if (!metadata.containsKey("Статус")) {
+                        AppProperties.setBool(true);
+                    }
                     return;
                 }
                 for (RequestLog log : logs) {
                     log.addToMetadata(metadata);
                     service.save(log);
+                }
+                if (!metadata.containsKey("Статус")) {
+                    AppProperties.setBool(true);
                 }
             }
         } catch (Exception e) {

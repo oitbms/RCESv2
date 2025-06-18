@@ -19,9 +19,12 @@ public class WebSecurityConfig {
 
     private final UniversalService service;
 
-    public WebSecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, UniversalService service) {
+    private final AppProperties appProperties;
+
+    public WebSecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, UniversalService service, AppProperties appProperties) {
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.service = service;
+        this.appProperties = appProperties;
     }
 
     @Bean
@@ -42,12 +45,13 @@ public class WebSecurityConfig {
                         .loginPage("/login")
                         .permitAll()
                 ).
-                logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll();
+                logout(logout -> logout
+                        .addLogoutHandler(appProperties)
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
 
         return http.build();
     }

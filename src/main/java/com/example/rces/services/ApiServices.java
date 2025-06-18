@@ -1,5 +1,6 @@
 package com.example.rces.services;
 
+import com.example.rces.configuration.AppProperties;
 import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Inconsistency;
@@ -144,7 +145,7 @@ public class ApiServices {
         service.save(request);
         if (sendMessage) {
             if (request.getStatus().equals(Status.Completed)) {
-                tgService.sendMessage(request, updaterEmployee, MessageType.COMPLETED);
+                tgService.sendMessage(request, updaterEmployee, !AppProperties.getBool() ? MessageType.COMPLETED : MessageType.UPDATE);
             } else if (!request.getStatus().equals(Status.Closed) || !request.getStatus().equals(Status.Cancel)) {
                 if (updaterEmployee.getRole().equals(String.valueOf(Role.MASTER))) {
                     Employee employee = service.findById(Employee.class, request.getEmployee().getId());
