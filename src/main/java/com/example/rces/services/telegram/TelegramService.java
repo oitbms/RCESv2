@@ -85,8 +85,8 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         } else if (entity instanceof SGI sgi) {
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
-            sendMessage.setChatId(this.testChatId);
-//            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
+            sendMessage.setChatId(this.controlChatId);
+            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
         }
         try {
