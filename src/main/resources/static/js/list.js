@@ -1,6 +1,6 @@
 
 // История изменений
-$('.history-icon').off("click").on("click", async function () {
+$(document).on('click', '.history-icon', async function ()  {
     const modal = $('#viewRequestLogs');
     const body = $('#logsBody');
 
@@ -25,7 +25,7 @@ $('.history-icon').off("click").on("click", async function () {
     data.forEach(log => {
         const changes = Object.entries(log.metadata).map(([key, value]) => `
             <div class="d-flex align-items-baseline gap-2">
-                <span class="badge bg-primary bg-opacity-10 text-primary fs-9">${key}</span>
+                <span class="badge bg-white bg-opacity-10 text-primary fs-9">${key}</span>
                 <span class="text-muted fs-8">${value}</span>
             </div>
         `).join('');
@@ -51,7 +51,7 @@ $('.history-icon').off("click").on("click", async function () {
                 <div class="col-3">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avatar avatar-xs">
-                            <span class="avatar-initials bg-primary text-white">${log.userName[0]}</span>
+                            <span class="avatar-initials btn-primary text-white">${log.userName[0]}</span>
                         </div>
                         <span class="text-dark fs-8">${log.userName}</span>
                     </div>
@@ -70,30 +70,10 @@ $('.history-icon').off("click").on("click", async function () {
 });
 
 $(document).ready(function () {
-    const requestType = "${type?lower_case}";
-    let selectedRequestNumber;
     const rowsPerPage = 15;
     let filteredRows = [];
 
     // Контекстное меню
-    $('.clickable-row').on('contextmenu', function (event) {
-        event.preventDefault();
-        selectedRequestNumber = $(this).data('request-number');
-        $('#contextMenu').css({
-            display: 'block',
-            left: event.pageX,
-            top: event.pageY
-        });
-    });
-
-    $(document).on('click', function () {
-        $('#contextMenu').hide();
-    });
-
-    $('#editRequest').on('click', function () {
-        $('#contextMenu').hide();
-        window.location.href = '/view/' + selectedRequestNumber;
-    });
 
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape') {
@@ -114,40 +94,39 @@ $(document).ready(function () {
     };
 
     const checkRowFilters = (row) => {
-
-        const createBy = $(row).find('td:nth-child(1)').text().toLowerCase();
-        const employeeBy = $(row).find('td:nth-child(2)').text().toLowerCase();
-        const item = $(row).find('td:nth-child(3)').text().toLowerCase();
-        const requestNumber = $(row).find('td:nth-child(4)').text().toLowerCase();
-        const customerOrder = $(row).find('td:nth-child(5)').text().toLowerCase();
-        const workShop = $(row).find('td:nth-child(6)').text().toLowerCase();
-        const reason = $(row).find('td:nth-child(7)').text().toLowerCase();
-        const status = $(row).find('td:nth-child(8)').text().toLowerCase();
-        const date = $(row).find('td:nth-child(9)').text().toLowerCase();
-        const dateCreate = $(row).find('td:nth-child(10)').text().toLowerCase();
-        const changedBy = $(row).find('td:nth-child(11)').text().toLowerCase();
+        const requestNumber = $(row).find('td:nth-child(1)').text().toLowerCase();
+        const createBy = $(row).find('td:nth-child(2)').text().toLowerCase();
+        const employeeBy = $(row).find('td:nth-child(3)').text().toLowerCase();
+        // const item = $(row).find('td:nth-child(3)').text().toLowerCase();
+        // const customerOrder = $(row).find('td:nth-child(5)').text().toLowerCase();
+        // const workShop = $(row).find('td:nth-child(6)').text().toLowerCase();
+        // const reason = $(row).find('td:nth-child(7)').text().toLowerCase();
+        // const status = $(row).find('td:nth-child(8)').text().toLowerCase();
+        // const date = $(row).find('td:nth-child(9)').text().toLowerCase();
+        // const dateCreate = $(row).find('td:nth-child(10)').text().toLowerCase();
+        // const changedBy = $(row).find('td:nth-child(11)').text().toLowerCase();
         // Проверка наличия поля "Тип контроля" и его значения
-        let controlMatch = true;
-        const controlInput = $('#control');
-        if (controlInput.length > 0) {
-            const control = $(row).find('td:nth-child(12)').text().toLowerCase();
-            controlMatch = control.includes(controlInput.val().toLowerCase());
-        }
+        // let controlMatch = true;
+        // const controlInput = $('#control');
+        // if (controlInput.length > 0) {
+        //     const control = $(row).find('td:nth-child(12)').text().toLowerCase();
+        //     controlMatch = control.includes(controlInput.val().toLowerCase());
+        // }
 
 
         return (
-            createBy.includes($('#createBy').val().toLowerCase()) &&
-            employeeBy.includes($('#employeeBy').val().toLowerCase()) &&
-            item.includes($('#item').val().toLowerCase()) &&
             requestNumber.includes($('#requestNumber').val().toLowerCase()) &&
-            customerOrder.includes($('#customerOrder').val().toLowerCase()) &&
-            workShop.includes($('#workShop').val().toLowerCase()) &&
-            reason.includes($('#reason').val().toLowerCase()) &&
-            status.includes($('#status').val().toLowerCase()) &&
-            date.includes($('#date').val().toLowerCase()) &&
-            dateCreate.includes($('#dateCreate').val().toLowerCase()) &&
-            changedBy.includes($('#changedBy').val().toLowerCase()) &&
-            controlMatch
+            createBy.includes($('#createBy').val().toLowerCase()) &&
+            employeeBy.includes($('#employeeBy').val().toLowerCase())
+            // item.includes($('#item').val().toLowerCase()) &&
+            // customerOrder.includes($('#customerOrder').val().toLowerCase()) &&
+            // workShop.includes($('#workShop').val().toLowerCase()) &&
+            // reason.includes($('#reason').val().toLowerCase()) &&
+            // status.includes($('#status').val().toLowerCase()) &&
+            // date.includes($('#date').val().toLowerCase()) &&
+            // dateCreate.includes($('#dateCreate').val().toLowerCase()) &&
+            // changedBy.includes($('#changedBy').val().toLowerCase()) &&
+            // controlMatch
         );
     };
 
@@ -174,7 +153,7 @@ $(document).ready(function () {
     };
 
     // Инициализация слушателей событий для фильтров
-    $('#createBy, #employeeBy, #item, #requestNumber, #customerOrder, #workShop, #reason, #status, #date, #dateCreate, #changedBy').on('keyup change', filterData);
+    $('#requestNumber,#createBy, #employeeBy').on('keyup change', filterData);
 
     // Добавляем слушатель для поля "Тип контроля" только если оно существует
     const controlInput = $('#control');
@@ -192,4 +171,22 @@ $(document).ready(function () {
             $('.inputContainer').hide();
         }
     });
+});
+
+$(function() {
+    $('#table').bootstrapTable({
+        locale: 'ru-RU',
+        iconsPrefix: 'bi',
+        icons: {
+            paginationSwitchDown: 'bi-chevron-down',
+            paginationSwitchUp: 'bi-chevron-up',
+            paginationSwitch: 'bi-toggle-on',
+            paginationSwitchOff: 'bi-toggle-off',
+        },
+        exportTypes: ['json','excel'],
+    });
+});
+
+document.getElementById('closeId').addEventListener('click', () => {
+    $("#viewRequestLogs").modal('hide');
 });

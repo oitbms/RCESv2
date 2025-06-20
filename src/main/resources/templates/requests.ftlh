@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/stylesBid.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -16,47 +17,6 @@
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
     <script src="/js/script.js" defer></script>
-    <style>
-        .attached-photo {
-            max-width: 150px;
-            max-height: 150px;
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        input.readonly-scroll {
-            overflow: auto;
-            white-space: nowrap; /* или 'pre-wrap' для многострочного текста */
-        }
-
-        #fullPhoto {
-            max-width: 90%;
-            max-height: 80vh;
-        }
-        #modalSearchInput {
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            opacity: 0;
-            visibility: hidden;
-            height: 0;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-            border: 0;
-        }
-
-        #modalSearchInput.visible {
-            opacity: 1;
-            visibility: visible;
-            height: auto;
-            padding: 0.375rem 0.75rem;
-            margin-bottom: 0.5rem;
-            border: 1px solid #ced4da;
-        }
-        #employeeName,#mlmNodeName,#itemName {
-            pointer-events: none;
-            background-color: #f8f9fa;
-        }
-    </style>
 </head>
 <body>
 <#if createForm!false>
@@ -268,29 +228,56 @@
                                 Изменить
                             </button>
                         </div>
+                        <#if role != 'MASTER'>
+                        <p class="mb-2"><strong>Комментарий:</strong>
+                            <textarea class="form-control"
+                                      id="comment"
+                                      name="comment"
+                                      rows="5"
+                                      style="resize: both;"
+                                      readonly>${bid.comment!''}</textarea>
+                        </#if>
                     </div>
                     <!-- Кнопка "Взять в работу" -->
-                    <button type="button"
-                            class="btn btn-primary mb-3"
-                            id="workId"
-                            data-param="${bid.getId()}">
-                        Взять в работу
-                    </button>
+                    <#if role != 'MASTER'>
+                        <button type="button"
+                                class="btn btn-primary mb-3 work"
+                                id="workId"
+                                data-param="${bid.getId()}">
+                            Взять в работу
+                        </button>
+                    </#if>
                 </#if>
 
                 <#if bid.getStatus().getName() == 'В работе' && role == 'MASTER'>
                     <p class="text-success fs-3 fw-bold">Заявка была принята в работу</p>
-                <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER'>
+                <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type != 'otk'>
                     <button type="button"
-                            class="btn btn-success mb-3"
+                            class="btn btn-success mb-3 work"
                             id="executeBtn"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal">
                         Выполнение
                     </button>
+                <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type == 'otk'>
+                    <button type="button"
+                            class="btn btn-success mb-3 work"
+                            id="workId"
+                            data-param="${bid.getId()}">
+                        Выполнено
+                    </button>
+                    <button type="button"
+                            class="btn btn-danger mb-3"
+                            id="executeOtkBtn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModalOtk">
+                        Забракован
+                    </button>
+
                 </#if>
 
                 <#if role == ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
+                    <#if type != 'otk'>
                     <label for="closed" class="form-label">Описание решения</label>
                     <textarea class="form-control"
                               name="description"
@@ -298,21 +285,19 @@
                               rows="5"
                               readonly>${bid.getDescription()!""}
                     </textarea>
-                    <#if type == 'otk'>
-                        <label for="closed" class="form-label">Несоответствия</label>
-                        <input type="text" class="form-control"
-                               value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
+                        <#else >
+                        <input type="text" readonly class="form-control" value="${bid.status.getName()}">
                     </#if>
 
                     <button type="button"
-                            class="btn btn-danger mt-3"
+                            class="btn btn-danger mt-3 work"
                             id="canceledBtn"
                             data-param="${bid.getId()}"
                             data-status="false"
                     >Не согласовано</button>
 
                     <button type="button"
-                            class="btn btn-success mt-3"
+                            class="btn btn-success mt-3 work"
                             id="successBtn"
                             data-param="${bid.getId()}"
                             data-status="true"
@@ -324,6 +309,20 @@
 
                 <#if bid.getStatus().getName() == 'Закрыт'>
                     <p class="text-success fs-3 fw-bold">Заявка закрыта!</p>
+                </#if>
+
+                <#if bid.getStatus().getName() == 'Отменен'>
+                    <p class="text-danger fs-3 fw-bold">Заявка забракована!</p>
+                    <label for="closed" class="form-label">Несоответствия</label>
+                    <input type="text" class="form-control"
+                           value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
+                    <label for="closed" class="form-label">Описание решения</label>
+                    <textarea class="form-control"
+                              name="description"
+                              id="description"
+                              rows="3"
+                              readonly>${bid.getDescription()!""}
+                    </textarea>
                 </#if>
 
                 <!-- Модальное окно "Выполнение заявки" -->
@@ -345,32 +344,65 @@
                                               rows="4"
                                               placeholder="Введите описание решения">${bid.description!''}</textarea>
                                 </div>
-                                <#if type == 'otk'>
-                                    <div class="mb-2">
-                                        <label class="mb-3">Несоответствия:</label>
-                                        <input type="text" id="inconsistencyName" readonly
-                                               class="form-control readonly-scroll"
-                                               value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
-                                        <input type="hidden" id="inconsistencyJson" name="inconsistency"
-                                               value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
-                                        <button type="button" class="btn btn-primary mt-2 openModal"
-                                                data-endpoint="inconsistency"
-                                                data-input-id="inconsistencyName"
-                                                data-hidden-entity="inconsistencyJson"
-                                                data-modal-id="inconsistencyModal"
-                                                data-multiple="true"
-                                                data-param="${bid.getControl()!""}"
-                                        >
-                                            Изменить
-                                        </button>
-                                    </div>
-                                </#if>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                                 <button type="button"
                                         id="successId"
-                                        class="btn btn-success"
+                                        class="btn btn-success work"
+                                        data-endpoint="inwork"
+                                        data-param="${bid.getId()}"
+                                        data-description="${bid.getDescription()!""}"
+                                >
+                                    Сохранить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="exampleModalOtk" tabindex="-1" aria-labelledby="exampleModalOtkLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalOtkLabel">Выполнение заявки</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Закрыть"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-2">
+                                    <label class="mb-3">Несоответствия:</label>
+                                    <input type="text" id="inconsistencyName" readonly
+                                           class="form-control readonly-scroll"
+                                           value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
+                                    <input type="hidden" id="inconsistencyJson" name="inconsistency"
+                                           value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
+                                    <button type="button" class="btn btn-primary mt-2 openModal"
+                                            data-endpoint="inconsistency"
+                                            data-input-id="inconsistencyName"
+                                            data-hidden-entity="inconsistencyJson"
+                                            data-modal-id="inconsistencyModal"
+                                            data-multiple="true"
+                                            data-param="${bid.getControl()!""}"
+                                    >
+                                        Изменить
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Решение:</label>
+                                    <textarea class="form-control"
+                                              id="description2"
+                                              name="description"
+                                              rows="4"
+                                              placeholder="Введите описание решения">${bid.description!''}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button"
+                                        id="successId"
+                                        class="btn btn-success work"
                                         data-endpoint="inwork"
                                         data-param="${bid.getId()}"
                                         data-description="${bid.getDescription()!""}"
@@ -392,7 +424,6 @@
                                   style="resize: both;">${bid.comment!''}</textarea>
                     </div>
                 </#if>
-
             </div>
         </div>
 
@@ -471,13 +502,22 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const actionButtons = document.querySelectorAll('button[data-param]');
+        const actionButtons = document.querySelectorAll('button.work[data-param]');
+        const bidType = '${type}';
+        let description;
 
         const handleClick = async (button) => {
 
                 const param = button.dataset.param;
                 const status = button.dataset.status;
-                const description = document.getElementById('description')?.value || '';
+                const comment = button.dataset.comment;
+
+                if (bidType === 'otk') {
+                    description = document.getElementById('description2')?.value || '';
+                } else {
+                    description = document.getElementById('description')?.value || '';
+                }
+
 
                 const formData = new URLSearchParams();
                 formData.append('param', param);
@@ -485,6 +525,12 @@
                 if (status !== undefined && status !== null) {
                     formData.append('status', status);
                 }
+                if (comment !== undefined && comment !== null) {
+                    formData.append('comment', comment);
+                }
+
+                console.log('param:', param);
+                console.log('description:', description);
 
                 const response = await fetch('/api/inwork', {
                     method: 'POST',
@@ -519,7 +565,6 @@
         let originalData = [];
         let inputId, hiddenId;
 
-        // Инициализация - скрываем поле поиска
         searchInput.classList.remove('visible');
 
         searchInput.addEventListener('input', () => {
@@ -645,9 +690,6 @@
             });
         });
     });
-</script>
-<script>
-
 </script>
 </body>
 </html>

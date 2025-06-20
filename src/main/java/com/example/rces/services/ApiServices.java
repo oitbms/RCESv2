@@ -42,8 +42,6 @@ public class ApiServices {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    Long chatId;
-
     public List<CustomerOrder> findAllCustomerOrder() {
         return service.findAll(CustomerOrder.class);
     }
@@ -181,23 +179,29 @@ public class ApiServices {
             throw new RuntimeException(e);
         }
 
-        if (status == null) {
-            if (request.getStatus() == Status.New) {
-                request.setStatus(Status.InWork);
-                tgService.sendMessage(request, request.getCreatedBy(), MessageType.WORK);
-            } else if (request.getStatus() == Status.InWork) {
-                request.setDescription(description);
-                request.setStatus(Status.Completed);
-                tgService.sendMessage(request, request.getCreatedBy(), MessageType.COMPLETED);
+        if (request.getInconsistency().isEmpty()){
+            if (status == null) {
+                if (request.getStatus() == Status.New) {
+                    request.setStatus(Status.InWork);
+                    tgService.sendMessage(request, request.getCreatedBy(), MessageType.WORK);
+                } else if (request.getStatus() == Status.InWork) {
+                    request.setDescription(description);
+                    request.setStatus(Status.Completed);
+                    tgService.sendMessage(request, request.getCreatedBy(), MessageType.COMPLETED);
+                }
+            } else {
+                if (status) {
+                    request.setStatus(Status.Closed);
+                    tgService.sendMessage(request, request.getCreatedBy(), MessageType.CLOSE);
+                } else {
+                    request.setStatus(Status.New);
+                    tgService.sendMessage(request, request.getEmployee(), MessageType.UPDATE);
+                }
             }
         } else {
-            if (status) {
-                request.setStatus(Status.Closed);
-                tgService.sendMessage(request, request.getCreatedBy(), MessageType.CLOSE);
-            } else {
-                request.setStatus(Status.New);
-                tgService.sendMessage(request, request.getEmployee(), MessageType.UPDATE);
-            }
+            request.setDescription(description);
+            request.setStatus(Status.Cancel);
+            tgService.sendMessage(request, request.getCreatedBy(), MessageType.CANCEL);
         }
 
         request.setUpdateBy(updaterEmployee);

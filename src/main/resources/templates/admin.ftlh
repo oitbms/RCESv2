@@ -132,7 +132,9 @@
                             class="btn btn-primary d-none d-md-inline-block create-btn"
                             data-bs-toggle="modal"
                             data-bs-target="#createModal"
-                            data-id="${req.getId()}">
+                            data-id="${req.getId()}"
+                            data-user="${req.getName()}"
+                    >
                         Редактировать
                     </button>
                     <button
@@ -166,14 +168,14 @@
             <div class="modal-body">
                 <div class="container">
                     <form name="editUser" action="/update" method="POST">
-                        <input hidden="" type="text" class="form-control" id="userNameId" value="" name="id">
+                        <input hidden="" type="text" class="form-control" id="userId" value="" name="id">
                         <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">Имя пользователя</label>
-                            <input type="text" class="form-control" id="userNameId" name="userName">
+                            <input type="text" class="form-control" id="userNameId" name="userName" value="">
                         </div>
                         <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">Отдел</label>
-                            <select id="mlmNode" name="mlmNodeName" class="d-flex justify-content-center form-control" required>
+                            <select id="mlmNodeId" name="mlmNodeName" class="d-flex justify-content-center form-control" required>
                                 <#list mlmNodes as mlmNode>
                                     <option value="${mlmNode}">${mlmNode.getName()}</option>
                                 </#list>
@@ -188,7 +190,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">Роль</label>
-                            <select id="role" name="roleName" class="d-flex justify-content-center form-control" required>
+                            <select id="roleId" name="roleName" class="d-flex justify-content-center form-control" required>
                                 <#list roles as role>
                                     <option value="${role}">${role}</option>
                                 </#list>
@@ -196,7 +198,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">ChatId</label>
-                            <input type="number" class="form-control" id="chatId" name="chatName" value="${user.chatId!-1}">
+                            <input type="number" class="form-control" id="employChatId" name="chatName" value="">
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary" id="saveId">Сохранить изменения</button>

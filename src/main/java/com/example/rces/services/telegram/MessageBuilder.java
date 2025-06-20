@@ -95,17 +95,17 @@ public class MessageBuilder {
     }
 
     private String buildCloseMessage(Requests request) {
-        return String.format("Заявка № %d закрыта\n" + (request.getDescription().isEmpty() ? "Описание: %s" : ""),
+        return String.format("Заявка № %d закрыта\n" + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
                 request.getRequestNumber(), request.getDescription());
     }
 
     private String buildCancelMessage(Requests request) {
-        return String.format("Заявка № %d отменена\n" + (request.getDescription().isEmpty() ? "Описание: %s" : ""),
+        return String.format("Заявка № %d отменена\n" + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
                 request.getRequestNumber(), request.getDescription());
     }
 
     private String buildCompletedMessage(Requests request) {
-        return String.format("Заявка №%d Выполнена\nСсылка на заявку \n%s/view/%d\n" + (request.getDescription().isEmpty() ?  "Описание решения: %s" : ""),
+        return String.format("Заявка №%d Выполнена\nСсылка на заявку \n%s/view/%d\n" + (!request.getDescription().isEmpty() ?  "Описание решения: %s" : ""),
                 request.getRequestNumber(), baseUrl, request.getRequestNumber(), request.getDescription());
     }
 

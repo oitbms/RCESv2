@@ -18,9 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 $(function() {
     $('.create-btn').click(function () {
-        document.getElementById('userNameId').value = $(this).data('id');
-    })
-})
+        const userId = $(this).data('id');
+        const username = $(this).data('user');
+        $('#userId').val(userId);
+        $('#userNameId').val(username);
+    });
+});
+
 $(document).ready(function () {
     const rowsPerPage = 15;
     let filteredRows = [];
@@ -34,9 +38,9 @@ $(document).ready(function () {
 
     const checkRowFilters = (row) => {
         const employee = $(row).find('td:nth-child(1)').text().toLowerCase();
-        const active = $(row).find('td:nth-child(2)').text().toLowerCase();
-        const role = $(row).find('td:nth-child(3)').text().toLowerCase();
-        const chatId = $(row).find('td:nth-child(4)').text().toLowerCase();
+        const active = $(row).find('td:nth-child(3)').text().toLowerCase();
+        const role = $(row).find('td:nth-child(4)').text().toLowerCase();
+        const chatId = $(row).find('td:nth-child(5)').text().toLowerCase();
 
         return (
             employee.includes($('#employee').val().toLowerCase()) &&

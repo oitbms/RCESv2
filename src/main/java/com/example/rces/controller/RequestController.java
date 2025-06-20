@@ -133,18 +133,16 @@ public class RequestController {
         if (detector.isMobile(httpRequest)) {
             return "/mobiledevice";
         }
-        Employee user = userDetailsService.currentUser();
-        List<Requests> requests = service.findAllByField(Requests.class, "typeRequest", type);
-        List<String> formattedDates = requests.stream()
+        List<Requests> requestsList = service.findAll(Requests.class).stream().filter(requests -> requests.getTypeRequest().equals(Requests.Type.valueOf(type))).toList();
+        List<String> formattedDates = requestsList.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());
-        List<String> updateDate = requests.stream()
+        List<String> updateDate = requestsList.stream()
                 .map(req -> formatedDate(req.getUpdateDate())).toList();
-        model.addAttribute("user", user);
-        model.addAttribute("bidList", requests);
+        model.addAttribute("requestsList", requestsList);
+        model.addAttribute("typeRequest", type);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("updateDateList", updateDate);
-        model.addAttribute("type", type);
         return "requestslist";
     }
 }

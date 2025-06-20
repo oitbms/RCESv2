@@ -157,3 +157,24 @@ tr:hover {
 
 .fs-8 { font-size: 0.875rem; }
 .fs-9 { font-size: 0.75rem; }
+.fixed-table-toolbar {
+    background-color: dodgerblue !important;
+    color: white;
+}
+
+.custom-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background-color: #fff; /* белый фон */
+    color: #000; /* черный текст */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+.custom-title:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
