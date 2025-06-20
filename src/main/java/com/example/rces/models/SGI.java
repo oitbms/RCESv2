@@ -88,6 +88,10 @@ public class SGI implements Cloneable {
     @DisplayName("Комментарий")
     private String comment;
 
+    @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DisplayName("Прикрепленные фото")
+    private List<Images> images = new ArrayList<>();
+
     @Column(name = "agreed")
     @DisplayName("Согласовано")
     private Boolean agreed;
@@ -205,6 +209,14 @@ public class SGI implements Cloneable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public List<Images> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Images> images) {
+        this.images = images;
     }
 
     public Boolean getAgreed() {

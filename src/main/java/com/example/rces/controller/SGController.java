@@ -75,12 +75,13 @@ public class SGController {
             @RequestParam String departmentModal,
             @RequestParam String employeesModal,
             @RequestParam(required = false) String noteModal,
-            @RequestParam LocalDate desiredDateModal) {
+            @RequestParam LocalDate desiredDateModal,
+            @RequestParam(required = false) MultipartFile[] additionalFiles) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
         Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
-        SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee);
+        SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee, additionalFiles);
         tgService.sendMessage(sgi, null, MessageType.CREATE);
         return "redirect:/sgi";
     }
@@ -136,6 +137,12 @@ public class SGController {
             throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
         }
         service.createFactExecutionSGI(sgi, new ExecutionsPayload(null, executionDate.toString(), report), images);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/add-photoEx")
+    public ResponseEntity<Void> addPhotoEx(@RequestParam UUID id, @RequestParam MultipartFile[] additionalFiles) {
+        service.addPhotoEx(id, additionalFiles);
         return ResponseEntity.ok().build();
     }
 

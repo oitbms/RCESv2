@@ -68,6 +68,24 @@ public class ServiceUtil {
         return images;
     }
 
+    public static List<Images> saveFiles(MultipartFile[] files, SGI sgi) {
+        List<Images> images = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                imageEntity.setSgim(sgi);
+                images.add(imageEntity);
+            }
+        }
+        return images;
+    }
+
     //Изменение коллекции изображений
     public static void handleImageCollection(Requests request, List<?> newImages) {
         List<Images> currentImages = request.getImages();
@@ -345,7 +363,6 @@ public class ServiceUtil {
                 String newStr = ObjectUtils.isEmpty(field.get(newEntity))
                         ? "не назначено"
                         : getFieldValue(field, newEntity);
-
                 if (!Objects.equals(oldStr, newStr)) {
                     metadata.put(fieldName, oldStr + " -> " + newStr);
                 }

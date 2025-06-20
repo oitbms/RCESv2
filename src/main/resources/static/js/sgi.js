@@ -144,6 +144,18 @@ async function change(rowId) {
             <input type="text" class="form-control auto-width" name="note" 
                    value="${data.note || ''}" data-minwidth="150">
         </div>
+        
+         <div class="field-group">
+            <label>&nbsp;</label> 
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-info btn-sm w-100" 
+                    data-id="${data.id}" 
+                    data-bs-target="#photoModal" 
+                    data-bs-toggle="modal">
+                     <i class="bi bi-image me-1"></i> Прикрепленные фото
+                </button>          
+            </div>
+        </div>
     </div>`);
 
     // Автоматическая регулировка ширины

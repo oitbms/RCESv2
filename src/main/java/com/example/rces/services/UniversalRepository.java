@@ -1,9 +1,6 @@
 package com.example.rces.services;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -126,7 +123,7 @@ public class UniversalRepository {
                 .getSingleResult();
     }
 
-    public void addPhoto(UUID id, MultipartFile[] additionalFiles) {
+    public void addPhotoEx(UUID id, MultipartFile[] additionalFiles) {
         for (MultipartFile file : additionalFiles) {
             if (!file.isEmpty()) {
                 Images imageEntity = new Images();
@@ -141,6 +138,23 @@ public class UniversalRepository {
             }
         }
     }
+
+    public void addPhoto(UUID id, MultipartFile[] additionalFiles) {
+        for (MultipartFile file : additionalFiles) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                imageEntity.setSgim(findById(SGI.class, id));
+                save(imageEntity);
+            }
+        }
+    }
+
 
     public void deletePhoto(UUID photoId) {
         entityManager.createQuery("DELETE FROM Images e WHERE e.id = :photoId")

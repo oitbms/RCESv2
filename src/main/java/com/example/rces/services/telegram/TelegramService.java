@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.example.rces.services.ServiceUtil.colorCalculate;
@@ -87,7 +88,6 @@ public class TelegramService extends TelegramLongPollingBot {
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
             sendMessage.setChatId(this.controlChatId);
             sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
-            sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
         }
         try {
             Message message = execute(sendMessage);
@@ -183,13 +183,13 @@ public class TelegramService extends TelegramLongPollingBot {
 
     private String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {
         StringBuilder requestsNumbers = new StringBuilder();
-        for (SGI sgi : sgiList) {
+        for (SGI sgi : sgiList.stream().sorted(Comparator.comparing(SGI::getRequestNumber)).toList()) {
             sgi.setColor(colorCalculate(sgi, today));
             if (sgi.getColor().equals(SGI.ColorSGI.RED)) {
                 if (!requestsNumbers.isEmpty()) {
                     requestsNumbers.append(", ");
                 }
-                requestsNumbers.append(sgi.getRequestNumber());
+                requestsNumbers.append(String.format("%d (%s)", sgi.getRequestNumber(), sgi.getDepartment().getName()));
             }
         }
         return requestsNumbers.toString();

@@ -81,7 +81,8 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public SGI createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee) {
+    public SGI createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee,
+                                MultipartFile[] additionalFiles) {
         SGI sgi = new SGI();
 
         sgi.setWorkShop(workShop);
@@ -94,7 +95,13 @@ public class UniversalService {
         sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
         sgi.setCreateDate(LocalDate.now());
         sgi.setEmployee(employee);
+        if (additionalFiles != null) {
+            List<Images> images = saveFiles(additionalFiles, sgi);
+            sgi.setImages(images);
+        }
+
         sgi.setAgreed(false);
+
 
         return repository.save(sgi);
     }
@@ -121,6 +128,10 @@ public class UniversalService {
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
+    }
+
+    public void addPhotoEx(UUID id, MultipartFile[] additionalFiles) {
+        repository.addPhotoEx(id, additionalFiles);
     }
 
     public void addPhoto(UUID id, MultipartFile[] additionalFiles) {

@@ -1,7 +1,5 @@
 package com.example.rces.services.telegram;
 
-import com.example.rces.models.SGI;
-
 class ThreadIdResolver {
     public static Integer resolve(String department) {
         return switch (department) {

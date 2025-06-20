@@ -32,15 +32,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public Boolean isControl() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Employee employee = loadUserByUsername(authentication.getName());
-        return controlRoles.contains(employee.getRole());
+        return controlRoles.contains(currentUser().getRole());
     }
 
     public Boolean isResponsible(Employee responsobleEmployee) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Employee employee = loadUserByUsername(authentication.getName());
-        return responsobleEmployee.getId().equals(employee.getId());
+        return responsobleEmployee.getId().equals(currentUser().getId());
     }
 
     public Employee currentUser() {

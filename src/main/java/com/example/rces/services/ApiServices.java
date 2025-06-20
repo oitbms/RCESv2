@@ -55,11 +55,14 @@ public class ApiServices {
     public List<ImagesPayload> findImages(UUID param) {
         List<Images> images;
         Requests request = service.findById(Requests.class, param);
+        FactExecutionSGI factExecutionSGI = service.findById(FactExecutionSGI.class, param);
         if (request != null) {
             images = service.findAllByField(Images.class, "request", request);
-        } else {
-            FactExecutionSGI factExecutionSGI = service.findById(FactExecutionSGI.class, param);
+        } else if (factExecutionSGI!=null){
             images = service.findAllByField(Images.class, "sgi", factExecutionSGI);
+        } else {
+            SGI sgi = service.findById(SGI.class, param);
+            images = service.findAllByField(Images.class, "sgim", sgi);
         }
 
         return images.stream()
@@ -67,7 +70,7 @@ public class ApiServices {
                         image.getId(),
                         image.getName(),
                         image.getBase64Data(),
-                        request != null ? image.getRequest().getId() : image.getSgi().getId()
+                        request != null ? image.getRequest().getId() : image.getSgi()!=null ? image.getSgi().getId() : image.getSgim().getId()
                 ))
                 .collect(Collectors.toList());
     }

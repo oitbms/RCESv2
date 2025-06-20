@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class AppProperties implements LogoutHandler {
     private static final Map<String, UserProperties> userPropertiesMap = new ConcurrentHashMap<>();
-    private static final long CLEANUP_DELAY_MS = 60_000; // 1 минута
+    private static final long CLEANUP_DELAY_MS = 10_000; // 10 секунд
 
     private static class UserProperties {
         private String string;

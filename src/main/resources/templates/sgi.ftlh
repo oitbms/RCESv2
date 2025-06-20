@@ -388,7 +388,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addTaskForm" action="/sgi/create" method="POST">
+                    <form id="addTaskForm" action="/sgi/create" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="shop" class="form-label">Цех</label>
                             <input type="text" class="form-control" id="shopId" name="workshopModal"
@@ -427,6 +427,11 @@
                         <div class="mb-3">
                             <label for="note" class="form-label">Примечание</label>
                             <input type="text" class="form-control" id="noteId" name="noteModal">
+                        </div>
+                        <div class="mb-3">
+                            <label for="additionalFiles" class="form-label">Загрузить фотографии</label>
+                            <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple
+                                   class="form-control">
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Сохранить изменения</button>

@@ -29,6 +29,10 @@ public class Images {
     @JoinColumn(name = "sgi_id")
     private FactExecutionSGI sgi;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sgim_id")
+    private SGI sgim;
+
     public Images() {
     }
 
@@ -43,7 +47,6 @@ public class Images {
         setName("Фото от " + LocalDateTime.now());
         setSgi(sgi);
     }
-
 
     public String getBase64Data() {
         return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
@@ -92,5 +95,13 @@ public class Images {
 
     public void setSgi(FactExecutionSGI sgi) {
         this.sgi = sgi;
+    }
+
+    public SGI getSgim() {
+        return sgim;
+    }
+
+    public void setSgim(SGI sgim) {
+        this.sgim = sgim;
     }
 }

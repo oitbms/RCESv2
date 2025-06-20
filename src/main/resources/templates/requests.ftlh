@@ -175,7 +175,7 @@
                 <div class="mb-3">
                     <label for="reasonsJson" class="form-label">Причина</label>
                     <input type="text" id="reasonsJson" name="reasonsJson" class="form-control"
-                           placeholder="Комментарий">
+                           placeholder="Причина">
                 </div>
             </#if>
 
