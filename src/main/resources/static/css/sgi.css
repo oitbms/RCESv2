@@ -870,3 +870,10 @@ field-group {
     align-items: center;
     height: 100%;
 }
+
+.table-danger {
+    --bs-table-bg: #ff0000;       /* Красный фон */
+    --bs-table-striped-bg: #ff3333; /* Для полосатой таблицы */
+    --bs-table-hover-bg: #ff6666;   /* При наведении */
+    --bs-table-color: white;        /* Цвет текста (лучше белый для контраста) */
+}
