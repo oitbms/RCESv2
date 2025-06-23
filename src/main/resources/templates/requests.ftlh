@@ -148,8 +148,8 @@
 
             <!-- Фото -->
             <div class="mb-3">
-                <label for="additionalFiles" class="form-label">Загрузить фотографии</label>
-                <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple
+                <label for="additionalFiles" class="form-label">Загрузить фотографии или сделать фото</label>
+                <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple capture="environment"
                        class="form-control">
             </div>
 
@@ -180,11 +180,14 @@
                 </#if>
                 <p class="mb-2"><strong>Дата создания:</strong> ${(date)!""}</p>
                 <p class="mb-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
-                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!""}</p>
+                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"-"}</p>
                 <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!""}</p>
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!""}</p>
                     <p class="mb-2"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                    <p class="mb-2"><strong>Причина:</strong> ${(bid.getReason_wr())!""}</p>
+                    <#else >
+                        <p class="mb-2"><strong>Причина:</strong> ${(bid.reason.getName())!""}</p>
                 </#if>
                 <#if bid.status.getName() == "В работе">
                 <p class="mb-2"><strong>Комментарий:</strong>

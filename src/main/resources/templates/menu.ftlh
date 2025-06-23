@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Меню пользователя</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-icons.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -52,7 +52,7 @@
                             <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
                                 <a class="btn btn-primary" href="/sgi">СГИ</a>
                             </#if>
-                            <a class="btn btn-primary bottom-margin" href="/logout">Выйти</a>
+                            <a class="btn btn-primary " href="/logout">Выйти</a>
                         </li>
                     </ul>
                 </nav>

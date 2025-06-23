@@ -178,10 +178,7 @@ $(function() {
         locale: 'ru-RU',
         iconsPrefix: 'bi',
         icons: {
-            paginationSwitchDown: 'bi-chevron-down',
-            paginationSwitchUp: 'bi-chevron-up',
-            paginationSwitch: 'bi-toggle-on',
-            paginationSwitchOff: 'bi-toggle-off',
+
         },
         exportTypes: ['json','excel'],
     });

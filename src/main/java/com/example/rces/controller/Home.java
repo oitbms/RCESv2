@@ -23,5 +23,4 @@ public class Home {
     public String errorMobile() {
         return "mobiledevice";
     }
-
 }
