@@ -52,9 +52,25 @@ public class Images {
         return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
     }
 
+//    public void setBase64Data(String base64Image) {
+//        String base64 = base64Image.substring("data:image/jpeg;base64,".length());
+//        setData(Base64.getDecoder().decode(base64));
+//    }
+
     public void setBase64Data(String base64Image) {
-        String base64 = base64Image.substring("data:image/jpeg;base64,".length());
-        setData(Base64.getDecoder().decode(base64));
+        if (base64Image == null || !base64Image.startsWith("data:")) {
+            throw new IllegalArgumentException("Некорректный формат изображения");
+        }
+
+        int commaIndex = base64Image.indexOf(',');
+        if (commaIndex == -1) {
+            throw new IllegalArgumentException("Некорректный формат изображения");
+        }
+
+        String metadata = base64Image.substring(5, commaIndex);
+        String base64Data = base64Image.substring(commaIndex + 1);
+
+        setData(Base64.getDecoder().decode(base64Data));
     }
 
     public UUID getId() {

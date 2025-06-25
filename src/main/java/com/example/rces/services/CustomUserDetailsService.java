@@ -55,6 +55,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         context.setAuthentication(anonymousAuth);
         SecurityContextHolder.setContext(context);
     }
-
-
 }

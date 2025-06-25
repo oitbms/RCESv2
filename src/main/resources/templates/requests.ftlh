@@ -8,12 +8,7 @@
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
-    <script type="text/javascript" charset="utf8"
-            src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+    <script src="/js/bootstrap.bundle.js"></script>
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;</script>
     <script src="/js/script.js" defer></script>
@@ -148,8 +143,8 @@
 
             <!-- Фото -->
             <div class="mb-3">
-                <label for="additionalFiles" class="form-label">Загрузить фотографии</label>
-                <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple
+                <label for="additionalFiles" class="form-label">Загрузить фотографии или сделать фото</label>
+                <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple capture="environment"
                        class="form-control">
             </div>
 
@@ -180,11 +175,14 @@
                 </#if>
                 <p class="mb-2"><strong>Дата создания:</strong> ${(date)!""}</p>
                 <p class="mb-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
-                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!""}</p>
+                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"-"}</p>
                 <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!""}</p>
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!""}</p>
                     <p class="mb-2"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                    <p class="mb-2"><strong>Причина:</strong> ${(bid.getReason_wr())!""}</p>
+                    <#else >
+                        <p class="mb-2"><strong>Причина:</strong> ${(bid.reason.getName())!""}</p>
                 </#if>
                 <#if bid.status.getName() == "В работе">
                 <p class="mb-2"><strong>Комментарий:</strong>

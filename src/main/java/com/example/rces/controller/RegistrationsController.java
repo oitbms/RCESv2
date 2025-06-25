@@ -39,7 +39,7 @@ public class RegistrationsController {
 
     @GetMapping("/menu")
     public String menu(Principal principal, Model model) {
-        List<Requests> requestsOfDate = service.findAll(Requests.class);
+        List<Requests> requests = service.findAll(Requests.class);
         Employee user = service.findSingleByField(Employee.class, "name", principal.getName());
         List<Requests> requestsList;
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
@@ -48,10 +48,10 @@ public class RegistrationsController {
             requestsList = service.findAllByField(Requests.class,"employee",user);
         }
         Map<String, List<Requests>> createMasterRequest = getCreateRequestsMaster(requestsList);
-        Map<String, List<Integer>> dailyCountsMap = getCountDays(service.findAll(Requests.class));
-        Map<String, Integer> qtyRequests = countRequest(requestsOfDate);
+        Map<String, List<Integer>> dailyCountsMap = getCountDays(requests);
+        Map<String, Integer> qtyRequests = countRequest(requests);
         List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
-                service.findAll(Requests.class), LocalDate.now());
+                requests, LocalDate.now());
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
         model.addAttribute("user", user);
         model.addAttribute("requests", requestsList);
