@@ -25,8 +25,12 @@ import static com.example.rces.services.ServiceUtil.formatedDate;
 @RequestMapping("/api")
 public class ApiController {
 
+    private final ApiServices service;
+
     @Autowired
-    private ApiServices service;
+    public ApiController(ApiServices service) {
+        this.service = service;
+    }
 
     @GetMapping("/employees")
     public List<Employee> getEmployees(@RequestParam Object param) {

@@ -8,9 +8,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,11 +24,24 @@ import java.util.UUID;
 import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
 
 @Repository
+@Transactional(transactionManager = "primaryTransactionManager")
 public class UniversalRepository {
     private final EntityManager entityManager;
 
-    public UniversalRepository(EntityManager entityManager) {
+    @Autowired
+    public UniversalRepository(@Qualifier("primaryEntityManager")EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    public <T> T findById(Class<T> entityClass, Object id) {
+        return entityManager.find(entityClass, id);
+    }
+
+    public <T> List<T> findAll(Class<T> entityClass) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<T> cq = cb.createQuery(entityClass);
+        cq.select(cq.from(entityClass));
+        return entityManager.createQuery(cq).getResultList();
     }
 
     public <T> List<T> findByField(Class<T> entityClass, String fieldName, Object fieldValue) {
@@ -52,10 +68,6 @@ public class UniversalRepository {
         return findByField(entityClass, fieldName, fieldValue).stream().findFirst().orElse(null);
     }
 
-    public <T> T findById(Class<T> entityClass, Object id) {
-        return entityManager.find(entityClass, id);
-    }
-
     public <T> T save(T entity) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Employee updaterCreaterEmployee = findSingleByField(Employee.class, "name", authentication.getName());
@@ -76,13 +88,6 @@ public class UniversalRepository {
 
     public <T> void delete(T entity) {
         entityManager.remove(entity);
-    }
-
-    public <T> List<T> findAll(Class<T> entityClass) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        cq.select(cq.from(entityClass));
-        return entityManager.createQuery(cq).getResultList();
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {

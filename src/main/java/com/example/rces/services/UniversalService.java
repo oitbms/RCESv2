@@ -21,7 +21,7 @@ import static com.example.rces.services.ServiceUtil.colorCalculate;
 import static com.example.rces.services.ServiceUtil.saveFiles;
 
 @Service
-@Transactional
+@Transactional(transactionManager = "primaryTransactionManager")
 public class UniversalService {
     private final UniversalRepository repository;
 

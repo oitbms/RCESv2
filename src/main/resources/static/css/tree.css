@@ -1,0 +1,76 @@
+.container {
+    margin-top: 30px;
+}
+#treeview {
+    width: 350px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px auto;
+}
+.controls {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.input-group-center {
+    max-width: 600px;
+    margin: 20px auto;
+}
+.modal-list .list-group-item {
+    cursor: pointer;
+}
+.modal-list .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+.modal-list .list-group-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+.hover-row:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+/* Мягкие тени и скругления */
+.modal-content {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-radius: 14px !important;
+    overflow: hidden;
+}
+
+/* Стиль строк при наведении */
+.hover-row {
+    transition: all 0.25s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.hover-row:hover {
+    background-color: #f8fbff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 1;
+    position: relative;
+}
+
+/* Поле поиска */
+#searchCustomerOrder {
+    border-left: none;
+    padding: 12px 15px;
+}
+
+#searchCustomerOrder:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+.input-group-text {
+    border-right: none;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.spinner-border {
+    animation: fadeIn 0.3s ease-in-out;
+}

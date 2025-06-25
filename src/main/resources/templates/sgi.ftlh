@@ -319,10 +319,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <div class="row align-items-start" id="factHeadContainer">
+                        <div class="row align-items-start" id="customerOrderHeadContainer">
                             <!-- Заголовки -->
                         </div>
-                        <div class="row align-items-center" id="factDataContainer">
+                        <div class="row align-items-center" id="customerOrderDataContainer">
                             <!-- Данные -->
                         </div>
                     </div>

@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UniversalRepository universalRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Employee loadUserByUsername(String username) {
         try {
             return universalRepository.findSingleByField(Employee.class, "name", username);
