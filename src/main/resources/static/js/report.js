@@ -1,55 +1,18 @@
-$(document).ready(function () {
-    // Тестовые данные для дерева
-    var treeData = [
-        {
-            text: "Документы",
-            icon: "bi bi-folder",
-            nodes: [
-                {
-                    text: "Работа",
-                    icon: "bi bi-folder",
-                    nodes: [
-                        {text: "Отчет.pdf", icon: "bi bi-file-earmark-pdf"},
-                        {text: "Презентация.pptx", icon: "bi bi-file-earmark-ppt"}
-                    ]
-                },
-                {
-                    text: "Личное",
-                    icon: "bi bi-folder",
-                    nodes: [
-                        {text: "Фото.jpg", icon: "bi bi-file-earmark-image"},
-                        {text: "Резюме.docx", icon: "bi bi-file-earmark-word"}
-                    ]
-                }
-            ]
-        },
-        {
-            text: "Музыка",
-            icon: "bi bi-music-note-list",
-            nodes: [
-                {text: "Rock", icon: "bi bi-music-note"},
-                {text: "Jazz", icon: "bi bi-music-note"}
-            ]
-        },
-        {
-            text: "Корзина",
-            icon: "bi bi-trash",
-            color: "#dc3545"
-        }
-    ];
 
+
+$(document).ready(function () {
     // Инициализация дерева
-    $('#treeview').treeview({
-        data: treeData,
-        levels: 1,
-        expandIcon: 'bi bi-plus-circle',
-        collapseIcon: 'bi bi-dash-circle',
-        emptyIcon: 'bi bi-circle',
-        selectedBackColor: '#0d6efd',
-        onNodeSelected: function (event, node) {
-            $('#output').html('<div class="alert alert-info">Выбран: <strong>' + node.text + '</strong></div>');
-        }
-    });
+    // $('#treeview').treeview({
+    //     data: treeData,
+    //     levels: 1,
+    //     expandIcon: 'bi bi-plus-circle',
+    //     collapseIcon: 'bi bi-dash-circle',
+    //     emptyIcon: 'bi bi-circle',
+    //     selectedBackColor: '#0d6efd',
+    //     onNodeSelected: function (event, node) {
+    //         $('#output').html('<div class="alert alert-info">Выбран: <strong>' + node.text + '</strong></div>');
+    //     }
+    // });
 
     // Обработчики кнопок
     $('#btnExpandAll').click(function () {
@@ -93,7 +56,7 @@ $(document).ready(function () {
         // Показываем индикатор загрузки
         dataContainer.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
 
-        // Функция рендеринга строк
+        // Переменная рендеринга строк
         const renderItems = items => {
             dataContainer.empty();
 
@@ -111,9 +74,9 @@ $(document).ready(function () {
                 </div>`
                 );
 
-                row.on('click', function() {
+                row.on('click', function () {
                     $('#' + inputId).val(item.name);
-                    $('[name="' + hiddenEntity + '"]').val(item.id);
+                    $('#' + hiddenEntity).val(item.id);
                     modal.modal('hide');
                 });
 
@@ -134,12 +97,12 @@ $(document).ready(function () {
             }
         };
 
-        // Загрузка данных
+        // Первоначальные данные
         let primaryData = [];
         let fullData = [];
 
+
         if (primarilyEndpoint) {
-            // Загрузка обоих наборов данных
             [primaryData, fullData] = await Promise.all([
                 loadData(primarilyEndpoint),
                 loadData(searchEndpoint)
@@ -154,57 +117,222 @@ $(document).ready(function () {
             // Первоначально показываем primaryData
             renderItems(primaryData);
         } else {
-            // Загрузка только основного набора данных
             fullData = await loadData(searchEndpoint);
             modal.data('fullData', fullData);
             renderItems(fullData);
         }
 
         // Обработчик поиска
-        searchInput.off('input').on('input', function() {
-            const term = $(this).val().toLowerCase();
+        searchInput.off('input').on('input', function () {
+            const value = $(this).val().toLowerCase();
+            const {primaryData, fullData} = modal.data();
 
-            if (primarilyEndpoint) {
-                const { primaryData, fullData } = modal.data();
-
-                if (!term) {
-                    // Если поиск пустой - показываем первоначальные данные
+            if (!value) {
+                if (primarilyEndpoint) {
                     renderItems(primaryData);
-                    return;
+                } else {
+                    renderItems(fullData);
                 }
-
-                // Фильтрация полного набора данных
-                const filtered = fullData.filter(item =>
-                    item.name.toLowerCase().includes(term)
-                );
-
-                renderItems(filtered);
-            } else {
-                // Стандартная фильтрация
-                const fullData = modal.data('fullData');
-                const filtered = fullData.filter(item =>
-                    item.name.toLowerCase().includes(term)
-                );
-
-                renderItems(filtered);
+                return;
             }
+            const filtered = fullData.filter(item =>
+                item.name.toLowerCase().includes(value)
+            );
+            renderItems(filtered);
+
         });
 
         modal.modal('show');
     });
-
-    // Обработчик сохранения выбора
-    // saveBtn.click(function () {
-    //     if (selectedItem) {
-    //         const inputId = $('.openModal').data('input-id');
-    //         const hiddenId = $('.openModal').data('hidden-entity');
-    //
-    //         $(`#${inputId}`).val(selectedItem.name);
-    //         $(`#${hiddenId}`).val(JSON.stringify(selectedItem));
-    //         $('#output').html(`<div class="alert alert-success">Выбран заказ: <strong>${selectedItem.name}</strong></div>`);
-    //         modal.hide();
-    //     } else {
-    //         alert('Пожалуйста, выберите заказ из списка');
-    //     }
-    // });
 });
+
+// Функция загрузки данных
+const loadData = async (url, params = {}) => {
+    try {
+        return await $.ajax({
+            url: '/spm-api/' + url,
+            method: 'GET',
+            data: params
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки данных:' + url, error);
+        return null;
+    }
+};
+
+// Функция построения дерева
+const buildTree = async (customerOrderId) => {
+    // Индикатор загрузки
+    $('#treeview').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+
+    // Загружаем PrimaryDemand
+    const primaryDemands = await loadData('getPrimaryDemandForCustomerOrderId', {customerOrderId});
+
+    if (!primaryDemands || primaryDemands.length === 0) {
+        $('#treeview').html('<div class="alert alert-warning">У заказа нет строк</div>');
+        return;
+    }
+
+    // Строим дерево
+    const treeData = [];
+
+    for (const pd of primaryDemands) {
+        //Строка ЗК/Спрос
+        const primaryNode = {
+            text: `<span class="node-primary">Строка ЗК/Спрос: ${pd.name}</span>`,
+            id: pd.id,
+            type: 'primary',
+            icon: 'bi bi-file-earmark-text',
+            nodes: []
+        };
+
+        // Main строки
+        const mainJobComponent = await loadData('getMainJobComponentForPrimaryDemandId', {primaryDemandId: pd.id});
+
+        if (mainJobComponent) {
+            const mainNode = {
+                text: `<span class="node-jobcomponent">[${mainJobComponent.name}] ` +
+                    `План: ${mainJobComponent.qty}, ` +
+                    `Выполнено: ${mainJobComponent.qtyFinished}, ` +
+                    `Начало: ${formatDate(mainJobComponent.dateStart)}, ` +
+                    `Завершение: ${formatDate(mainJobComponent.dateEnd)}</span>`,
+                id: mainJobComponent.id,
+                type: 'jobComponent',
+                icon: 'bi bi-diagram-2',
+                nodes: []
+            };
+
+            // Рекурсивная функция для загрузки дочерних компонентов
+            const loadChildComponents = async (parentId, nodesArray) => {
+                // Загружаем дочерние компоненты
+                const childComponents = await loadData('getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
+
+                for (const comp of childComponents) {
+                    const childNode = {
+                        text: `<span class="node-jobcomponent">[${comp.name}] ` +
+                            `План: ${comp.qty}, ` +
+                            `Выполнено: ${comp.qtyFinished}, ` +
+                            `Начало: ${formatDate(comp.dateStart)}, ` +
+                            `Завершение: ${formatDate(comp.dateEnd)}</span>`,
+                        id: comp.id,
+                        type: 'jobComponent',
+                        icon: 'bi bi-diagram-2',
+                        nodes: []
+                    };
+
+                    // Загружаем шаги для компонента
+                    const jobSteps = await loadData('getJobStepsForJobComponentId', {jobComponentId: comp.id});
+                    for (const step of jobSteps) {
+                        childNode.nodes.push({
+                            text: `<span class="node-jobstep">Шаг: ${step.name}, ` +
+                                `Статус: ${step.status}, ` +
+                                `Начало: ${formatDate(step.dateStart)}, ` +
+                                `Завершение: ${formatDate(step.dateEnd)}</span>`,
+                            id: step.id,
+                            type: 'jobStep',
+                            icon: 'bi bi-list-check'
+                        });
+                    }
+
+                    // Рекурсивно загружаем дочерние компоненты
+                    await loadChildComponents(comp.id, childNode.nodes);
+                    nodesArray.push(childNode);
+                }
+            };
+
+            // Загружаем дочерние компоненты для mainJobComponent
+            await loadChildComponents(mainJobComponent.id, mainNode.nodes);
+
+            // Загружаем шаги для mainJobComponent
+            const jobSteps = await loadData('getJobStepsForJobComponentId', {jobComponentId: mainJobComponent.id});
+            for (const step of jobSteps) {
+                mainNode.nodes.push({
+                    text: `<span class="node-jobstep">Шаг: ${step.name}, ` +
+                        `Статус: ${step.status}, ` +
+                        `Начало: ${formatDate(step.dateStart)}, ` +
+                        `Завершение: ${formatDate(step.dateEnd)}</span>`,
+                    id: step.id,
+                    type: 'jobStep',
+                    icon: 'bi bi-list-check'
+                });
+            }
+
+            primaryNode.nodes.push(mainNode);
+        }
+
+        treeData.push(primaryNode);
+    }
+
+    // Инициализация дерева
+    $('#treeview').treeview({
+        data: treeData,
+        levels: 99, // Все уровни развернуты
+        expandIcon: 'bi bi-plus-circle',
+        collapseIcon: 'bi bi-dash-circle',
+        emptyIcon: 'bi bi-circle',
+        selectedBackColor: '#0d6efd',
+        enableLinks: true,
+        onNodeSelected: function (event, node) {
+            $('#output').html(`<div class="alert alert-info">Выбран: <strong>${node.text}</strong></div>`);
+        }
+    });
+};
+
+// Обработчик кнопки "Сформировать"
+$('#btnGenerate').click(async function () {
+    const customerOrderId = $('#spmCustomerOrder').val();
+    const customerOrderName = $('#customerOrderName').val();
+
+    if (!customerOrderId) {
+        alert('Пожалуйста, выберите заказ клиента');
+        return;
+    }
+
+    // Показать информацию о выбранном заказе
+    $('#output').html(`
+        <div class="alert alert-info">
+            Формирование дерева для заказа: <strong>${customerOrderName}</strong>
+            <div class="spinner-border spinner-border-sm ms-2" role="status"></div>
+        </div>
+    `);
+
+    // Скрываем лишние элементы
+    $('.container > h2, .container-fluid').hide();
+    $('.controls button:not(#btnBack)').hide();
+
+    // Показываем контейнер дерева
+    $('#treeview-container')
+        .show()
+        .addClass('fullscreen');
+
+    // Показываем кнопку "Вернуться"
+    $('#btnBack').show();
+
+    // Строим дерево
+    await buildTree(customerOrderId);
+});
+
+// Обработчик кнопки "Вернуться"
+$('#btnBack').click(function () {
+    // Показываем скрытые элементы
+    $('.container > h2, .container-fluid').show();
+    $('.controls button').show();
+
+    // Скрываем контейнер дерева
+    $('#treeview-container')
+        .hide()
+        .removeClass('fullscreen');
+
+    // Скрываем кнопку "Вернуться"
+    $(this).hide();
+
+    // Очищаем дерево
+    $('#treeview').treeview('remove');
+});
+
+// Функция для форматирования даты
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+}

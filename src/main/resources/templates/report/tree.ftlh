@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootstrap Treeview Пример</title>
+    <title>Планирование производства</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-treeview@1.2.0/dist/bootstrap-treeview.min.css" rel="stylesheet">
@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="container">
-    <h2 class="text-center">Пример Bootstrap Treeview</h2>
+    <h2 class="text-center">Планирование производства</h2>
 
     <div class="container-fluid">
         <!-- Центральное поле ввода с кнопкой -->
@@ -36,21 +36,29 @@
                             data-input-id="customerOrderName"
                             data-hidden-entity="spmCustomerOrder"
                             data-modal-id="customerOrderModal">
-                        Выбрать из списка
+                        Выбрать
+                    </button>
+                    <!-- Кнопка формирования дерева -->
+                    <button type="button" class="btn btn-primary" id="btnGenerate">
+                        Сформировать
                     </button>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <div class="controls">
-        <button id="btnExpandAll" class="btn btn-primary btn-sm">Развернуть все</button>
-        <button id="btnCollapseAll" class="btn btn-secondary btn-sm">Свернуть все</button>
-        <button id="btnGetSelected" class="btn btn-success btn-sm">Получить выбранные</button>
-    </div>
+<#--    <div class="controls">-->
+<#--        <button id="btnExpandAll" class="btn btn-primary btn-sm">Развернуть все</button>-->
+<#--        <button id="btnCollapseAll" class="btn btn-secondary btn-sm">Свернуть все</button>-->
+<#--        <button id="btnGetSelected" class="btn btn-success btn-sm">Получить выбранные</button>-->
+<#--        <!-- Кнопка возврата &ndash;&gt;-->
+<#--        <button id="btnBack" class="btn btn-warning btn-sm" style="display:none;">Вернуться</button>-->
+<#--    </div>-->
 
-    <div id="treeview"></div>
+    <!-- Контейнер для дерева -->
+    <div id="treeview-container" class="mt-4" style="display:none;">
+        <div id="treeview"></div>
+    </div>
 
     <div id="output" class="mt-3 text-center"></div>
 </div>
