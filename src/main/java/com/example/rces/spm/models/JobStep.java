@@ -30,7 +30,7 @@ public class JobStep {
     @JoinColumn(name = "mlm_node_id")
     private MlmNode mlmNode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Status status;
 
     @Column(name = "qty_production")

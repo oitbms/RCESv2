@@ -5,7 +5,7 @@ import com.example.rces.spm.models.JobStep;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record JobStepPayload(Long id, String item, String mlmNode, String description, BigDecimal qtyProduction, BigDecimal qtyFinished, BigDecimal resourceTime,
+public record JobStepPayload(Long id, String name, String mlmNode, String description, BigDecimal qty, BigDecimal qtyFinished, BigDecimal resourceTime,
                                   LocalDate dateStart, LocalDate dateEnd, LocalDate dateCalcStart, LocalDate dateCalcEnd) {
 
     public JobStepPayload(JobStep jobStep) {

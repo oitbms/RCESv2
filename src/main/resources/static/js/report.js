@@ -1,151 +1,3 @@
-
-
-$(document).ready(function () {
-    // Инициализация дерева
-    // $('#treeview').treeview({
-    //     data: treeData,
-    //     levels: 1,
-    //     expandIcon: 'bi bi-plus-circle',
-    //     collapseIcon: 'bi bi-dash-circle',
-    //     emptyIcon: 'bi bi-circle',
-    //     selectedBackColor: '#0d6efd',
-    //     onNodeSelected: function (event, node) {
-    //         $('#output').html('<div class="alert alert-info">Выбран: <strong>' + node.text + '</strong></div>');
-    //     }
-    // });
-
-    // Обработчики кнопок
-    $('#btnExpandAll').click(function () {
-        $('#treeview').treeview('expandAll');
-    });
-
-    $('#btnCollapseAll').click(function () {
-        $('#treeview').treeview('collapseAll');
-    });
-
-    $('#btnGetSelected').click(function () {
-        var selected = $('#treeview').treeview('getSelected');
-        if (selected.length > 0) {
-            var selectedTexts = selected.map(function (node) {
-                return node.text;
-            }).join(', ');
-            $('#output').html('<div class="alert alert-success">Выбранные элементы: <strong>' + selectedTexts + '</strong></div>');
-        } else {
-            $('#output').html('<div class="alert alert-warning">Ничего не выбрано</div>');
-        }
-    });
-
-    // Обработчик открытия модального окна
-    $(document).on('click', '.openModal', async function () {
-        const primarilyEndpoint = $(this).data('primarilyendpoint');
-        const searchEndpoint = $(this).data('endpoint');
-        const inputId = $(this).data('input-id');
-        const hiddenEntity = $(this).data('hidden-entity');
-        const modalId = $(this).data('modal-id');
-        const modal = $('#' + modalId);
-
-        const headContainer = modal.find('#customerOrderModalHeadContainer');
-        const dataContainer = modal.find('#customerOrderModalDataContainer');
-        const searchInput = modal.find('#searchCustomerOrder');
-
-        // Очистка контейнеров и поиска
-        headContainer.empty();
-        dataContainer.empty();
-        searchInput.val('');
-
-        // Показываем индикатор загрузки
-        dataContainer.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
-
-        // Переменная рендеринга строк
-        const renderItems = items => {
-            dataContainer.empty();
-
-            if (items.length === 0) {
-                dataContainer.html('<div class="text-center p-4 text-muted">Ничего не найдено</div>');
-                return;
-            }
-
-            items.forEach(item => {
-                const row = $(`
-                <div class="row g-0 px-3 py-2 hover-row" data-id="${item.id}">
-                    <div class="col d-flex align-items-center">
-                        <div class="ms-2">${item.name || '-'}</div>
-                    </div>
-                </div>`
-                );
-
-                row.on('click', function () {
-                    $('#' + inputId).val(item.name);
-                    $('#' + hiddenEntity).val(item.id);
-                    modal.modal('hide');
-                });
-
-                dataContainer.append(row);
-            });
-        };
-
-        // Функция загрузки данных
-        const loadData = async (url) => {
-            try {
-                return await $.ajax({
-                    url: '/spm-api/' + url,
-                    method: 'GET'
-                });
-            } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                return [];
-            }
-        };
-
-        // Первоначальные данные
-        let primaryData = [];
-        let fullData = [];
-
-
-        if (primarilyEndpoint) {
-            [primaryData, fullData] = await Promise.all([
-                loadData(primarilyEndpoint),
-                loadData(searchEndpoint)
-            ]);
-
-            // Сохраняем данные в объекте модального окна
-            modal.data({
-                primaryData,
-                fullData
-            });
-
-            // Первоначально показываем primaryData
-            renderItems(primaryData);
-        } else {
-            fullData = await loadData(searchEndpoint);
-            modal.data('fullData', fullData);
-            renderItems(fullData);
-        }
-
-        // Обработчик поиска
-        searchInput.off('input').on('input', function () {
-            const value = $(this).val().toLowerCase();
-            const {primaryData, fullData} = modal.data();
-
-            if (!value) {
-                if (primarilyEndpoint) {
-                    renderItems(primaryData);
-                } else {
-                    renderItems(fullData);
-                }
-                return;
-            }
-            const filtered = fullData.filter(item =>
-                item.name.toLowerCase().includes(value)
-            );
-            renderItems(filtered);
-
-        });
-
-        modal.modal('show');
-    });
-});
-
 // Функция загрузки данных
 const loadData = async (url, params = {}) => {
     try {
@@ -160,112 +12,204 @@ const loadData = async (url, params = {}) => {
     }
 };
 
+// Обработчик открытия модального окна
+$(document).on('click', '.openModal', async function () {
+    const primarilyEndpoint = $(this).data('primarilyendpoint');
+    const searchEndpoint = $(this).data('endpoint');
+    const inputId = $(this).data('input-id');
+    const hiddenEntity = $(this).data('hidden-entity');
+    const modalId = $(this).data('modal-id');
+    const modal = $('#' + modalId);
+
+    const headContainer = modal.find('#customerOrderModalHeadContainer');
+    const dataContainer = modal.find('#customerOrderModalDataContainer');
+    const searchInput = modal.find('#searchCustomerOrder');
+
+    // Очистка контейнеров и поиска
+    headContainer.empty();
+    dataContainer.empty();
+    searchInput.val('');
+
+    // Показываем индикатор загрузки
+    dataContainer.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+
+    // Переменная рендеринга строк
+    const renderItems = items => {
+        dataContainer.empty();
+
+        if (items.length === 0) {
+            dataContainer.html('<div class="text-center p-4 text-muted">Ничего не найдено</div>');
+            return;
+        }
+
+        items.forEach(item => {
+            const row = $(`
+                <div class="row g-0 px-3 py-2 hover-row" data-id="${item.id}">
+                    <div class="col d-flex align-items-center">
+                        <div class="ms-2">${item.name || '-'}</div>
+                    </div>
+                </div>`
+            );
+
+            row.on('click', function () {
+                $('#' + inputId).val(item.name);
+                $('#' + hiddenEntity).val(item.id);
+                modal.modal('hide');
+            });
+
+            dataContainer.append(row);
+        });
+    };
+
+    // Функция загрузки данных
+    const loadData = async (url) => {
+        try {
+            return await $.ajax({
+                url: '/spm-api/' + url,
+                method: 'GET'
+            });
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            return [];
+        }
+    };
+
+    // Первоначальные данные
+    let primaryData = [];
+    let fullData = [];
+
+    if (primarilyEndpoint) {
+        [primaryData, fullData] = await Promise.all([
+            loadData(primarilyEndpoint),
+            loadData(searchEndpoint)
+        ]);
+
+        // Сохраняем данные в объекте модального окна
+        modal.data({
+            primaryData,
+            fullData
+        });
+
+        // Первоначально показываем primaryData
+        renderItems(primaryData);
+    } else {
+        fullData = await loadData(searchEndpoint);
+        modal.data('fullData', fullData);
+        renderItems(fullData);
+    }
+
+    // Обработчик поиска
+    searchInput.off('input').on('input', function () {
+        const value = $(this).val().toLowerCase();
+        const {primaryData, fullData} = modal.data();
+
+        if (!value) {
+            if (primarilyEndpoint) {
+                renderItems(primaryData);
+            } else {
+                renderItems(fullData);
+            }
+            return;
+        }
+        const filtered = fullData.filter(item =>
+            item.name.toLowerCase().includes(value)
+        );
+        renderItems(filtered);
+
+    });
+
+    modal.modal('show');
+});
+
 // Функция построения дерева
 const buildTree = async (customerOrderId) => {
+
     // Индикатор загрузки
     $('#treeview').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
 
     // Загружаем PrimaryDemand
     const primaryDemands = await loadData('getPrimaryDemandForCustomerOrderId', {customerOrderId});
-
     if (!primaryDemands || primaryDemands.length === 0) {
         $('#treeview').html('<div class="alert alert-warning">У заказа нет строк</div>');
         return;
     }
 
-    // Строим дерево
-    const treeData = [];
+    // Таблица
+    const tableHead = $('#tableHead');
+    const tableBody = $('#tableBody');
 
-    for (const pd of primaryDemands) {
-        //Строка ЗК/Спрос
-        const primaryNode = {
-            text: `<span class="node-primary">Строка ЗК/Спрос: ${pd.name}</span>`,
-            id: pd.id,
-            type: 'primary',
-            icon: 'bi bi-file-earmark-text',
-            nodes: []
-        };
+    // Формирование строки таблицы
+    const createRow = (type,item, level, parentId) => {
+        const padding = `padding-left: ${level}em`;
+        tableBody.append(`
+        <tr data-id="${item.id}" data-parent-id="${parentId}">
+            <td style="${padding}">${type === "pd" ? item.name : ""}</td>
+            <td style="${padding}">${type === "pd" ? "" : item.name}</td>
+            <td style="${padding}">${type === "js" ? item.mlmNode : ""}</td>
+            <td style="${padding}">${type === "js" ? item.description : ""}</td>
+            <td style="${padding}">${type === "pd" ? "" : item.qty}</td>
+            <td style="${padding}">${type === "js" ? item.qtyFinished : ""}</td>
+            <td style="${padding}">${type === "js" ? item.resourceTime : ""}</td>
+            <td style="${padding}">${type === "pd" ? "" : formatDate(item.dateStart)}</td>
+            <td style="${padding}">${type === "pd" ? "" : formatDate(item.dateEnd)}</td>
+            <td style="${padding}">${type === "js" ? formatDate(item.dateCalcStart) : ""}</td>
+            <td style="${padding}">${type === "js" ? formatDate(item.dateCalcEnd) : ""}</td>
+        </tr>
+    `);
+    }
 
-        // Main строки
-        const mainJobComponent = await loadData('getMainJobComponentForPrimaryDemandId', {primaryDemandId: pd.id});
-
-        if (mainJobComponent) {
-            const mainNode = {
-                text: `<span class="node-jobcomponent">[${mainJobComponent.name}] ` +
-                    `План: ${mainJobComponent.qty}, ` +
-                    `Выполнено: ${mainJobComponent.qtyFinished}, ` +
-                    `Начало: ${formatDate(mainJobComponent.dateStart)}, ` +
-                    `Завершение: ${formatDate(mainJobComponent.dateEnd)}</span>`,
-                id: mainJobComponent.id,
-                type: 'jobComponent',
-                icon: 'bi bi-diagram-2',
-                nodes: []
-            };
-
-            // Рекурсивная функция для загрузки дочерних компонентов
-            const loadChildComponents = async (parentId, nodesArray) => {
-                // Загружаем дочерние компоненты
-                const childComponents = await loadData('getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
-
-                for (const comp of childComponents) {
-                    const childNode = {
-                        text: `<span class="node-jobcomponent">[${comp.name}] ` +
-                            `План: ${comp.qty}, ` +
-                            `Выполнено: ${comp.qtyFinished}, ` +
-                            `Начало: ${formatDate(comp.dateStart)}, ` +
-                            `Завершение: ${formatDate(comp.dateEnd)}</span>`,
-                        id: comp.id,
-                        type: 'jobComponent',
-                        icon: 'bi bi-diagram-2',
-                        nodes: []
-                    };
-
-                    // Загружаем шаги для компонента
-                    const jobSteps = await loadData('getJobStepsForJobComponentId', {jobComponentId: comp.id});
-                    for (const step of jobSteps) {
-                        childNode.nodes.push({
-                            text: `<span class="node-jobstep">Шаг: ${step.name}, ` +
-                                `Статус: ${step.status}, ` +
-                                `Начало: ${formatDate(step.dateStart)}, ` +
-                                `Завершение: ${formatDate(step.dateEnd)}</span>`,
-                            id: step.id,
-                            type: 'jobStep',
-                            icon: 'bi bi-list-check'
-                        });
-                    }
-
-                    // Рекурсивно загружаем дочерние компоненты
-                    await loadChildComponents(comp.id, childNode.nodes);
-                    nodesArray.push(childNode);
-                }
-            };
-
-            // Загружаем дочерние компоненты для mainJobComponent
-            await loadChildComponents(mainJobComponent.id, mainNode.nodes);
-
-            // Загружаем шаги для mainJobComponent
-            const jobSteps = await loadData('getJobStepsForJobComponentId', {jobComponentId: mainJobComponent.id});
-            for (const step of jobSteps) {
-                mainNode.nodes.push({
-                    text: `<span class="node-jobstep">Шаг: ${step.name}, ` +
-                        `Статус: ${step.status}, ` +
-                        `Начало: ${formatDate(step.dateStart)}, ` +
-                        `Завершение: ${formatDate(step.dateEnd)}</span>`,
-                    id: step.id,
-                    type: 'jobStep',
-                    icon: 'bi bi-list-check'
-                });
-            }
-
-            primaryNode.nodes.push(mainNode);
+    // Рекурсивная функция для загрузки дочерних компонентов
+    const loadChildComponents = async (parentId, level) => {
+        //Дочерние jobComponent
+        const childJobComponents = await loadData('getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
+        for (const jc of childJobComponents) {
+            createRow("jc", jc, level, parentId);
+        }
+        //Заходы
+        const jobSteps = await loadData('getJobStepsForJobComponentId', {jobComponentId: parentId});
+        for (js of jobSteps) {
+            createRow("js", js, level, parentId)
         }
 
-        treeData.push(primaryNode);
+        for (const jc of childJobComponents) {
+            await loadChildComponents(jc.id, level + 1);
+        }
+    };
+
+    for (const pd of primaryDemands) {
+        // const primaryNode = {
+        //     text: `<span class="node-primary">Строка ЗК/Спрос: ${pd.name}</span>`,
+        //     id: pd.id,
+        //     level: 0,
+        //     type: 'primaryDemand',
+        //     icon: 'bi bi-file-earmark-text',
+        //     children: []
+        // };
+        //Строка ЗК/Спрос
+        createRow("pd", pd, 0, customerOrderId);
+
+        // Main строка
+        const mainJobComponent = await loadData('getMainJobComponentForPrimaryDemandId', {primaryDemandId: pd.id});
+        createRow("jc", mainJobComponent, 1, pd.id);
+        // const mainNode = {
+        //     text: `<span class="node-jobcomponent">[${mainJobComponent.name}] ` +
+        //         `План: ${mainJobComponent.qty}, ` +
+        //         `Выполнено: ${mainJobComponent.qtyFinished}, ` +
+        //         `Начало: ${formatDate(mainJobComponent.dateStart)}, ` +
+        //         `Завершение: ${formatDate(mainJobComponent.dateEnd)}</span>`,
+        //     id: mainJobComponent.id,
+        //     type: 'jobComponent',
+        //     icon: 'bi bi-diagram-2',
+        //     children: []
+        // };
+
+        await loadChildComponents(mainJobComponent.id, 2);
     }
+
 
     // Инициализация дерева
     $('#treeview').treeview({
-        data: treeData,
+        data: tableBody,
         levels: 99, // Все уровни развернуты
         expandIcon: 'bi bi-plus-circle',
         collapseIcon: 'bi bi-dash-circle',
@@ -336,3 +280,24 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU');
 }
+
+// Обработчики кнопок
+$('#btnExpandAll').click(function () {
+    $('#treeview').treeview('expandAll');
+});
+
+$('#btnCollapseAll').click(function () {
+    $('#treeview').treeview('collapseAll');
+});
+
+$('#btnGetSelected').click(function () {
+    var selected = $('#treeview').treeview('getSelected');
+    if (selected.length > 0) {
+        var selectedTexts = selected.map(function (node) {
+            return node.text;
+        }).join(', ');
+        $('#output').html('<div class="alert alert-success">Выбранные элементы: <strong>' + selectedTexts + '</strong></div>');
+    } else {
+        $('#output').html('<div class="alert alert-warning">Ничего не выбрано</div>');
+    }
+});

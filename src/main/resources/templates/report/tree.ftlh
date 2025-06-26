@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Планирование производства</title>
+    <title>Bootstrap Treeview Пример</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-treeview@1.2.0/dist/bootstrap-treeview.min.css" rel="stylesheet">
@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="container">
-    <h2 class="text-center">Планирование производства</h2>
+    <h2 class="text-center">Пример Bootstrap Treeview</h2>
 
     <div class="container-fluid">
         <!-- Центральное поле ввода с кнопкой -->
@@ -31,14 +31,13 @@
                     <input type="text" class="form-control" id="customerOrderName" placeholder="Выберите заказ...">
                     <input type="hidden" id="spmCustomerOrder">
                     <button type="button" class="btn btn-outline-primary openModal"
-                            data-primarilyendpoint="getBurningCustomerOrder"
+                            data-primarilyEndpoint="getBurningCustomerOrder"
                             data-endpoint="getAllCustomerOrder"
                             data-input-id="customerOrderName"
                             data-hidden-entity="spmCustomerOrder"
                             data-modal-id="customerOrderModal">
-                        Выбрать
+                        Выбрать из списка
                     </button>
-                    <!-- Кнопка формирования дерева -->
                     <button type="button" class="btn btn-primary" id="btnGenerate">
                         Сформировать
                     </button>
@@ -51,14 +50,32 @@
 <#--        <button id="btnExpandAll" class="btn btn-primary btn-sm">Развернуть все</button>-->
 <#--        <button id="btnCollapseAll" class="btn btn-secondary btn-sm">Свернуть все</button>-->
 <#--        <button id="btnGetSelected" class="btn btn-success btn-sm">Получить выбранные</button>-->
-<#--        <!-- Кнопка возврата &ndash;&gt;-->
-<#--        <button id="btnBack" class="btn btn-warning btn-sm" style="display:none;">Вернуться</button>-->
 <#--    </div>-->
 
-    <!-- Контейнер для дерева -->
-    <div id="treeview-container" class="mt-4" style="display:none;">
-        <div id="treeview"></div>
+    <div id="table-container" class="table-container" style="display:none;">
+        <table class="tree-table table-bordered">
+            <thead id="tableHead">
+            <tr>
+                <th>Строка ЗК/Спрос</th>
+                <th>ТМЦ/Заход</th>
+                <th>Узел ПЛМ</th>
+                <th>Описание</th>
+                <th>План брутто</th>
+                <th>Выполнено</th>
+                <th>Общее время захода</th>
+                <th>Дата начала</th>
+                <th>Дата завершения</th>
+                <th>РД начала</th>
+                <th>РД завершения</th>
+            </tr>
+            </thead>
+            <tbody id="tableBody">
+            <!-- Данные -->
+            </tbody>
+        </table>
     </div>
+
+    <div id="treeview"></div>
 
     <div id="output" class="mt-3 text-center"></div>
 </div>

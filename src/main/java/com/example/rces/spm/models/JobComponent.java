@@ -50,7 +50,7 @@ public class JobComponent {
     @JoinColumn(name="parent_jobcomponent_id")
     private JobComponent parentJobComponent;//Входит в компонент
 
-    @OneToMany(mappedBy="jobcomponent", cascade=CascadeType.REMOVE)
+    @OneToMany(mappedBy="jobcomponent", cascade=CascadeType.REMOVE, fetch = FetchType.EAGER)
     @OrderBy("jobcomponent, number")
     private List<JobStep> jobSteps; //Заходы
 
