@@ -35,28 +35,40 @@ public class SPMRepository {
         return entityManager.createQuery(cq).getResultList();
     }
 
-    public <T> List<T> findByField(Class<T> entityClass, String fieldName, Object fieldValue) {
+    //findByField(User.class, "name", "Ivan", "!age", "createdAt"); !age будет desc
+    public <T> List<T> findByField(Class<T> entityClass, String fieldName, Object fieldValue, String... orderBy) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> cq = cb.createQuery(entityClass);
         Root<T> root = cq.from(entityClass);
 
-        if (fieldValue instanceof List<?> || fieldValue.getClass().isArray()) {
-            Object[] arrayValues;
-            if (fieldValue instanceof List<?>) {
-                arrayValues = ((List<?>) fieldValue).toArray();
-            } else {
-                arrayValues = (Object[]) fieldValue;
-            }
-            cq.select(root).where(root.get(fieldName).in(arrayValues));
+        if (fieldValue instanceof List) {
+            cq.where(root.get(fieldName).in((List<?>) fieldValue));
+        } else if (fieldValue.getClass().isArray()) {
+            cq.where(root.get(fieldName).in((Object[]) fieldValue));
         } else {
-            cq.select(root).where(cb.equal(root.get(fieldName), fieldValue));
+            cq.where(cb.equal(root.get(fieldName), fieldValue));
+        }
+        if (orderBy != null) {
+            for (String field : orderBy) {
+                if (field == null || field.isEmpty()) continue;
+                boolean desc = field.startsWith("!");
+                String realField = desc ? field.substring(1) : field;
+                try {
+                    if (desc) {
+                        cq.orderBy(cb.desc(root.get(realField)));
+                    } else {
+                        cq.orderBy(cb.asc(root.get(realField)));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
         }
 
         return entityManager.createQuery(cq).getResultList();
     }
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
-        return findByField(entityClass, fieldName, fieldValue).stream().findFirst().orElse(null);
+        return findByField(entityClass, fieldName, fieldValue, null).stream().findFirst().orElse(null);
     }
 
     public EntityManager getEntityManager() {

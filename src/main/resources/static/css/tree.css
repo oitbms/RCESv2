@@ -94,9 +94,12 @@ body {
 }
 
 .custom-input-group {
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     overflow: hidden;
+    background: white;
 }
 
 .custom-input-group .input-group-text {
@@ -108,7 +111,6 @@ body {
     border-left: 1px solid #dee2e6;
     border-right: none;
     padding: 12px 15px;
-    transition: all 0.3s;
 }
 
 .custom-input-group .form-control:focus {
@@ -119,7 +121,7 @@ body {
 .custom-input-group .btn {
     padding: 12px 20px;
     font-weight: 500;
-    transition: all 0.3s;
+    white-space: nowrap;
 }
 
 #customerOrderModal .modal-content {
@@ -154,80 +156,29 @@ body {
     cursor: pointer;
 }
 
-/* Скрываем таблицу по умолчанию */
 #treetable {
-    display: none;
-    width: 100%; /* На всю ширину экрана */
-    table-layout: fixed; /* Фиксированная ширина колонок */
-    word-wrap: break-word; /* Перенос длинных слов */
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
 }
 
-/* Чтобы заголовки не "склеивались" */
-#treetable th {
-    white-space: nowrap; /* Запрет переноса */
-    padding: 8px 12px; /* Отступы */
-    background-color: #f8f9fa; /* Фон заголовков */
+.table-container {
+    width: 100%;
+    overflow: auto;
+    position: relative;
+    z-index: 2;
+    display: none;
+    background: white;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+#treetable thead {
     position: sticky;
     top: 0;
-}
-
-/* Для ячеек таблицы */
-#treetable td {
-    padding: 6px 10px;
-    vertical-align: top;
-}
-
-/* Контейнер для прокрутки если таблица шире экрана */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-}
-
-#treetable,
-#treetable th,
-#treetable td {
-    font-size: 12px;
-}
-
-/* Центрируем только фильтр */
-.filter-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-/* 1) Стили для таблицы наверху */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 20px;
-}
-
-#treetable {
-    border: 1px solid #dee2e6;
-    border-collapse: collapse;
-}
-
-#treetable th, #treetable td {
-    border: 1px solid #dee2e6;
-    padding: 8px;
-}
-
-#treetable th {
-    background-color: #f8f9fa;
-}
-
-/* Выравнивание заголовков по центру */
-#treetable th {
-    text-align: center;
-    vertical-align: middle;
-}
-
-/* Дополнительные стили для улучшения внешнего вида */
-#treetable {
-    border-collapse: collapse;
-    width: 100%;
+    z-index: 10;
 }
 
 #treetable th {
@@ -235,12 +186,59 @@ body {
     font-weight: 500;
     padding: 10px 8px;
     border: 1px solid #dee2e6;
-    position: sticky;
-    top: 0;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 #treetable td {
     padding: 8px;
     border: 1px solid #dee2e6;
     vertical-align: top;
+    word-wrap: break-word;
+}
+
+.filter-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .filter-wrapper {
+        height: auto;
+        padding: 20px 0;
+    }
+
+    .custom-input-group {
+        flex-direction: column;
+    }
+
+    .custom-input-group .input-group-text {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .custom-input-group .btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+#filterContainer {
+    width: 100%;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.table-container.visible {
+    display: block;
+    max-height: none;
+    margin-top: 0 !important;
+    transform: none !important;
 }

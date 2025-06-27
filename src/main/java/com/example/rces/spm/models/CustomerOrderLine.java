@@ -7,24 +7,13 @@ import org.springframework.data.annotation.Immutable;
 @Entity
 @Subselect("SELECT * FROM dm_customerorderline")
 @Immutable
-public class CustomerOrderLine {
-
-    @Id
-    private Long id;
+public class CustomerOrderLine extends PrimaryDemand {
 
     @ManyToOne(fetch= FetchType.EAGER)
     private SPMCustomerOrder customerorder;
 
     @Column(name = "number")
     private Integer number;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public SPMCustomerOrder getCustomerorder() {
         return customerorder;

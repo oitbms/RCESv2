@@ -107,19 +107,19 @@ document.addEventListener('DOMContentLoaded', function () {
 const createRow = (item, type) => {
     const row = `
     <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-    </tr>
-    `
+        <td>${type === 'pd' ? item.name : ''}</td>
+        <td>${type === 'pd' ? '' : item.name}</td>
+        <td>${type === 'js' ? item.mlmNode : ''}</td>
+        <td>${type === 'js' ? item.description : ''}</td>
+        <td>${type === 'pd' ? '' : item.qty}</td>
+        <td>${type === 'pd' ? '' : item.qtyFinished}</td>
+        <td>${type === 'js' ? item.resourceTime : ''}</td>
+        <td>${type === 'pd' ? '' : formatDate(item.dateStart)}</td>
+        <td>${type === 'pd' ? '' : formatDate(item.dateEnd)}</td>
+        <td>${type === 'js' ? formatDate(item.dateCalcStart) : ''}</td>
+        <td>${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</td>
+    </tr>`;
+    return row;
 };
 
 // Обработчик нажатия на кнопку "Сформировать"
@@ -132,8 +132,15 @@ $('#btnGenerate').click(async function () {
 
     //Скрытие контейнера с выбором ЗК и показывание таблицы с задержкой в 750мс
     $('#filterContainer').fadeOut('slow');
-    setTimeout(function () {
-        $('#treetable').fadeIn('slow');
+    setTimeout(function() {
+        $('.table-container')
+            .addClass('visible')
+            .css({
+                'margin-top': '0',
+                'transform': 'none'
+            })
+            .hide()
+            .fadeIn('slow');
     }, 750);
 
     const body = $('#treetable tbody');
@@ -141,11 +148,13 @@ $('#btnGenerate').click(async function () {
     const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: customerOrderId})
 
     primaryDemands.forEach(pd => {
-        body.append(`
-        <tr>
-            <td>${pd.name}</td>    
-        </tr>  
-        `)
+        body.append(createRow(pd, 'pd'))
     });
 
 });
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+}

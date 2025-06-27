@@ -4,10 +4,7 @@ import com.example.rces.spm.controller.payload.JobComponentPayload;
 import com.example.rces.spm.controller.payload.JobStepPayload;
 import com.example.rces.spm.controller.payload.PrimaryDemandPayload;
 import com.example.rces.spm.controller.payload.SPMCustomerOrderPayload;
-import com.example.rces.spm.models.CustomerOrderLine;
-import com.example.rces.spm.models.JobComponent;
-import com.example.rces.spm.models.PrimaryDemand;
-import com.example.rces.spm.models.SPMCustomerOrder;
+import com.example.rces.spm.models.*;
 import com.example.rces.spm.services.SPMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -57,13 +54,18 @@ public class SPMApiController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(
                         service.findAllByField(PrimaryDemand.class, "customerorder",
-                                        service.findById(SPMCustomerOrder.class, customerOrderId))
+                                        service.findById(SPMCustomerOrder.class, customerOrderId),null)
                                 .stream()
-                                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString()))
                                 .sorted(Comparator.comparing(pd -> {
-                                    CustomerOrderLine customerOrderLine = service.findById(CustomerOrderLine.class, pd.id());
-                                    return customerOrderLine.getNumber();
+                                    if (pd instanceof CustomerOrderLine customerOrderLine) {
+                                        return customerOrderLine.getNumber();
+                                    } else if (pd instanceof PurchaseOrderLine purchaseOrderLine) {
+                                        return purchaseOrderLine.getNumber();
+                                    } else {
+                                        return Integer.parseInt(((JobOrder) pd).strCode);
+                                    }
                                 }))
+                                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString()))
                                 .toList());
     }
 

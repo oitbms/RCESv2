@@ -9,7 +9,12 @@ import java.time.LocalDateTime;
 @Entity
 @Subselect("SELECT * FROM dm_primarydemand")
 @Immutable
-public class PrimaryDemand {
+@Inheritance(strategy=InheritanceType.JOINED)
+public abstract class PrimaryDemand {
+
+    public enum DEMAND_TYPE {
+        COL(), MPS, MRP, ROP, FCT, JOL, JCL, POL, SSO, ARL, IOL, LOG;
+    }
 
     @Id
     private Long id;
@@ -32,6 +37,10 @@ public class PrimaryDemand {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private SPMCustomerOrder customerorder;
+
+    @Column(name="demand_type")
+    @Enumerated(EnumType.STRING)
+    private PrimaryDemand.DEMAND_TYPE demandType;
 
     public Long getId() {
         return id;
@@ -87,5 +96,13 @@ public class PrimaryDemand {
 
     public void setCustomerorder(SPMCustomerOrder customerorder) {
         this.customerorder = customerorder;
+    }
+
+    public DEMAND_TYPE getDemandType() {
+        return demandType;
+    }
+
+    public void setDemandType(DEMAND_TYPE demandType) {
+        this.demandType = demandType;
     }
 }

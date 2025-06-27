@@ -56,11 +56,11 @@ public class SPMService {
         return repository.findAll(entityClass);
     }
 
-    public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
-        return repository.findByField(entityClass, fieldName, fieldValue);
+    public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue, String ... orderByField) {
+        return repository.findByField(entityClass, fieldName, fieldValue, orderByField);
     }
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
-        return findAllByField(entityClass, fieldName, fieldValue).get(0);
+        return findAllByField(entityClass, fieldName, fieldValue, null).get(0);
     }
 }

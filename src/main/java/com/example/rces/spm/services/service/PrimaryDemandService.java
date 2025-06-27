@@ -1,8 +1,8 @@
 package com.example.rces.spm.services.service;
 
-import com.example.rces.spm.models.JobComponent;
-import com.example.rces.spm.models.PrimaryDemand;
+import com.example.rces.spm.models.*;
 import com.example.rces.spm.services.SPMRepository;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
