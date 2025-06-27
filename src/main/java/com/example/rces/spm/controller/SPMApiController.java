@@ -65,7 +65,9 @@ public class SPMApiController {
                                         return Integer.parseInt(((JobOrder) pd).strCode);
                                     }
                                 }))
-                                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString()))
+                                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
+                                        new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd)
+                                )))
                                 .toList());
     }
 

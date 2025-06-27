@@ -105,19 +105,20 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 const createRow = (item, type) => {
+    const style = "text-align: center; vertical-align: middle"
     const row = `
     <tr>
         <td>${type === 'pd' ? item.name : ''}</td>
-        <td>${type === 'pd' ? '' : item.name}</td>
-        <td>${type === 'js' ? item.mlmNode : ''}</td>
-        <td>${type === 'js' ? item.description : ''}</td>
-        <td>${type === 'pd' ? '' : item.qty}</td>
-        <td>${type === 'pd' ? '' : item.qtyFinished}</td>
-        <td>${type === 'js' ? item.resourceTime : ''}</td>
-        <td>${type === 'pd' ? '' : formatDate(item.dateStart)}</td>
-        <td>${type === 'pd' ? '' : formatDate(item.dateEnd)}</td>
-        <td>${type === 'js' ? formatDate(item.dateCalcStart) : ''}</td>
-        <td>${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</td>
+        <td>${type === 'pd' ? item.jobComponent.name : item.name}</td>
+        <td style="${style}">${type === 'js' ? item.mlmNode : ''}</td>
+        <td style="${style}">${type === 'js' ? item.description : ''}</td>
+        <td style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</td>
+        <td style="${style}">${type === 'pd' ? item.jobComponent.qtyFinished : item.qtyFinished}</td>
+        <td style="${style}">${type === 'js' ? item.resourceTime : ''}</td>
+        <td style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateStart) : formatDate(item.dateStart)}</td>
+        <td style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateEnd) : formatDate(item.dateEnd)}</td>
+        <td style="${style}">${type === 'js' ? formatDate(item.dateCalcStart) : ''}</td>
+        <td style="${style}">${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</td>
     </tr>`;
     return row;
 };
@@ -145,12 +146,11 @@ $('#btnGenerate').click(async function () {
 
     const body = $('#treetable tbody');
 
-    const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: customerOrderId})
+    const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: customerOrderId});
 
-    primaryDemands.forEach(pd => {
+    for (const pd of primaryDemands) {
         body.append(createRow(pd, 'pd'))
-    });
-
+    }
 });
 
 function formatDate(dateString) {
