@@ -4,6 +4,7 @@ import com.example.rces.spm.controller.payload.JobComponentPayload;
 import com.example.rces.spm.controller.payload.JobStepPayload;
 import com.example.rces.spm.controller.payload.PrimaryDemandPayload;
 import com.example.rces.spm.controller.payload.SPMCustomerOrderPayload;
+import com.example.rces.spm.models.CustomerOrderLine;
 import com.example.rces.spm.models.JobComponent;
 import com.example.rces.spm.models.PrimaryDemand;
 import com.example.rces.spm.models.SPMCustomerOrder;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -58,6 +60,10 @@ public class SPMApiController {
                                         service.findById(SPMCustomerOrder.class, customerOrderId))
                                 .stream()
                                 .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString()))
+                                .sorted(Comparator.comparing(pd -> {
+                                    CustomerOrderLine customerOrderLine = service.findById(CustomerOrderLine.class, pd.id());
+                                    return customerOrderLine.getNumber();
+                                }))
                                 .toList());
     }
 

@@ -6,29 +6,45 @@
     <title>Bootstrap Treeview Пример</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-treeview@1.2.0/dist/bootstrap-treeview.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-treetable@3.2.0/css/jquery.treetable.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/jquery-treetable@3.2.0/css/jquery.treetable.theme.default.css">
     <link rel="stylesheet" href="/css/tree.css">
-    <link rel="stylesheet" href="/css/stylesBid.css">
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-treeview@1.2.0/dist/bootstrap-treeview.min.js"></script>
-
-    <script src="/js/report.js" defer></script>
 </head>
 <body>
-<div class="container">
-    <h2 class="text-center">Пример Bootstrap Treeview</h2>
+<div class="table-container">
+    <table id="treetable">
+        <thead>
+        <tr>
+            <th style="width: 350px">Строка ЗК/Спрос</th>
+            <th style="width: 350px">ДСЕ/№ захода</th>
+            <th style="width: 200px">Узел ПЛМ</th>
+            <th style="width: 200px">Описание захода</th>
+            <th style="width: 100px">План брутто</th>
+            <th style="width: 100px">Выполнено</th>
+            <th style="width: 140px">Общее время захода</th>
+            <th style="width: 150px">Дата начала</th>
+            <th style="width: 150px">Дата завершения</th>
+            <th style="width: 150px">РД начала</th>
+            <th style="width: 150px">РД завершения</th>
+        </tr>
+        </thead>
+        <tbody>
 
-    <div class="container-fluid">
-        <!-- Центральное поле ввода с кнопкой -->
+        </tbody>
+    </table>
+</div>
+
+<div class="filter-wrapper">
+    <div class="container" id="filterContainer">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="input-group input-group-center">
-                    <span class="input-group-text">Заказ клиента</span>
-                    <input type="text" class="form-control" id="customerOrderName" placeholder="Выберите заказ...">
+            <div class="col-lg-8 col-md-10">
+                <!-- Центральное поле ввода с кнопкой -->
+                <div class="input-group mb-3 custom-input-group">
+                <span class="input-group-text bg-primary text-white"><i
+                            class="bi bi-bag-check me-2"></i>Заказ клиента</span>
+                    <input type="text" class="form-control" id="customerOrderName" placeholder="Выберите заказ..."
+                           readonly>
                     <input type="hidden" id="spmCustomerOrder">
                     <button type="button" class="btn btn-outline-primary openModal"
                             data-primarilyEndpoint="getBurningCustomerOrder"
@@ -36,79 +52,61 @@
                             data-input-id="customerOrderName"
                             data-hidden-entity="spmCustomerOrder"
                             data-modal-id="customerOrderModal">
-                        Выбрать из списка
+                        <i class="bi bi-search me-1"></i> Выбрать
                     </button>
                     <button type="button" class="btn btn-primary" id="btnGenerate">
-                        Сформировать
+                        <i class="bi bi-file-earmark-arrow-down me-1"></i> Сформировать
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-<#--    <div class="controls">-->
-<#--        <button id="btnExpandAll" class="btn btn-primary btn-sm">Развернуть все</button>-->
-<#--        <button id="btnCollapseAll" class="btn btn-secondary btn-sm">Свернуть все</button>-->
-<#--        <button id="btnGetSelected" class="btn btn-success btn-sm">Получить выбранные</button>-->
-<#--    </div>-->
-
-    <div id="table-container" class="table-container" style="display:none;">
-        <table class="tree-table table-bordered">
-            <thead id="tableHead">
-            <tr>
-                <th>Строка ЗК/Спрос</th>
-                <th>ТМЦ/Заход</th>
-                <th>Узел ПЛМ</th>
-                <th>Описание</th>
-                <th>План брутто</th>
-                <th>Выполнено</th>
-                <th>Общее время захода</th>
-                <th>Дата начала</th>
-                <th>Дата завершения</th>
-                <th>РД начала</th>
-                <th>РД завершения</th>
-            </tr>
-            </thead>
-            <tbody id="tableBody">
-            <!-- Данные -->
-            </tbody>
-        </table>
-    </div>
-
-    <div id="treeview"></div>
-
-    <div id="output" class="mt-3 text-center"></div>
 </div>
 
 <!-- Модальное окно -->
-<div class="modal fade" id="customerOrderModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content rounded-4 shadow">
-            <div class="modal-header bg-light p-3">
-                <h1 class="modal-title fs-5">Выбор заказа клиента</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+<div class="modal fade" id="customerOrderModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
+     tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content rounded-4 shadow-lg">
+            <div class="modal-header bg-primary text-white p-3">
+                <h1 class="modal-title fs-5 fw-bold"><i class="bi bi-bag-check me-2"></i>Выбор заказа клиента</h1>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Закрыть"></button>
             </div>
             <div class="modal-body p-0">
                 <!-- Поле поиска -->
-                <div class="sticky-top bg-white p-3 border-bottom">
+                <div class="sticky-top bg-light p-3 border-bottom">
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                         <input type="text"
                                class="form-control border-start-0"
                                id="searchCustomerOrder"
-                               placeholder="Поиск заказа...">
+                               placeholder="Введите название заказа для поиска...">
                     </div>
                 </div>
 
                 <!-- Контейнер для заголовков таблицы -->
-                <div id="customerOrderModalHeadContainer"></div>
+                <div id="customerOrderModalHeadContainer" class="bg-light p-2 border-bottom">
+                    <div class="row fw-bold text-muted small">
+                        <div class="col-md-4">Название заказа</div>
+                        <div class="col-md-3">Клиент</div>
+                        <div class="col-md-3">Дата создания</div>
+                        <div class="col-md-2">Статус</div>
+                    </div>
+                </div>
 
                 <!-- Контейнер для данных -->
-                <div id="customerOrderModalDataContainer" style="height: 400px; overflow-y: auto;"></div>
+                <div id="customerOrderModalDataContainer" style="height: 500px; overflow-y: auto;"></div>
+
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-treetable@3.2.0/jquery.treetable.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/colresizable@1.6.0/colResizable-1.6.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="/js/report.js" defer></script>
 </body>
 </html>
