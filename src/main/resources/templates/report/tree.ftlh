@@ -14,26 +14,9 @@
 </head>
 <body>
 <div class="table-container">
-    <table id="treetable">
-        <thead>
-        <tr>
-            <th style="width: 350px">Строка ЗК/Спрос</th>
-            <th style="width: 350px">ДСЕ/№ захода</th>
-            <th style="width: 200px">Узел ПЛМ</th>
-            <th style="width: 200px">Описание захода</th>
-            <th style="width: 100px">План брутто</th>
-            <th style="width: 100px">Выполнено</th>
-            <th style="width: 140px">Общее время захода</th>
-            <th style="width: 150px">Дата начала</th>
-            <th style="width: 150px">Дата завершения</th>
-            <th style="width: 150px">РД начала</th>
-            <th style="width: 150px">РД завершения</th>
-        </tr>
-        </thead>
-        <tbody>
+    <div id="tree_container">
 
-        </tbody>
-    </table>
+    </div>
 </div>
 
 <div class="filter-wrapper">
@@ -107,6 +90,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/colresizable@1.6.0/colResizable-1.6.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree-grid/3.9.5/jstreegrid.min.js"></script>
 <script src="/js/report.js" defer></script>
 </body>
 </html>

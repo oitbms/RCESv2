@@ -1,4 +1,3 @@
-
 // Обработчик открытия модального окна
 $(document).on('click', '.openModal', async function () {
     const primarilyEndpoint = $(this).data('primarilyendpoint');
@@ -104,6 +103,39 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+$('#tree_container').jstree({
+    'plugins': ['grid'],
+    'grid': {
+        'columns': [
+            {width: 350, header: "Строка ЗК/Спрос", value: "col1"},
+            {width: 350, header: "ДСЕ/№ захода", value: "col2"},
+            {width: 200, header: "Узел ПЛМ", value: "col3"},
+            {width: 200, header: "Описание захода", value: "col4"},
+            {width: 100, header: "План брутто", value: "col5"},
+            {width: 100, header: "Выполнено", value: "col6"},
+            {width: 1400, header: "Общее время захода", value: "col7"},
+            {width: 150, header: "Дата начала", value: "col8"},
+            {width: 150, header: "Дата завершения", value: "col9"},
+            {width: 150, header: "РД начала", value: "col10"},
+            {width: 150, header: "РД завершения", value: "col11"}
+        ],
+        'resizable': true,
+        'width': '100%'
+    },
+    'core': {
+        'data': []
+    }
+});
+
+// Правильный способ подписки на события
+$('#tree_container').on('ready.jstree', function() {
+    console.log('jsTree is ready!');
+});
+
+$('#tree_container').on('create_node.jstree', function(e, data) {
+    console.log('Node created:', data.node);
+});
+
 const createRow = (item, type) => {
     const style = "text-align: center; vertical-align: middle"
     const row = `
@@ -123,6 +155,28 @@ const createRow = (item, type) => {
     return row;
 };
 
+const createNode = (item, type, parentId = null) => {
+    const instance = $('#tree_container').jstree(true);
+    const style = "text-align: center; vertical-align: middle"
+
+    const newNode = {
+        "id":     item.id,
+        "text":   type === 'pd' ? "Строка ЗК/Спрос" : "Заход",
+        "col1":   type === 'pd' ? item.name : '',
+        "col2":   type === 'pd' ? item.jobComponent.name : item.name,
+        "col3":  `<div style="${style}">${type === 'js' ? item.mlmNode : ''}</div>`,
+        "col4":  `<div style="${style}">${type === 'js' ? item.description : ''}</div>`,
+        "col5":  `<div style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</div>`,
+        "col6":  `<div style="${style}">${type === 'pd' ? item.jobComponent.qtyFinished : item.qtyFinished}</div>`,
+        "col7":  `<div style="${style}">${type === 'js' ? item.resourceTime : ''}</div>`,
+        "col8":  `<div style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateStart) : formatDate(item.dateStart)}</div>`,
+        "col9":  `<div style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateEnd) : formatDate(item.dateEnd)}</div>`,
+        "col10": `<div style="${style}">${type === 'js' ? formatDate(item.dateCalcStart) : ''}</div>`,
+        "col11": `<div style="${style}">${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</div>`
+    };
+    instance.create_node(parentId, newNode, "last");
+};
+
 // Обработчик нажатия на кнопку "Сформировать"
 $('#btnGenerate').click(async function () {
     const customerOrderId = $('#spmCustomerOrder').val();
@@ -131,26 +185,27 @@ $('#btnGenerate').click(async function () {
         return;
     }
 
+    $('.table-container')
+        .addClass('visible')
+        .show();
+
+
     //Скрытие контейнера с выбором ЗК и показывание таблицы с задержкой в 750мс
     $('#filterContainer').fadeOut('slow');
-    setTimeout(function() {
+    setTimeout(function () {
         $('.table-container')
             .addClass('visible')
-            .css({
-                'margin-top': '0',
-                'transform': 'none'
-            })
             .hide()
             .fadeIn('slow');
     }, 750);
 
-    const body = $('#treetable tbody');
+    const tree = $('#tree_container').jstree(true);
 
     const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: customerOrderId});
-
-    for (const pd of primaryDemands) {
-        body.append(createRow(pd, 'pd'))
+    for (pd of primaryDemands) {
+        createNode(pd, 'pd');
     }
+
 });
 
 function formatDate(dateString) {
