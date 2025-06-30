@@ -137,7 +137,7 @@ async function makeTree(primaryDemands) {
             parent: parentId || `#`,
             data: {
                 col1: type === 'pd' ? item.name : '',
-                col2: type === 'pd' ? item.jobComponent.name : item.name,
+                col2: type === 'pd' ? item.jobComponent.name : type==='js' ? '' : item.name,
                 col3: `<div style="${style}">${type === 'js' ? item.mlmNode : "&nbsp;"}</div>`,
                 col4: `<div style="${style}">${type === 'js' ? item.description : "&nbsp;"}</div>`,
                 col5: `<div style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</div>`,
