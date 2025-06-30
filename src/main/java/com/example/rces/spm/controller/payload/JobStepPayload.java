@@ -11,7 +11,7 @@ public record JobStepPayload(Long id, String name, String mlmNode, String descri
     public JobStepPayload(JobStep jobStep) {
         this(
                 jobStep.getId(),
-                jobStep.getJobcomponent().getItem().getName(),
+                String.format("%s: %s",jobStep.getJobcomponent().getItem().getName(), jobStep.getNumber()),
                 jobStep.getMlmNode().getName(),
                 jobStep.getDescription(),
                 jobStep.getQtyProduction(),

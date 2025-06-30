@@ -126,8 +126,10 @@ $('#tree_container').jstree({
     }
 });
 
-async function makeTree(treeData) {
-    const createNode = (item, type, parentId = null) => {
+async function makeTree(primaryDemands) {
+    const treeData = [];
+
+    function createNode(item, type, parentId = null) {
         const style = "text-align: center; vertical-align: middle";
         return {
             id: type === 'pd' ? item.jobComponent.id : item.id,
@@ -147,27 +149,54 @@ async function makeTree(treeData) {
                 col11: `<div style="${style}">${type === 'js' ? formatDate(item.dateCalcEnd) : "&nbsp;"}</div>`
             }
         };
-    };
-    for (pd of primaryDemands) {
-        treeData.push(createNode(pd, 'pd'));
-
-        await createNodes(pd.jobComponent.id);
-        async function createNodes(parentId) {
-            const childJobComponent = await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
-            for (childJc of childJobComponent) {
-                treeData.push(createNode(childJc, 'jc', parentId));
-                await createNodes(childJc.id);
-            }
-
-            const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
-            for (jobStep of jobSteps) {
-                treeData.push(createNode(jobStep, 'js', parentId));
-            }
-
-        }
-
     }
 
+    const queue = [];
+    for (const pd of primaryDemands) {
+        const node = createNode(pd, 'pd');
+        treeData.push(node);
+        queue.push({
+            jobComponentId: pd.jobComponent.id,
+            parentTreeNodeId: node.id
+        });
+    }
+
+    while (queue.length > 0) {
+        const currentLevel = queue.splice(0, queue.length);
+        const jobComponentIds = currentLevel.map(item => item.jobComponentId);
+
+        // Параллельные запросы для текущего уровня
+        const [childComponents, jobSteps] = await Promise.all([
+            Promise.all(
+                jobComponentIds.map(id =>
+                    $.get('spm-api/getChildJobComponentForJobcomponentId', { jobComponentId: id }))),
+                Promise.all(
+                    jobComponentIds.map(id =>
+                    $.get('spm-api/getJobStepsForJobComponentId', { jobComponentId: id })))
+        ]);
+
+        for (let i = 0; i < currentLevel.length; i++) {
+            const parent = currentLevel[i];
+            const children = childComponents[i];
+            const steps = jobSteps[i];
+
+            for (const jc of children) {
+                const node = createNode(jc, 'jc', parent.parentTreeNodeId);
+                treeData.push(node);
+                queue.push({
+                    jobComponentId: jc.id,
+                    parentTreeNodeId: node.id
+                });
+            }
+
+            for (const js of steps) {
+                const node = createNode(js, 'js', parent.parentTreeNodeId);
+                treeData.push(node);
+            }
+        }
+    }
+
+    return treeData;
 }
 // Обработчик нажатия на кнопку "Сформировать"
 $('#btnGenerate').click(async function () {
@@ -183,10 +212,7 @@ $('#btnGenerate').click(async function () {
         $('.table-container').addClass('visible').hide().fadeIn('slow');
     }, 750);
 
-    // Получаем экземпляр дерева
     const tree = $('#tree_container').jstree(true);
-
-    // Показываем индикатор загрузки
     tree.settings.core.data = [{
         id: "loading",
         text: "Загрузка...",
@@ -194,10 +220,7 @@ $('#btnGenerate').click(async function () {
     }];
     tree.refresh();
 
-    // Загружаем данные
     const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId});
-
-    // Если нет строк ЗК
     if (!primaryDemands?.length) {
         tree.settings.core.data = [{
             id: "empty",
@@ -207,14 +230,14 @@ $('#btnGenerate').click(async function () {
         tree.refresh();
         return;
     }
-    const treeData = [];
+    let treeData = [];
     tree.settings.core.data = [];
 
-    await makeTree(treeData);
+    treeData = await makeTree(primaryDemands);
 
     tree.settings.core.data = treeData;
     tree.refresh(true);
-    tree.one('refresh.jstree', function() {
+    $('#tree_container').one('refresh.jstree', () => {
         tree.open_all({ duration: 300 });
     });
 });
