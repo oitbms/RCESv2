@@ -71,14 +71,14 @@ public class SPMApiController {
                                 .toList());
     }
 
-    @GetMapping("/getMainJobComponentForPrimaryDemandId")
-    @ResponseBody
-    public ResponseEntity<JobComponentPayload> getMainJobComponentForPrimaryDemandId(Long primaryDemandId) {
-        JobComponent jobComponent = service.getPrimaryDemandService()
-                .getMainJobComponentForPrimaryDemand(service.findById(PrimaryDemand.class, primaryDemandId));
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(new JobComponentPayload(jobComponent));
-    }
+//    @GetMapping("/getMainJobComponentForPrimaryDemandId")
+//    @ResponseBody
+//    public ResponseEntity<JobComponentPayload> getMainJobComponentForPrimaryDemandId(Long primaryDemandId) {
+//        JobComponent jobComponent = service.getPrimaryDemandService()
+//                .getMainJobComponentForPrimaryDemand(service.findById(PrimaryDemand.class, primaryDemandId));
+//        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+//                .body(new JobComponentPayload(jobComponent));
+//    }
 
     @GetMapping("/getChildJobComponentForJobcomponentId")
     @ResponseBody

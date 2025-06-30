@@ -90,7 +90,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/colresizable@1.6.0/colResizable-1.6.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree-grid/3.9.5/jstreegrid.min.js"></script>
+<script src="/js/jstreegrid.js"></script>
 <script src="/js/report.js" defer></script>
 </body>
 </html>
