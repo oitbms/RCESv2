@@ -96,9 +96,9 @@ $(document).on('click', '.openModal', async function () {
 document.addEventListener('DOMContentLoaded', function () {
     // Инициализация colResizable на вашей таблице
     $('#treetable').colResizable({
-        liveDrag: true,      // Ширина меняется "на лету"
-        resizeMode: 'fit',   // Подгоняет соседние столбцы
-        minWidth: 0         // Минимальная ширина колонки
+        liveDrag: true,
+        resizeMode: 'fit',
+        minWidth: 0
     });
 });
 
@@ -106,10 +106,10 @@ $('#tree_container').jstree({
     'plugins': ['grid'],
     'grid': {
         'columns': [
-            {width: 350, header: "<div style='text-align: center'>Строка ЗК/Спрос</div>", value: "col1"},
-            {width: 350, header: "<div style='text-align: center'>ДСЕ/№ захода</div>", value: "col2"},
-            {width: 225, header: "<div style='text-align: center'>Узел ПЛМ</div>", value: "col3"},
-            {width: 205, header: "<div style='text-align: center'>Описание захода</div>", value: "col4"},
+            {width: 750, header: "<div style='text-align: center'>Строка ЗК/Спрос</div>", value: "col1"},
+            {width: 500, header: "<div style='text-align: center'>ДСЕ/№ захода</div>", value: "col2"},
+            {width: 345, header: "<div style='text-align: center'>Узел ПЛМ</div>", value: "col3"},
+            {width: 255, header: "<div style='text-align: center'>Описание захода</div>", value: "col4"},
             {width: 100, header: "<div style='text-align: center'>План брутто</div>", value: "col5"},
             {width: 100, header: "<div style='text-align: center'>Выполнено</div>", value: "col6"},
             {width: 170, header: "<div style='text-align: center'>Общее время захода</div>", value: "col7"},
@@ -137,7 +137,7 @@ async function makeTree(primaryDemands) {
             parent: parentId || `#`,
             data: {
                 col1: type === 'pd' ? item.name : '',
-                col2: type === 'pd' ? item.jobComponent.name : type==='js' ? '' : item.name,
+                col2: type === 'pd' ? item.jobComponent.name : type === 'js' ? '' : item.name,
                 col3: `<div style="${style}">${type === 'js' ? item.mlmNode : "&nbsp;"}</div>`,
                 col4: `<div style="${style}">${type === 'js' ? item.description : "&nbsp;"}</div>`,
                 col5: `<div style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</div>`,
@@ -169,10 +169,10 @@ async function makeTree(primaryDemands) {
         const [childComponents, jobSteps] = await Promise.all([
             Promise.all(
                 jobComponentIds.map(id =>
-                    $.get('spm-api/getChildJobComponentForJobcomponentId', { jobComponentId: id }))),
-                Promise.all(
-                    jobComponentIds.map(id =>
-                    $.get('spm-api/getJobStepsForJobComponentId', { jobComponentId: id })))
+                    $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: id}))),
+            Promise.all(
+                jobComponentIds.map(id =>
+                    $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: id})))
         ]);
 
         for (let i = 0; i < currentLevel.length; i++) {
@@ -198,6 +198,7 @@ async function makeTree(primaryDemands) {
 
     return treeData;
 }
+
 // Обработчик нажатия на кнопку "Сформировать"
 $('#btnGenerate').click(async function () {
     const customerOrderId = $('#spmCustomerOrder').val();
@@ -209,8 +210,8 @@ $('#btnGenerate').click(async function () {
     // Анимация скрытия/показа
     $('#filterContainer').fadeOut('slow');
     setTimeout(() => {
-        $('.table-container').addClass('visible').hide().fadeIn('slow');
-    }, 750);
+        $('.table-container').hide().fadeIn('slow');
+    }, 500);
 
     const tree = $('#tree_container').jstree(true);
     tree.settings.core.data = [{
@@ -231,15 +232,11 @@ $('#btnGenerate').click(async function () {
         return;
     }
     let treeData = [];
-    tree.settings.core.data = [];
 
     treeData = await makeTree(primaryDemands);
 
     tree.settings.core.data = treeData;
     tree.refresh(true);
-    $('#tree_container').one('refresh.jstree', () => {
-        tree.open_all({ duration: 300 });
-    });
 });
 
 function formatDate(dateString) {
