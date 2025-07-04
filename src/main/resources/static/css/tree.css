@@ -1,5 +1,5 @@
 :root {
-    --margin-table: 0.5rem;
+    --margin-table: 1rem;
     --margin-row: 0.8rem;
 }
 
@@ -20,7 +20,6 @@ header {
 
 .table {
     margin-top: 4.1rem;
-    margin-left: var(--margin-table);
     transition: margin-left 0.3s ease;
 
     position: relative;
@@ -28,9 +27,10 @@ header {
     width: max-content;
 
     border: 0.5px #f1f0f0 solid;
+    border-top: none;
+
     border-top-left-radius: 0.3rem;
     border-top-right-radius: 0.3rem;
-
 }
 
 .table-header {
@@ -42,10 +42,16 @@ header {
     display: grid;
     grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
     place-items: center;
-    background-color: #f8f8f8;
+
+    /* Что б цвет фона div не выходил за закругленные края */
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
 
     & div {
-        border-radius: 0.3rem;
+        background-color: #f8f8f8;
+        border-top-left-radius: 0.3rem;
+        border-top-right-radius: 0.3rem;
+
         border: 0.5px #f1f0f0 solid;
         width: 100%;
         height: 100%;
@@ -58,6 +64,8 @@ header {
 .table-body {
     font-size: 15px;
     position: relative;
+    /* overflow только справа */
+    clip-path: inset(0 0 0 -100px);
 
     & .row {
         display: grid;
@@ -69,6 +77,19 @@ header {
         &:has(>.inner-cell) {
             padding-left: 0.5rem;
             transition: padding-left 0.1s ease;
+        }
+
+        & .img {
+            background: none;
+            position: absolute;
+            padding: 0;
+            top: 6px;
+            left: -15px;
+            width: 0.5%;
+            height: 0.5%;
+            &.img:hover {
+                cursor: pointer;
+            }
         }
 
         & .cell {

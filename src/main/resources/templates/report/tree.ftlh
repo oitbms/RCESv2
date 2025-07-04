@@ -37,6 +37,7 @@
     </div>
     <div class="table-body">
         <div class="row">
+            <img class="img" src="/img/plus.png" alt="">
             <div class="cell">Какая то строка ЗК/Спрос с номером каким-то</div>
             <div class="cell">Самое обыкновенное ДСЕ</div>
             <div class=" cell position-center">Узел такой то ПЛМ</div>
