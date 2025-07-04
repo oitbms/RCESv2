@@ -13,64 +13,59 @@
     <link rel="stylesheet" href="/css/tree.css">
 </head>
 <body>
-<div>
-    <div id="filter-wrapper" >
-        <div class="container" id="filterContainer">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 col-md-10">
-                    <!-- Центральное поле ввода с кнопкой -->
-                    <div class="input-group mb-3 custom-input-group">
-                    <span class="input-group-text bg-primary text-white"><i
-                                class="bi bi-bag-check me-2"></i>Заказ клиента</span>
-                        <input type="text" class="form-control" id="customerOrderName" placeholder="Выберите заказ..."
-                               readonly>
-                        <input type="hidden" id="spmCustomerOrder">
-                        <button type="button" class="btn btn-outline-primary openModal"
-                                data-primarilyEndpoint="getBurningCustomerOrder"
-                                data-endpoint="getAllCustomerOrder"
-                                data-input-id="customerOrderName"
-                                data-hidden-entity="spmCustomerOrder"
-                                data-modal-id="customerOrderModal">
-                            <i class="bi bi-search me-1"></i> Выбрать
-                        </button>
-                        <button type="button" class="btn btn-primary" id="btnGenerate">
-                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Сформировать
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="table-container">
-        <div class="header-section" id="header-scroll">
-            <div class="header-row">
-                <div class="header-column col-zk">Строка ЗК/Спрос</div>
-                <div class="header-column col-dse">ДСЕ</div>
-                <div class="header-column col-node">Узел ПЛМ</div>
-                <div class="header-column col-desc">Описание</div>
-                <div class="header-column col-plan">План<br>брутто</div>
-                <div class="header-column col-done">Выполнено</div>
-                <div class="header-column col-time">Общее время захода</div>
-                <div class="header-column col-date">Дата начала</div>
-                <div class="header-column col-date">Дата завершения</div>
-                <div class="header-column col-date">РД начала</div>
-                <div class="header-column col-date">РД завершения</div>
-            </div>
-        </div>
-        <div class="scroll-container">
-            <div class="data-scroll" id="data-scroll">
-                <div class="data-container">
-                    <div class="details-section bg-light" id="data">
-                        <div class="content-row">
-                            <!-- Данные -->
-                        </div>
-                    </div>
-                </div>
+<header>
+    <p>header</p>
+    <div>
+
+    </div>
+</header>
+
+<div class="table">
+    <div class="table-header">
+        <div>Строка ЗК/Спрос</div>
+        <div>ДСЕ</div>
+        <div>Узел ПЛМ</div>
+        <div>Описание(заход)</div>
+        <div>План<br>брутто</div>
+        <div>Выполнено</div>
+        <div>Трудоемкость</div>
+        <div>Дата начала</div>
+        <div>Дата завершения</div>
+        <div>РД начала</div>
+        <div>РД завершения</div>
+    </div>
+    <div class="table-body">
+        <div class="row">
+            <div class="cell">Какая то строка ЗК/Спрос с номером каким-то</div>
+            <div class="cell">Самое обыкновенное ДСЕ</div>
+            <div class=" cell position-center">Узел такой то ПЛМ</div>
+            <div class="cell position-center">Там бля он бля вон бля он бля</div>
+            <div class="cell position-center">100</div>
+            <div class="cell position-center">99</div>
+            <div class="cell position-center">11.131</div>
+            <div class="cell position-center">12.13.2025</div>
+            <div class="cell position-center">12.13.2025</div>
+            <div class="cell position-center">12.13.2025</div>
+            <div class="cell position-center">12.13.2025</div>
+            <div class="row">
+                <div class="inner-cell">Какая то строка ЗК/Спрос с номером каким-то</div>
+                <div class="inner-cell">Самое обыкновенное ДСЕ</div>
+                <div class="inner-cell position-center">Узел такой то ПЛМ</div>
+                <div class="inner-cell position-center">Там бля он бля вон бля он бля</div>
+                <div class="inner-cell position-center">100</div>
+                <div class="inner-cell position-center">99</div>
+                <div class="inner-cell position-center">11.131</div>
+                <div class="inner-cell position-center">12.13.2025</div>
+                <div class="inner-cell position-center">12.13.2025</div>
+                <div class="inner-cell position-center">12.13.2025</div>
+                <div class="inner-cell position-center">12.13.2025</div>
             </div>
         </div>
     </div>
 </div>
+
+
 <!-- Модальное окно -->
 <div class="modal fade" id="customerOrderModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
      tabindex="-1">
@@ -109,8 +104,8 @@
         </div>
     </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/colresizable@1.6.0/colResizable-1.6.min.js"></script>
 <script src="/js/report.js" defer></script>
 </body>

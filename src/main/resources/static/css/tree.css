@@ -1,102 +1,79 @@
-.table-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
+:root {
+    --margin-table: 0.4rem;
 }
 
-.header-section {
-    height: 60px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    overflow: hidden;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
-}
-
-.header-row {
-    display: flex;
-    width: 100%;
+body {
     height: 100%;
+    font-family: 'Helvetica', sans-serif;
 }
 
-.header-column {
-    padding: 8px;
-    border-right: 1px solid #ddd;
-    text-align: center;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: normal;
-    box-sizing: border-box;
-    font-weight: bold;
+header {
+    top: 0;
+    position: fixed;
+    background-color: red;
+    height: 4rem;
+    min-width: 100%;
+    z-index: 100;
+    border-radius: 0.2rem;
 }
 
-.scroll-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-.data-scroll {
-    flex: 1;
-    overflow: auto;
+.table {
+    margin-top: 4.1rem;
+    margin-left: var(--margin-table);
+    transition: margin-left 0.3s ease;
     position: relative;
+    height: max-content;
+    width: max-content;
 }
 
-.data-container {
+.table-header {
+    position: sticky;
+    z-index: 100;
+    top: 4rem;
+    height: 3rem;
     width: 100%;
+    display: grid;
+    grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
+    place-items: center;
+    background-color: #f8f8f8;
+
+    & div {
+        border-radius: 0.3rem;
+        border: 0.5px #f1f0f0 solid;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.details-section {
-    padding: 0;
-}
+.table-body {
+    font-size: 15px;
+    position: relative;
 
-.content-row {
-    display: flex;
-    width: 100%;
-    border-bottom: 1px solid #eee;
-}
+    & .row {
+        display: grid;
+        margin: 0;
+        padding: 0;
+        grid-auto-rows: 1.45rem;
+        grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
 
-.content-cell {
-    padding: 8px;
-    border-right: 1px solid #eee;
-    box-sizing: border-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-}
+        & .cell {
+            background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+            color: #333;
+            font-family: 'Helvetica', sans-serif;
+            box-shadow: 0 3px 20px rgba(0, 0, 0, 0.01);
 
-/* Размеры колонок */
-.col-zk { width: 500px; min-width: 500px; }
-.col-dse { width: 500px; min-width: 500px; }
-.col-node { width: 345px; min-width: 345px; }
-.col-desc { width: 255px; min-width: 255px; }
-.col-plan { width: 100px; min-width: 100px; text-align: center; }
-.col-done { width: 100px; min-width: 100px; text-align: center; }
-.col-time { width: 170px; min-width: 170px; text-align: center; }
-.col-date { width: 155px; min-width: 155px; text-align: center; }
+            display: flex;
+            padding: 0;
+            border: 0.5px #f1f0f0 solid;
 
-/* Скроллбар заголовка */
-.header-section::-webkit-scrollbar {
-    display: none;
-}
-.header-section {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
 
-/* Выравнивание скролла */
-.data-scroll::-webkit-scrollbar {
-    height: 8px;
-    width: 8px;
-}
-.data-scroll::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
+        }
+        & .position-center {
+            align-items: center;
+            justify-content: center;
+        }
+    }
 }

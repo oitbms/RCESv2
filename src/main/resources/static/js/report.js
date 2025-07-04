@@ -93,35 +93,57 @@ $(document).on('click', '.openModal', async function () {
 
     modal.modal('show');
 });
-// Скролл
-$(document).ready(function () {
-    // Синхронизация горизонтального скролла
-    const headerScroll = document.getElementById('header-scroll');
-    const dataScroll = document.getElementById('data-scroll');
+//Изменение ширины колонок
+document.addEventListener('DOMContentLoaded', function() {
+    const titles = document.querySelectorAll('.title');
+    const tableContent = document.querySelector('.table-content');
+    let isResizing = false;
+    let startX;
+    let startWidth;
+    let columnIndex;
+    let initialGridTemplateColumns;
+    const MIN_COLUMN_WIDTH = 85;
 
-    // Синхронизация при скролле данных
-    dataScroll.addEventListener('scroll', function () {
-        headerScroll.scrollLeft = dataScroll.scrollLeft;
+    titles.forEach(title => {
+        title.addEventListener('mousedown', function(e) {
+            if (e.offsetX > this.offsetWidth - 5) {
+                initResize(e, this);
+            }
+        });
     });
 
-    // Синхронизация при скролле заголовка
-    headerScroll.addEventListener('scroll', function () {
-        dataScroll.scrollLeft = headerScroll.scrollLeft;
-    });
+    function initResize(e, title) {
+        e.preventDefault();
+        isResizing = true;
+        startX = e.clientX;
 
-    // Фиксируем ширину контента
-    const contentWidth = 2590; // Сумма всех ширин колонок
-    document.querySelector('.header-row').style.width = contentWidth + 'px';
-    document.querySelector('.data-container').style.width = contentWidth + 'px';
+        columnIndex = Array.from(title.parentElement.children).indexOf(title);
+        initialGridTemplateColumns = getComputedStyle(tableContent).gridTemplateColumns.split(' ');
+        startWidth = parseInt(initialGridTemplateColumns[columnIndex]);
 
-    // Устанавливаем правильную ширину для ячеек контента
-    document.querySelectorAll('.content-cell').forEach(cell => {
-        const className = Array.from(cell.classList).find(c => c.startsWith('col-'));
-        if (className) {
-            const width = getComputedStyle(document.querySelector(`.${className}`)).width;
-            cell.style.width = width;
-        }
-    });
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+    }
+
+    function resize(e) {
+        if (!isResizing) return;
+
+        const dx = e.clientX - startX;
+        let newWidth = startWidth + dx;
+
+        newWidth = Math.max(newWidth, MIN_COLUMN_WIDTH);
+
+        const newGridTemplateColumns = [...initialGridTemplateColumns];
+        newGridTemplateColumns[columnIndex] = `${newWidth}px`;
+
+        tableContent.style.gridTemplateColumns = newGridTemplateColumns.join(' ');
+    }
+
+    function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResize);
+    }
 });
 
 //Создание дерева
@@ -161,7 +183,9 @@ async function makeTree(primaryDemands) {
         await addRow(pd, 'pd', 0, 0);
         await makeChild(pd.jobComponent.id, 1);
     }
-
+    setTimeout(() => {
+        $('.table-container').hide().fadeIn('slow');
+    }, 500);
 }
 
 // Обработчик нажатия на кнопку "Сформировать"
@@ -174,12 +198,9 @@ $('#btnGenerate').click(async function () {
 
     // Анимация скрытия/показа
     $('#filterContainer').fadeOut('slow');
-    setTimeout(() => {
-        $('.table-container').hide().fadeIn('slow');
-    }, 500);
 
     const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId});
-    await makeTree(primaryDemands);
+    await makeTree(primaryDemands).then();
 });
 
 function formatDate(dateString) {
