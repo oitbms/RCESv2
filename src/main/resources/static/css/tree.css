@@ -1,6 +1,7 @@
 :root {
     --margin-table: 1rem;
     --margin-row: 0.8rem;
+    --cell-width: 0rem;
 }
 
 body {
@@ -20,16 +21,19 @@ header {
 
 .table {
     margin-top: 4.1rem;
+    background-color: #ffffff;
+    width: max-content;
+    height: max-content;
+}
+
+.table-content {
+    position: relative;
+
     margin-left: var(--margin-table);
     transition: margin-left 0.3s ease;
 
-    position: relative;
-    height: max-content;
-    width: max-content;
-
     border: 0.5px #f1f0f0 solid;
     border-top: none;
-
     border-top-left-radius: 0.3rem;
     border-top-right-radius: 0.3rem;
 }
@@ -41,7 +45,18 @@ header {
     height: 3rem;
     width: 100%;
     display: grid;
-    grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
+    grid-template-columns:
+          calc(28.125rem + var(--cell-width))
+          calc(28.125rem + var(--cell-width))
+          calc(21.5625rem + var(--cell-width))
+          calc(15.9375rem + var(--cell-width))
+          calc(6.25rem + var(--cell-width))
+          calc(6.25rem + var(--cell-width))
+          calc(10.625rem + var(--cell-width))
+          calc(9.6875rem + var(--cell-width))
+          calc(9.6875rem + var(--cell-width))
+          calc(9.6875rem + var(--cell-width))
+          calc(9.6875rem + var(--cell-width));
     place-items: center;
 
     /* Что б цвет фона div не выходил за закругленные края */
@@ -63,6 +78,7 @@ header {
 }
 
 .table-body {
+    margin-top: 1rem; /* 1 строка почему то заезжает внутрь хедера */
     font-size: 15px;
     position: relative;
     /* overflow только справа */
@@ -72,44 +88,60 @@ header {
         display: grid;
         margin: 0;
         padding: 0;
-        grid-auto-rows: 1.45rem;
-        grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
+        grid-auto-rows: max-content;
+        grid-template-columns:
+              calc(28.125rem + var(--cell-width))
+              calc(28.125rem + var(--cell-width))
+              calc(21.5625rem + var(--cell-width))
+              calc(15.9375rem + var(--cell-width))
+              calc(6.25rem + var(--cell-width))
+              calc(6.25rem + var(--cell-width))
+              calc(10.625rem + var(--cell-width))
+              calc(9.6875rem + var(--cell-width))
+              calc(9.6875rem + var(--cell-width))
+              calc(9.6875rem + var(--cell-width))
+              calc(9.6875rem + var(--cell-width));
+        grid-auto-columns: max-content;
 
-        &:has(>.inner-cell) {
-            padding-left: 0.5rem;
-            transition: padding-left 0.1s ease;
+        & .nested-rows {
+            grid-column: 1 / -1;
+            padding-left: 2rem;
+            background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+
+            & .row {
+                display: grid;
+                grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem minmax(9.6875rem, var(--cell-width));
+                border-top: 0.5px #e0e0e0 solid;
+                background: transparent;
+            }
         }
 
-        & .img {
-            background: none;
+        .img {
             position: absolute;
-            padding: 0;
-            top: 6px;
-            left: -15px;
-            width: 0.5%;
-            height: 0.5%;
+            left: 0.5rem;
+            top: 1.1rem;
+            cursor: pointer;
+            width: 1rem;
+            height: 1rem;
+            z-index: 2;
+
             &.img:hover {
                 cursor: pointer;
             }
         }
 
-        & .cell {
+        .cell, .inner-cell {
             background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
             color: #333;
-            font-family: 'Helvetica', sans-serif;
-            box-shadow: 0 3px 20px rgba(0, 0, 0, 0.01);
-
             display: flex;
-            padding: 0;
-            border-top: 0.5px #f1f0f0 solid;
+            padding: 0.8rem 0.5rem;
             border-bottom: 0.5px #f1f0f0 solid;
+            align-items: center;
         }
 
         & .inner-cell {
-            padding: 0 0 0 var(--margin-row);
-            display: flex;
-
-            background: linear-gradient(120deg, #ffffff 0%, #f5f5f5 100%);
+            background: linear-gradient(120deg, #fdfdfd 0%, #f7f7f7 100%);
+            padding-left: 1rem;
         }
 
         & .position-center {
