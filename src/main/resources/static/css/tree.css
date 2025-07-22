@@ -90,6 +90,7 @@ header {
         padding: 0;
         grid-auto-rows: max-content;
         grid-template-columns:
+              20px
               calc(28.125rem + var(--cell-width))
               calc(28.125rem + var(--cell-width))
               calc(21.5625rem + var(--cell-width))
@@ -110,23 +111,20 @@ header {
 
             & .row {
                 display: grid;
-                grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem minmax(9.6875rem, var(--cell-width));
+                grid-template-columns:20px
+                      calc(28.125rem + var(--cell-width))
+                      calc(28.125rem + var(--cell-width))
+                      calc(21.5625rem + var(--cell-width))
+                      calc(15.9375rem + var(--cell-width))
+                      calc(6.25rem + var(--cell-width))
+                      calc(6.25rem + var(--cell-width))
+                      calc(10.625rem + var(--cell-width))
+                      calc(9.6875rem + var(--cell-width))
+                      calc(9.6875rem + var(--cell-width))
+                      calc(9.6875rem + var(--cell-width))
+                      calc(9.6875rem + var(--cell-width));
                 border-top: 0.5px #e0e0e0 solid;
                 background: transparent;
-            }
-        }
-
-        .img {
-            position: absolute;
-            left: 0.5rem;
-            top: 1.1rem;
-            cursor: pointer;
-            width: 1rem;
-            height: 1rem;
-            z-index: 2;
-
-            &.img:hover {
-                cursor: pointer;
             }
         }
 
@@ -149,4 +147,63 @@ header {
             justify-content: center;
         }
     }
+}
+
+
+.hamburger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+.hamburger .checkbox {
+    position: absolute;
+    opacity: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
+
+.line {
+    transition: 0.5s;
+    stroke-width: 6px;
+    stroke: black;
+}
+
+.lineTop {
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 25;
+}
+
+.lineBottom {
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 60;
+}
+
+.lineMid {
+    stroke-dasharray: 40 40;
+}
+
+.hamburger .checkbox:checked + svg .line {
+    stroke: crimson;
+}
+
+.hamburger .checkbox:checked + svg .lineTop {
+    stroke-dashoffset: 0;
+    transform-origin: left;
+    transform: rotateZ(45deg) translate(-7px, -5px);
+}
+
+.hamburger .checkbox:checked + svg .lineMid {
+    stroke-dashoffset: 40;
+}
+
+.hamburger .checkbox:checked + svg .lineBottom {
+    stroke-dashoffset: 0;
+    transform-origin: left;
+    transform: rotateZ(-45deg) translate(-5px, 5px);
 }

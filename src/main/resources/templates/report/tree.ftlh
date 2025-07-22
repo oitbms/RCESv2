@@ -38,6 +38,32 @@
         </div>
         <div class="table-body">
             <div class="row">
+                <div class="hamburger">
+                    <input class="checkbox" type="checkbox" />
+                    <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                        <path
+                                class="lineTop line"
+                                stroke-linecap="round"
+                                stroke-width="4"
+                                stroke="black"
+                                d="M6 11L44 11"
+                        ></path>
+                        <path
+                                stroke-linecap="round"
+                                stroke-width="4"
+                                stroke="black"
+                                d="M6 24H43"
+                                class="lineMid line"
+                        ></path>
+                        <path
+                                stroke-linecap="round"
+                                stroke-width="4"
+                                stroke="black"
+                                d="M6 37H43"
+                                class="lineBottom line"
+                        ></path>
+                    </svg>
+                </div>
                 <div class="cell">Какая то строка ЗК/Спрос с номером каким-то WWWWWWW</div>
                 <div class="cell">Самое обыкновенное ДСЕ</div>
                 <div class=" cell position-center">Узел такой то ПЛМ</div>
@@ -51,6 +77,32 @@
                 <div class="cell position-center">12.13.2025</div>
                 <div class="nested-rows">
                     <div class="row">
+                        <div class="hamburger">
+                            <input class="checkbox" type="checkbox" />
+                            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                <path
+                                        class="lineTop line"
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 11L44 11"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 24H43"
+                                        class="lineMid line"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 37H43"
+                                        class="lineBottom line"
+                                ></path>
+                            </svg>
+                        </div>
                         <div class="inner-cell">ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
                             РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
                         </div>
@@ -66,6 +118,32 @@
                         <div class="inner-cell position-center">12.13.2025</div>
                         <div class="nested-rows">
                             <div class="row">
+                                <div class="hamburger">
+                                    <input class="checkbox" type="checkbox" />
+                                    <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                        <path
+                                                class="lineTop line"
+                                                stroke-linecap="round"
+                                                stroke-width="4"
+                                                stroke="black"
+                                                d="M6 11L44 11"
+                                        ></path>
+                                        <path
+                                                stroke-linecap="round"
+                                                stroke-width="4"
+                                                stroke="black"
+                                                d="M6 24H43"
+                                                class="lineMid line"
+                                        ></path>
+                                        <path
+                                                stroke-linecap="round"
+                                                stroke-width="4"
+                                                stroke="black"
+                                                d="M6 37H43"
+                                                class="lineBottom line"
+                                        ></path>
+                                    </svg>
+                                </div>
                                 <div class="inner-cell">ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
                                     РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
                                 </div>
@@ -81,6 +159,32 @@
                                 <div class="inner-cell position-center">12.13.2025</div>
                                 <div class="nested-rows">
                                     <div class="row">
+                                        <div class="hamburger">
+                                            <input class="checkbox" type="checkbox" />
+                                            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                                <path
+                                                        class="lineTop line"
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 11L44 11"
+                                                ></path>
+                                                <path
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 24H43"
+                                                        class="lineMid line"
+                                                ></path>
+                                                <path
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 37H43"
+                                                        class="lineBottom line"
+                                                ></path>
+                                            </svg>
+                                        </div>
                                         <div class="inner-cell">ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
                                             РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
                                         </div>
@@ -102,6 +206,32 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="hamburger">
+                            <input class="checkbox" type="checkbox" />
+                            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                <path
+                                        class="lineTop line"
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 11L44 11"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 24H43"
+                                        class="lineMid line"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 37H43"
+                                        class="lineBottom line"
+                                ></path>
+                            </svg>
+                        </div>
                         <div class="inner-cell">ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
                             РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
                         </div>
