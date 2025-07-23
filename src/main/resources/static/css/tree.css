@@ -2,6 +2,18 @@
     --margin-table: 1rem;
     --margin-row: 0.8rem;
     --cell-width: 1rem;
+    --hb-widht: 1.25rem;
+    --col1-widht: 28.125rem;
+    --col2-widht: 28.125rem;
+    --col3-widht: 21.5625rem;
+    --col4-widht: 15.9375rem;
+    --col5-widht: 6.25rem;
+    --col6-widht: 6.25rem;
+    --col7-widht: 10.625rem;
+    --col8-widht: 9.6875rem;
+    --col9-widht: 9.6875rem;
+    --col10-widht: 9.6875rem;
+    --col11-widht: 9.6875rem;
 }
 
 body {
@@ -12,7 +24,6 @@ body {
 header {
     top: 0;
     position: fixed;
-    background-color: red;
     height: 4rem;
     min-width: 100%;
     z-index: 100;
@@ -46,17 +57,17 @@ header {
     width: 100%;
     display: grid;
     grid-template-columns:
-          calc(29.375rem + (var(--cell-width) * 2))
-          calc(28.125rem + var(--cell-width))
-          calc(21.5625rem + var(--cell-width))
-          calc(15.9375rem + var(--cell-width))
-          calc(6.25rem + var(--cell-width))
-          calc(6.25rem + var(--cell-width))
-          calc(10.625rem + var(--cell-width))
-          calc(9.6875rem + var(--cell-width))
-          calc(9.6875rem + var(--cell-width))
-          calc(9.6875rem + var(--cell-width))
-          calc(9.6875rem + var(--cell-width));
+          calc(calc(var(--col1-widht) + var(--hb-widht)) + var(--cell-width))
+          calc(var(--col2-widht) + var(--cell-width))
+          calc(var(--col3-widht) + var(--cell-width))
+          calc(var(--col4-widht) + var(--cell-width))
+          calc(var(--col5-widht) + var(--cell-width))
+          calc(var(--col6-widht) + var(--cell-width))
+          calc(var(--col7-widht) + var(--cell-width))
+          calc(var(--col8-widht) + var(--cell-width))
+          calc(var(--col9-widht) + var(--cell-width))
+          calc(var(--col10-widht) + var(--cell-width))
+          calc(var(--col11-widht) + var(--cell-width));
     place-items: center;
 
     /* Что б цвет фона div не выходил за закругленные края */
@@ -90,64 +101,55 @@ header {
         padding: 0;
         grid-auto-rows: max-content;
         grid-template-columns:
-              20px
-              calc(28.125rem + var(--cell-width))
-              calc(28.125rem + var(--cell-width))
-              calc(21.5625rem + var(--cell-width))
-              calc(15.9375rem + var(--cell-width))
-              calc(6.25rem + var(--cell-width))
-              calc(6.25rem + var(--cell-width))
-              calc(10.625rem + var(--cell-width))
-              calc(9.6875rem + var(--cell-width))
-              calc(9.6875rem + var(--cell-width))
-              calc(9.6875rem + var(--cell-width))
-              calc(9.6875rem + (var(--cell-width) * 2));
+              var(--hb-widht)
+              calc(var(--col1-widht) + var(--cell-width))
+              calc(var(--col2-widht) + var(--cell-width))
+              calc(var(--col3-widht) + var(--cell-width))
+              calc(var(--col4-widht) + var(--cell-width))
+              calc(var(--col5-widht) + var(--cell-width))
+              calc(var(--col6-widht) + var(--cell-width))
+              calc(var(--col7-widht) + var(--cell-width))
+              calc(var(--col8-widht) + var(--cell-width))
+              calc(var(--col9-widht) + var(--cell-width))
+              calc(var(--col10-widht) + var(--cell-width))
+              calc(var(--col11-widht) + var(--cell-width));
         grid-auto-columns: max-content;
 
         & .nested-rows {
             grid-column: 1 / -1;
-            padding-left: 0;
             background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+            padding: 0 0 0 var(--cell-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
 
             & .row {
                 display: grid;
                 grid-template-columns:
-                      var(--cell-width)
-                      20px
-                      calc(28.125rem + var(--cell-width))
-                      calc(28.125rem + var(--cell-width))
-                      calc(21.5625rem + var(--cell-width))
-                      calc(15.9375rem + var(--cell-width))
-                      calc(6.25rem + var(--cell-width))
-                      calc(6.25rem + var(--cell-width))
-                      calc(10.625rem + var(--cell-width))
-                      calc(9.6875rem + var(--cell-width))
-                      calc(9.6875rem + var(--cell-width))
-                      calc(9.6875rem + var(--cell-width))
-                      calc(9.6875rem + var(--cell-width));
+                    var(--hb-widht)
+                    calc(var(--col1-widht) + var(--cell-width))
+                    calc(var(--col2-widht) + var(--cell-width))
+                    calc(var(--col3-widht) + var(--cell-width))
+                    calc(var(--col4-widht) + var(--cell-width))
+                    calc(var(--col5-widht) + var(--cell-width))
+                    calc(var(--col6-widht) + var(--cell-width))
+                    calc(var(--col7-widht) + var(--cell-width))
+                    calc(var(--col8-widht) + var(--cell-width))
+                    calc(var(--col9-widht) + var(--cell-width))
+                    calc(var(--col10-widht) + var(--cell-width))
+                    calc(var(--col11-widht) + var(--cell-width));
                 border-top: 0.5px #e0e0e0 solid;
                 background: transparent;
             }
-        }
-        .nested-rows .row::before {
-            content: "";
-            grid-column: 1;
-        }
-        .nested-rows .inner-cell {
-            padding-left: 0; /* Убираем лишний отступ */
         }
 
         .cell, .inner-cell {
             background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
             color: #333;
             display: flex;
-            padding: 0.8rem 0.5rem;
+            padding: 0.8rem 0;
             align-items: center;
         }
 
         & .inner-cell {
             background: linear-gradient(120deg, #fdfdfd 0%, #f7f7f7 100%);
-            padding-left: 1rem;
         }
 
         & .position-center {

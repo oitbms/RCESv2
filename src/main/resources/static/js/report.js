@@ -94,7 +94,18 @@ $(document).on('click', '.openModal', async function () {
     modal.modal('show');
 });
 
-async function createRow (item, type, parentId = 0, hasChild) {
+// Обработчик раскрытия узла
+$(document).on('click', '.hamburger', async function () {
+    const checkbox = this.querySelector('.checkbox');
+    const nestedRows = $(this).closest('.row').children('.nested-rows')
+    if (nestedRows.length === 0 || nestedRows.html().trim() === '') {
+        checkbox.checked = !checkbox.checked;
+    } else {
+        nestedRows.slideToggle();
+    }
+});
+
+async function createRow(item, type, parentId = 0, hasChild) {
     const table = $('.table-body');
     const style = "text-align: center; vertical-align: middle";
     const child = `<div class="hamburger">
@@ -124,39 +135,39 @@ async function createRow (item, type, parentId = 0, hasChild) {
         </div>
     </div>
     `;
-    if (type==='pd') {
+    if (type === 'pd') {
         table.append(row);
     } else {
         $(`div[data-id="${parentId}"] > div.nested-rows`).append(row);
     }
 }
 
-//Тестовые данные
-document.addEventListener('DOMContentLoaded', async function () {
-    const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '7886928'})
-    let depth = 0;
-
-    async function makeChild(parentId) {
-        const childJobComponent = await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
-        for (const jc of childJobComponent) {
-            await createRow(jc, 'jc', parentId, await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId}).length > 0);
-            depth++;
-            // await makeChild(jc.id, depth + 1);
-        }
-        const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
-        // for (const js of jobSteps) {
-        //     await createRow(js, 'js', parentId);
-        // }
-    }
-
-    for (pd of primaryDemands) {
-        await createRow(pd, 'pd', 0, await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id}).length > 0);
-        await makeChild(pd.jobComponent.id);
-    }
-    // for (let i = 0; i < depth; i++) {
-    //     $(':root').css('--cell-width', (i, val) => parseFloat(val) + 0.5 + 'rem');
-    // }
-});
+// //Тестовые данные
+// document.addEventListener('DOMContentLoaded', async function () {
+//     const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '7886928'})
+//     let depth = 0;
+//
+//     async function makeChild(parentId) {
+//         const childJobComponent = await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
+//         for (const jc of childJobComponent) {
+//             await createRow(jc, 'jc', parentId, await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId}).length > 0);
+//             depth++;
+//             // await makeChild(jc.id, depth + 1);
+//         }
+//         const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
+//         // for (const js of jobSteps) {
+//         //     await createRow(js, 'js', parentId);
+//         // }
+//     }
+//
+//     for (pd of primaryDemands) {
+//         await createRow(pd, 'pd', 0, await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id}).length > 0);
+//         await makeChild(pd.jobComponent.id);
+//     }
+//     // for (let i = 0; i < depth; i++) {
+//     //     $(':root').css('--cell-width', (i, val) => parseFloat(val) + 0.5 + 'rem');
+//     // }
+// });
 
 
 function formatDate(dateString) {
