@@ -1,7 +1,7 @@
 :root {
     --margin-table: 1rem;
     --margin-row: 0.8rem;
-    --cell-width: 2rem;
+    --cell-width: 1rem;
 }
 
 body {
@@ -46,7 +46,7 @@ header {
     width: 100%;
     display: grid;
     grid-template-columns:
-          calc(29.375rem + var(--cell-width))
+          calc(29.375rem + (var(--cell-width) * 2))
           calc(28.125rem + var(--cell-width))
           calc(21.5625rem + var(--cell-width))
           calc(15.9375rem + var(--cell-width))
@@ -101,17 +101,18 @@ header {
               calc(9.6875rem + var(--cell-width))
               calc(9.6875rem + var(--cell-width))
               calc(9.6875rem + var(--cell-width))
-              calc(9.6875rem + var(--cell-width));
+              calc(9.6875rem + (var(--cell-width) * 2));
         grid-auto-columns: max-content;
 
         & .nested-rows {
             grid-column: 1 / -1;
-            padding: 0 0 0 2rem;
+            padding-left: 0;
             background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
 
             & .row {
                 display: grid;
                 grid-template-columns:
+                      var(--cell-width)
                       20px
                       calc(28.125rem + var(--cell-width))
                       calc(28.125rem + var(--cell-width))
@@ -127,6 +128,13 @@ header {
                 border-top: 0.5px #e0e0e0 solid;
                 background: transparent;
             }
+        }
+        .nested-rows .row::before {
+            content: "";
+            grid-column: 1;
+        }
+        .nested-rows .inner-cell {
+            padding-left: 0; /* Убираем лишний отступ */
         }
 
         .cell, .inner-cell {
