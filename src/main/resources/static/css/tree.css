@@ -1,7 +1,8 @@
 :root {
     --margin-table: 1rem;
     --margin-row: 0.8rem;
-    --cell-width: 1rem;
+    --padding-width: 1rem;
+    --extra-width: 2rem;
     --hb-widht: 1.25rem;
     --col1-widht: 28.125rem;
     --col2-widht: 28.125rem;
@@ -19,6 +20,11 @@
 body {
     height: 100%;
     font-family: 'Helvetica', sans-serif;
+}
+
+p {
+    margin: 0;
+    padding-left: var(--extra-width);
 }
 
 header {
@@ -57,17 +63,17 @@ header {
     width: 100%;
     display: grid;
     grid-template-columns:
-          calc(calc(var(--col1-widht) + var(--hb-widht)) + var(--cell-width))
-          calc(var(--col2-widht) + var(--cell-width))
-          calc(var(--col3-widht) + var(--cell-width))
-          calc(var(--col4-widht) + var(--cell-width))
-          calc(var(--col5-widht) + var(--cell-width))
-          calc(var(--col6-widht) + var(--cell-width))
-          calc(var(--col7-widht) + var(--cell-width))
-          calc(var(--col8-widht) + var(--cell-width))
-          calc(var(--col9-widht) + var(--cell-width))
-          calc(var(--col10-widht) + var(--cell-width))
-          calc(var(--col11-widht) + var(--cell-width));
+            calc(calc(var(--col1-widht) + var(--hb-widht)) + var(--extra-width))
+            var(--col2-widht)
+            var(--col3-widht)
+            var(--col4-widht)
+            var(--col5-widht)
+            var(--col6-widht)
+            var(--col7-widht)
+            var(--col8-widht)
+            var(--col9-widht)
+            var(--col10-widht)
+            var(--col11-widht);
     place-items: center;
 
     /* Что б цвет фона div не выходил за закругленные края */
@@ -102,39 +108,39 @@ header {
         grid-auto-rows: max-content;
         grid-template-columns:
               var(--hb-widht)
-              calc(var(--col1-widht) + var(--cell-width))
-              calc(var(--col2-widht) + var(--cell-width))
-              calc(var(--col3-widht) + var(--cell-width))
-              calc(var(--col4-widht) + var(--cell-width))
-              calc(var(--col5-widht) + var(--cell-width))
-              calc(var(--col6-widht) + var(--cell-width))
-              calc(var(--col7-widht) + var(--cell-width))
-              calc(var(--col8-widht) + var(--cell-width))
-              calc(var(--col9-widht) + var(--cell-width))
-              calc(var(--col10-widht) + var(--cell-width))
-              calc(var(--col11-widht) + var(--cell-width));
+              var(--col1-widht)
+              var(--col2-widht)
+              var(--col3-widht)
+              var(--col4-widht)
+              var(--col5-widht)
+              var(--col6-widht)
+              var(--col7-widht)
+              var(--col8-widht)
+              var(--col9-widht)
+              var(--col10-widht)
+              1fr; /* последняя колонка растягивается до конца экрана */
         grid-auto-columns: max-content;
 
         & .nested-rows {
             grid-column: 1 / -1;
             background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
-            padding: 0 0 0 var(--cell-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
+            padding: 0 0 0 var(--padding-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
 
             & .row {
                 display: grid;
                 grid-template-columns:
-                    var(--hb-widht)
-                    calc(var(--col1-widht) + var(--cell-width))
-                    calc(var(--col2-widht) + var(--cell-width))
-                    calc(var(--col3-widht) + var(--cell-width))
-                    calc(var(--col4-widht) + var(--cell-width))
-                    calc(var(--col5-widht) + var(--cell-width))
-                    calc(var(--col6-widht) + var(--cell-width))
-                    calc(var(--col7-widht) + var(--cell-width))
-                    calc(var(--col8-widht) + var(--cell-width))
-                    calc(var(--col9-widht) + var(--cell-width))
-                    calc(var(--col10-widht) + var(--cell-width))
-                    calc(var(--col11-widht) + var(--cell-width));
+                      var(--hb-widht)
+                      var(--col1-widht)
+                      var(--col2-widht)
+                      var(--col3-widht)
+                      var(--col4-widht)
+                      var(--col5-widht)
+                      var(--col6-widht)
+                      var(--col7-widht)
+                      var(--col8-widht)
+                      var(--col9-widht)
+                      var(--col10-widht)
+                      1fr; /* последняя колонка растягивается до конца экрана */
                 border-top: 0.5px #e0e0e0 solid;
                 background: transparent;
             }
@@ -156,6 +162,7 @@ header {
             align-items: center;
             justify-content: center;
         }
+
     }
 }
 
