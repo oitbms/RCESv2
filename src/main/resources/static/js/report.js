@@ -94,14 +94,33 @@ $(document).on('click', '.openModal', async function () {
     modal.modal('show');
 });
 
-// Обработчик раскрытия узла
+// Обработчик раскрытия и закрытия узла
 $(document).on('click', '.hamburger', async function () {
     const checkbox = this.querySelector('.checkbox');
-    const nestedRows = $(this).closest('.row').children('.nested-rows')
-    if (nestedRows.length === 0 || nestedRows.html().trim() === '') {
+    const $row = $(this).closest('.row');
+    const $nestedRow = $row.children('.nested-rows');
+    const $nestedRows = $row.find('.nested-rows:has(*)');
+
+    let currentExtraWidth = parseFloat($(':root').css('--extra-width'));
+
+    if ($nestedRow.length === 0 || $nestedRow.html().trim() === '') {
         checkbox.checked = !checkbox.checked;
     } else {
-        nestedRows.slideToggle();
+        $nestedRow.slideToggle();
+
+        const widthChange = checkbox.checked ? +1 : -1;
+        currentExtraWidth += widthChange;
+
+        $(':root').css('--extra-width', currentExtraWidth + 'rem');
+
+        // Вложенные строки
+        $nestedRows.each(function () {
+            const $nestedCheckbox = $(this).children('.row').find('.hamburger .checkbox');
+            if ($nestedCheckbox.checked) {
+                currentExtraWidth = checkbox.checked ? currentExtraWidth + widthChange : currentExtraWidth - widthChange;
+                $(':root').css('--extra-width', currentExtraWidth + 'rem');
+            }
+        });
     }
 });
 

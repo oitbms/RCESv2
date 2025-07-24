@@ -15,7 +15,7 @@
 <body>
 
 <header>
-    <p>header</p>
+    header
     <div>
 
     </div>

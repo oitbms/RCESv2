@@ -2,7 +2,7 @@
     --margin-table: 1rem;
     --margin-row: 0.8rem;
     --padding-width: 1rem;
-    --extra-width: 2rem;
+    --extra-width: 0rem;
     --hb-widht: 1.25rem;
     --col1-widht: 28.125rem;
     --col2-widht: 28.125rem;
@@ -47,7 +47,7 @@ header {
     position: relative;
 
     margin-left: var(--margin-table);
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.4s ease;
 
     border: 0.5px #f1f0f0 solid;
     border-top: none;
@@ -125,6 +125,7 @@ header {
             grid-column: 1 / -1;
             background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
             padding: 0 0 0 var(--padding-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
+            display: none;
 
             & .row {
                 display: grid;
