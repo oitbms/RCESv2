@@ -1,6 +1,20 @@
 :root {
     --margin-table: 1rem;
     --margin-row: 0.8rem;
+    --padding-width: 1rem;
+    --extra-width: 0rem;
+    --hb-widht: 1.25rem;
+    --col1-widht: 28.125rem;
+    --col2-widht: 28.125rem;
+    --col3-widht: 21.5625rem;
+    --col4-widht: 15.9375rem;
+    --col5-widht: 6.25rem;
+    --col6-widht: 6.25rem;
+    --col7-widht: 10.625rem;
+    --col8-widht: 9.6875rem;
+    --col9-widht: 9.6875rem;
+    --col10-widht: 9.6875rem;
+    --col11-widht: 9.6875rem;
 }
 
 body {
@@ -8,10 +22,14 @@ body {
     font-family: 'Helvetica', sans-serif;
 }
 
+p {
+    margin: 0;
+    padding-left: var(--extra-width);
+}
+
 header {
     top: 0;
     position: fixed;
-    background-color: red;
     height: 4rem;
     min-width: 100%;
     z-index: 100;
@@ -20,16 +38,19 @@ header {
 
 .table {
     margin-top: 4.1rem;
-    margin-left: var(--margin-table);
-    transition: margin-left 0.3s ease;
-
-    position: relative;
-    height: max-content;
+    background-color: #ffffff;
     width: max-content;
+    height: max-content;
+}
+
+.table-content {
+    position: relative;
+
+    margin-left: var(--margin-table);
+    transition: margin-left 0.4s ease;
 
     border: 0.5px #f1f0f0 solid;
     border-top: none;
-
     border-top-left-radius: 0.3rem;
     border-top-right-radius: 0.3rem;
 }
@@ -41,7 +62,18 @@ header {
     height: 3rem;
     width: 100%;
     display: grid;
-    grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
+    grid-template-columns:
+            calc(calc(var(--col1-widht) + var(--hb-widht)) + var(--extra-width))
+            var(--col2-widht)
+            var(--col3-widht)
+            var(--col4-widht)
+            var(--col5-widht)
+            var(--col6-widht)
+            var(--col7-widht)
+            var(--col8-widht)
+            var(--col9-widht)
+            var(--col10-widht)
+            var(--col11-widht);
     place-items: center;
 
     /* Что б цвет фона div не выходил за закругленные края */
@@ -63,6 +95,7 @@ header {
 }
 
 .table-body {
+    margin-top: 1rem; /* 1 строка почему то заезжает внутрь хедера */
     font-size: 15px;
     position: relative;
     /* overflow только справа */
@@ -72,49 +105,123 @@ header {
         display: grid;
         margin: 0;
         padding: 0;
-        grid-auto-rows: 1.45rem;
-        grid-template-columns: 28.125rem 28.125rem 21.5625rem 15.9375rem 6.25rem 6.25rem 10.625rem 9.6875rem 9.6875rem 9.6875rem 9.6875rem;
+        grid-auto-rows: max-content;
+        grid-template-columns:
+              var(--hb-widht)
+              var(--col1-widht)
+              var(--col2-widht)
+              var(--col3-widht)
+              var(--col4-widht)
+              var(--col5-widht)
+              var(--col6-widht)
+              var(--col7-widht)
+              var(--col8-widht)
+              var(--col9-widht)
+              var(--col10-widht)
+              1fr; /* последняя колонка растягивается до конца экрана */
+        grid-auto-columns: max-content;
 
-        &:has(>.inner-cell) {
-            padding-left: 0.5rem;
-            transition: padding-left 0.1s ease;
-        }
+        & .nested-rows {
+            grid-column: 1 / -1;
+            background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+            padding: 0 0 0 var(--padding-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
+            display: none;
 
-        & .img {
-            background: none;
-            position: absolute;
-            padding: 0;
-            top: 6px;
-            left: -15px;
-            width: 0.5%;
-            height: 0.5%;
-            &.img:hover {
-                cursor: pointer;
+            & .row {
+                display: grid;
+                grid-template-columns:
+                      var(--hb-widht)
+                      var(--col1-widht)
+                      var(--col2-widht)
+                      var(--col3-widht)
+                      var(--col4-widht)
+                      var(--col5-widht)
+                      var(--col6-widht)
+                      var(--col7-widht)
+                      var(--col8-widht)
+                      var(--col9-widht)
+                      var(--col10-widht)
+                      1fr; /* последняя колонка растягивается до конца экрана */
+                border-top: 0.5px #e0e0e0 solid;
+                background: transparent;
             }
         }
 
-        & .cell {
+        .cell, .inner-cell {
             background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
             color: #333;
-            font-family: 'Helvetica', sans-serif;
-            box-shadow: 0 3px 20px rgba(0, 0, 0, 0.01);
-
             display: flex;
-            padding: 0;
-            border-top: 0.5px #f1f0f0 solid;
-            border-bottom: 0.5px #f1f0f0 solid;
+            padding: 0.8rem 0;
+            align-items: center;
         }
 
         & .inner-cell {
-            padding: 0 0 0 var(--margin-row);
-            display: flex;
-
-            background: linear-gradient(120deg, #ffffff 0%, #f5f5f5 100%);
+            background: linear-gradient(120deg, #fdfdfd 0%, #f7f7f7 100%);
         }
 
         & .position-center {
             align-items: center;
             justify-content: center;
         }
+
     }
+}
+
+
+.hamburger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
+
+.hamburger .checkbox {
+    position: absolute;
+    opacity: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
+
+.line {
+    transition: 0.5s;
+    stroke-width: 6px;
+    stroke: black;
+}
+
+.lineTop {
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 25;
+}
+
+.lineBottom {
+    stroke-dasharray: 40 40;
+    stroke-dashoffset: 60;
+}
+
+.lineMid {
+    stroke-dasharray: 40 40;
+}
+
+.hamburger .checkbox:checked + svg .line {
+    stroke: crimson;
+}
+
+.hamburger .checkbox:checked + svg .lineTop {
+    stroke-dashoffset: 0;
+    transform-origin: left;
+    transform: rotateZ(45deg) translate(-7px, -5px);
+}
+
+.hamburger .checkbox:checked + svg .lineMid {
+    stroke-dashoffset: 40;
+}
+
+.hamburger .checkbox:checked + svg .lineBottom {
+    stroke-dashoffset: 0;
+    transform-origin: left;
+    transform: rotateZ(-45deg) translate(-5px, 5px);
 }

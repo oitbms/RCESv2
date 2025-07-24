@@ -93,115 +93,101 @@ $(document).on('click', '.openModal', async function () {
 
     modal.modal('show');
 });
-//Изменение ширины колонок
-document.addEventListener('DOMContentLoaded', function() {
-    const titles = document.querySelectorAll('.title');
-    const tableContent = document.querySelector('.table-content');
-    let isResizing = false;
-    let startX;
-    let startWidth;
-    let columnIndex;
-    let initialGridTemplateColumns;
-    const MIN_COLUMN_WIDTH = 85;
 
-    titles.forEach(title => {
-        title.addEventListener('mousedown', function(e) {
-            if (e.offsetX > this.offsetWidth - 5) {
-                initResize(e, this);
+// Обработчик раскрытия и закрытия узла
+$(document).on('click', '.hamburger', async function () {
+    const checkbox = this.querySelector('.checkbox');
+    const $row = $(this).closest('.row');
+    const $nestedRow = $row.children('.nested-rows');
+    const $nestedRows = $row.find('.nested-rows:has(*)');
+
+    let currentExtraWidth = parseFloat($(':root').css('--extra-width'));
+
+    if ($nestedRow.length === 0 || $nestedRow.html().trim() === '') {
+        checkbox.checked = !checkbox.checked;
+    } else {
+        $nestedRow.slideToggle();
+
+        const widthChange = checkbox.checked ? +1 : -1;
+        currentExtraWidth += widthChange;
+
+        $(':root').css('--extra-width', currentExtraWidth + 'rem');
+
+        // Вложенные строки
+        $nestedRows.each(function () {
+            const $nestedCheckbox = $(this).children('.row').find('.hamburger .checkbox');
+            if ($nestedCheckbox.checked) {
+                currentExtraWidth = checkbox.checked ? currentExtraWidth + widthChange : currentExtraWidth - widthChange;
+                $(':root').css('--extra-width', currentExtraWidth + 'rem');
             }
         });
-    });
-
-    function initResize(e, title) {
-        e.preventDefault();
-        isResizing = true;
-        startX = e.clientX;
-
-        columnIndex = Array.from(title.parentElement.children).indexOf(title);
-        initialGridTemplateColumns = getComputedStyle(tableContent).gridTemplateColumns.split(' ');
-        startWidth = parseInt(initialGridTemplateColumns[columnIndex]);
-
-        document.addEventListener('mousemove', resize);
-        document.addEventListener('mouseup', stopResize);
-    }
-
-    function resize(e) {
-        if (!isResizing) return;
-
-        const dx = e.clientX - startX;
-        let newWidth = startWidth + dx;
-
-        newWidth = Math.max(newWidth, MIN_COLUMN_WIDTH);
-
-        const newGridTemplateColumns = [...initialGridTemplateColumns];
-        newGridTemplateColumns[columnIndex] = `${newWidth}px`;
-
-        tableContent.style.gridTemplateColumns = newGridTemplateColumns.join(' ');
-    }
-
-    function stopResize() {
-        isResizing = false;
-        document.removeEventListener('mousemove', resize);
-        document.removeEventListener('mouseup', stopResize);
     }
 });
 
-//Создание дерева
-async function makeTree(primaryDemands) {
-    async function addRow(item, type, parentId = 0, depth) {
-        const data = $('#data');
-        const style = "text-align: center; vertical-align: middle";
-        const row = $(`
-        <div class="content-row" data-id="${type === 'pd' ? item.jobComponent.id : item.id}" data-parent-id="${parentId}" data-depth="${depth}">
-            <div class="content-cell col-zk"   style="${style}">${type === 'pd' ? item.name : ''}</div>
-            <div class="content-cell col-dse"  style="${style}">${type === 'pd' ? item.jobComponent.name : type === 'js' ? '' : item.name}</div>
-            <div class="content-cell col-node" style="${style}">${type === 'js' ? item.mlmNode : ''}</div>
-            <div class="content-cell col-desc" style="${style}">${type === 'js' ? item.description : ''}</div>
-            <div class="content-cell col-plan" style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</div>
-            <div class="content-cell col-done" style="${style}">${type === 'pd' ? item.jobComponent.qtyFinished : item.qtyFinished}</div>
-            <div class="content-cell col-time" style="${style}">${type === 'js' ? item.resourceTime : ''}</div>
-            <div class="content-cell col-date" style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateStart) : formatDate(item.dateStart)}</div>
-            <div class="content-cell col-date" style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateEnd) : formatDate(item.dateEnd)}</div>
-            <div class="content-cell col-date" style="${style}">${type === 'js' ? formatDate(item.dateCalcStart) : ''}</div>
-            <div class="content-cell col-date" style="${style}">${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</div>
+async function createRow(item, type, parentId = 0, hasChild) {
+    const table = $('.table-body');
+    const style = "text-align: center; vertical-align: middle";
+    const child = `<div class="hamburger">
+            <input class="checkbox" type="checkbox"/>
+            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                <path class="lineTop line" stroke-linecap="round" stroke-width="4" stroke="black" d="M6 11L44 11"></path>
+                <path stroke-linecap="round" stroke-width="4" stroke="black" d="M6 24H43" class="lineMid line"></path>
+                <path stroke-linecap="round" stroke-width="4" stroke="black" d="M6 37H43" class="lineBottom line"></path>
+            </svg>
+        </div>`;
+
+    const row = `
+    <div class="row" data-id="${type === 'pd' ? item.jobComponent.id : item.id}" data-parent-id="${parentId}">
+        ${child}
+        <div class="cell">${type === 'pd' ? item.name : ''}</div>
+        <div class="cell">${type === 'pd' ? item.jobComponent.name : type === 'js' ? '' : item.name}</div>
+        <div class="cell" style="${style}">${type === 'js' ? item.mlmNode : ''}</div>
+        <div class="cell" style="${style}">${type === 'js' ? item.description : ''}</div>
+        <div class="cell" style="${style}">${type === 'pd' ? item.jobComponent.qty : item.qty}</div>
+        <div class="cell" style="${style}">${type === 'pd' ? item.jobComponent.qtyFinished : item.qtyFinished}</div>
+        <div class="cell" style="${style}">${type === 'js' ? item.resourceTime : ''}</div>
+        <div class="cell" style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateStart) : formatDate(item.dateStart)}</div>
+        <div class="cell" style="${style}">${type === 'pd' ? formatDate(item.jobComponent.dateEnd) : formatDate(item.dateEnd)}</div>
+        <div class="cell" style="${style}">${type === 'js' ? formatDate(item.dateCalcStart) : ''}</div>
+        <div class="cell" style="${style}">${type === 'js' ? formatDate(item.dateCalcEnd) : ''}</div>
+        <div class="nested-rows">
         </div>
-    `);
-        data.append(row);
+    </div>
+    `;
+    if (type === 'pd') {
+        table.append(row);
+    } else {
+        $(`div[data-id="${parentId}"] > div.nested-rows`).append(row);
     }
-    async function makeChild(parentId, depth) {
-        const childJobComponent = await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
-        for (const jc of childJobComponent) {
-            await addRow(jc, 'jc', parentId, depth);
-            await makeChild(jc.id, depth + 1);
-        }
-        const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
-        for (const js of jobSteps) {
-            await addRow(js, 'js', parentId, depth);
-        }
-    }
-    for (const pd of primaryDemands) {
-        await addRow(pd, 'pd', 0, 0);
-        await makeChild(pd.jobComponent.id, 1);
-    }
-    setTimeout(() => {
-        $('.table-container').hide().fadeIn('slow');
-    }, 500);
 }
 
-// Обработчик нажатия на кнопку "Сформировать"
-$('#btnGenerate').click(async function () {
-    const customerOrderId = $('#spmCustomerOrder').val();
-    if (!customerOrderId) {
-        alert("Выберите заказ клиента");
-        return;
-    }
+// //Тестовые данные
+// document.addEventListener('DOMContentLoaded', async function () {
+//     const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '7886928'})
+//     let depth = 0;
+//
+//     async function makeChild(parentId) {
+//         const childJobComponent = await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
+//         for (const jc of childJobComponent) {
+//             await createRow(jc, 'jc', parentId, await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId}).length > 0);
+//             depth++;
+//             // await makeChild(jc.id, depth + 1);
+//         }
+//         const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
+//         // for (const js of jobSteps) {
+//         //     await createRow(js, 'js', parentId);
+//         // }
+//     }
+//
+//     for (pd of primaryDemands) {
+//         await createRow(pd, 'pd', 0, await $.get('spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id}).length > 0);
+//         await makeChild(pd.jobComponent.id);
+//     }
+//     // for (let i = 0; i < depth; i++) {
+//     //     $(':root').css('--cell-width', (i, val) => parseFloat(val) + 0.5 + 'rem');
+//     // }
+// });
 
-    // Анимация скрытия/показа
-    $('#filterContainer').fadeOut('slow');
-
-    const primaryDemands = await $.get('spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId});
-    await makeTree(primaryDemands).then();
-});
 
 function formatDate(dateString) {
     if (!dateString) return "&nbsp;";
