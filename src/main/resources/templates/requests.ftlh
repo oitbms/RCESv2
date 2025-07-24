@@ -415,12 +415,17 @@
                 <#if (bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER">
                     <div class="mb-1 mt-2">
                         <label for="comment" class="form-label">Комментарий:</label>
-                        <textarea class="form-control"
+                        <textarea class="form-control work"
                                   id="comment"
                                   name="comment"
                                   rows="5"
                                   style="resize: both;">${bid.comment!''}</textarea>
                     </div>
+<#--                    <button class="btn btn-success work" id="reqCommentId"-->
+<#--                            data-param="${bid.getId()}"-->
+<#--                            data-comment="${bid.getComment()!""}">-->
+<#--                        Сохранить комментарий-->
+<#--                    </button>-->
                 </#if>
             </div>
         </div>
@@ -508,7 +513,6 @@
 
                 const param = button.dataset.param;
                 const status = button.dataset.status;
-                const comment = button.dataset.comment;
 
                 if (bidType === 'otk') {
                     description = document.getElementById('description2')?.value || '';
@@ -522,9 +526,6 @@
                 formData.append('description', description);
                 if (status !== undefined && status !== null) {
                     formData.append('status', status);
-                }
-                if (comment !== undefined && comment !== null) {
-                    formData.append('comment', comment);
                 }
 
                 console.log('param:', param);

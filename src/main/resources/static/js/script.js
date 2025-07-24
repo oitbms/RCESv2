@@ -117,7 +117,7 @@ async function deletePhoto(index) {
 if (document.title.includes("Заявка на вызов") && viewForm) {
     const delayedSave = (callback) => {
         clearTimeout(timeout);
-        timeout = setTimeout(callback, 3000);
+        timeout = setTimeout(callback, 1500);
     };
 
     document.getElementById('comment')?.addEventListener('input', () => delayedSave(() => saveData()));

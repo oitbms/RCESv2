@@ -44,6 +44,7 @@
                             <#if user.getRole() == 'ADMIN'>
                                     <a class="btn btn-primary bottom-margin" href="/sgi">СГИ</a>
                                     <a class="btn btn-primary bottom-margin" href="/admin">Пользователи</a>
+                                    <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
                                     <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>

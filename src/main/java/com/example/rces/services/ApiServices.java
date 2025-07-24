@@ -144,23 +144,23 @@ public class ApiServices {
         request.setVersion(request.getVersion() + 1);
         createLog(oldRequest, request, updaterEmployee, service);
         service.save(request);
-        if (sendMessage) {
-            if (request.getStatus().equals(Status.Completed)) {
-                tgService.sendMessage(request, updaterEmployee, !AppProperties.getBool() ? MessageType.COMPLETED : MessageType.UPDATE);
-            } else if (!request.getStatus().equals(Status.Closed) || !request.getStatus().equals(Status.Cancel)) {
-                if (updaterEmployee.getRole().equals(String.valueOf(Role.MASTER))) {
-                    Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-                    tgService.sendMessage(request, employee, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
-                } else {
-                    tgService.sendMessage(request, request.getCreatedBy(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
-                }
-            }
-        }
-        if (request.getStatus().equals(Status.Closed)) {
-            tgService.sendMessage(request, updaterEmployee, MessageType.CLOSE);
-        } else if (request.getStatus().equals(Status.Cancel)) {
-            tgService.sendMessage(request, updaterEmployee, MessageType.CANCEL);
-        }
+//        if (sendMessage) {
+//            if (request.getStatus().equals(Status.Completed)) {
+//                tgService.sendMessage(request, updaterEmployee, !AppProperties.getBool() ? MessageType.COMPLETED : MessageType.UPDATE);
+//            } else if (!request.getStatus().equals(Status.Closed) || !request.getStatus().equals(Status.Cancel)) {
+//                if (updaterEmployee.getRole().equals(String.valueOf(Role.MASTER))) {
+//                    Employee employee = service.findById(Employee.class, request.getEmployee().getId());
+//                    tgService.sendMessage(request, employee, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
+//                } else {
+//                    tgService.sendMessage(request, request.getCreatedBy(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
+//                }
+//            }
+//        }
+//        if (request.getStatus().equals(Status.Closed)) {
+//            tgService.sendMessage(request, updaterEmployee, MessageType.CLOSE);
+//        } else if (request.getStatus().equals(Status.Cancel)) {
+//            tgService.sendMessage(request, updaterEmployee, MessageType.CANCEL);
+//        }
     }
 
     public String getTypeRequest(UUID id) {

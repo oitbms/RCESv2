@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Immutable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Subselect("SELECT * FROM jm_jobstep")
@@ -92,6 +93,14 @@ public class JobStep {
     @Column(name = "critical_ratio")
     private BigDecimal criticalRatio; //КО
 
+
+    public String getFormattedDateStart() {
+        return dateStart != null ? dateStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+    }
+
+    public String getFormattedDateEnd() {
+        return dateEnd != null ? dateEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+    }
 
     public Long getId() {
         return id;
