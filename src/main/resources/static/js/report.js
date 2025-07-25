@@ -1,3 +1,4 @@
+// map с открытыми узлами
 let depthMap = null;
 $(document).ready(function () {
     sessionStorage.setItem('depth', '0');
@@ -50,13 +51,12 @@ $(document).ready(function () {
         };
     })();
 });
-
 // Обработчик раскрытия и закрытия узла
 $(document).on('click', '.hamburger', async function () {
     const checkbox = this.querySelector('.checkbox');
     const $row = $(this).closest('.row');
     const $nestedRow = $row.children('.nested-rows');
-    const $nestedRows = $row.find('.nested-rows:has(*)');
+    const $nestedRows = $row.find('.row');
 
     const rowDepth = $nestedRow.children('.row').data('depth'); // Глубина вложенной строки
     const rowId = $nestedRow.children('.row').data('id');
@@ -71,8 +71,8 @@ $(document).on('click', '.hamburger', async function () {
         return;
     }
 
-
-    if (!depthMap.get(rowId)) { // если в мапе нет такого ключа => checked иначе !checked
+    // Расчет надо ли уменьшать отступ за текущую строку
+    if (!depthMap.get(rowId)) { // если в map нет такого ключа => checked иначе !checked
         if (rowDepth > maxDepth) {
             currentExtraWidth += +1
         }
@@ -90,9 +90,20 @@ $(document).on('click', '.hamburger', async function () {
 
     // Обработка вложенных строки
     $nestedRows.each(function () {
-        const $nestedCheckbox = $(this).children('.row').children('.hamburger').find('.checkbox');
-        if ($nestedCheckbox.prop('checked')) {
-            currentExtraWidth = checkbox.checked ? currentExtraWidth + 1 : currentExtraWidth - 1; // если открываем узел тогда +1rem за каждый открытый узел иначе -1rem
+        if ($(this).children('.hamburger').find('.checkbox').prop('checked')) {
+            // если открываем узел тогда +1rem за каждый открытый узел иначе -1rem
+            if (checkbox.checked) {
+                currentExtraWidth = currentExtraWidth + 1;
+
+                depthMap.add($(this).data('id'), $(this).data('depth'))
+            } else {
+                currentExtraWidth = currentExtraWidth - 1;
+            }
+            //Если у строки нет вложенных строк и у текущей строки checked и у родителя тоже checked
+        } else if (checkbox.checked &&
+            ($(this).children('.nested-rows').length === 0 || $(this).children('.nested-rows').html().trim() === '')
+            &&  $(this).parent('.nested-rows').parent('.row').find('> .hamburger').children('.checkbox').prop('checked')) {
+            depthMap.add($(this).data('id'), $(this).data('depth'))
         }
     });
 
@@ -102,7 +113,6 @@ $(document).on('click', '.hamburger', async function () {
 
     $nestedRow.slideToggle();
 });
-
 // Обработчик открытия модального окна
 $(document).on('click', '.openModal', async function () {
     const primarilyEndpoint = $(this).data('primarilyendpoint');
