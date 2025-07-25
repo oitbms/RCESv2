@@ -37,7 +37,7 @@
             <div>РД завершения</div>
         </div>
         <div class="table-body">
-            <div class="row">
+            <div class="row" data-parent-id="0" data-id="1" data-depth="0">
                 <div class="hamburger">
                     <input class="checkbox" type="checkbox"/>
                     <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
@@ -61,7 +61,7 @@
                 <div class="cell position-center"><p>12.13.2025</p></div>
                 <div class="cell position-center"><p>12.13.2025</p></div>
                 <div class="nested-rows">
-                    <div class="row">
+                    <div class="row"  data-parent-id="1" data-id="2" data-depth="1">
                         <div class="hamburger">
                             <input class="checkbox" type="checkbox"/>
                             <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
@@ -102,7 +102,7 @@
                         <div class="inner-cell position-center"><p>12.13.2025</p></div>
                         <div class="inner-cell position-center"><p>12.13.2025</p></div>
                         <div class="nested-rows">
-                            <div class="row">
+                            <div class="row"  data-parent-id="2" data-id="3" data-depth="2">
                                 <div class="hamburger">
                                     <input class="checkbox" type="checkbox"/>
                                     <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
@@ -143,13 +143,99 @@
                                 <div class="inner-cell position-center"><p>12.13.2025</p></div>
                                 <div class="inner-cell position-center"><p>12.13.2025</p></div>
                                 <div class="nested-rows">
+                                    <div class="row"  data-parent-id="3" data-id="4" data-depth="3">
+                                        <div class="hamburger">
+                                            <input class="checkbox" type="checkbox"/>
+                                            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                                <path
+                                                        class="lineTop line"
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 11L44 11"
+                                                ></path>
+                                                <path
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 24H43"
+                                                        class="lineMid line"
+                                                ></path>
+                                                <path
+                                                        stroke-linecap="round"
+                                                        stroke-width="4"
+                                                        stroke="black"
+                                                        d="M6 37H43"
+                                                        class="lineBottom line"
+                                                ></path>
+                                            </svg>
+                                        </div>
+                                        <div class="inner-cell"><p>ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
+                                                РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
+                                            </p></div>
+                                        <div class="inner-cell"><p>Самое обыкновенное ДСЕ</div>
+                                        <div class="inner-cell position-center"><p>Узел такой-то ПЛМ</p></div>
+                                        <div class="inner-cell position-center"><p>Там бля он бля вон бля он бля</p></div>
+                                        <div class="inner-cell position-center"><p>100</p></div>
+                                        <div class="inner-cell position-center"><p>99</p></div>
+                                        <div class="inner-cell position-center"><p>11.131</p></div>
+                                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                        <div class="nested-rows">
+                                            <div class="row"  data-parent-id="4" data-id="5" data-depth="4">
+                                                <div class="hamburger">
+                                                    <input class="checkbox" type="checkbox"/>
+                                                    <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                                        <path
+                                                                class="lineTop line"
+                                                                stroke-linecap="round"
+                                                                stroke-width="4"
+                                                                stroke="black"
+                                                                d="M6 11L44 11"
+                                                        ></path>
+                                                        <path
+                                                                stroke-linecap="round"
+                                                                stroke-width="4"
+                                                                stroke="black"
+                                                                d="M6 24H43"
+                                                                class="lineMid line"
+                                                        ></path>
+                                                        <path
+                                                                stroke-linecap="round"
+                                                                stroke-width="4"
+                                                                stroke="black"
+                                                                d="M6 37H43"
+                                                                class="lineBottom line"
+                                                        ></path>
+                                                    </svg>
+                                                </div>
+                                                <div class="inner-cell"><p>ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
+                                                        РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
+                                                    </p></div>
+                                                <div class="inner-cell"><p>Самое обыкновенное ДСЕ</div>
+                                                <div class="inner-cell position-center"><p>Узел такой-то ПЛМ</p></div>
+                                                <div class="inner-cell position-center"><p>Там бля он бля вон бля он бля</p></div>
+                                                <div class="inner-cell position-center"><p>100</p></div>
+                                                <div class="inner-cell position-center"><p>99</p></div>
+                                                <div class="inner-cell position-center"><p>11.131</p></div>
+                                                <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                                <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                                <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                                <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                                                <div class="nested-rows">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row"  data-parent-id="0" data-id="6" data-depth="0">
                 <div class="hamburger">
                     <input class="checkbox" type="checkbox"/>
                     <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
@@ -190,6 +276,49 @@
                 <div class="inner-cell position-center"><p>12.13.2025</p></div>
                 <div class="inner-cell position-center"><p>12.13.2025</p></div>
                 <div class="nested-rows">
+                    <div class="row"  data-parent-id="6" data-id="7" data-depth="1">
+                        <div class="hamburger">
+                            <input class="checkbox" type="checkbox"/>
+                            <svg fill="none" viewBox="0 0 50 50" height="15" width="15">
+                                <path
+                                        class="lineTop line"
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 11L44 11"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 24H43"
+                                        class="lineMid line"
+                                ></path>
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-width="4"
+                                        stroke="black"
+                                        d="M6 37H43"
+                                        class="lineBottom line"
+                                ></path>
+                            </svg>
+                        </div>
+                        <div class="inner-cell"><p>ЭТО ВЛОЖЕННАЯ СТРОКА ВО ВЛОЖЕННОЙ СТРОКЕ ВО ВЛОЖЕННОЙ СТРОКЕ В СТРОКЕ
+                                РОДИТЕЛЕ ЕЙ ПО КАФУ КАФОВАТЬ И КАФОВА СУЩЕСТВОВАТЬ
+                            </p></div>
+                        <div class="inner-cell"><p>Самое обыкновенное ДСЕ</div>
+                        <div class="inner-cell position-center"><p>Узел такой-то ПЛМ</p></div>
+                        <div class="inner-cell position-center"><p>Там бля он бля вон бля он бля</p></div>
+                        <div class="inner-cell position-center"><p>100</p></div>
+                        <div class="inner-cell position-center"><p>99</p></div>
+                        <div class="inner-cell position-center"><p>11.131</p></div>
+                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                        <div class="inner-cell position-center"><p>12.13.2025</p></div>
+                        <div class="nested-rows">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

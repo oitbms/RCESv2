@@ -1,3 +1,108 @@
+let depthMap = null;
+$(document).ready(function () {
+    sessionStorage.setItem('depth', '0');
+    sessionStorage.removeItem('depthMap');
+
+    depthMap = (() => {
+        const map = new Map(JSON.parse(sessionStorage.getItem('depthMap') || '[]'));
+        const save = () => sessionStorage.setItem('depthMap', JSON.stringify([...map]));
+        const findGlobalMax = () => {
+            let maxDepth = 0;
+            let idMaxDepth = null;
+
+            map.forEach((value, id) => {
+                if (value > maxDepth) {
+                    maxDepth = value;
+                    idMaxDepth = id;
+                }
+            });
+
+            return {maxDepth, idMaxDepth};
+        };
+
+        let {maxDepth, idMaxDepth} = findGlobalMax();
+
+        return {
+            every: (callback) => Array.from(map.values()).every(callback), // проверки на есть удовлетворение условию всех элементов
+            add: (id, depth) => {
+                map.set(id, depth);
+                save();
+
+                if (depth > maxDepth) {
+                    maxDepth = depth;
+                    idMaxDepth = id;
+                }
+
+            },
+            del: (id) => {
+                const wasMaxId = id === idMaxDepth;
+
+                map.delete(id);
+                save();
+
+                // Если удалили элемент с globalMax — пересчитываем
+                if (wasMaxId) {
+                    ({maxDepth, idMaxDepth} = findGlobalMax());
+                }
+            },
+            get: (id) => map.get(id),
+            globalMax: () => ({maxDepth, idMaxDepth}),
+        };
+    })();
+});
+
+// Обработчик раскрытия и закрытия узла
+$(document).on('click', '.hamburger', async function () {
+    const checkbox = this.querySelector('.checkbox');
+    const $row = $(this).closest('.row');
+    const $nestedRow = $row.children('.nested-rows');
+    const $nestedRows = $row.find('.nested-rows:has(*)');
+
+    const rowDepth = $nestedRow.children('.row').data('depth'); // Глубина вложенной строки
+    const rowId = $nestedRow.children('.row').data('id');
+    const parentId = $row.data('id');
+
+    const {maxDepth: maxDepth, idMaxDepth: currentIdMaxDepth} = depthMap.globalMax();
+
+    let currentExtraWidth = parseFloat($(':root').css('--extra-width'));
+
+    if ($nestedRow.length === 0 || $nestedRow.html().trim() === '') {
+        checkbox.checked = !checkbox.checked;
+        return;
+    }
+
+
+    if (!depthMap.get(rowId)) { // если в мапе нет такого ключа => checked иначе !checked
+        if (rowDepth > maxDepth) {
+            currentExtraWidth += +1
+        }
+        depthMap.add(rowId, rowDepth);
+    } else {
+        $('.row[data-id="' + parentId + '"]').find('.row').map((i, e) => $(e).data('id')).get()
+            .forEach(id => depthMap.del(id)); // Удаление всех потомков
+        const currentMaxIsMax = $row.find(`.row[data-id="${currentIdMaxDepth}"]`).length > 0 &&
+            depthMap.every(value => value < rowDepth);
+        const {maxDepth: newMaxDepth, idMaxDepth: newIdMaxDepth} = depthMap.globalMax();
+        if (rowDepth > newMaxDepth || currentMaxIsMax) {
+            currentExtraWidth -= 1;
+        }
+    }
+
+    // Обработка вложенных строки
+    $nestedRows.each(function () {
+        const $nestedCheckbox = $(this).children('.row').children('.hamburger').find('.checkbox');
+        if ($nestedCheckbox.prop('checked')) {
+            currentExtraWidth = checkbox.checked ? currentExtraWidth + 1 : currentExtraWidth - 1; // если открываем узел тогда +1rem за каждый открытый узел иначе -1rem
+        }
+    });
+
+    setTimeout(function () {
+        $(':root').css('--extra-width', currentExtraWidth + 'rem');
+    }, 100);
+
+    $nestedRow.slideToggle();
+});
+
 // Обработчик открытия модального окна
 $(document).on('click', '.openModal', async function () {
     const primarilyEndpoint = $(this).data('primarilyendpoint');
@@ -92,36 +197,6 @@ $(document).on('click', '.openModal', async function () {
     });
 
     modal.modal('show');
-});
-
-// Обработчик раскрытия и закрытия узла
-$(document).on('click', '.hamburger', async function () {
-    const checkbox = this.querySelector('.checkbox');
-    const $row = $(this).closest('.row');
-    const $nestedRow = $row.children('.nested-rows');
-    const $nestedRows = $row.find('.nested-rows:has(*)');
-
-    let currentExtraWidth = parseFloat($(':root').css('--extra-width'));
-
-    if ($nestedRow.length === 0 || $nestedRow.html().trim() === '') {
-        checkbox.checked = !checkbox.checked;
-    } else {
-        $nestedRow.slideToggle();
-
-        const widthChange = checkbox.checked ? +1 : -1;
-        currentExtraWidth += widthChange;
-
-        $(':root').css('--extra-width', currentExtraWidth + 'rem');
-
-        // Вложенные строки
-        $nestedRows.each(function () {
-            const $nestedCheckbox = $(this).children('.row').find('.hamburger .checkbox');
-            if ($nestedCheckbox.checked) {
-                currentExtraWidth = checkbox.checked ? currentExtraWidth + widthChange : currentExtraWidth - widthChange;
-                $(':root').css('--extra-width', currentExtraWidth + 'rem');
-            }
-        });
-    }
 });
 
 async function createRow(item, type, parentId = 0, hasChild) {
