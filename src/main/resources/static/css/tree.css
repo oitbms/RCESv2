@@ -9,7 +9,7 @@
     --col3-widht: 21.5625rem;
     --col4-widht: 15.9375rem;
     --col5-widht: 6.25rem;
-    --col6-widht: 6.25rem;
+    --col6-widht: 7.25rem;
     --col7-widht: 10.625rem;
     --col8-widht: 9.6875rem;
     --col9-widht: 9.6875rem;
@@ -17,213 +17,142 @@
     --col11-widht: 9.6875rem;
 }
 
-body {
-    height: 100%;
-    font-family: 'Helvetica', sans-serif;
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 }
 
-p {
-    margin: 0;
-    padding-left: var(--extra-width);
-    transition: padding-left 0.4s ease;
+.report-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 header {
-    top: 0;
-    position: fixed;
-    height: 4rem;
-    min-width: 100%;
-    z-index: 100;
-    border-radius: 0.2rem;
+    height: 5vh;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
 }
 
 .table {
-    margin-top: 4.1rem;
-    background-color: #ffffff;
-    width: max-content;
-    height: max-content;
-}
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    width: fit-content;
 
-.table-content {
-    position: relative;
-
-    margin-left: var(--margin-table);
-    transition: margin-left 0.4s ease;
-
-    border: 0.5px #f1f0f0 solid;
-    border-top: none;
-    border-top-left-radius: 0.3rem;
-    border-top-right-radius: 0.3rem;
+    font-size: 14px;
 }
 
 .table-header {
-    position: sticky;
-    z-index: 100;
-    top: 4rem;
-    height: 3rem;
-    width: 100%;
-    display: grid;
-    grid-template-columns:
-            calc(calc(var(--col1-widht) + var(--hb-widht)) + var(--extra-width))
-            var(--col2-widht)
-            var(--col3-widht)
-            var(--col4-widht)
-            var(--col5-widht)
-            var(--col6-widht)
-            var(--col7-widht)
-            var(--col8-widht)
-            var(--col9-widht)
-            var(--col10-widht)
-            var(--col11-widht);
-    place-items: center;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
 
-    /* Что б цвет фона div не выходил за закругленные края */
-    border-top-left-radius: 0.3rem;
-    border-top-right-radius: 0.3rem;
-
-    & div {
-        background-color: #f8f8f8;
-        border-top-left-radius: 0.3rem;
-        border-top-right-radius: 0.3rem;
-
-        border: 0.5px #f1f0f0 solid;
-        width: 100%;
-        height: 100%;
+    & .table-header-item {
         display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 5px 10px 5px 15px;
+        border-top: 1px solid #e5e5e5;
+        background-color: #f9f9f9;
+
+        &:hover {
+            background-color: #f4f4f4;
+        }
     }
-    transition: grid-template-columns 0.5s ease;
 }
 
-.table-body {
-    margin-top: 1rem; /* 1 строка почему то заезжает внутрь хедера */
-    font-size: 0.84375rem;
-    position: relative;
-    /* overflow только справа */
-    clip-path: inset(0 0 0 -100px);
+.table-rows {
+    display: flex;
+    flex-direction: column;
 
-    & .row {
-        display: grid;
-        margin: 0;
-        padding: 0;
-        grid-auto-rows: max-content;
-        grid-template-columns:
-              var(--hb-widht)
-              var(--col1-widht)
-              var(--col2-widht)
-              var(--col3-widht)
-              var(--col4-widht)
-              var(--col5-widht)
-              var(--col6-widht)
-              var(--col7-widht)
-              var(--col8-widht)
-              var(--col9-widht)
-              var(--col10-widht)
-              1fr; /* последняя колонка растягивается до конца экрана */
-        grid-auto-columns: max-content;
+    & .table-rows-items {
+        display: flex;
+        flex-direction: column;
 
-        & .nested-rows {
-            grid-column: 1 / -1;
-            background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
-            padding: 0 0 0 var(--padding-width); /* хз почему и без явного указания padding по бокам 0.75 rem а так будет по 1rem минимум*/
-            display: none;
+        & .row {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            max-height: 40px;
 
-            & .row {
-                display: grid;
-                grid-template-columns:
-                      var(--hb-widht)
-                      var(--col1-widht)
-                      var(--col2-widht)
-                      var(--col3-widht)
-                      var(--col4-widht)
-                      var(--col5-widht)
-                      var(--col6-widht)
-                      var(--col7-widht)
-                      var(--col8-widht)
-                      var(--col9-widht)
-                      var(--col10-widht)
-                      1fr; /* последняя колонка растягивается до конца экрана */
-                border-top: 0.5px #e0e0e0 solid;
-                background: transparent;
+            & .row-item {
+                position: relative;
+                padding: 5px 10px 5px 15px;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    border: .6px solid #e5e5e5;
+                    border-radius: 0.2rem;
+                    border-left: none;
+                    pointer-events: none;
+                }
+            }
+
+            &:hover {
+                background-color: #f5f5f5;
+                transition: background-color 0.4s;
             }
         }
 
-        .cell, .inner-cell {
-            background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
-            color: #333;
-            display: flex;
-            padding: 0.8rem 0;
-            align-items: center;
-        }
+        & .inner-rows {
+            display: none;
 
-        & .inner-cell {
-            background: linear-gradient(120deg, #fdfdfd 0%, #f7f7f7 100%);
-        }
-
-        & .position-center {
-            align-items: center;
-            justify-content: center;
         }
 
     }
-}
 
+}
 
 .hamburger {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding: 0;
-}
-
-.hamburger .checkbox {
     position: absolute;
-    opacity: 0;
-    height: 100%;
-    width: 100%;
+    z-index: 10;
+    top: 0;
+    left: 0;
     cursor: pointer;
 }
 
+.hamburger input {
+    display: none;
+}
+
+.hamburger svg {
+    height: 1.5rem;
+    transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .line {
-    transition: 0.5s;
-    stroke-width: 6px;
+    fill: none;
     stroke: black;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+    transition: stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.lineTop {
-    stroke-dasharray: 40 40;
-    stroke-dashoffset: 25;
+.line-top-bottom {
+    stroke-dasharray: 12 63;
 }
 
-.lineBottom {
-    stroke-dasharray: 40 40;
-    stroke-dashoffset: 60;
+.hamburger input:checked + svg {
+    transform: rotate(-45deg);
 }
 
-.lineMid {
-    stroke-dasharray: 40 40;
-}
-
-.hamburger .checkbox:checked + svg .line {
-    stroke: crimson;
-}
-
-.hamburger .checkbox:checked + svg .lineTop {
-    stroke-dashoffset: 0;
-    transform-origin: left;
-    transform: rotateZ(45deg) translate(-7px, -5px);
-}
-
-.hamburger .checkbox:checked + svg .lineMid {
-    stroke-dashoffset: 40;
-}
-
-.hamburger .checkbox:checked + svg .lineBottom {
-    stroke-dashoffset: 0;
-    transform-origin: left;
-    transform: rotateZ(-45deg) translate(-5px, 5px);
+.hamburger input:checked + svg .line-top-bottom {
+    stroke-dasharray: 20 300;
+    stroke-dashoffset: -32.42;
 }
