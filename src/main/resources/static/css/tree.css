@@ -111,6 +111,10 @@ main {
         & .inner-rows {
             display: none;
 
+                & .row .row-item:first-of-type p {
+                    padding-left: var(--extra-width);
+                }
+
         }
 
     }

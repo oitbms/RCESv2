@@ -63,7 +63,7 @@
                                         <path class="line" d="M7 16 27 16"></path>
                                     </svg>
                                 </label>
-                                <div class="row-item" style="width: 29.625rem; padding-left: 1.5rem">СТРОКА КАКАЯ_ТО №1
+                                <div cl ass="row-item" style="width: 29.625rem; padding-left: 1.5rem">СТРОКА КАКАЯ_ТО №1
                                     #231314
                                     ЗАЛУПА КОНСКАЯ МАТЕРИАЛЬНАЯ
                                 </div>
@@ -92,11 +92,11 @@
                                                 <path class="line" d="M7 16 27 16"></path>
                                             </svg>
                                         </label>
-                                        <div class="row-item" style="width: 29.625rem; padding-left: 1.5rem">СТРОКА КАКАЯ_ТО №1
-                                            #231314
-                                            ЗАЛУПА КОНСКАЯ МАТЕРИАЛЬНАЯ
+                                        <div class="row-item" style="width: 29.625rem; padding-left: 1.5rem"><p>СТРОКА КАКАЯ_ТО №1
+                                                #231314
+                                                ЗАЛУПА КОНСКАЯ МАТЕРИАЛЬНАЯ</p>
                                         </div>
-                                        <div class="row-item" style="width: 28.125rem;">00000000206643 #3⁣ КСА1180 ИД-200.01
+                                        <div class="row-item" style="width: 28.125rem;">00000000206643 #3, КСА1180 ИД-200.01
                                             Секция АВО
                                             газа
                                         </div>

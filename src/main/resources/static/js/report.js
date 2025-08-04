@@ -1,14 +1,14 @@
 // map с открытыми узлами
 let depthMap = null;
 $(document).ready(function () {
-    sessionStorage.setItem('depth', '0');
+    sessionStorage.setItem('depth', '-1');
     sessionStorage.removeItem('depthMap');
 
     depthMap = (() => {
         const map = new Map(JSON.parse(sessionStorage.getItem('depthMap') || '[]'));
         const save = () => sessionStorage.setItem('depthMap', JSON.stringify([...map]));
         const findGlobalMax = () => {
-            let maxDepth = 0;
+            let maxDepth = -1;
             let idMaxDepth = null;
 
             map.forEach((value, id) => {
@@ -72,11 +72,8 @@ $(document).on('click', '.hamburger', async function (e) {
                 currentExtraWidth = currentExtraWidth + 1;
                 depthMap.add(rowId, rowDepth)
 
-                //Если у строки нет вложенных строк и у текущей строки checked и у родителя тоже checked
-            } else if (mainCheckboxChecked &&
-                ($(row).closest('.table-rows-items').children('.inner-rows').length === 0 || $(row).closest('.table-rows-items').children('.inner-rows').html().trim() === '')
-                && $(parentRow).find('input[type="checkbox"]').prop('checked')) {
-                depthMap.add($(this).data('id'), $(this).data('level'))
+            } else {
+                depthMap.del(rowId);
             }
         }
     }
@@ -98,16 +95,16 @@ $(document).on('click', '.hamburger', async function (e) {
         return;
     }
 
-    if (!depthMap.get(rowId)) {
+    if (!depthMap.get(currentId)) {
         if (currentLevel > maxDepth) {
             currentExtraWidth += +1
         }
-        depthMap.add(rowId, rowDepth);
+        depthMap.add(currentId, currentLevel);
     } else {
-        $('.row[data-id="' + parentId + '"]').find('.row').map((i, e) => $(e).data('id')).get()
+        $('.row[data-id="' + currentParentId + '"]').find('.row').map((i, e) => $(e).data('id')).get()
             .forEach(id => depthMap.del(id));
-        const currentMaxIsMax = $row.find(`.row[data-id="${currentIdMaxDepth}"]`).length > 0 &&
-            depthMap.every(value => value < rowDepth);
+        const currentMaxIsMax = $currentRow.find(`.row[data-id="${currentIdMaxDepth}"]`).length > 0 &&
+            depthMap.every(value => value < currentParentId);
         const {maxDepth: newMaxDepth, idMaxDepth: newIdMaxDepth} = depthMap.globalMax();
         if (currentLevel > newMaxDepth || currentMaxIsMax) {
             currentExtraWidth -= 1;
