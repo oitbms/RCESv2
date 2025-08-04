@@ -75,7 +75,7 @@ public class Requests implements Cloneable {
     @DisplayName("Кол-во деталей к контролю")
     private Integer qty;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
     @Column(name = "inconsistency")
     @Enumerated(EnumType.STRING)

@@ -72,7 +72,7 @@ public class SGI implements Cloneable {
     @DisplayName("Планируемая дата")
     private LocalDate planDate;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @DisplayName("Факт выполнения")
     private List<FactExecutionSGI> executions = new ArrayList<>();
 
@@ -88,7 +88,7 @@ public class SGI implements Cloneable {
     @DisplayName("Комментарий")
     private String comment;
 
-    @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @DisplayName("Прикрепленные фото")
     private List<Images> images = new ArrayList<>();
 
@@ -96,7 +96,7 @@ public class SGI implements Cloneable {
     @DisplayName("Согласовано")
     private Boolean agreed;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<SgiLog> log = new ArrayList<>();
 
     public UUID getId() {
