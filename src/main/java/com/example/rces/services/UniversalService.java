@@ -42,6 +42,12 @@ public class UniversalService {
         repository.delete(entity);
     }
 
+    @Transactional
+    public <T> void deleteById(Class<T> entityClass, Object entityId) {
+        T entity = repository.findById(entityClass, entityId);
+        repository.delete(entity);
+    }
+
     public <T> List<T> findAll(Class<T> entityClass) {
         return repository.findAll(entityClass);
     }

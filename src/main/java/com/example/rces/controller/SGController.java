@@ -163,14 +163,7 @@ public class SGController {
 
     @DeleteMapping("/delete-fact")
     public ResponseEntity<Void> deleteFactSGI(@RequestParam("id") UUID id) {
-        FactExecutionSGI factExecutionSGI = service.findById(FactExecutionSGI.class, id);
-        service.delete(factExecutionSGI);
-        SGI sgi = factExecutionSGI.getSgi();
-        if (sgi.getExecutions().isEmpty()) {
-            sgi.setAgreed(false);
-        }
-        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-        service.save(sgi);
+        service.deleteById(FactExecutionSGI.class, id);
         return ResponseEntity.ok().build();
     }
 

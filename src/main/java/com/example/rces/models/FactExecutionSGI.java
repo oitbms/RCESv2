@@ -28,7 +28,7 @@ public class FactExecutionSGI {
     @Column(name = "report", length = 1000)
     private String report;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Images> images = new ArrayList<>();
 
     public UUID getId() {

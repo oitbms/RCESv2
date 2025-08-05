@@ -29,7 +29,7 @@ public class UniversalRepository {
     private final EntityManager entityManager;
 
     @Autowired
-    public UniversalRepository(@Qualifier("primaryEntityManager")EntityManager entityManager) {
+    public UniversalRepository(@Qualifier("primaryEntityManager") EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -87,8 +87,22 @@ public class UniversalRepository {
     }
 
     public <T> void delete(T entity) {
+        if (entity instanceof FactExecutionSGI factExecutionSGI) {
+            entityManager.createNativeQuery(
+                            "UPDATE fact_execution_sgi SET sgi_id = NULL WHERE id = :id")
+                    .setParameter("id", entityManager.getEntityManagerFactory()
+                            .getPersistenceUnitUtil()
+                            .getIdentifier(entity))
+                    .executeUpdate();
+            SGI sgi = factExecutionSGI.getSgi();
+            sgi.setColor(SGI.ColorSGI.NONE);
+            sgi.setAgreed(false);
+            save(sgi);
+        }
         entityManager.remove(entity);
+        entityManager.flush();
     }
+
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         try {
@@ -174,7 +188,7 @@ public class UniversalRepository {
             employee.setMlmNode(MlmNode.valueOf(mlmNodeName));
             employee.setRole(role);
             employee.setActive(status);
-            employee.setChatId(chatID!=-1?chatID:employee.getChatId());
+            employee.setChatId(chatID != -1 ? chatID : employee.getChatId());
         } else {
             employee = new Employee();
             employee.setName(username);
@@ -183,7 +197,7 @@ public class UniversalRepository {
             employee.setActive(status);
             employee.setMlmNode(MlmNode.valueOf(mlmNode));
             employee.setPassword(password);
-            employee.setChatId(chatID!=-1?chatID:null);
+           employee.setChatId(chatID != -1 ? chatID : null);
         }
         return save(employee);
     }

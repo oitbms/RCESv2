@@ -72,7 +72,7 @@ public class SGI implements Cloneable {
     @DisplayName("Планируемая дата")
     private LocalDate planDate;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @DisplayName("Факт выполнения")
     private List<FactExecutionSGI> executions = new ArrayList<>();
 
