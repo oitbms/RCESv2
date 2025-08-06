@@ -2,7 +2,6 @@ package com.example.rces.spm.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import org.hibernate.annotations.Subselect;
 import org.springframework.data.annotation.Immutable;
 

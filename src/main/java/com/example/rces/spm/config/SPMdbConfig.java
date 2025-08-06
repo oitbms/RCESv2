@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -27,18 +28,26 @@ import java.util.Map;
 )
 public class SPMdbConfig {
 
+    @Bean(name = "spmEntityManagerFactory")
+    @Primary
+    public EntityManagerFactory spmEntityManagerFactory(
+            @Qualifier("spmEntityManager") LocalContainerEntityManagerFactoryBean factoryBean) {
+        return factoryBean.getObject();
+    }
+
     @Bean
     @ConfigurationProperties("app.datasource.spm")
     public DataSourceProperties spmDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-
     @Bean
     @ConfigurationProperties("app.datasource.spm.configuration")
     public DataSource spmDataSource() {
-        return spmDataSourceProperties().initializeDataSourceBuilder()
-                .type(HikariDataSource.class).build();
+        return spmDataSourceProperties()
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Bean(name = "spmEntityManager")

@@ -35,7 +35,7 @@ public abstract class PrimaryDemand {
     @JoinColumn(name = "mlm_node_id")
     private MlmNode mlmNode;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private SPMCustomerOrder customerorder;
 
     @Column(name="demand_type")

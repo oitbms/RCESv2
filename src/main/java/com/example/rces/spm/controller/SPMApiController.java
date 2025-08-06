@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/spm-api")
@@ -51,24 +52,27 @@ public class SPMApiController {
     @GetMapping("/getPrimaryDemandForCustomerOrderId")
     @ResponseBody
     public ResponseEntity<List<PrimaryDemandPayload>> getPrimarydemandForCustomerOrderId(Long customerOrderId) {
+        List<PrimaryDemand> primaryDemandList = service.executeQuery(
+                    "select e.id from dm_primarydemand e " +
+                          "where e.customerorder_id = :id", Long.class,
+                "id", customerOrderId, true).stream()
+                .map(pdId -> service.findById(PrimaryDemand.class, pdId)).toList();
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(
-                        service.findAllByField(PrimaryDemand.class, "customerorder",
-                                        service.findById(SPMCustomerOrder.class, customerOrderId),null)
-                                .stream()
-                                .sorted(Comparator.comparing(pd -> {
-                                    if (pd instanceof CustomerOrderLine customerOrderLine) {
-                                        return customerOrderLine.getNumber();
-                                    } else if (pd instanceof PurchaseOrderLine purchaseOrderLine) {
-                                        return purchaseOrderLine.getNumber();
-                                    } else {
-                                        return Integer.parseInt(((JobOrder) pd).strCode);
-                                    }
-                                }))
-                                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
-                                        new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd)
+                .body(primaryDemandList
+                        .stream()
+                        .sorted(Comparator.comparing(pd -> {
+                            if (pd instanceof CustomerOrderLine customerOrderLine) {
+                                return customerOrderLine.getNumber();
+                            } else if (pd instanceof PurchaseOrderLine purchaseOrderLine) {
+                                return purchaseOrderLine.getNumber();
+                            } else {
+                                return Integer.parseInt(((JobOrder) pd).strCode);
+                            }
+                        }))
+                        .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
+                                new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd)
                                 )))
-                                .toList());
+                        .toList());
     }
 
 //    @GetMapping("/getMainJobComponentForPrimaryDemandId")

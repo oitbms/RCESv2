@@ -16,8 +16,7 @@ public class ShiftTaskLine {
     @Id
     private Long id;
 
-    @Column(
-            name = "created_at")
+    @Column(name = "created_at")
     private LocalDateTime createDate;
 
     @ManyToOne(fetch=FetchType.EAGER)

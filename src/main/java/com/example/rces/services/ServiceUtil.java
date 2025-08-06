@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ServiceUtil {
@@ -404,4 +405,14 @@ public class ServiceUtil {
             return (value != null && !value.toString().isBlank()) ? value.toString() : "не назначено";
         }
     }
+
+    public static void validateNativeQuery(String query) {
+        Pattern dangerousPattern = Pattern.compile(
+                "(?i)(\\b(DROP|DELETE|TRUNCATE|INSERT|UPDATE|ALTER|CREATE|EXEC|UNION|--|;|\\/\\*|\\*\\/)\\b)"
+        );
+        if (dangerousPattern.matcher(query).find()) {
+            throw new IllegalArgumentException("Потенциальная sql-инъекция остановлена: " + query);
+        }
+    }
+
 }

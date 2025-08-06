@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(transactionManager = "spmTransactionManager")
@@ -56,11 +58,23 @@ public class SPMService {
         return repository.findAll(entityClass);
     }
 
-    public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue, String ... orderByField) {
-        return repository.findByField(entityClass, fieldName, fieldValue, orderByField);
+    public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
+        return repository.findByField(entityClass, fieldName, fieldValue);
+    }
+
+    public <T> List<T> executeQuery(String query, Class<T> entityClass, Boolean isNative) {
+        return repository.executeQuery(query, entityClass, Collections.emptyMap(), isNative);
+    }
+
+    public <T> List<T> executeQuery(String query, Class<T> entityClass, String paramName, Object paramValue, Boolean isNative) {
+        return repository.executeQuery(query, entityClass, Map.of(paramName, paramValue), isNative);
+    }
+
+    public <T> List<T> executeQuery(String query, Class<T> entityClass, Map<String, Object> params, Boolean isNative) {
+        return repository.executeQuery(query, entityClass, params, isNative);
     }
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
-        return findAllByField(entityClass, fieldName, fieldValue, null).get(0);
+        return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 }
