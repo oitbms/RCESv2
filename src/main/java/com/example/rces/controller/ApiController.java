@@ -142,12 +142,12 @@ public class ApiController {
     }
 
     @GetMapping("/print")
-    public ResponseEntity<Resource> printManySgi(@RequestParam List<UUID> ids) {
+    public ResponseEntity<Resource> printManySgi(@RequestParam(required = false) List<UUID> ids, @RequestParam(required = false) String department) {
         try {
-            List<SGI> sgiList = service.getSgiList(ids).stream().sorted(Comparator.comparing(SGI::getRequestNumber)).collect(Collectors.toList());
+            List<SGI> sgiList = service.getSgiList(ids, department).stream().sorted(Comparator.comparing(SGI::getRequestNumber)).collect(Collectors.toList());
             ByteArrayResource resource = service.generateManyWordFile(sgiList);
 
-            String filename = "Мероприятия_" + formatedDate(LocalDate.now()) + ".docx";
+            String filename = (department!=null ? "Не_выполненные_мероприятия_" : "Мероприятия_") + formatedDate(LocalDate.now()) + ".docx";
             String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
                     .replace("+", "%20");
 

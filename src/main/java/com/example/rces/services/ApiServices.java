@@ -1,10 +1,8 @@
 package com.example.rces.services;
 
-import com.example.rces.configuration.AppProperties;
 import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Inconsistency;
-import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.example.rces.services.telegram.MessageType;
 import com.example.rces.services.telegram.TelegramService;
@@ -56,7 +54,7 @@ public class ApiServices {
         FactExecutionSGI factExecutionSGI = service.findById(FactExecutionSGI.class, param);
         if (request != null) {
             images = service.findAllByField(Images.class, "request", request);
-        } else if (factExecutionSGI!=null){
+        } else if (factExecutionSGI != null) {
             images = service.findAllByField(Images.class, "sgi", factExecutionSGI);
         } else {
             SGI sgi = service.findById(SGI.class, param);
@@ -68,7 +66,7 @@ public class ApiServices {
                         image.getId(),
                         image.getName(),
                         image.getBase64Data(),
-                        request != null ? image.getRequest().getId() : image.getSgi()!=null ? image.getSgi().getId() : image.getSgim().getId()
+                        request != null ? image.getRequest().getId() : image.getSgi() != null ? image.getSgi().getId() : image.getSgim().getId()
                 ))
                 .collect(Collectors.toList());
     }
@@ -179,7 +177,7 @@ public class ApiServices {
             throw new RuntimeException(e);
         }
 
-        if (request.getInconsistency().isEmpty()){
+        if (request.getInconsistency().isEmpty()) {
             if (status == null) {
                 if (request.getStatus() == Status.New) {
                     request.setStatus(Status.InWork);
@@ -228,8 +226,16 @@ public class ApiServices {
         return service.findById(SGI.class, id);
     }
 
-    public List<SGI> getSgiList(List<UUID> ids) {
-        return service.findAllByField(SGI.class, "id", ids);
+    public List<SGI> getSgiList(List<UUID> ids, String department) {
+        if (department!=null) {
+            return service.findAllByField(SGI.class, "department", Arrays.stream(SGI.Department.values())
+                    .filter(d -> d.getName().equals(department))
+                    .findFirst()
+                    .map(SGI.Department::name)
+                    .orElse(null)).stream().filter(sgi -> !sgi.getAgreed()).collect(Collectors.toList());
+        } else {
+            return service.findAllByField(SGI.class, "id", ids);
+        }
     }
 
     public ByteArrayResource generateManyWordFile(List<SGI> sgiList) throws Exception {

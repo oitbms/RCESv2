@@ -259,6 +259,29 @@
                 <span class="btn-text">Меню</span>
             </button>
 
+            <div class="additional-btn-container">
+                <button type="button" class="additional-btn">
+                    <i class="bi bi-three-dots-vertical"></i>
+                    <span class="btn-text">Печать отчета</span>
+                </button>
+
+                <!-- Выпадающее меню с 4 строками -->
+                <div class="additional-menu">
+                    <div class="additional-menu-item" data-department="ОГМ">
+                        <i class="bi bi-printer"></i> ОГМ
+                    </div>
+                    <div class="additional-menu-item"  data-department="ОРС">
+                        <i class="bi bi-printer"></i> ОРС
+                    </div>
+                    <div class="additional-menu-item"  data-department="ОТиПК">
+                        <i class="bi bi-printer"></i> ОТиПК
+                    </div>
+                    <div class="additional-menu-item"  data-department="ОГЭ">
+                        <i class="bi bi-printer"></i> ОГЭ
+                    </div>
+                </div>
+            </div>
+
             <!-- Мобильные кнопки -->
             <div class="mobile-actions d-flex d-md-none gap-2">
                 <button type="button"
@@ -283,7 +306,6 @@
                     <i class="bi bi-list"></i>
                 </button>
             </div>
-
         </div>
     </div>
 

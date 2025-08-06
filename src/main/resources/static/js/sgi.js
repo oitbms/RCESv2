@@ -740,3 +740,9 @@ document.querySelectorAll('.sgiNumber').forEach(function (td) {
     td.addEventListener('mouseup', cancelHold);
     td.addEventListener('mouseleave', cancelHold);
 });
+
+//Обработчик по нажатию на печать отчета
+$('.additional-menu-item').on('click', function() {
+    const department = $(this).data('department');
+    window.open(`/api/print?department=${department}`);
+});

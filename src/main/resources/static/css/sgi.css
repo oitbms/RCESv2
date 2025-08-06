@@ -711,22 +711,6 @@ tr:hover {
     }
 }
 
-/* Основные стили для sticky-футера */
-.sticky-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-top: 1px solid #e9ecef;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
 /* Стили для пагинации */
 .pagination-modern {
     display: flex;
@@ -876,4 +860,97 @@ field-group {
     --bs-table-striped-bg: #ff3333; /* Для полосатой таблицы */
     --bs-table-hover-bg: #ff6666;   /* При наведении */
     --bs-table-color: white;        /* Цвет текста (лучше белый для контраста) */
+}
+
+.additional-btn-container {
+    position: relative;
+    display: flex;
+}
+
+.additional-btn {
+    display: none; /* По умолчанию скрыта */
+}
+
+.additional-menu {
+    position: fixed;
+    bottom: 60px;
+    width: 162px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 8px 0;
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.additional-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.additional-menu-item:hover {
+    background: #f8f9fa;
+}
+
+.additional-menu-item i {
+    margin-right: 8px;
+    width: 18px;
+    text-align: center;
+}
+
+/* Показываем кнопку и меню только на десктопах */
+@media (min-width: 768px) {
+    .additional-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        min-height: 42px;
+        border: 2px solid #0dcaf0;
+        background: transparent;
+        color: #0dcaf0;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .additional-btn:hover {
+        background: #0dcaf0;
+        color: white;
+    }
+
+    /* Главное исправление - показываем меню при наведении */
+    .additional-btn-container:hover .additional-menu {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Убедимся, что ничего не перекрывает меню */
+.button-group {
+    position: static;
+}
+
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 1000;
 }
