@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bootstrap Treeview Пример</title>
-    <link rel="stylesheet" href="tree.css">
+    <link rel="stylesheet" href="/css/tree.css">
 </head>
 <body>
 <div class="report-container">
@@ -58,7 +58,7 @@
                 </div>
             </div>
             <div class="table-rows">
-                <div class="table-rows-items">
+                <div class="table-rows-items" style="display: none">
                     <div class="row" data-parent-id="#" data-id="1" data-level="0">
                         <label class="hamburger">
                             <input type="checkbox">
@@ -79,8 +79,8 @@
                         <div class="row-item" style="width: 25.125rem;" data-name="item">00000000206643 #3⁣ КСА1180 ИД-200.01 Секция АВО
                             газа
                         </div>
-                        <div class="row-item" style="width: 17.5625rem;" data-name="mlm-node">Цех по получению пиздюлей с газом</div>
-                        <div class="row-item" style="width: 15.9375rem;" data-name="description">Покрасил подводку - она утонула</div>
+                        <div class="row-item" style="width: 17.5625rem;" data-name="mlm-node"></div>
+                        <div class="row-item" style="width: 15.9375rem;" data-name="description"></div>
                         <div class="row-item" style="width: 6.25rem;" data-name="qty">52</div>
                         <div class="row-item" style="width: 7.25rem;" data-name="qty-finished">52</div>
                         <div class="row-item" style="width: 7.625rem;" data-name="resourcetime">192.192</div>
@@ -102,7 +102,7 @@
                                 </label>
                                 <div class="row-item first-element" style="width: 29.625rem; padding-left: 1.9rem;" data-name="primarydemand">
                                     <p>
-                                        СТРОКА КАКАЯ_ТО №1 #231314МАТЕРИАЛЬНАЯ ГАЗОВАЯ
+                                        00000000206643 #3⁣ КСА1180 ИД-200.01 Секция АВО газа
                                         <span class="line-container">
                                             <span class="third-line"></span>
                                         </span>
@@ -135,7 +135,7 @@
                                         </label>
                                         <div class="row-item first-element" style="width: 29.625rem; padding-left: 2.3rem;" data-name="primarydemand">
                                             <p>
-                                                СТРОКА КАКАЯ_ТО №1 #231314МАТЕРИАЛЬНАЯ ГАЗОВАЯ
+                                                00000000206643 #3⁣ КСА1180 ИД-200.01 Секция АВО газа
                                                 <span class="line-container">
                                                     <span class="third-line"></span>
                                                 </span>
@@ -222,7 +222,6 @@
         </div>
 </div></dialog>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/colresizable@1.6.0/colResizable-1.6.min.js"></script>
-<script src="report.js" defer></script>
+<script src="/js/report.js" defer></script>
 </body>
 </html>

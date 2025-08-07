@@ -28,6 +28,10 @@ header {
     height: 5vh;
 }
 
+html {
+    overflow-y: hidden;
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -36,18 +40,32 @@ main {
 }
 
 .table {
+    position: relative;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
     width: fit-content;
-    height: 100%;
-    font-size: 14px;
+    height: 95vh;
+    font-size: 0.875rem;
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        background: transparent;
+    }
 }
 
 .table-header {
+    top: 0;
     height: 40px;
     display: flex;
     flex-direction: row;
+    position: sticky;
+    z-index: 100;
 
     & .table-header-item {
         position: relative;
@@ -119,7 +137,7 @@ main {
             & .row-item {
                 position: relative;
                 padding: 5px 10px 5px 15px;
-
+                display: flex;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -137,6 +155,10 @@ main {
                     pointer-events: none;
                 }
 
+            }
+
+            & .numbers {
+                justify-content: flex-end;
             }
 
             &:hover {
@@ -197,7 +219,7 @@ main {
         }
 
         & .inner-rows {
-                 display: none;
+            display: none;
 
             & .first-element {
                 padding-left: 1.5rem;
@@ -249,10 +271,7 @@ main {
                 }
             }
         }
-
-    
     }
-
 }
 
 .hamburger {

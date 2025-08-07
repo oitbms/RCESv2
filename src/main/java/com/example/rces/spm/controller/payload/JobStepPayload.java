@@ -13,7 +13,7 @@ public record JobStepPayload(Long id, String name, String mlmNode, String descri
                 jobStep.getId(),
                 String.format("%s: %s",jobStep.getJobcomponent().getItem().getName(), jobStep.getNumber()),
                 jobStep.getMlmNode().getName(),
-                String.format("%s(%d)",jobStep.getDescription(),jobStep.getNumber()),
+                String.format("%s (%d)",jobStep.getDescription()!=null ? jobStep.getDescription() : "Нет описания захода",jobStep.getNumber()),
                 jobStep.getQtyProduction(),
                 jobStep.getQtyFinished(),
                 jobStep.getResourceTime(),
