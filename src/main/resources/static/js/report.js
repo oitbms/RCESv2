@@ -63,7 +63,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
 //Тестовые данные
 $(document).ready(async function () {
 
-    async function createRow(item, type, parentId, level, hasChildren, isLast) {
+    async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
         const hamburger = `
         <label class="hamburger">
             <input type="checkbox">
@@ -108,8 +108,8 @@ $(document).ready(async function () {
             const primaryDemand = $(`[data-id="${parentId}"] .row-item[data-name="primarydemand"] p`).text().trim();
             row = `
             <div class="table-rows-items">
-                <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" style="vertical-align: ${type==='jc' ? "super" : "sub"};
-                                                                                                                font-size: ${type==='jc' ? "0.825rem" : "0.750rem"};
+                <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" style="vertical-align: ${type === 'jc' ? "super" : "sub"};
+                                                                                                                font-size: ${type === 'jc' ? "0.825rem" : "0.750rem"};
                                                                                                                 ${type === "jc" ? " text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);" : ""}">
                     ${type === "jc" ? hasChildren ? hamburger : "" : ""}
                     <div class="row-item first-element" style="width: 29.625rem; padding-left: ${(1.5 + (level * 0.5)) + 'rem'}" data-name="primarydemand">
@@ -117,6 +117,7 @@ $(document).ready(async function () {
                             ${primaryDemand}
                             <span class="line-container ${isLast ? 'last-line' : ''}">
                                 <span class="third-line"></span>
+                                ${isLast && hasNext ? '<span class="second-line"></span>' : ''}
                             </span>
                         </p>
                     </div>
@@ -137,30 +138,30 @@ $(document).ready(async function () {
         }
     }
 
-    async function makeChildRow(parentId, level, hasChildren) {
+    async function makeChildRow(parentId, level, hasChildren, hasNext) {
         if (hasChildren) {
             const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
             for (jc of jobComponents) {
                 const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length === 0;
                 const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
-                // const isLastAndHasNextChildren = isLast &&
-                await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast);
-                await makeChildRow(jc.id, level + 1, hasChildren);
+                await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast, hasNext);
+                hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length > 0;
+                await makeChildRow(jc.id, level + 1, hasChildren, hasNext);
             }
         }
 
         const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
         for (js of jobSteps) {
             const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
-            await createRow(js, 'js', parentId, level + 1, false, isLast);
+            await createRow(js, 'js', parentId, level + 1, false, isLast, hasNext && level > 0);
         }
     }
 
-    const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '60795221'});
+    const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '73435423'});
     for (pd of primaryDemands) {
         const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id})).length > 0;
         await createRow(pd, 'pd', '#', 0, hasChildren)
-        await makeChildRow(pd.jobComponent.id, 0, hasChildren)
+        await makeChildRow(pd.jobComponent.id, 0, hasChildren, false)
     }
 
 });
