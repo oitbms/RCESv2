@@ -17,6 +17,11 @@ $(document).on('click', '.hamburger', async function (e) {
     if ($currentRow.data('level') === 0) {
         $lineContainer.slideToggle();
     }
+    if ($currentRow.data('level') > 0 && !$lineContainer.hasClass('has-children')) {
+        $lineContainer.addClass('has-children');
+    } else if ($lineContainer.has('.has-children')) {
+        $lineContainer.removeClass('has-children');
+    }
     $thirdLine.slideToggle();
     $innerRows.closest('.table-rows-items').closest('.inner-rows').slideToggle();
 });
@@ -58,7 +63,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
 //Тестовые данные
 $(document).ready(async function () {
 
-    async function createRow(item, type, parentId, level, hasChildren) {
+    async function createRow(item, type, parentId, level, hasChildren, isLast, isLastAndHasNextChildren) {
         const hamburger = `
         <label class="hamburger">
             <input type="checkbox">
@@ -101,17 +106,19 @@ $(document).ready(async function () {
         } else {
             rowsContainer = $(`[data-id="${parentId}"]`).closest('.table-rows-items').children('.inner-rows');
             const primaryDemand = $(`[data-id="${parentId}"] .row-item[data-name="primarydemand"] p`).text().trim();
+            const isLastAndHasNextChildren = isLast && rowsContainer.closest('.table-rows-items').next().length > 0;
             row = `
             <div class="table-rows-items">
                 <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" style="vertical-align: ${type==='jc' ? "super" : "sub"};
                                                                                                                 font-size: ${type==='jc' ? "0.825rem" : "0.750rem"};
                                                                                                                 ${type === "jc" ? " text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);" : ""}">
                     ${type === "jc" ? hasChildren ? hamburger : "" : ""}
-                    <div class="row-item" style="width: 29.625rem; padding-left: ${(1.5 + (level * 0.5)) + 'rem'}" data-name="primarydemand">
+                    <div class="row-item first-element" style="width: 29.625rem; padding-left: ${(1.5 + (level * 0.5)) + 'rem'}" data-name="primarydemand">
                         <p>
                             ${primaryDemand}
-                            <span class="line-container">
+                            <span class="line-container ${isLast ? 'last-line' : ''}">
                                 <span class="third-line"></span>
+                               ${isLastAndHasNextChildren ? '<span class="second-line"></span>' : ''}
                             </span>
                         </p>
                     </div>
@@ -136,16 +143,18 @@ $(document).ready(async function () {
         if (hasChildren) {
             const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
             for (jc of jobComponents) {
+                const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length === 0;
                 const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
-                await createRow(jc, 'jc', parentId, level + 1, hasChildren);
-
+                // const isLastAndHasNextChildren = isLast &&
+                await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast, );
                 await makeChildRow(jc.id, level + 1);
             }
         }
 
         const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
         for (js of jobSteps) {
-            await createRow(js, 'js', parentId, level + 1, false);
+            const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
+            await createRow(js, 'js', parentId, level + 1, false, isLast);
         }
     }
 
