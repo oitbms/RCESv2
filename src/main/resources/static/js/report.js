@@ -63,7 +63,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
 //Тестовые данные
 $(document).ready(async function () {
 
-    async function createRow(item, type, parentId, level, hasChildren, isLast, isLastAndHasNextChildren) {
+    async function createRow(item, type, parentId, level, hasChildren, isLast) {
         const hamburger = `
         <label class="hamburger">
             <input type="checkbox">
@@ -106,7 +106,6 @@ $(document).ready(async function () {
         } else {
             rowsContainer = $(`[data-id="${parentId}"]`).closest('.table-rows-items').children('.inner-rows');
             const primaryDemand = $(`[data-id="${parentId}"] .row-item[data-name="primarydemand"] p`).text().trim();
-            const isLastAndHasNextChildren = isLast && rowsContainer.closest('.table-rows-items').next().length > 0;
             row = `
             <div class="table-rows-items">
                 <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" style="vertical-align: ${type==='jc' ? "super" : "sub"};
@@ -118,7 +117,6 @@ $(document).ready(async function () {
                             ${primaryDemand}
                             <span class="line-container ${isLast ? 'last-line' : ''}">
                                 <span class="third-line"></span>
-                               ${isLastAndHasNextChildren ? '<span class="second-line"></span>' : ''}
                             </span>
                         </p>
                     </div>
@@ -146,8 +144,8 @@ $(document).ready(async function () {
                 const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length === 0;
                 const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
                 // const isLastAndHasNextChildren = isLast &&
-                await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast, );
-                await makeChildRow(jc.id, level + 1);
+                await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast);
+                await makeChildRow(jc.id, level + 1, hasChildren);
             }
         }
 

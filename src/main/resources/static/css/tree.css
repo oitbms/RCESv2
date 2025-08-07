@@ -220,7 +220,7 @@ main {
         }
 
         & .inner-rows {
-
+            display: none;
 
             & .first-element {
 
