@@ -57,7 +57,7 @@
                     <div class="table-header-resizer"></div>
                 </div>
             </div>
-            <div class="table-rows">
+            <div class="table-rows" id="table-data">
                 <div class="table-rows-items" style="display: none">
                     <div class="row" data-parent-id="#" data-id="1" data-level="0">
                         <label class="hamburger">
@@ -165,6 +165,15 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="table-footer" id="table-footer">
+                <div class="table-footer-content">
+                    <div class="count">
+                        <div class="total-count"></div>
+                        <div class="load-count"></div>
+                    </div>
+                    <div class="pagination"></div>
                 </div>
             </div>
         </div>

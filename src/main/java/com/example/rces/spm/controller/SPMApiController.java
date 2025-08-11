@@ -9,10 +9,7 @@ import com.example.rces.spm.services.SPMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -51,28 +48,35 @@ public class SPMApiController {
 
     @GetMapping("/getPrimaryDemandForCustomerOrderId")
     @ResponseBody
-    public ResponseEntity<List<PrimaryDemandPayload>> getPrimarydemandForCustomerOrderId(Long customerOrderId) {
-        List<PrimaryDemand> primaryDemandList = service.executeQuery(
-                    "select e.id from dm_primarydemand e " +
-                          "where e.customerorder_id = :id", Long.class,
-                "id", customerOrderId, true).stream()
-                .map(pdId -> service.findById(PrimaryDemand.class, pdId)).toList();
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(primaryDemandList
-                        .stream()
-                        .sorted(Comparator.comparing(pd -> {
-                            if (pd instanceof CustomerOrderLine customerOrderLine) {
-                                return customerOrderLine.getNumber();
-                            } else if (pd instanceof PurchaseOrderLine purchaseOrderLine) {
-                                return purchaseOrderLine.getNumber();
-                            } else {
-                                return Integer.parseInt(((JobOrder) pd).strCode);
-                            }
-                        }))
-                        .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
-                                new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd)
-                                )))
-                        .toList());
+    public ResponseEntity<List<PrimaryDemandPayload>> getPrimarydemandForCustomerOrderId(
+            @RequestParam Long customerOrderId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "85") int size) {
+        Long totalCount = service.getEntityManager().createQuery(
+                "select count(e.id) from PrimaryDemand e where e.customerorder.id = :id", Long.class)
+                .setParameter("id", customerOrderId).getSingleResult();
+
+        //native потому что тупорылый PostgreSQL
+        List<PrimaryDemand> primaryDemandList = service.getEntityManager()
+                .createNativeQuery("select e.id from dm_primarydemand e where e.customerorder_id = :id order by e.demand_type", Long.class)
+                .setParameter("id", customerOrderId)
+                .setFirstResult((page - 1) * size)
+                .setMaxResults(size)
+                .getResultList()
+                .stream().map(pd -> service.findById(PrimaryDemand.class, pd)).toList();
+
+        List<PrimaryDemandPayload> result = primaryDemandList
+                .stream()
+                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
+                        new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd))))
+                .toList();
+
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(totalCount))
+                .header("X-Page", String.valueOf(page))
+                .header("X-Page-Size", String.valueOf(size))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(result);
     }
 
 //    @GetMapping("/getMainJobComponentForPrimaryDemandId")

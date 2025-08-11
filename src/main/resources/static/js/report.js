@@ -1,31 +1,3 @@
-//Раскрытие вложенных строк
-$(document).on('click', '.hamburger', async function (e) {
-    if ($(e.target).is('input')) {
-        return;
-    }
-
-    const $checkbox = $(this).find('input[type="checkbox"]');
-    const $currentRow = $(this).closest('.row');
-    const $lineContainer = $currentRow.find('.line-container');
-    const $thirdLine = $lineContainer.children('.third-line');
-    const $innerRows = $currentRow.closest('.table-rows-items').children('.inner-rows')
-        .children('.table-rows-items').children('.row');
-    if ($innerRows.length === 0 || $innerRows.html().trim() === '') {
-        $checkbox.prop('checked', !$checkbox.prop('checked'))
-        return;
-    }
-    if ($currentRow.data('level') === 0) {
-        $lineContainer.slideToggle();
-    }
-    if ($currentRow.data('level') > 0 && !$lineContainer.hasClass('has-children')) {
-        $lineContainer.addClass('has-children');
-    } else if ($lineContainer.has('.has-children')) {
-        $lineContainer.removeClass('has-children');
-    }
-    $thirdLine.slideToggle();
-    $innerRows.closest('.table-rows-items').closest('.inner-rows').slideToggle();
-});
-
 //Ресайз колонок
 $('.table-header-resizer').on('mousedown', function (e) {
     e.preventDefault();
@@ -60,8 +32,59 @@ $('.table-header-resizer').on('mousedown', function (e) {
         .on('mouseup', stopResize);
 });
 
+
+let currentPage = 1;
+const itemsPerPage = 85;
 //Тестовые данные
 $(document).ready(async function () {
+    //Раскрытие вложенных строк
+    $(document).on('click', '.hamburger',  function (e) {
+        if ($(e.target).is('input')) {
+            return;
+        }
+        e.preventDefault();
+
+        const $checkbox = $(this).find('input[type="checkbox"]');
+        const $currentRow = $(this).closest('.row');
+        const $lineContainer = $currentRow.find('.line-container');
+        const $thirdLine = $lineContainer.children('.third-line');
+        const spinner = `
+            <div class="dot-spinner">
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+                <div class="dot-spinner__dot"></div>
+            </div> `;
+
+        (async () => {
+            if (!$checkbox.prop('checked') && !$currentRow.hasClass('cached')) {
+                $currentRow.children('.hamburger').addClass('none')
+                $currentRow.prepend(spinner);
+                await loadChild($currentRow);
+                $currentRow.children('.dot-spinner').remove();
+                $currentRow.children('.hamburger').removeClass('none');
+            }
+            const $innerRows = $currentRow.closest('.table-rows-items').children('.inner-rows')
+                .children('.table-rows-items').children('.row');
+
+            if ($currentRow.data('level') === 0) {
+                $lineContainer.slideToggle();
+            }
+
+            $checkbox.prop('checked', !$checkbox.prop('checked'));
+            $thirdLine.slideToggle(100);
+            if ($currentRow.data('level') > 0 && !$lineContainer.hasClass('has-children')) {
+                $lineContainer.addClass('has-children');
+            } else if ($lineContainer.has('.has-children')) {
+                $lineContainer.removeClass('has-children');
+            }
+            $innerRows.closest('.table-rows-items').closest('.inner-rows').slideToggle(1100);
+        })();
+    });
 
     async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
         const hamburger = `
@@ -79,7 +102,7 @@ $(document).ready(async function () {
             rowsContainer = $(".table-rows");
             row = `
             <div class="table-rows-items">
-                <div class="row" data-parent-id="#" data-id="${item.jobComponent.id}" data-level="0" style="font-weight: bold;">
+                <div class="row" data-parent-id="#" data-id="${item.jobComponent.id}" data-level="0" data-has-next="${String(hasNext)}" style="font-weight: bold;">
                     ${hasChildren ? hamburger : ""}
                     <div class="row-item" style="width: 29.625rem;" data-name="primarydemand">
                         <p>
@@ -138,6 +161,30 @@ $(document).ready(async function () {
         }
     }
 
+    async function loadChild(row){
+        const rowId = row.data('id');
+        const parentId = row.data('parent-id');
+        const level = row.data('level');
+        let hasNext = Boolean(row.data('has-next'));
+
+        const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: rowId});
+        for (jc of jobComponents) {
+            const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
+            const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
+            hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
+
+            await createRow(jc, 'jc', rowId, level + 1, hasChildren, isLast, hasNext);
+        }
+        const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId});
+
+        for (js of jobSteps) {
+            const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
+            await createRow(js, 'js', rowId, level + 1, false, isLast, hasNext && level > 0);
+        }
+        $(row).addClass('cached')
+    }
+
+    //Рекурсивная загрузка всех строк
     async function makeChildRow(parentId, level, hasChildren, hasNext) {
         if (hasChildren) {
             const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
@@ -157,13 +204,58 @@ $(document).ready(async function () {
         }
     }
 
-    const primaryDemands = await $.get('/spm-api/getPrimaryDemandForCustomerOrderId', {customerOrderId: '73435423'});
-    for (pd of primaryDemands) {
-        const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id})).length > 0;
-        await createRow(pd, 'pd', '#', 0, hasChildren)
-        await makeChildRow(pd.jobComponent.id, 0, hasChildren, false)
+    async function displayPage(page)    {
+        async function loadPrimaryDemands(page) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: '/spm-api/getPrimaryDemandForCustomerOrderId',
+                    type: 'GET',
+                    data: {
+                        customerOrderId: '73435423',
+                        page: page,
+                        size: itemsPerPage
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        const totalCount = parseInt(jqXHR.getResponseHeader('X-Total-Count'));
+                        resolve({
+                            data: data,
+                            total: totalCount
+                        });
+                    }
+                });
+            });
+        }
+
+        const primaryDemandsAndTotalCount = (await loadPrimaryDemands(page));
+        const primaryDemands = primaryDemandsAndTotalCount.data;
+        const totalCount = primaryDemandsAndTotalCount.total;
+        if (page === 1) {
+            $('#table-data').empty();
+            [...('Всего записей: '+totalCount)].forEach((c,i)=>setTimeout(()=>$('.total-count').append(c),90*i));
+        }
+
+        const childrenData = await Promise.all(primaryDemands.map(pd =>
+            $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id})
+        ));
+        const hasChildrenFlags = childrenData.map(data => data.length > 0);
+
+        for (let i = 0; i < primaryDemands.length; i++) {
+            await createRow(primaryDemands[i], 'pd', '#', 0, hasChildrenFlags[i]);
+        }
+        [...('Загружено записей: '+(currentPage*itemsPerPage))].forEach((c,i)=>setTimeout(()=>$('.load-count').append(c),120*i));
+
+        // for (let i = 0; i < primaryDemands.length; i++) {
+        //     await makeChildRow(primaryDemands[i].jobComponent.id, 0, hasChildrenFlags[i], false);
+        // }
+
     }
 
+    await displayPage(1);
+
+    // $('#load-more').click(() => {
+    //     currentPage++;
+    //     displayPage(currentPage);
+    // });
 });
 
 function formatDate(dateString) {
@@ -171,4 +263,3 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU');
 }
-
