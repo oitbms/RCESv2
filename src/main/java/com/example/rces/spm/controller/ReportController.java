@@ -38,13 +38,6 @@ public class ReportController {
         return "report/tree";
     }
 
-    @PostMapping
-    public String makeReport(@RequestParam(required = false) SPMCustomerOrder customerOrder) {
-
-
-        return "report/tree";
-    }
-
     @GetMapping("/print")
     public ResponseEntity<Resource> uploadToExcel(@RequestParam Long customerOrderId) {
         try {

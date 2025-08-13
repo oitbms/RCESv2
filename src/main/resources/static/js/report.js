@@ -3,7 +3,7 @@ let currentPage = 1; //Текущая страница
 const itemsPerPage = 100; //Начальное кол-во строк на странице
 let loadLines = 0; //Загружено строк
 
-//Ресайз колонок
+//Обработчик ресайза колонок
 $('.table-header-resizer').on('mousedown', function (e) {
     e.preventDefault();
 
@@ -34,7 +34,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
     $(window).on('mousemove', doResize)
         .on('mouseup', stopResize);
 });
-//Раскрытие вложенных строк
+//Обработчик раскрытия вложенных строк
 $(document).on('click', '.hamburger', function (e) {
     if ($(e.target).is('input')) {
         return;
@@ -82,7 +82,7 @@ $(document).on('click', '.hamburger', function (e) {
         $innerRows.closest('.table-rows-items').closest('.inner-rows').slideToggle(1100);
     })();
 });
-//Загрузка доп строк
+//Обработчик загрузки доп строк
 $(document).on('click', '.load-more', async function (e) {
     currentPage++;
     await displayPage(currentPage);
@@ -124,6 +124,11 @@ $('.print-report').click(function() {
         .appendTo('body')[0].click()
         .remove();
     $btn.prop('disabled', false);
+});
+//Обработчик нажатия на кнопку сформировать
+$('.build-form').click(async function () {
+    const customerOrderId = 0;
+    await displayPage(1, customerOrderId);
 });
 //Создание строки
 async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
@@ -243,14 +248,14 @@ async function makeChildRow(parentId, level, hasChildren, hasNext) {
     }
 }
 //Загрузка страниц
-async function displayPage(page) {
+async function displayPage(page, customerOrderId) {
     async function loadPrimaryDemands(page) {
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: '/spm-api/getPrimaryDemandForCustomerOrderId',
                 type: 'GET',
                 data: {
-                    customerOrderId: '73435423',
+                    customerOrderId: customerOrderId,
                     page: page,
                     size: itemsPerPage
                 },
@@ -304,7 +309,4 @@ function formatDate(dateString) {
     return date.toLocaleDateString('ru-RU');
 }
 
-$(document).ready(async function () {
-    await displayPage(1);
-});
 
