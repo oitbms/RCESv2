@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.services.ServiceUtil.allowedCreateOrUpdate;
+import static com.example.rces.utils.ServiceUtil.allowedCreateOrUpdate;
 
 @Repository
 @Transactional(transactionManager = "primaryTransactionManager")

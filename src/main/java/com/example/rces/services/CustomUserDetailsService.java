@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.services.ServiceUtil.controlRoles;
+import static com.example.rces.utils.ServiceUtil.controlRoles;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

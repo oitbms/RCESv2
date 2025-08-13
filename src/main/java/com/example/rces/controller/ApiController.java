@@ -19,7 +19,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.formatedDate;
+import static com.example.rces.utils.ServiceUtil.formatedDate;
+import static com.example.rces.utils.WordExporter.generateManyWordFile;
 
 @RestController
 @RequestMapping("/api")
@@ -145,9 +146,12 @@ public class ApiController {
     public ResponseEntity<Resource> printManySgi(@RequestParam(required = false) List<UUID> ids, @RequestParam(required = false) String department) {
         try {
             List<SGI> sgiList = service.getSgiList(ids, department).stream().sorted(Comparator.comparing(SGI::getRequestNumber)).collect(Collectors.toList());
-            ByteArrayResource resource = service.generateManyWordFile(sgiList);
+            ByteArrayResource resource = generateManyWordFile(sgiList, List.of(
+                    "№ п/п", "№ цеха", "Мероприятие", "Сопутствующие действия",
+                    "Ответственный отдел", "Ответственное лицо", "Желаемый срок",
+                    "Примечание", "Планируемый срок", "Комментарий", "Статус"));
 
-            String filename = (department!=null ? "Не_выполненные_мероприятия_" : "Мероприятия_") + formatedDate(LocalDate.now()) + ".docx";
+            String filename = (department != null ? "Не_выполненные_мероприятия_" : "Мероприятия_") + formatedDate(LocalDate.now()) + ".docx";
             String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
                     .replace("+", "%20");
 

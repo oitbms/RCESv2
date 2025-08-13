@@ -1,9 +1,6 @@
 package com.example.rces.spm.services;
 
-import com.example.rces.spm.services.service.CustomerOrderService;
-import com.example.rces.spm.services.service.ItemService;
-import com.example.rces.spm.services.service.JobComponentService;
-import com.example.rces.spm.services.service.PrimaryDemandService;
+import com.example.rces.spm.services.service.*;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,40 +14,25 @@ public class SPMService {
     private final SPMRepository repository;
 
     private final PrimaryDemandService primaryDemandService;
-
-    public PrimaryDemandService getPrimaryDemandService() {
-        return primaryDemandService;
-    }
-
     private final JobComponentService jobComponentService;
-
-    public JobComponentService getJobComponentService() {
-        return jobComponentService;
-    }
-
     private final ItemService itemService;
-
-    public ItemService getItemService() {
-        return itemService;
-    }
-
     private final CustomerOrderService customerOrderService;
+    private final ReportService reportService;
 
-    public CustomerOrderService getCustomerOrderService() {
-        return customerOrderService;
-    }
 
     @Autowired
     public SPMService(SPMRepository repository,
                       PrimaryDemandService primaryDemandService,
                       JobComponentService jobComponentService,
                       ItemService itemService,
-                      CustomerOrderService customerOrderService) {
+                      CustomerOrderService customerOrderService,
+                      ReportService reportService) {
         this.repository = repository;
         this.primaryDemandService = primaryDemandService;
         this.jobComponentService = jobComponentService;
         this.itemService = itemService;
         this.customerOrderService = customerOrderService;
+        this.reportService = reportService;
     }
 
     public <T> T findById(Class<T> entity, Object id) {
@@ -71,5 +53,25 @@ public class SPMService {
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
+    }
+
+    public PrimaryDemandService getPrimaryDemandService() {
+        return primaryDemandService;
+    }
+
+    public JobComponentService getJobComponentService() {
+        return jobComponentService;
+    }
+
+    public ItemService getItemService() {
+        return itemService;
+    }
+
+    public CustomerOrderService getCustomerOrderService() {
+        return customerOrderService;
+    }
+
+    public ReportService getReportService() {
+        return reportService;
     }
 }

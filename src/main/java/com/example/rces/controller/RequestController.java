@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.formatedDate;
+import static com.example.rces.utils.ServiceUtil.formatedDate;
 
 @Controller
 public class RequestController {

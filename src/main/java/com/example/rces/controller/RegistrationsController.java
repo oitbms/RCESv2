@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.rces.services.ServiceUtil.*;
+import static com.example.rces.utils.ServiceUtil.*;
 
 @Controller
 public class RegistrationsController {

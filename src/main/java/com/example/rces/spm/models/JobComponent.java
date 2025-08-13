@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Immutable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Entity
@@ -59,6 +60,14 @@ public class JobComponent {
 
     @Column(name="date_calc_end")
     private LocalDateTime dateCalcEnd; //РД завершения
+
+    public String getFormattedDateStart() {
+        return dateStart != null ? dateStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+    }
+
+    public String getFormattedDateCalcEnd() {
+        return dateCalcEnd != null ? dateCalcEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+    }
 
     public Long getId() {
         return id;

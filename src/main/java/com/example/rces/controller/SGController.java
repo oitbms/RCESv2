@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.rces.services.ServiceUtil.*;
+import static com.example.rces.utils.ServiceUtil.*;
 
 @Controller
 @RequestMapping("/sgi")

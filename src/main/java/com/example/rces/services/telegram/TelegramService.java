@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.example.rces.services.ServiceUtil.colorCalculate;
+import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
 @Component
 public class TelegramService extends TelegramLongPollingBot {
@@ -86,8 +86,8 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         } else if (entity instanceof SGI sgi) {
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
-            sendMessage.setChatId(this.controlChatId);
-            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
+            sendMessage.setChatId(this.testChatId);
+//            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
         }
         try {
             Message message = execute(sendMessage);

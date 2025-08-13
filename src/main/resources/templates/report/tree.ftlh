@@ -8,51 +8,57 @@
 </head>
 <body>
 <div class="report-container">
-    <header></header>
+    <header>
+        <div class="header-header">
+            <div class="report-name"><h1>Дерево заказа клиента</h1></div>
+            <div class="buttons">Кнопки тута</div>
+        </div>
+        <div class="header-footer"></div>
+    </header>
     <main>
         <div class="table">
             <div class="table-header">
-                <div class="table-header-item" style="width: 29.625rem" data-name="primarydemand">
+                <div class="table-header-item" style="width: var(--primarydemand)" data-name="primarydemand">
                     Строка ЗК/Спрос
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 25.125rem;" data-name="item">
+                <div class="table-header-item" style="width: var(--item)" data-name="item">
                     ДСЕ
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 17.5625rem;" data-name="mlm-node">
+                <div class="table-header-item" style="width: var(--mlm-node)" data-name="mlm-node">
                     Узел ПЛМ
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 15.9375rem;" data-name="description">
+                <div class="table-header-item" style="width: var(--description)" data-name="description">
                     Описание(заход)
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 6.25rem;" data-name="qty">
+                <div class="table-header-item" style="width: var(--qty)" data-name="qty">
                     План брутто
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 7.25rem;" data-name="qty-finished">
+                <div class="table-header-item" style="width: var(--qty-finished)" data-name="qty-finished">
                     Выполнено
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 7.625rem;" data-name="resourcetime">
+                <div class="table-header-item" style="width: var(--resourcetime);" data-name="resourcetime">
                     Трудоемкость
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 6.6875rem;" data-name="date-start">
+                <div class="table-header-item" style="width: var(--date-start)" data-name="date-start">
                     Дата начала
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 8rem;" data-name="date-end">
+                <div class="table-header-item" style="width: var(--date-end)" data-name="date-end">
                     Дата завершения
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 6.6875rem;" data-name="date-calc-start">
+                <div class="table-header-item" style="width: var(--date-calc-start)" data-name="date-calc-start">
                     РД начала
                     <div class="table-header-resizer"></div>
                 </div>
-                <div class="table-header-item" style="width: 8rem;" data-name="date-calc-end">
+                <div class="table-header-item" style="width: var(--date-calc-end)" data-name="date-calc-end">
                     РД завершения
                     <div class="table-header-resizer"></div>
                 </div>
@@ -171,9 +177,11 @@
                 <div class="table-footer-content">
                     <div class="count">
                         <div class="total-count"></div>
-                        <div class="load-count"></div>
+                        <div class="load-count">
+                            <span></span>
+                            <span></span>
+                        </div>
                     </div>
-                    <div class="pagination"></div>
                 </div>
             </div>
         </div>

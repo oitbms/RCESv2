@@ -1,10 +1,11 @@
-package com.example.rces.services;
+package com.example.rces.utils;
 
 import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.*;
 import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
+import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;

@@ -1,14 +1,25 @@
 :root {
+    --default-primarydemand: 29.625rem;
     --primarydemand: 29.625rem;
+    --default-item: 25.125rem;
     --item: 25.125rem;
+    --default-mlm-node: 17.5625rem;
     --mlm-node: 17.5625rem;
+    --default-description: 15.9375rem;
     --description: 15.9375rem;
+    --default-qty: 6.25rem;
     --qty: 6.25rem;
+    --default-qty-finished: 7.25rem;
     --qty-finished: 7.25rem;
+    --default-resourcetime: 7.25rem;
     --resourcetime: 7.25rem;
+    --default-date-start: 6.6875rem;
     --date-start: 6.6875rem;
+    --default-date-end: 8rem;
     --date-end: 8rem;
+    --default-date-calc-start: 6.6875rem;
     --date-calc-start: 6.6875rem;
+    --default-date-calc-end: 8rem;
     --date-calc-end: 8rem;
 }
 
@@ -24,7 +35,25 @@ html {
 }
 
 header {
-    height: 5vh;
+    height: 9vh;
+
+    & .header-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        height: 60px;
+
+        & .report-name {
+            width: 80vw;
+        }
+
+        & .buttons {
+            width: 20vw;
+        }
+    }
+    & .header-footer {
+
+    }
 }
 
 .report-container {
@@ -82,7 +111,7 @@ main {
             cursor: col-resize;
             transition: opacity .1s ease;
             transition-delay: .1s;
-            
+
             &::after {
                 content: "";
                 position: absolute;
@@ -95,27 +124,27 @@ main {
                 transition: all .2s ease;
             }
         }
-    
+
         &:hover .table-header-resizer {
             opacity: 1;
-            
+
             &::after {
                 background-color: #738276;
             }
         }
-        
+
         &:hover .table-header-resizer:hover::after {
             transform: scaleY(1.5);
             background-color: #738276;
         }
-        
+
     }
 }
 
 .table-rows {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Растягиваем контейнер строк */
+    flex-grow: 1;
     overflow: visible;
 
     & .table-rows-items {
@@ -159,15 +188,15 @@ main {
                 background-color: #f5f5f5;
                 transition: background-color 0.4s;
             }
-            
+
             & .row-item:first-of-type:not(.inner-rows .row-item) {
                 padding-left: 1.5rem;
 
                 & p {
                     position: relative;
                     display: inline-block;
-                    padding-right: 15px; 
-                  
+                    padding-right: 15px;
+
                     & .line-container {
                         display: none;
                         position: absolute;
@@ -176,36 +205,36 @@ main {
                         width: 100%;
                         height: 100%;
                         pointer-events: none;
-                        transition: before,after 0.3ms;
-                    
+                        transition: before, after 0.3ms;
+
                         &::before {
-                          content: "";
-                          position: absolute;
-                          left: -2px;
-                          top: 1px;
-                          height: 100%;
-                          width: 1px;
-                          background-color: #3a5c4f;
+                            content: "";
+                            position: absolute;
+                            left: -2px;
+                            top: 1px;
+                            height: 100%;
+                            width: 1px;
+                            background-color: #3a5c4f;
                         }
-                    
+
                         &::after {
-                          content: "";
-                          position: absolute;
-                          left: -1px;
-                          bottom: -1px;
-                          height: 1px;
-                          width: 0.4rem;
-                          background-color: #3a5c4f;
+                            content: "";
+                            position: absolute;
+                            left: -1px;
+                            bottom: -1px;
+                            height: 1px;
+                            width: 0.4rem;
+                            background-color: #3a5c4f;
                         }
-                    
+
                         & .third-line {
-                          display: none;
-                          position: absolute;
-                          left: 0.3rem;
-                          top: 100%;
-                          height: 0.3rem;
-                          width: 1px;
-                          background-color: #3a5c4f;
+                            display: none;
+                            position: absolute;
+                            left: 0.3rem;
+                            top: 100%;
+                            height: 0.3rem;
+                            width: 1px;
+                            background-color: #3a5c4f;
                         }
                     }
 
@@ -221,7 +250,7 @@ main {
                 & p {
                     position: relative;
                     display: inline-block;
-                    padding-right: 15px; 
+                    padding-right: 15px;
 
                     & .line-container {
                         position: absolute;
@@ -249,7 +278,7 @@ main {
                             height: 0.31rem;
                             width: 1px;
                             background-color: #3a5c4f;
-                          }
+                        }
 
                     }
 
@@ -263,6 +292,7 @@ main {
                             width: 1px;
                             background-color: #3a5c4f;
                         }
+
                         &::after {
                             content: '';
                             position: absolute;
@@ -284,6 +314,7 @@ main {
                             width: 1px;
                             background-color: #3a5c4f;
                         }
+
                         &::after {
                             content: '';
                             position: absolute;
@@ -305,6 +336,7 @@ main {
                             width: 1px;
                             background-color: #3a5c4f;
                         }
+
                         &::after {
                             content: '';
                             position: absolute;
@@ -317,6 +349,31 @@ main {
                     }
 
                 }
+            }
+        }
+    }
+
+    & .load-more {
+        display: inline-flex;
+        width: 100%;
+        position: sticky;
+        padding: 5px;
+        left: 0;
+
+        & span {
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            left: 0;
+            cursor: pointer;
+            border-radius: 15px;
+            background-color: #f9f9f9;
+
+            &:hover {
+                background-color: #f4f4f4;
             }
         }
     }
@@ -339,13 +396,10 @@ main {
         flex-direction: row;
         justify-content: space-between;
         margin: 0 0 0 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
-        & .count {
-            width: 100%;
-        }
-        & .pagination {
-            width: 100%;
-        }
     }
 
 }
@@ -497,21 +551,9 @@ main {
 
 
 .none {
-    display: none;!important;
+    display: none;
+!important;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 dialog {
@@ -623,7 +665,6 @@ dialog {
     --hover-btn-color: #e8e8e8;
 
     /* Button styles */
-    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -636,12 +677,10 @@ dialog {
     span {
         letter-spacing: var(--btn-letter-spacing);
         transition: var(--btn-transition);
-        box-sizing: border-box;
         position: relative;
         background: inherit;
 
         &::before {
-            box-sizing: border-box;
             position: absolute;
             content: "";
             background: inherit;
@@ -659,26 +698,78 @@ dialog {
         }
     }
 }
+
 @keyframes chitchat {
-    0% { content: "#"; }
-    5% { content: "."; }
-    10% { content: "^{"; }
-    15% { content: "-!"; }
-    20% { content: "#$_"; }
-    25% { content: "№:0"; }
-    30% { content: "#{+."; }
-    35% { content: "@}-?"; }
-    40% { content: "?{4@%"; }
-    45% { content: "=.,^!"; }
-    50% { content: "?2@%"; }
-    55% { content: "\;1}]"; }
-    60% { content: "?{%:%"; right: 0; }
-    65% { content: "|{f[4"; right: 0; }
-    70% { content: "{4%0%"; right: 0; }
-    75% { content: "'1_0<"; right: 0; }
-    80% { content: "{0%"; right: 0; }
-    85% { content: "]>'"; right: 0; }
-    90% { content: "4"; right: 0; }
-    95% { content: "2"; right: 0; }
-    100% { content: ""; right: 0; }
+    0% {
+        content: "#";
+    }
+    5% {
+        content: ".";
+    }
+    10% {
+        content: "^{";
+    }
+    15% {
+        content: "-!";
+    }
+    20% {
+        content: "#$_";
+    }
+    25% {
+        content: "№:0";
+    }
+    30% {
+        content: "#{+.";
+    }
+    35% {
+        content: "@}-?";
+    }
+    40% {
+        content: "?{4@%";
+    }
+    45% {
+        content: "=.,^!";
+    }
+    50% {
+        content: "?2@%";
+    }
+    55% {
+        content: "\;1}]";
+    }
+    60% {
+        content: "?{%:%";
+        right: 0;
+    }
+    65% {
+        content: "|{f[4";
+        right: 0;
+    }
+    70% {
+        content: "{4%0%";
+        right: 0;
+    }
+    75% {
+        content: "'1_0<";
+        right: 0;
+    }
+    80% {
+        content: "{0%";
+        right: 0;
+    }
+    85% {
+        content: "]>'";
+        right: 0;
+    }
+    90% {
+        content: "4";
+        right: 0;
+    }
+    95% {
+        content: "2";
+        right: 0;
+    }
+    100% {
+        content: "";
+        right: 0;
+    }
 }

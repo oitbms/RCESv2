@@ -4,16 +4,16 @@ import com.example.rces.spm.controller.payload.JobComponentPayload;
 import com.example.rces.spm.controller.payload.JobStepPayload;
 import com.example.rces.spm.controller.payload.PrimaryDemandPayload;
 import com.example.rces.spm.controller.payload.SPMCustomerOrderPayload;
-import com.example.rces.spm.models.*;
+import com.example.rces.spm.models.JobComponent;
+import com.example.rces.spm.models.PrimaryDemand;
+import com.example.rces.spm.models.SPMCustomerOrder;
 import com.example.rces.spm.services.SPMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/spm-api")
@@ -53,17 +53,19 @@ public class SPMApiController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "85") int size) {
         Long totalCount = service.getEntityManager().createQuery(
-                "select count(e.id) from PrimaryDemand e where e.customerorder.id = :id", Long.class)
+                        "select count(e.id) from PrimaryDemand e where e.customerorder.id = :id", Long.class)
                 .setParameter("id", customerOrderId).getSingleResult();
 
         //native потому что тупорылый PostgreSQL
         List<PrimaryDemand> primaryDemandList = service.getEntityManager()
-                .createNativeQuery("select e.id from dm_primarydemand e where e.customerorder_id = :id order by e.demand_type", Long.class)
+                .createNativeQuery("select e.id from dm_primarydemand e where e.customerorder_id = :id order by e.demand_type LIMIT :limit OFFSET :offset", Long.class)
                 .setParameter("id", customerOrderId)
-                .setFirstResult((page - 1) * size)
-                .setMaxResults(size)
+                .setParameter("limit", size)
+                .setParameter("offset", (page - 1) * size)
                 .getResultList()
-                .stream().map(pd -> service.findById(PrimaryDemand.class, pd)).toList();
+                .stream()
+                .map(pd -> service.findById(PrimaryDemand.class, pd))
+                .toList();
 
         List<PrimaryDemandPayload> result = primaryDemandList
                 .stream()
@@ -93,12 +95,13 @@ public class SPMApiController {
     public ResponseEntity<List<JobComponentPayload>> getChildJobComponentForJobcomponentId(Long jobComponentId) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(
-                        service.getJobComponentService().getChildComponents(service.findById(JobComponent.class, jobComponentId))
+                        service.getJobComponentService().getChildJobComponents(service.findById(JobComponent.class, jobComponentId))
                                 .stream()
                                 .map(JobComponentPayload::new)
                                 .toList()
                 );
     }
+
 
     @GetMapping("/getJobStepsForJobComponentId")
     @ResponseBody

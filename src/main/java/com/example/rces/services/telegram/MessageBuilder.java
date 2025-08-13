@@ -4,7 +4,7 @@ import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 
-import static com.example.rces.services.ServiceUtil.formatedDate;
+import static com.example.rces.utils.ServiceUtil.formatedDate;
 
 public class MessageBuilder {
     private final String baseUrl;

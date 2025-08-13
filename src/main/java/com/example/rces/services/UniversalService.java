@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.services.ServiceUtil.colorCalculate;
-import static com.example.rces.services.ServiceUtil.saveFiles;
+import static com.example.rces.utils.ServiceUtil.colorCalculate;
+import static com.example.rces.utils.ServiceUtil.saveFiles;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
