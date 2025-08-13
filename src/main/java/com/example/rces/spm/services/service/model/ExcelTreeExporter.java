@@ -8,19 +8,18 @@ import java.util.*;
 
 public class ExcelTreeExporter {
 
-    // Колонки и ширины (в единицах POI: 1 = 1/256th of a character)
     private static final String[] HEADERS = {
-            "Строка ЗК/Спрос", // primaryDemand
-            "ДСЕ",             // item
-            "Узел ПЛМ",        // mlmNode
-            "Описание(заход)", // description
-            "План брутто",     // qty
-            "Выполнено",       // qtyFinished
-            "Трудоемкость",    // resourceTime
-            "Дата начала",     // dateStart
-            "Дата завершения", // dateEnd
-            "РД начала",       // dateCalcStart
-            "РД завершения"    // dateCalcEnd
+            "Строка ЗК/Спрос",
+            "ДСЕ",
+            "Узел ПЛМ",
+            "Описание(заход)",
+            "План брутто",
+            "Выполнено",
+            "Трудоемкость",
+            "Дата начала",
+            "Дата завершения",
+            "РД начала",
+            "РД завершения"
     };
 
     private static final int[] WIDTHS = {
@@ -48,18 +47,9 @@ public class ExcelTreeExporter {
             for (int i = 0; i < WIDTHS.length; i++) sheet.setColumnWidth(i, WIDTHS[i]);
 
             // Стили
-            CellStyle headerStyle = wb.createCellStyle();
-            Font hFont = wb.createFont();
-            hFont.setBold(true);
-            headerStyle.setFont(hFont);
-            headerStyle.setAlignment(HorizontalAlignment.CENTER);
-
-            // кэш стилей с отступами (indentation) для уровней вложенности
+            CellStyle headerStyle = createHeaderStyle(wb);
+            CellStyle defaultStyle = createDefaultStyle(wb);
             Map<Integer, CellStyle> indentStyles = new HashMap<>();
-
-            // стиль по умолчанию для текстовых ячеек
-            CellStyle defaultStyle = wb.createCellStyle();
-            defaultStyle.setWrapText(false);
 
             // Заголовок
             int rowIndex = 0;
@@ -69,37 +59,29 @@ public class ExcelTreeExporter {
                 cell.setCellValue(HEADERS[c]);
                 cell.setCellStyle(headerStyle);
             }
-            // Freeze header
             sheet.createFreezePane(0, 1);
 
-            // Рекурсивный обход — depth-first
-            // Нам нужно знать для каждого родителя диапазон строк его детей -> делаем DFS, и после возврата группируем.
-            RowRangeCounter counter = new RowRangeCounter(rowIndex); // wrapper для текущего индекса
+            // Рекурсивная запись с группировкой
+            RowRangeCounter counter = new RowRangeCounter(rowIndex);
             for (TreeNode root : rootNodes) {
                 writeNode(wb, sheet, root, 0, counter, indentStyles, defaultStyle);
             }
 
-            // Параметры отображения outline
+            // Настройки outline
             sheet.setRowSumsBelow(false);
             sheet.setRowSumsRight(false);
 
-            // Запись в файл
             try (FileOutputStream fos = new FileOutputStream(fileName)) {
                 wb.write(fos);
             }
         }
     }
 
-    // Вспомогательный класс для передачи и изменения текущего индекса строки
     private static class RowRangeCounter {
         int currentRow;
         RowRangeCounter(int startRow) { this.currentRow = startRow; }
     }
 
-    /**
-     * Записывает узел и всех его детей (DFS).
-     * Возвращает индекс последней строки, занятой этим узлом и его потомками.
-     */
     private int writeNode(Workbook wb,
                           Sheet sheet,
                           TreeNode node,
@@ -110,69 +92,58 @@ public class ExcelTreeExporter {
 
         int myRowIdx = counter.currentRow;
         Row row = sheet.createRow(myRowIdx);
-// создаём/получаем стиль с отступом для depth
+
+        // Стиль с отступом
         CellStyle indentStyle = indentStyles.get(depth);
         if (indentStyle == null) {
             CellStyle s = wb.createCellStyle();
             s.cloneStyleFrom(defaultStyle);
-            // отступ (indent) — short
-            short indent = (short) Math.min(depth, 8); // Excel поддерживает ограничение отступа; обрежем >8
+            short indent = (short) Math.min(depth, 8); // Excel max indent = 8
             s.setIndention(indent);
             indentStyles.put(depth, s);
             indentStyle = s;
         }
 
-        // Заполняем колонки
-        // 0 - primaryDemand
-        Cell c0 = row.createCell(0);
-        c0.setCellValue(nullSafe(node.primaryDemand));
-        c0.setCellStyle(indentStyle);
+        // Заполнение колонок
+        row.createCell(0).setCellValue(nullSafe(node.primaryDemand));
+        row.getCell(0).setCellStyle(indentStyle);
 
-        // 1 - item
-        Cell c1 = row.createCell(1);
-        c1.setCellValue(nullSafe(node.item));
+        row.createCell(1).setCellValue(nullSafe(node.item));
+        row.getCell(1).setCellStyle(defaultStyle);
 
-        // 2 - mlmNode
-        Cell c2 = row.createCell(2);
-        c2.setCellValue(nullSafe(node.mlmNode));
+        row.createCell(2).setCellValue(nullSafe(node.mlmNode));
+        row.getCell(2).setCellStyle(defaultStyle);
 
-        // 3 - description
-        Cell c3 = row.createCell(3);
-        c3.setCellValue(nullSafe(node.description));
+        row.createCell(3).setCellValue(nullSafe(node.description));
+        row.getCell(3).setCellStyle(defaultStyle);
 
-        // 4 - qty
-        Cell c4 = row.createCell(4);
-        c4.setCellValue(nullSafe(node.qty));
+        row.createCell(4).setCellValue(nullSafe(node.qty));
+        row.getCell(4).setCellStyle(defaultStyle);
 
-        // 5 - qtyFinished
-        Cell c5 = row.createCell(5);
-        c5.setCellValue(nullSafe(node.qtyFinished));
+        row.
+                createCell(5).setCellValue(nullSafe(node.qtyFinished));
+        row.getCell(5).setCellStyle(defaultStyle);
 
-        // 6 - resourceTime
-        Cell c6 = row.createCell(6);
-        c6.setCellValue(nullSafe(node.resourceTime));
+        row.createCell(6).setCellValue(nullSafe(node.resourceTime));
+        row.getCell(6).setCellStyle(defaultStyle);
 
-        // 7 - dateStart
-        Cell c7 = row.createCell(7);
-        c7.setCellValue(nullSafe(node.dateStart));
+        row.createCell(7).setCellValue(nullSafe(node.dateStart));
+        row.getCell(7).setCellStyle(defaultStyle);
 
-        // 8 - dateEnd
-        Cell c8 = row.createCell(8);
-        c8.setCellValue(nullSafe(node.dateEnd));
+        row.createCell(8).setCellValue(nullSafe(node.dateEnd));
+        row.getCell(8).setCellStyle(defaultStyle);
 
-        // 9 - dateCalcStart
-        Cell c9 = row.createCell(9);
-        c9.setCellValue(nullSafe(node.dateCalcStart));
+        row.createCell(9).setCellValue(nullSafe(node.dateCalcStart));
+        row.getCell(9).setCellStyle(defaultStyle);
 
-        // 10 - dateCalcEnd
-        Cell c10 = row.createCell(10);
-        c10.setCellValue(nullSafe(node.dateCalcEnd));
+        row.createCell(10).setCellValue(nullSafe(node.dateCalcEnd));
+        row.getCell(10).setCellStyle(defaultStyle);
 
-        counter.currentRow++; // следующий свободный индекс
+        counter.currentRow++;
 
         int lastRowUsed = myRowIdx;
 
-        // Если есть дети — рекурсивно написать их. После этого сгруппировать диапазон (children rows).
+        // Если есть дети — пишем их и группируем
         if (node.children != null && !node.children.isEmpty()) {
             int firstChildRow = counter.currentRow;
             for (TreeNode child : node.children) {
@@ -180,20 +151,9 @@ public class ExcelTreeExporter {
             }
             int lastChildRow = counter.currentRow - 1;
             if (lastChildRow >= firstChildRow) {
-                // групируем дочерние строки под этим родителем
-                // groupRow(from, to) использует индексы строк (0-based)
                 sheet.groupRow(firstChildRow, lastChildRow);
-
-                // Скрыть (свернуть) группу по умолчанию: collapse на первую строку группы
-                // По опыту: setRowGroupCollapsed(firstChildRow, true) скрывает указанный диапазон.
-                try {
-                    sheet.setRowGroupCollapsed(firstChildRow, true);
-                } catch (Exception ex) {
-                    // Иногда при глубокой вложенности/старых версиях POI может быть исключение.
-                    // В таком случае игнорируем — группа всё равно создана.
-                }
+                sheet.setRowGroupCollapsed(firstChildRow, true);
             }
-            // последний используемый — последний ребёнок
             lastRowUsed = Math.max(lastRowUsed, lastChildRow);
         }
 
@@ -202,5 +162,27 @@ public class ExcelTreeExporter {
 
     private static String nullSafe(String s) {
         return s == null ? "" : s;
+    }
+
+    private CellStyle createHeaderStyle(Workbook wb) {
+        CellStyle style = wb.createCellStyle();
+        Font font = wb.createFont();
+        font.setBold(true);
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setBorderTop(BorderStyle.THICK);
+        style.setBorderBottom(BorderStyle.THICK);
+        style.setBorderLeft(BorderStyle.THICK);
+        style.setBorderRight(BorderStyle.THICK);
+        return style;
+    }
+
+    private CellStyle createDefaultStyle(Workbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
     }
 }
