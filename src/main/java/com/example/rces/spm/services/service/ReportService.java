@@ -12,10 +12,11 @@ import org.apache.commons.collections4.list.TreeList;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.example.rces.utils.ExcelExporter.exportToExcelTree;
 
@@ -46,36 +47,34 @@ public class ReportService {
         List<TreeNode> rootNodes = new TreeList<>();
         for (PrimaryDemandPayload pd : primaryDemandPayloadList) {
             TreeNode pdNode = new TreeNode(pd);
-            List<JobComponent> allChildJobComponentList = jobComponentService.getAllChildJobComponents(pd.jobComponent().id());
+            Map<JobComponent, List<JobStep>> JobComponentStepMap = jobComponentService.getAllChildJobComponents(pd.jobComponent().id())
+                    .stream()
+                    .collect(Collectors.toMap(Function.identity(), JobComponent::getJobSteps));
 
             Map<Long, TreeNode> nodeMap = new HashMap<>();
-            List<JobStep> jobStepsList = new ArrayList<>(spmRepository.findById(JobComponent.class, pd.jobComponent().id()).getJobSteps());
-            jobStepsList.forEach(js -> nodeMap.put(js.getId(), new TreeNode(new JobStepPayload(js), pd.name(), pd.jobComponent().id())));
-            for (JobComponent jc : allChildJobComponentList) {
+            JobComponentStepMap.forEach((jc, jsList) -> {
                 JobComponentPayload jcPayload = new JobComponentPayload(jc);
                 nodeMap.put(jc.getId(), new TreeNode(jcPayload, pd.name(), jcPayload.parentId()));
-                jc.getJobSteps().forEach(js -> nodeMap.put(js.getId(), new TreeNode(new JobStepPayload(js), pd.name(), jcPayload.id())));
-                jobStepsList.addAll(jc.getJobSteps());
-            }
-
-            allChildJobComponentList.forEach(jc -> {
-                TreeNode currentNode = nodeMap.get(jc.getId());
-                Long parentId = jc.getParentJobComponent() != null ? jc.getParentJobComponent().getId() : null;
-                if (parentId != null && nodeMap.containsKey(parentId)) {
-                    nodeMap.get(parentId).addChild(currentNode);
-                } else {
-                    pdNode.addChild(currentNode);
-                }
+                jsList.forEach(js -> nodeMap.put(js.getId(), new TreeNode(new JobStepPayload(js), pd.name(), jcPayload.id())));
             });
-            jobStepsList.forEach(js -> {
-                TreeNode currentNode = nodeMap.get(js.getId());
-                Long parentId = currentNode.parentId;
-
-                if (parentId != null && nodeMap.containsKey(parentId)) {
-                    nodeMap.get(parentId).addChild(currentNode);
+            JobComponentStepMap.forEach((jc, jsList) -> {
+                TreeNode jcCurrentNode = nodeMap.get(jc.getId());
+                Long jcParentId = jc.getParentJobComponent() != null ? jc.getParentJobComponent().getId() : null;
+                if (jcParentId != null && nodeMap.containsKey(jcParentId)) {
+                    nodeMap.get(jcParentId).addChild(jcCurrentNode);
                 } else {
-                    pdNode.addChild(currentNode);
+                    pdNode.addChild(jcCurrentNode);
                 }
+                jsList.forEach(js -> {
+                    TreeNode jsCurrentNode = nodeMap.get(js.getId());
+                    Long jsParentId = jsCurrentNode.parentId;
+
+                    if (jsParentId != null && nodeMap.containsKey(jsParentId)) {
+                        nodeMap.get(jsParentId).addChild(jsCurrentNode);
+                    } else {
+                        pdNode.addChild(jsCurrentNode);
+                    }
+                });
             });
 
             rootNodes.add(pdNode);

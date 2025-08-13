@@ -1,6 +1,6 @@
 
 let currentPage = 1; //Текущая страница
-const itemsPerPage = 700; //Количество строк на странице
+const itemsPerPage = 100; //Начальное кол-во строк на странице
 let loadLines = 0; //Загружено строк
 
 //Ресайз колонок
@@ -116,6 +116,14 @@ $('main').on('scroll', async function () {
         bottomPlaceholder.height(Math.max(0, loadLines - lastVisible - 1) * rowHeight);
         rows.append(bottomPlaceholder);
     }
+});
+//Обработчик нажатия на кнопку печать отчета
+$('.print-report').click(function() {
+    const $btn = $(this).prop('disabled', true);
+    $('<a>', { href: '/report/print?customerOrderId=73435423', download: '' })
+        .appendTo('body')[0].click()
+        .remove();
+    $btn.prop('disabled', false);
 });
 //Создание строки
 async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
@@ -298,6 +306,5 @@ function formatDate(dateString) {
 
 $(document).ready(async function () {
     await displayPage(1);
-    window.open(`/report/print?customerOrderId=73435423`);
 });
 

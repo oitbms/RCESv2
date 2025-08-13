@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootstrap Treeview Пример</title>
+    <title>Дерево ЗК</title>
     <link rel="stylesheet" href="/css/tree.css">
 </head>
 <body>
@@ -11,7 +11,11 @@
     <header>
         <div class="header-header">
             <div class="report-name"><h1>Дерево заказа клиента</h1></div>
-            <div class="buttons">Кнопки тута</div>
+            <div class="buttons">
+                <button type="button" class="print-report">
+                    Выгрузить в Excel
+                </button>
+            </div>
         </div>
         <div class="header-footer"></div>
     </header>

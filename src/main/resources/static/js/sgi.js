@@ -744,5 +744,8 @@ document.querySelectorAll('.sgiNumber').forEach(function (td) {
 //Обработчик по нажатию на печать отчета
 $('.additional-menu-item').on('click', function() {
     const department = $(this).data('department');
-    window.open(`/api/print?department=${department}`);
+    $('<a>', {
+        href: `/api/print?department=${department}`,
+        download: ''
+    }).appendTo('body')[0].click().remove();
 });
