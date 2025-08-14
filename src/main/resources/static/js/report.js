@@ -243,7 +243,7 @@ async function createRow(item, type, parentId, level, hasChildren, isLast, hasNe
         const primaryDemand = $(`[data-id="${parentId}"] .row-item[data-name="primarydemand"] p`).text().trim();
         row = `
             <div class="table-rows-items">
-                <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" style="vertical-align: ${type === 'jc' ? "super" : "sub"};
+                <div class="row" data-parent-id="${parentId}" data-id="${item.id}" data-level="${level}" data-has-next="${String(hasNext)}" style="vertical-align: ${type === 'jc' ? "super" : "sub"};
                                                                                                                 font-size: ${type === 'jc' ? "0.825rem" : "0.750rem"};
                                                                                                                 ${type === "jc" ? " text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);" : ""}">
                     ${type === "jc" ? hasChildren ? hamburger : "" : ""}
@@ -284,7 +284,6 @@ async function loadChild(row) {
         const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
         const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0 || (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: jc.id})).length > 0;
         hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
-
         await createRow(jc, 'jc', rowId, level + 1, hasChildren, isLast, hasNext);
     }
     const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId});
@@ -349,10 +348,11 @@ async function displayPage(page, customerOrderId) {
     }
     rowsContainer.children('.load-more').remove();
 
-    const childrenData = await Promise.all(primaryDemands.map(pd =>
-        $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id})
-    ));
-    const hasChildrenFlags = childrenData.map(data => data.length > 0);
+    const hasChildrenFlags = await Promise.all(primaryDemands.map(async (pd) => {
+        const children = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id});
+        const steps = await $.get('/spm-api/getJobStepsForJobComponentId', {jobComponentId: pd.jobComponent.id});
+        return children.length > 0 || steps.length > 0;
+    }));
 
     for (let i = 0; i < primaryDemands.length; i++) {
         await createRow(primaryDemands[i], 'pd', '#', 0, hasChildrenFlags[i]);

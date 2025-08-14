@@ -12,7 +12,10 @@ public record JobStepPayload(Long id, String name, String mlmNode, String descri
     public JobStepPayload(JobStep jobStep) {
         this(
                 jobStep.getId(),
-                String.format("%s: %s",jobStep.getJobcomponent().getItem().getName(), jobStep.getNumber()),
+                String.format("%s %s: %s",
+                        jobStep.getJobcomponent().getItem().getName(),
+                        jobStep.getJobcomponent().getItem().getDescription()!=null ? jobStep.getJobcomponent().getItem().getDescription() : "",
+                        jobStep.getNumber()),
                 jobStep.getMlmNode().getName(),
                 String.format("%s (%d)",jobStep.getDescription()!=null ? jobStep.getDescription() : "Нет описания захода",jobStep.getNumber()),
                 jobStep.getQtyProduction().setScale(3, RoundingMode.DOWN),

@@ -75,6 +75,10 @@ public class ReportService {
                 });
             });
 
+            spmRepository.findById(JobComponent.class, pdNode.id).getJobSteps()
+                    .forEach(mainJs -> pdNode.addChild(
+                            new TreeNode(new JobStepPayload(mainJs), pd.name(), pdNode.id)
+                    ));
             rootNodes.add(pdNode);
         }
         return exportToExcelTree(rootNodes,

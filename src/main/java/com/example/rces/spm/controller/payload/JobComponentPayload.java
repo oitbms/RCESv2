@@ -10,7 +10,8 @@ public record JobComponentPayload(Long id, Long parentId, String name, BigDecima
                                   BigDecimal qtyFinished, LocalDate dateStart, LocalDate dateEnd) {
     public JobComponentPayload(JobComponent jobComponent) {
         this(jobComponent.getId(), jobComponent.getParentJobComponent()!=null ? jobComponent.getParentJobComponent().getId() : null,
-                jobComponent.getItem().getName(),
+                String.format("%s %s", jobComponent.getItem().getName(),
+                        jobComponent.getItem().getDescription()!=null ? jobComponent.getItem().getDescription() : ""),
                 jobComponent.getQtyDemand().setScale(3, RoundingMode.DOWN), jobComponent.getQtyFinished().setScale(3, RoundingMode.DOWN),
                 jobComponent.getDateStart().toLocalDate(),
                 jobComponent.getDateCalcEnd()!=null ? jobComponent.getDateCalcEnd().toLocalDate() : null);
