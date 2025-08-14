@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/spm-api")
@@ -26,24 +27,17 @@ public class SPMApiController {
         this.service = service;
     }
 
-    @GetMapping("/getBurningCustomerOrder")
+    @GetMapping("/getBurningAndAllCustomerOrder")
     @ResponseBody
-    public ResponseEntity<List<SPMCustomerOrderPayload>> getBurningTenCustomerOrders() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(
-                        service.getCustomerOrderService().getFirst10BurningCustomerOrder()
-                                .stream().map(co -> new SPMCustomerOrderPayload(co.getId(), co.getStrCode()))
-                                .toList());
-    }
-
-    @GetMapping("/getAllCustomerOrder")
-    @ResponseBody
-    public ResponseEntity<List<SPMCustomerOrderPayload>> getAllCustomerOrders() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(
-                        service.findAll(SPMCustomerOrder.class)
-                                .stream()
-                                .map(co -> new SPMCustomerOrderPayload(co.getId(), co.getStrCode())).toList());
+    public ResponseEntity<Map<String, List<SPMCustomerOrderPayload>>> getBurningTenCustomerOrders() {
+        Map<List<SPMCustomerOrder>, List<SPMCustomerOrder>> rawData =
+                service.getCustomerOrderService().getFirst10BurningCustomerOrderAndAll();
+        List<SPMCustomerOrder> burning = rawData.keySet().iterator().next();
+        List<SPMCustomerOrder> all = rawData.values().iterator().next();
+        return ResponseEntity.ok(Map.of(
+                "burning", burning.stream().map(SPMCustomerOrderPayload::new).toList(),
+                "all", all.stream().map(SPMCustomerOrderPayload::new).toList()
+        ));
     }
 
     @GetMapping("/getPrimaryDemandForCustomerOrderId")

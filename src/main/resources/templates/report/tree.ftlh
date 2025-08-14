@@ -17,7 +17,17 @@
                 </button>
             </div>
         </div>
-        <div class="header-footer"></div>
+        <div class="header-footer">
+            <div class="change-order">
+                <input type="text" class="change-order-input" id="customerOrderId">
+                <button type="button" class="change-order-button" title="Выбрать из списка">
+                    <svg height="22" width="22" viewBox="0 0 24 24">
+                        <path data-v-dba2a088="" data-v-f8e937c1="" d="M6.43889 10.3448C5.26955 11.1383 5.26954 12.8613 6.43886 13.6547L14.877 19.3808C16.2049 20.2819 18 19.3307 18 17.7258V6.27408C18 4.66927 16.205 3.71803 14.877 4.61912L6.43889 10.3448Z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="buttons"></div>
+        </div>
     </header>
     <main>
         <div class="table">
@@ -150,7 +160,7 @@
                                                     <span class="third-line"></span>
                                                 </span>
                                             </p>
-                                                
+
                                         </div>
                                         <div class="row-item" style="width: 25.125rem;" data-name="item">00000000206643 #3, КСА1180
                                             ИД-200.01
@@ -192,56 +202,34 @@
     </main>
 </div>
 
-<dialog id="photoDialog" style="display: none">
-    <div class="container-dialog">
-        <div class="dialog-header">
-            <div class="dialog-header-content">
-                <div class="dialog-header-content-title">Прикрепленные фото</div>
-                <div class="dialog-header-content-close">
-                    <button class="ui-btn" onclick="window['photoDialog'].close()"><span>Закрыть</span></button>
-                </div>
+<dialog id="customerOrderDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно выбора заказа клиента</div>
+            <div class="choice-order">
+                <input type="text" placeholder="Введите номер заказа клиента">
             </div>
         </div>
-        <div class="dialog-content">
-            <div class="dialog-content-content">
-                <div class="dialog-content-content-photo">
-                    <img src="" alt="">
-                </div>
-                <div class="dialog-content-content-delete-photo">
-                    <button class="ui-btn"><span>Удалить</span></button>
-                </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-25">Номер</div>
+                <div class="dialog-content-header-column col-150">Плановая дата</div>
+                <div class="dialog-content-header-column col-150">Контрактная дата</div>
+                <div class="dialog-content-header-column col-25">Площадка</div>
             </div>
-            <div class="dialog-content-content">
-                <div class="dialog-content-content-photo">
-                    <img src="" alt="">
-                </div>
-                <div class="dialog-content-content-delete-photo">
-                    <button class="ui-btn"><span>Удалить</span></button>
-                </div>
-            </div>
-            <div class="dialog-content-content">
-                <div class="dialog-content-content-photo">
-                    <img src="" alt="">
-                </div>
-                <div class="dialog-content-content-delete-photo">
-                    <button class="ui-btn"><span>Удалить</span></button>
-                </div>
-            </div>
-            <div class="dialog-content-content">
-                <div class="dialog-content-content-photo">
-                    <img src="" alt="">
-                </div>
-                <div class="dialog-content-content-delete-photo">
-                    <button class="ui-btn"><span>Удалить</span></button>
-                </div>
+            <div class="dialog-content-rows">
             </div>
         </div>
-        <div class="dialog-footer">
-            <div class="dialog-footer-content">
-                <button class="ui-btn" id="addPhotoBtn"><span>Добавить</span></button>
-            </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" onclick="document.getElementById('customerOrderDialog').close()">
+                Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeCustomerOrder">
+                Выбрать
+            </button>
         </div>
-</div></dialog>
+    </div>
+</dialog>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="/js/report.js" defer></script>
 </body>

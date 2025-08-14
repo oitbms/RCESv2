@@ -120,7 +120,8 @@ $('main').on('scroll', async function () {
 //Обработчик нажатия на кнопку печать отчета
 $('.print-report').click(function() {
     const $btn = $(this).prop('disabled', true);
-    $('<a>', { href: '/report/print?customerOrderId=73435423', download: '' })
+    const customerOrderId = $('#customerOrderId').data('id');
+    $('<a>', { href: `/report/print?customerOrderId=${customerOrderId}`, download: '' })
         .appendTo('body')[0].click()
         .remove();
     $btn.prop('disabled', false);
@@ -129,6 +130,72 @@ $('.print-report').click(function() {
 $('.build-form').click(async function () {
     const customerOrderId = 0;
     await displayPage(1, customerOrderId);
+});
+//Обработчики работы с модальным окном выбора ЗК
+$('.change-order-button').click(async function () {
+    const customerOrders = await $.get('/spm-api/getBurningAndAllCustomerOrder');
+    const primaryOrders = customerOrders.burning;
+    const allCustomerOrder = customerOrders.all;
+    let selectedCustomerOrderName = '';
+    const rowContainer = $('.dialog-content-rows');
+    const searchInput = $('.choice-order input');
+
+    // Функция отрисовки заказов
+    function renderOrders(orders) {
+        rowContainer.empty();
+        for (const co of orders) {
+            rowContainer.append(`
+                <div class="dialog-content-rows-row" data-id="${co.id}">
+                    <div class="content-row-column col-25">${co.name}</div>
+                    <div class="content-row-column col-150">${formatDate(co.planDate)}</div>
+                    <div class="content-row-column col-150">${formatDate(co.contractDate)}</div>
+                    <div class="content-row-column col-25">${co.site}</div>
+                </div>`
+            );
+        }
+    }
+
+    // Изначальная отрисовка горящих заказов
+    renderOrders(primaryOrders);
+
+    // Показ диалога
+    document.getElementById('customerOrderDialog').showModal();
+
+    // Обработчик поиска
+    searchInput.on('input', function() {
+        const searchText = $(this).val().toLowerCase().trim();
+
+        if (searchText === '') {
+            renderOrders(primaryOrders);
+        } else {
+            const filteredOrders = allCustomerOrder.filter(co =>
+                co.name.toLowerCase().includes(searchText)
+            );
+            renderOrders(filteredOrders);
+        }
+    });
+
+    const customerOrderInput = $('#customerOrderId'); // Добавьте эту строку
+
+// Подсвет выбранной строки
+    rowContainer.on('click', '.dialog-content-rows-row', function() {
+        $('.dialog-content-rows-row').removeClass('selected');
+        $(this).addClass('selected');
+        customerOrderInput.attr('data-id', $(this).data('id'));
+        selectedCustomerOrderName = $(this).children('.content-row-column').first().text();
+    });
+
+// Кнопка выбрать заказ
+    $('#changeCustomerOrder').on('click', async function() {
+        // Проверка, что заказ выбран
+        if (!customerOrderInput.data('id')) {
+            alert('Выберите заказ из списка');
+            return;
+        }
+        customerOrderInput.val(selectedCustomerOrderName);
+        document.getElementById('customerOrderDialog').close();
+        await displayPage(1, customerOrderInput.data('id'));
+    });
 });
 //Создание строки
 async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
@@ -215,13 +282,12 @@ async function loadChild(row) {
     const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: rowId});
     for (jc of jobComponents) {
         const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
-        const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
+        const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0 || (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: jc.id})).length > 0;
         hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
 
         await createRow(jc, 'jc', rowId, level + 1, hasChildren, isLast, hasNext);
     }
     const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId});
-
     for (js of jobSteps) {
         const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
         await createRow(js, 'js', rowId, level + 1, false, isLast, hasNext && level > 0);

@@ -21,11 +21,14 @@ public class SPMCustomerOrder {
     @Column(name = "str_code")
     private String strCode;
 
-    @Column(name = "site_id")
-    private Long siteId;
+    @ManyToOne(fetch=FetchType.EAGER)
+    private Site site;
 
     @Column(name="date_due")
     private LocalDateTime dateDue;
+
+    @Column(name="date_contract")
+    private LocalDateTime dateContract;
 
     @OneToMany(mappedBy="customerorder", fetch = FetchType.LAZY)
     private List<CustomerOrderLine> lines;
@@ -54,12 +57,12 @@ public class SPMCustomerOrder {
         this.strCode = strCode;
     }
 
-    public Long getSiteId() {
-        return siteId;
+    public Site getSite() {
+        return site;
     }
 
-    public void setSiteId(Long siteId) {
-        this.siteId = siteId;
+    public void setSite(Site site) {
+        this.site = site;
     }
 
     public LocalDateTime getDateDue() {
@@ -68,6 +71,14 @@ public class SPMCustomerOrder {
 
     public void setDateDue(LocalDateTime dateDue) {
         this.dateDue = dateDue;
+    }
+
+    public LocalDateTime getDateContract() {
+        return dateContract;
+    }
+
+    public void setDateContract(LocalDateTime dateContract) {
+        this.dateContract = dateContract;
     }
 
     public List<CustomerOrderLine> getLines() {

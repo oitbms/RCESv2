@@ -49,7 +49,8 @@ public class PrimaryDemandService {
                 .filter(jc -> pdById.containsKey(jc.getPrimarydemand().getId()))
                 .collect(Collectors.toMap(
                         jc -> pdById.get(jc.getPrimarydemand().getId()),
-                        Function.identity()
+                        Function.identity(),
+                        (existing, replacement) -> existing
                 ));
     }
 }

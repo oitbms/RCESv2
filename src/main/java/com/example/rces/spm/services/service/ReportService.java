@@ -12,9 +12,7 @@ import org.apache.commons.collections4.list.TreeList;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -79,21 +77,20 @@ public class ReportService {
 
             rootNodes.add(pdNode);
         }
-
         return exportToExcelTree(rootNodes,
-                Map.ofEntries(
-                        Map.entry("Строка ЗК/Спрос", 70 * 256),
-                        Map.entry("ДСЕ", 60 * 256),
-                        Map.entry("Узел ПЛМ", 35 * 256),
-                        Map.entry("Описание(заход)", 40 * 256),
-                        Map.entry("План брутто", 12 * 256),
-                        Map.entry("Выполнено", 14 * 256),
-                        Map.entry("Трудоемкость", 14 * 256),
-                        Map.entry("Дата начала", 12 * 256),
-                        Map.entry("Дата завершения", 16 * 256),
-                        Map.entry("РД начала", 14 * 256),
-                        Map.entry("РД завершения", 15 * 256)
-                ));
+                Collections.unmodifiableMap(new LinkedHashMap<>() {{
+                    put("Строка ЗК/Спрос", 70 * 256);
+                    put("ДСЕ", 60 * 256);
+                    put("Узел ПЛМ", 35 * 256);
+                    put("Описание(заход)", 40 * 256);
+                    put("План брутто", 12 * 256);
+                    put("Выполнено", 14 * 256);
+                    put("Трудоемкость", 14 * 256);
+                    put("Дата начала", 12 * 256);
+                    put("Дата завершения", 16 * 256);
+                    put("РД начала", 14 * 256);
+                    put("РД завершения", 15 * 256);
+                }}));
     }
 
 }
