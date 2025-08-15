@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -105,6 +107,23 @@ public class ApiController {
                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
         service.update(id, sendMessage, updatedFields);
+    }
+
+    @PostMapping("/commentBid")
+    public void createCommentBid(@RequestParam UUID id,@RequestParam String comment) {
+        service.createCommentBid(id, comment);
+    }
+
+    @DeleteMapping("/delete-images")
+    public ResponseEntity<?> deleteImages(@RequestBody Map<String, String> payload) {
+        try {
+            service.deleteImages(UUID.fromString(payload.get("id")),UUID.fromString(payload.get("reqId")));
+            return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @GetMapping("/typeRequest")

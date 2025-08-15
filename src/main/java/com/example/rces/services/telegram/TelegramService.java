@@ -72,7 +72,7 @@ public class TelegramService extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         if (entity instanceof Requests request) {
             sendMessage.setText(messageBuilder.buildRequestMessage(request, messageType));
-            if (messageType.equals(MessageType.CREATE) || messageType.equals(MessageType.UPDATE)) {
+            if (messageType.equals(MessageType.CREATE) || messageType.equals(MessageType.UPDATE) || messageType.equals(MessageType.REDIRECT)) {
                 if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
                     sendMessage.setMessageThreadId(2343);
                     sendMessage.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
@@ -86,7 +86,7 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         } else if (entity instanceof SGI sgi) {
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
-            sendMessage.setChatId(this.testChatId);
+            sendMessage.setChatId(this.controlChatId);
 //            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
         }
         try {

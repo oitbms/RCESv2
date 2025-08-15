@@ -55,10 +55,12 @@ public class RequestController {
             model.addAttribute("type", type);
             return "error";
         }
+        MlmNode node = userDetailsService.currentUser().getMlmNode();
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
         model.addAttribute(type, true);
         model.addAttribute("employeeName", userDetailsService.currentUser().getName());
+        model.addAttribute("mlmNodeEmployee", node);
         return "/requests";
     }
 
@@ -96,7 +98,7 @@ public class RequestController {
         }
         MlmNode mlmNode = null;
         if (!mlmNodeJson.isBlank()) {
-            mlmNode = objectMapper.readValue(mlmNodeJson, MlmNode.class);
+            mlmNode = MlmNode.valueOf(mlmNodeJson);
         }
         try {
             if (employee.getChatId() == null) {
@@ -113,6 +115,7 @@ public class RequestController {
 
         return "success";
     }
+
 
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {

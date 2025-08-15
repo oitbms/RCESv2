@@ -9,8 +9,10 @@ import com.example.rces.services.telegram.TelegramService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -138,6 +140,11 @@ public class ApiServices {
         request.setVersion(request.getVersion() + 1);
         createLog(oldRequest, request, updaterEmployee, service);
         service.save(request);
+        if (sendMessage) {
+            if (!updaterEmployee.getId().equals(request.getEmployee().getId())) {
+                tgService.sendMessage(request, request.getEmployee(), MessageType.REDIRECT);
+            }
+        }
 //        if (sendMessage) {
 //            if (request.getStatus().equals(Status.Completed)) {
 //                tgService.sendMessage(request, updaterEmployee, !AppProperties.getBool() ? MessageType.COMPLETED : MessageType.UPDATE);
@@ -176,8 +183,12 @@ public class ApiServices {
         if (request.getInconsistency().isEmpty()) {
             if (status == null) {
                 if (request.getStatus() == Status.New) {
-                    request.setStatus(Status.InWork);
-                    tgService.sendMessage(request, request.getCreatedBy(), MessageType.WORK);
+                    if (request.getEmployee().equals(updaterEmployee)) {
+                        request.setStatus(Status.InWork);
+                        tgService.sendMessage(request, request.getCreatedBy(), MessageType.WORK);
+                    } else {
+                      throw new RuntimeException("Пользователь не ответственный за заявку!");
+                    }
                 } else if (request.getStatus() == Status.InWork) {
                     request.setDescription(description);
                     request.setStatus(Status.Completed);
@@ -206,6 +217,23 @@ public class ApiServices {
         service.save(request);
     }
 
+    public void deleteImages(UUID id, UUID reqId) {
+        Images images = service.findById(Images.class, id);
+        Requests requests = service.findById(Requests.class, reqId);
+        Employee user = userDetailsService.currentUser();
+
+        if (!requests.getEmployee().getName().equals(user.getName())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Пользователь не может удалять фото!");
+        }
+
+        if (images == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Images not found with id: " + id);
+        }
+
+        service.deletePhoto(images.getId());
+    }
+
+
     public Employee getUpdater() {
         return userDetailsService.currentUser();
     }
@@ -232,6 +260,12 @@ public class ApiServices {
         } else {
             return service.findAllByField(SGI.class, "id", ids);
         }
+    }
+
+    public void createCommentBid (UUID id, String comment) {
+        Requests requests = service.findById(Requests.class, id);
+        requests.setCommentAgreed(comment);
+        service.save(requests);
     }
 
 }

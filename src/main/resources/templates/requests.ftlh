@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -43,23 +42,23 @@
             <div class="mb-3" id="mlmNodeCreateField">
                 <label class="form-label">Цех</label>
                 <div class="input-group">
-                    <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех" required>
-                    <input type="hidden" id="mlmNodeJson" name="mlmNodeJson">
-                    <button type="button" class="btn btn-outline-primary openModal"
-                            data-endpoint="mlmNode"
-                            data-input-id="mlmNodeName"
-                            data-hidden-entity="mlmNodeJson"
-                            data-modal-id="mlmNodeModal">
-                        Выбрать
-                    </button>
+                    <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех" value="${mlmNodeEmployee.getName()}" required>
+                    <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee}">
+<#--                    <button type="button" class="btn btn-outline-primary openModal"-->
+<#--                            data-endpoint="mlmNode"-->
+<#--                            data-input-id="mlmNodeName"-->
+<#--                            data-hidden-entity="mlmNodeJson"-->
+<#--                            data-modal-id="mlmNodeModal">-->
+<#--                        Выбрать-->
+<#--                    </button>-->
                 </div>
             </div>
 
             <!-- ТМЦ -->
             <div class="mb-3">
-                <label class="form-label">Тип ДСЕ</label>
+                <label class="form-label">Тип ТМЦ</label>
                 <div class="input-group">
-                    <input type="text" id="itemName" class="form-control" placeholder="ДСЕ">
+                    <input type="text" id="itemName" class="form-control" placeholder="ТМЦ">
                     <input type="hidden" id="itemNameJson" name="itemNameJson">
                     <button type="button" class="btn btn-outline-primary openModal"
                             data-endpoint="item"
@@ -75,29 +74,47 @@
             <#if type == 'otk'>
                 <div class="mb-3" id="qtyCreateField">
                     <label for="qty" class="form-label">Кол-во деталей к контролю</label>
+                    <#if mlmNodeEmployee.getName() == 'Цех №1'>
+                    <input type="text" id="qty" name="qty" class="form-control" >
+                    <#else >
                     <input type="text" id="qty" name="qty" class="form-control" required>
+                    </#if>
                 </div>
             </#if>
 
             <!-- Тип контроля -->
             <#if type == 'otk'>
-                <div class="mb-3">
-                    <label for="control" class="form-label">Тип контроля</label>
-                    <select id="control" name="control" class="form-select" required>
-                        <option value="">Выберите тип контроля</option>
-                        <option value="ВИК">ВИК</option>
-                        <option value="ЛНК">ЛНК</option>
-                    </select>
+                <div class="mb-3" id="divControlId">
+                    <label for="control" class="form-label" >Тип контроля</label>
+                    <#if mlmNodeEmployee.getName() == 'Цех №1'>
+                        <select id="control" name="control" class="form-select">
+                            <option value="">Выберите тип контроля</option>
+                            <option value="ВИК" selected>ВИК</option>
+                            <option value="ЛНК">ЛНК</option>
+                        </select>
+                    <#else >
+                        <select id="control" name="control" class="form-select" required>
+                            <option value="">Выберите тип контроля</option>
+                            <option value="ВИК">ВИК</option>
+                            <option value="ЛНК">ЛНК</option>
+                        </select>
+                    </#if>
                     <input type="hidden" id="hiddenСontrol" class="form-control">
                 </div>
             </#if>
 
             <!-- Заказ клиента -->
-            <div class="mb-3">
+            <div class="mb-3" id="divCustomerId">
                 <label class="form-label">Заказ клиента</label>
                 <div class="input-group">
-                    <input type="text" id="customerOrderString" name="customerOrderString" class="form-control"
-                           placeholder="Номер заказа" required>
+                    <#if mlmNodeEmployee.getName() == 'Цех №1'>
+                        <input type="text" id="customerOrderString" name="customerOrderString" class="form-control"
+                               placeholder="Номер заказа" >
+                        <#else >
+                            <input type="text" id="customerOrderString" name="customerOrderString" class="form-control"
+                                   placeholder="Номер заказа" required>
+                            </#if>
+
                     <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                     <button type="button" class="btn btn-outline-primary openModal"
                             data-endpoint="customerOrders"
@@ -127,7 +144,7 @@
                     </div>
                 </div>
             <#else>
-                <div class="mb-3">
+                <div class="mb-3" id="divReasonsId">
                     <label for="reasonsJson" class="form-label">Причина</label>
                     <input type="text" id="reasonsJson" name="reasonsJson" class="form-control"
                            placeholder="Причина">
@@ -135,7 +152,7 @@
             </#if>
 
             <!-- Комментарий -->
-            <div class="mb-3">
+            <div class="mb-3" id="divCommentId">
                 <label for="comment" class="form-label">Комментарий</label>
                 <textarea class="form-control" id="comment" name="comment" rows="4"
                           placeholder="Введите комментарий"></textarea>
@@ -162,6 +179,7 @@
         <!-- Номер заявки -->
         <div class="mb-3">
             <span class="fs-5 fw-bold">Заявка №${bid.requestNumber}</span>
+            <a href="/requestslist/${type}" class="btn btn-outline-secondary d-none d-md-block" style="margin-left:550px;">Перейти в список</a>
         </div>
 
         <!-- Информация -->
@@ -175,14 +193,15 @@
                 </#if>
                 <p class="mb-2"><strong>Дата создания:</strong> ${(date)!""}</p>
                 <p class="mb-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
-                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"-"}</p>
-                <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!""}</p>
+                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
+                <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!"Не указан"}</p>
                 <#if bid.typeRequest == 'otk'>
-                    <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!""}</p>
+                    <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
                     <p class="mb-2"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
-                    <p class="mb-2"><strong>Причина:</strong> ${(bid.getReason_wr())!""}</p>
+                    <p class="mb-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
+                    <p class="mb-2"><strong>Дефект:</strong> ${(bid.getCommentAgreed())!"Не указан"}
                     <#else >
-                        <p class="mb-2"><strong>Причина:</strong> ${(bid.reason.getName())!""}</p>
+                        <p class="mb-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
                 </#if>
                 <#if bid.status.getName() == "В работе">
                 <p class="mb-2"><strong>Комментарий:</strong>
@@ -370,7 +389,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="mb-2">
-                                    <label class="mb-3">Несоответствия:</label>
+                                    <label for="inconsistencyName" class="mb-3">Несоответствия:</label>
                                     <input type="text" id="inconsistencyName" readonly
                                            class="form-control readonly-scroll"
                                            value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
@@ -412,7 +431,7 @@
                     </div>
                 </div>
 
-                <#if (bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER">
+                <#if ((bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER")>
                     <div class="mb-1 mt-2">
                         <label for="comment" class="form-label">Комментарий:</label>
                         <textarea class="form-control work"
@@ -421,11 +440,22 @@
                                   rows="5"
                                   style="resize: both;">${bid.comment!''}</textarea>
                     </div>
-<#--                    <button class="btn btn-success work" id="reqCommentId"-->
-<#--                            data-param="${bid.getId()}"-->
-<#--                            data-comment="${bid.getComment()!""}">-->
-<#--                        Сохранить комментарий-->
-<#--                    </button>-->
+                </#if>
+                <#if bid.status.getName() == "В работе" && role == "OTK">
+                    <div class="mb-1 mt-2">
+                        <button class="btn btn-primary" id="openOtkId" type="button">Комментарий для детали которая пропущена с дефектами  ↓</button>
+                        <textarea class="form-control mt-2"
+                                  id="commentOtk"
+                                  name="commentAgreed"
+                                  rows="5"
+                                  style="resize: both; display: none">${bid.commentAgreed!''}</textarea>
+                    </div>
+                    <button class="btn btn-success" id="commentOtkId"
+                            style="display: none"
+                            data-param="${bid.getId()}"
+                            data-comment="${bid.getCommentAgreed()!""}">
+                        Сохранить комментарий
+                    </button>
                 </#if>
             </div>
         </div>
@@ -456,7 +486,7 @@
 <!-- Модальные окна -->
 
 <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="photoModalLabel">Прикрепленные фото</h5>
@@ -464,9 +494,12 @@
             </div>
             <div class="modal-body">
                 <div id="photoContainer" class="d-flex flex-wrap gap-3"></div>
-                <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;">
-                <!-- Добавьте сюда -->
-                <img id="fullPhoto" src="" style="max-width:100%; max-height:80vh; margin-top:10px;">
+                <#if role?? && role == "OTK">
+                    <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                <#else>
+                    <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display: none;">
+                </#if>
+                <img id="fullPhoto" src="" style="max-width:100%; max-height:80vh; margin-top:10px; display: none">
             </div>
             <div class="modal-footer">
                 <button type="button" id="addPhotoBtn" class="btn btn-primary">Добавить фото</button>
@@ -476,7 +509,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="universalModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade " id="universalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -484,7 +517,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control mb-2" id="modalSearchInput" placeholder="Поиск...">
+                <input type="text" class="form-control mb-2" id="modalSearchInput"  placeholder="Поиск..." >
                 <ul class="list-group modal-list" id="modalItemList">
 
                 </ul>
@@ -597,6 +630,8 @@
                         document.getElementById(inputId).value = arr.map(e => e.name).join(', ');
                         document.getElementById(hiddenId).value = JSON.stringify(arr);
                     } else {
+                        console.log(item);
+                        handleItemSelection(item);
                         document.getElementById(inputId).value = item.name;
                         document.getElementById(hiddenId).value = JSON.stringify(item);
                         modal.hide();
@@ -689,6 +724,89 @@
             });
         });
     });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const button = document.getElementById('commentOtkId');
+        if (button) {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-param');
+                const comment = document.getElementById('commentOtk').value;
+
+                fetch('/api/commentBid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        'id': id,
+                        'comment': comment
+                    })
+                })
+                    .then(response => {
+                        if (response.ok) {
+                        } else {
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        alert('Ошибка при отправке запроса');
+                    });
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openBtn = document.getElementById('openOtkId');
+        const textarea = document.getElementById('commentOtk');
+        const saveBtn = document.getElementById('commentOtkId');
+
+        if (openBtn && textarea && saveBtn) {
+            openBtn.addEventListener('click', function() {
+                if (textarea.style.display === 'none' || textarea.style.display === '') {
+                    textarea.style.display = 'block';
+                    saveBtn.style.display = 'inline-block';
+                } else {
+                    textarea.style.display = 'none';
+                    saveBtn.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+<script>
+    // ==============================
+    // 8. Обработка выбора детали
+    // ==============================
+    function handleItemSelection(selectedItem) {
+        const itemName = selectedItem.name || selectedItem;
+
+        // Проверяем, равна ли выбранная деталь "Карта раскроя"
+        // const isKartaRaskroya = itemName === 'Карта раскроя';
+
+        // Показываем или скрываем поля
+        const qtyField = document.getElementById('qtyCreateField');
+        const controlField = document.getElementById('divControlId');
+        const reasonField = document.getElementById('divReasonsId');
+        const commentField = document.getElementById('divCommentId');
+        const customerField = document.getElementById('divCustomerId');
+
+        if (itemName === 'Карта раскроя') {
+            if (qtyField) qtyField.style.display = 'none';
+            if (controlField) controlField.style.display = 'none';
+            if (reasonField) reasonField.style.display = 'none';
+            if (commentField) commentField.style.display = 'none';
+            if (customerField) customerField.style.display = 'none';
+        } else {
+            if (qtyField) qtyField.style.display = 'block';
+            if (controlField) controlField.style.display = 'block';
+            if (reasonField) reasonField.style.display = 'block';
+            if (commentField) commentField.style.display = 'block';
+            if (customerField) customerField.style.display = 'block';
+        }
+    }
+
 </script>
 </body>
 </html>

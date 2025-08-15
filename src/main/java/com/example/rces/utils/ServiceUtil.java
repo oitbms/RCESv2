@@ -276,7 +276,7 @@ public class ServiceUtil {
         //у ОТК может закрывать только отк и редактировать после принятие в работу только отк
         else if (request.getTypeRequest().equals(Requests.Type.otk) && request.getStatus().equals(Status.Cancel) && updaterEmployee.getRole().equals("OTK")) {
             return true;
-        } else if (!request.getEmployee().getId().equals(updaterEmployee.getId()) && (!updaterEmployee.getRole().equals("ADMIN") && !updaterEmployee.getRole().equals("MASTER"))) {
+        } else if (!request.getEmployee().getId().equals(updaterEmployee.getId()) && (!updaterEmployee.getRole().equals("ADMIN") && !updaterEmployee.getRole().equals("MASTER")) && !updaterEmployee.getRole().equals("OTK")) {
             throw new ForbiddenException();
         } else if ((request.getStatus().equals(Status.Closed) || request.getStatus().equals(Status.Cancel)) && !request.getCreatedBy().equals(updaterEmployee) && !updaterEmployee.getRole().equals("ADMIN")) {
             throw new ForbiddenException();

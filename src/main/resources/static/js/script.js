@@ -14,6 +14,7 @@ async function fetchData(endpoint, param) {
     const url = new URL('/api/' + endpoint, window.location.origin);
     url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
+    console.log(param);
     return response.json();
 }
 
@@ -82,18 +83,34 @@ function renderPhotos(images) {
         return;
     }
 
+    document.getElementById('photoContainer').addEventListener('click', function(e) {
+        if (e.target.tagName === 'IMG') {
+            const src = e.target.src;
+            const fullPhoto = document.getElementById('fullPhoto');
+            fullPhoto.src = src;
+            fullPhoto.style.display = 'block';
+        }
+    });
+
+    document.getElementById('fullPhoto').addEventListener('click', function() {
+        this.style.display = 'none';
+    });
+
     images.forEach((imgData, index) => {
         const imgWrapper = document.createElement('div');
         imgWrapper.className = 'photo-wrapper';
         const imageUrl = typeof imgData === 'string' ? imgData : imgData.data;
 
         imgWrapper.innerHTML = `
-            <img src="${imageUrl}" class="attached-photo">
-            <button class="btn btn-danger delete-photo-btn" data-index="${index}">Удалить</button>
-        `;
+        <img src="${imageUrl}" class="attached-photo">
+        <button class="delete-photo-btn" data-index="${index}">Удалить</button>
+    `;
 
-        // Обработчики
-        imgWrapper.querySelector('.delete-photo-btn').addEventListener('click', () => deletePhoto(index));
+        const deleteBtn = imgWrapper.querySelector('.delete-photo-btn');
+        deleteBtn.addEventListener('click', () => {
+            deletePhoto(index);
+        });
+
         const imgElem = imgWrapper.querySelector('img');
         imgElem.addEventListener('click', () => {
             document.getElementById('fullPhoto').src = imageUrl;
@@ -105,10 +122,43 @@ function renderPhotos(images) {
 }
 
 async function deletePhoto(index) {
-    const id = entityId.value;
-    let images = await fetchData("images", id);
+    const id = entityId.value; // Предполагается, что entityId — это элемент или переменная с нужным идентификатором
+    let images = await fetchData("images", id); // Получаем текущие изображения
+    const imageToDelete = images[index]; // Изображение, которое нужно удалить
+    const reqId = imageToDelete.mainlink;
+    const  imageId = imageToDelete.id
+
+
+    const response = await fetch('/api/delete-images', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: imageId ,reqId:reqId })
+    });
+
+    if (!response.ok) {
+        const errorMessage = await response.text();
+        alert("Ошибка: " + errorMessage);
+        return;
+    }
+
     images.splice(index, 1);
-    await saveData(images);
+
+    // Сохраняем обновленный массив изображений
+    // await saveData(images);
+
+    // Обновляем отображение, если удаляемое фото отображается в полноэкранном режиме
+    const fullPhoto = document.getElementById('fullPhoto');
+    const currentSrc = fullPhoto.src;
+    const deletedSrc = typeof imageToDelete === 'string' ? imageToDelete : imageToDelete.data;
+    if (currentSrc === deletedSrc) {
+        fullPhoto.style.display = 'none';
+        fullPhoto.src = '';
+    }
+
+    // Перерисовываем фотографии
+    renderPhotos(images);
 }
 
 // ==============================
@@ -139,34 +189,45 @@ if (document.title.includes("Заявка на вызов") && viewForm) {
         document.getElementById('photoInput').click();
     });
 
-    document.getElementById('photoInput')?.addEventListener('change', async function (event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    document.getElementById('photoInput').addEventListener('change', async function (event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+        let images = await fetchData("images", entityId.value) || [];
 
-        const tempPreview = document.createElement('div');
-        tempPreview.className = 'photo-wrapper temporary';
-        tempPreview.innerHTML = `
+        for (const file of files) {
+            const tempPreview = document.createElement('div');
+            tempPreview.className = 'photo-wrapper temporary';
+            tempPreview.innerHTML = `
             <img src="" class="attached-photo loading">
             <button class="delete-photo-btn" disabled>Удалить</button>
         `;
-        document.getElementById('photoContainer').prepend(tempPreview);
+            document.getElementById('photoContainer').prepend(tempPreview);
 
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-            tempPreview.querySelector('img').src = e.target.result;
-            tempPreview.querySelector('img').classList.remove('loading');
-            let images = await fetchData("images", entityId.value) || [];
-            images.unshift(e.target.result);
-            await saveData(images);
-            renderPhotos(images);
-        };
-        reader.onerror = () => {
-            tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
-        };
-        reader.readAsDataURL(file);
+            const reader = new FileReader();
+
+            await new Promise((resolve, reject) => {
+                reader.onload = async (e) => {
+                    try {
+                        tempPreview.querySelector('img').src = e.target.result;
+                        tempPreview.querySelector('img').classList.remove('loading');
+                        images.push(e.target.result);
+                        await saveData(images);
+                        renderPhotos(images);
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = () => {
+                    tempPreview.innerHTML = '<div class="error">Ошибка загрузки</div>';
+                    reject(new Error('Ошибка чтения файла'));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        event.target.value = '';
     });
 
-    // Закрытие модального окна просмотра фото
     document.getElementById('fullPhotoModal')?.addEventListener('click', function (event) {
         if (event.target === this || event.target.classList.contains('close')) {
             this.classList.remove('open');

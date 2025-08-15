@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Список заявок</title>
-
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -49,7 +48,7 @@
        data-show-toggle="true"
        data-locale="ru-RU"
        data-buttons-class="info"
-       class="table table-striped" >
+       class="table" >
     <thead>
     <tr>
         <th data-field="requestNumber" data-sortable="true">№</th>
@@ -72,11 +71,17 @@
     <tbody>
     <#list requestsList as req>
         <#assign reqIndex = req_index>
-        <tr class="clickable-row" data-request-number="${req.requestNumber}">
+        <#if req.getStatus().getName() == "Выполнен" || req.getStatus().getName() == "Закрыт">
+        <tr class="table-success" data-request-number="${req.requestNumber}">
+        <#elseif req.getStatus().getName() == "В работе">
+            <tr class="table-warning" data-request-number="${req.requestNumber}">
+        <#elseif req.getStatus().getName() == "Отменен">
+            <tr class="table-danger" data-request-number="${req.requestNumber}">
+        </#if>
             <td>${req.getRequestNumber()}</td>
             <td>${req.getCreatedBy().getName()}</td>
             <td>${req.getEmployee().getName()}</td>
-            <td>${req.getCustomerOrder().getName()}</td>
+            <td>${(req.getCustomerOrder().getName())!"Нет"}</td>
             <td>${req.getMlmNode().getName()}</td>
             <#if typeRequest == 'otk'>
                 <td>${(req.getReason_wr())!"-"}</td>
@@ -89,7 +94,7 @@
             <td>${updateDateList[reqIndex]!"-"}</td>
             <td>${(req.getUpdateBy().getName())!"-"}</td>
             <#if typeRequest == 'otk'>
-                <td>${(req.getControl())}</td>
+                <td>${(req.getControl())!"Нет"}</td>
             </#if>
             <td>
                 <i class="history-icon bi bi-clock-history text-primary fs-4" data-id="${req.id}"></i>

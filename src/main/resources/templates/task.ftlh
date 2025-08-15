@@ -6,8 +6,6 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <title>Страница ССЗ</title>
 </head>
 <style>
@@ -20,12 +18,9 @@
 <body>
 <div>
     <h2  class="d-flex justify-content-center">ССЗ на ${dateStart!""}</h2>
-<#--    <select class="search-select" style="text-align: center">-->
-<#--        <option selected>Выберите УЗЕЛ цеха:</option>-->
-<#--        <#list mlmNode as node>-->
-<#--            <option value="${node.getId()}">${node.getName()!""}</option>-->
-<#--        </#list>-->
-<#--    </select>-->
+    <div style="justify-content: left">
+        <a href="/menu" class="btn btn-outline-secondary d-none d-md-block" style="width: 100px">Перейти в меню</a>
+    </div>
     <table class="table table-striped table-hover table-bordered">
         <h3 class="d-flex justify-content-center text-warning mt-4 ">Задач в работе: ${valueTaskListSize}</h3>
         <thead>
@@ -47,7 +42,9 @@
         <#list taskList as task>
             <tr id="${task.getJobstep().getId()}">
                 <td>...</td>
-                <td>${(task.getJobstep().getJobcomponent().getItem().getName())!""}/${(task.getJobstep().getJobcomponent().getPrimarydemand().getCustomerorder().getStrCode())!""}</td>
+                <td>${(task.getJobstep().getJobcomponent().getItem().getName())!""}
+<#--                    /${(task.getJobstep().getJobcomponent().getPrimarydemand().getCustomerorder().getStrCode())!""}-->
+                </td>
                 <td>${task.getJobstep().getDescription()}</td>
                 <td>${task.getQtyProduction()}</td>
                 <td class="finish-cell">${task.getQtyFinished()}</td>
@@ -59,7 +56,14 @@
                     <button type="button" class="btn btn-primary btnOpenModal" data-bs-toggle="modal" data-bs-target="#staticBackdrop" data-id="${task.getId()}">Выполнено</button>
                 </td>
                 <td>
-                    <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#staticWorkBackdrop" data-id="${task.getId()}">Взять в работу</button>
+                    <button type="button" class="btn btn-primary btnInWork"
+                            data-bs-toggle="modal"
+                            data-bs-target="#staticWorkBackdrop"
+                            data-id="${task.getJobstep().getId()}"
+                            data-workMlmNodeId="${task.getJobstep().getMlmNode().getId()}"
+
+
+                    >Взять в работу</button>
                 </td>
             </tr>
         </#list>
@@ -73,7 +77,7 @@
     </div>
 
     <h3 class="hidden" id="qtyFinId">Выполненных задач: ${valueFinishedListSize!"0"}</h3>
-    <table id="tableFinishedId" class="table table-striped table-hover table-bordered mt-6">
+    <table id="tableFinishedId" class="table table-striped table-hover table-bordered">
         <thead>
         <tr>
             <th>№</th>
@@ -91,7 +95,7 @@
         <#list finished as task>
             <tr id="${task.getJobstep().getId()}">
                 <td>...</td>
-                <td>${(task.getJobstep().getJobcomponent().getItem().getName())!""}/${(task.getJobstep().getJobcomponent().getPrimarydemand().getCustomerorder().getStrCode())!""}</td>
+                <td>${(task.getJobstep().getJobcomponent().getItem().getName())!""}/${(task.getJobstep().getId())!""}</td>
                 <td>${task.getJobstep().getDescription()}</td>
                 <td>${task.getQtyProduction()}</td>
                 <td class="finish-cell">${task.getQtyFinished()}</td>
@@ -128,26 +132,26 @@
     </div>
 </div>
 
-<#--<div class="modal fade" id="staticWorkBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticWorkBackdropLabel" aria-hidden="true">-->
-<#--    <div class="modal-dialog">-->
-<#--        <div class="modal-content">-->
-<#--            <div class="modal-header">-->
-<#--                <h5 class="modal-title" id="staticWorkBackdropLabel">Выполнение ССЗ</h5>-->
-<#--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<#--            </div>-->
+<div class="modal fade" id="staticWorkBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticWorkBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticWorkBackdropLabel">Выполнение ССЗ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 <#--            <div class="modal-body">-->
 <#--                <div class="mb-3">-->
 <#--                    <label for="qtyWorkFin" class="d-flex justify-content-center form-label">Кол-во которое взято в работу</label>-->
 <#--                    <input type="number" class="form-control" id="qtyWorkId" name="qtyWork">-->
 <#--                </div>-->
 <#--            </div>-->
-<#--            <div class="modal-footer">-->
-<#--                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>-->
-<#--                <button type="submit" class="btn btn-primary" id="saveWorkId">Сохранить</button>-->
-<#--            </div>-->
-<#--        </div>-->
-<#--    </div>-->
-<#--</div>-->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-primary" id="saveWorkId">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="errorBackdrop" tabindex="-1" aria-labelledby="errorBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -185,29 +189,29 @@
         })
     });
     const buttons = document.querySelectorAll('.btnOpenModal');
-    let selectedJobStepId = null;
+    let selectedTaskId = null;
     let currentButton = null;
     const saveBtn = document.getElementById('saveId');
 
     buttons.forEach((btn) => {
         btn.addEventListener('click', function() {
-            selectedJobStepId = this.getAttribute('data-id').replace(/\u00A0|\s+/g, '').trim();
+            selectedTaskId = this.getAttribute('data-id').replace(/\u00A0|\s+/g, '').trim();
             currentButton = this;
-            console.log("ID:", selectedJobStepId);
+            console.log("ID:", selectedTaskId);
         });
     });
 
     document.getElementById('saveId').addEventListener('click', () => {
         const qty = document.getElementById('qtyFinishedId').value.trim();
 
-        if (!selectedJobStepId || !currentButton) {
+        if (!selectedTaskId || !currentButton) {
             alert('Пожалуйста, выберите задачу.');
             return;
         }
 
         saveBtn.disabled = true;
 
-        const idNumber = parseInt(selectedJobStepId, 10);
+        const idNumber = parseInt(selectedTaskId, 10);
         const requestBody = {
             data: [
                 {
@@ -254,8 +258,35 @@
     });
 </script>
 <script>
-    $(document).ready(function() {
-        $('.search-select').select2({ width: '200px' });
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const buttons = document.querySelectorAll('.btnInWork');
+        let selectedJobStepId = null;
+        let mlmNodeId = null;
+
+        buttons.forEach((btn) => {
+            btn.addEventListener('click', function() {
+                selectedJobStepId = this.getAttribute('data-id').replace(/\u00A0|\s+/g, '').trim();
+                mlmNodeId = this.getAttribute('data-workMlmNodeId').replace(/\u00A0|\s+/g, '').trim();
+                console.log("ID:", selectedJobStepId);
+
+                // Отправка POST-запроса с выбранным ID
+                fetch('/shift-task/create-document', {
+                // fetch('/shift-task/stepbox', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ primarydemand_list: selectedJobStepId}) // Передача ID в теле запроса
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        // Обработка ответа сервера
+                        console.log(data);
+                    })
+                    .catch(error => console.error('Ошибка:', error));
+            });
+        });
     });
 </script>
 

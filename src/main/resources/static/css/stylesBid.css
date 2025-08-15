@@ -380,12 +380,14 @@
     object-fit: cover;
     cursor: pointer;
 }
-
+.custom-modal-width {
+    width: 800px !important;
+    max-width: 90% !important;
+}
 input.readonly-scroll {
     overflow: auto;
     white-space: nowrap; /* или 'pre-wrap' для многострочного текста */
 }
-
 #fullPhoto {
     max-width: 90%;
     max-height: 80vh;
@@ -651,4 +653,20 @@ input.readonly-scroll {
     border-color: #4a90e2;
     box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
     outline: none;
+}
+.delete-photo-btn {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: red; /* красный фон */
+    color: white;             /* белый текст */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.delete-photo-btn:hover {
+    background-color: darkred; /* темно-красный при наведении */
 }

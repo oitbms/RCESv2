@@ -119,7 +119,7 @@
         <#list users as req>
             <tr id="req-${req.id}">
                 <td>${req.username}</td>
-                <td>${req.mlmNode.getName()}</td>
+                <td>${(req.mlmNode.getName())!""}</td>
                 <#if req.enabled>
                     <td>Активный</td>
                     <#else >

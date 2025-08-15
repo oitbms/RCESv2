@@ -15,7 +15,8 @@ public enum Inconsistency {
     Inconsistency4("Несоответствие консервации", "ВИК"),
     Inconsistency5("Несоответствие качеств уплотнительной поверхности", "ВИК"),
     Inconsistency6("Несоответствие материала", "ЛНК"),
-    Inconsistency7("Дефекты сварочных соединений", "ЛНК");
+    Inconsistency7("Дефекты сварочных соединений", "ЛНК"),
+    Inconsistency8("Несоответствие документации", "ВИК"),;
 
     private final String name;
 

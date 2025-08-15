@@ -1,8 +1,6 @@
 package com.example.rces.spm.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Subselect;
 import org.springframework.data.annotation.Immutable;
 
@@ -19,6 +17,17 @@ public class MlmNode {
 
     @Column(name = "description")
     private String description;
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    private StockNode releaseStockNode; //Склад выпуска
+
+    public StockNode getReleaseStockNode() {
+        return releaseStockNode;
+    }
+
+    public void setReleaseStockNode(StockNode releaseStockNode) {
+        this.releaseStockNode = releaseStockNode;
+    }
 
     public Long getId() {
         return id;
