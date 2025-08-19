@@ -59,7 +59,7 @@ async function toggleAgreement(sgiId, button) {
     formData.append("id", sgiId);
     formData.append("agreed", isAgreed);
 
-    const data = await $.get('api/sgi', {id: sgiId});
+    const data = await $.get('api/sgi/get-sgi', {id: sgiId});
     if (data.planDate === null) return alert("Не заполнено поле планируемый срок");
     if (!data.executions) return alert("У мероприятия нет факта выполнения");
 
@@ -84,7 +84,7 @@ async function change(rowId) {
     const container = $('#planContainer');
     container.empty();
 
-    const data = await $.get('api/sgi', {id: rowId});
+    const data = await $.get('api/sgi/get-sgi', {id: rowId});
     if (data.agree) return alert('Нельзя редактировать завершенную заявку');
 
     container.append(`
@@ -216,8 +216,8 @@ async function change(rowId) {
 async function openFactExecutionModal(rowId) {
     entityId = rowId;
 
-    const data = await $.get('/api/executions', {param: rowId});
-    const {planDate} = await $.get('/api/sgi', {id: rowId});
+    const data = await $.get('/api/sgi/executions', {param: rowId});
+    const {planDate} = await $.get('/api/sgi/get-sgi', {id: rowId});
 
     if (planDate === null) return alert("Не заполнено поле планируемый срок");
 
@@ -304,7 +304,7 @@ document.getElementById("photoModal").addEventListener('show.bs.modal', async fu
     const button = event.relatedTarget;
     const factId = button.dataset.id
     const data = await $.ajax({
-        url: 'api/images',
+        url: 'api/sgi/images',
         method: 'GET',
         data: {param: factId}
     });
@@ -638,7 +638,7 @@ $(document).ready(function () {
 // Модифицируем обработчик печати
     $('#printRowBtn').on('click', () => {
         if (selectedRows.length > 0) {
-            window.open(`/api/print?ids=${selectedRows.join(',')}`);
+            window.open(`/report/print/sgi?ids=${selectedRows.join(',')}`);
         }
         $('#customContextMenu').hide();
     });
@@ -745,7 +745,7 @@ document.querySelectorAll('.sgiNumber').forEach(function (td) {
 $('.additional-menu-item').on('click', function() {
     const department = $(this).data('department');
     $('<a>', {
-        href: `/api/print?department=${department}`,
+        href: `/report/print/sgi?department=${department}`,
         download: ''
     }).appendTo('body')[0].click().remove();
 });

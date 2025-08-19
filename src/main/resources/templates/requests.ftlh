@@ -45,7 +45,7 @@
                     <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех" value="${mlmNodeEmployee.getName()}" required>
                     <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee}">
 <#--                    <button type="button" class="btn btn-outline-primary openModal"-->
-<#--                            data-endpoint="mlmNode"-->
+<#--                            data-endpoint="mlm-node"-->
 <#--                            data-input-id="mlmNodeName"-->
 <#--                            data-hidden-entity="mlmNodeJson"-->
 <#--                            data-modal-id="mlmNodeModal">-->
@@ -117,7 +117,7 @@
 
                     <input type="hidden" id="customerOrderJson" name="customerOrderJson">
                     <button type="button" class="btn btn-outline-primary openModal"
-                            data-endpoint="customerOrders"
+                            data-endpoint="customer-orders"
                             data-input-id="customerOrderString"
                             data-hidden-entity="customerOrderJson"
                             data-modal-id="customerOrdersModal">
@@ -376,7 +376,7 @@
                                 <button type="button"
                                         id="successId"
                                         class="btn btn-success work"
-                                        data-endpoint="inwork"
+                                        data-endpoint="request/in-work"
                                         data-param="${bid.getId()}"
                                         data-description="${bid.getDescription()!""}"
                                 >
@@ -429,7 +429,7 @@
                                 <button type="button"
                                         id="successId"
                                         class="btn btn-success work"
-                                        data-endpoint="inwork"
+                                        data-endpoint="request/in-work"
                                         data-param="${bid.getId()}"
                                         data-description="${bid.getDescription()!""}"
                                 >
@@ -603,7 +603,7 @@
                 console.log('param:', param);
                 console.log('description:', description);
 
-                const response = await fetch('/api/inwork', {
+                const response = await fetch('/api/request/in-work', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -779,7 +779,7 @@
         //         return;
         //     }
         //
-        //     fetch('/api/pause', {
+        //     fetch('/api/request/pause', {
         //         method: 'POST',
         //         headers: {
         //             'Content-Type': 'application/x-www-form-urlencoded'
@@ -797,7 +797,7 @@
                 const id = button.getAttribute('data-param');
                 const comment = document.getElementById('commentOtk').value;
 
-                fetch('/api/commentBid', {
+                fetch('/api/request/comment-bid', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'

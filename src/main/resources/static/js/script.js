@@ -45,7 +45,7 @@ async function saveData(images, customerOrder) {
     if (images) data["images"] = images;
     if (customerOrder) data["customerOrder"] = customerOrder;
 
-    const url = new URL('/api/update', window.location.origin);
+    const url = new URL('/api/request/update', window.location.origin);
     url.searchParams.append('bidType', bidType);
     url.searchParams.append("id", entityId.value);
     url.searchParams.append("sendMessage", data.sendToTelegram);
@@ -129,7 +129,7 @@ async function deletePhoto(index) {
     const  imageId = imageToDelete.id
 
 
-    const response = await fetch('/api/delete-images', {
+    const response = await fetch('/api/request/delete-images', {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'

@@ -20,7 +20,7 @@ $(document).on('click', '#editing', function (e) {
 async function displayPage(page) {
     async function loadSGI(page = 16) {
         const response = await $.ajax({
-            url: '/api/getPageSGI',
+            url: '/api/sgi/get-page-sgi',
             type: 'GET',
             data: {page: page, size: itemsPerPage},
             dataType: 'json'

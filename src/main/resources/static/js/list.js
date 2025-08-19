@@ -6,7 +6,7 @@ $(document).on('click', '.history-icon', async function ()  {
 
     body.empty();
 
-    const data = await $.get('/api/logs', {id: $(this).data('id')});
+    const data = await $.get('/api/request/logs', {id: $(this).data('id')});
     if(data.length === 0) {
         body.append(`
         <div id="logsEmpty" class="text-center py-5">
@@ -74,7 +74,6 @@ $(document).ready(function () {
     let filteredRows = [];
 
     // Контекстное меню
-
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape') {
             $('#contextMenu').hide();

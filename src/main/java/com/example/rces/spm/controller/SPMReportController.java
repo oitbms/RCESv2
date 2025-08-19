@@ -1,7 +1,7 @@
 package com.example.rces.spm.controller;
 
 import com.example.rces.spm.services.SPMService;
-import com.example.rces.spm.services.service.ReportService;
+import com.example.rces.spm.services.service.SPMReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -20,15 +20,15 @@ import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/report")
-public class ReportController {
+public class SPMReportController {
 
     private final SPMService spmService;
-    private final ReportService reportService;
+    private final SPMReportService SPMReportService;
 
     @Autowired
-    public ReportController(SPMService spmService, ReportService reportService) {
+    public SPMReportController(SPMService spmService, SPMReportService SPMReportService) {
         this.spmService = spmService;
-        this.reportService = reportService;
+        this.SPMReportService = SPMReportService;
     }
 
     @GetMapping
@@ -39,7 +39,7 @@ public class ReportController {
     @GetMapping("/print")
     public ResponseEntity<Resource> uploadToExcel(@RequestParam Long customerOrderId) {
         try {
-            ByteArrayResource resource = reportService.makeCustomerOrderTreeReport(customerOrderId);
+            ByteArrayResource resource = SPMReportService.makeCustomerOrderTreeReport(customerOrderId);
             String filename = String.format("Дерево_ЗК_от_%s.xlsx", LocalDate.now());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,

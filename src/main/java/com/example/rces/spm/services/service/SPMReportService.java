@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 import static com.example.rces.utils.ExcelExporter.exportToExcelTree;
 
 @Service
-public class ReportService {
+public class SPMReportService {
     private final SPMRepository spmRepository;
     private final PrimaryDemandService primaryDemandService;
     private final JobComponentService jobComponentService;
 
-    public ReportService(SPMRepository spmRepository, PrimaryDemandService primaryDemandService, JobComponentService jobComponentService) {
+    public SPMReportService(SPMRepository spmRepository, PrimaryDemandService primaryDemandService, JobComponentService jobComponentService) {
         this.spmRepository = spmRepository;
         this.primaryDemandService = primaryDemandService;
         this.jobComponentService = jobComponentService;

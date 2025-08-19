@@ -17,7 +17,7 @@ public class SPMService {
     private final JobComponentService jobComponentService;
     private final ItemService itemService;
     private final CustomerOrderService customerOrderService;
-    private final ReportService reportService;
+    private final SPMReportService SPMReportService;
 
 
     @Autowired
@@ -26,13 +26,13 @@ public class SPMService {
                       JobComponentService jobComponentService,
                       ItemService itemService,
                       CustomerOrderService customerOrderService,
-                      ReportService reportService) {
+                      SPMReportService SPMReportService) {
         this.repository = repository;
         this.primaryDemandService = primaryDemandService;
         this.jobComponentService = jobComponentService;
         this.itemService = itemService;
         this.customerOrderService = customerOrderService;
-        this.reportService = reportService;
+        this.SPMReportService = SPMReportService;
     }
 
     public <T> T findById(Class<T> entity, Object id) {
@@ -71,7 +71,7 @@ public class SPMService {
         return customerOrderService;
     }
 
-    public ReportService getReportService() {
-        return reportService;
+    public SPMReportService getReportService() {
+        return SPMReportService;
     }
 }
