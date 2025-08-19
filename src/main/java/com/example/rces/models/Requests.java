@@ -4,15 +4,23 @@ import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import lombok.extern.java.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Entity
 public class Requests implements Cloneable {
+
+    private static final Logger logger = LoggerFactory.getLogger(Requests.class);
 
     public enum Type {
         constructor, otk, technologist
@@ -146,6 +154,16 @@ public class Requests implements Cloneable {
     @Column(name = "comment_agreed")
     @DisplayName("Причина не согласования")
     private String commentAgreed;
+
+    private boolean frozen;
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
+    }
 
     public String getCommentAgreed() {
         return commentAgreed;

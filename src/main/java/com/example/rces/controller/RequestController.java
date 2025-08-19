@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +50,8 @@ public class RequestController {
 
     @Autowired
     private DeviceDetector detector;
+
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     @GetMapping("/create")
     public String getCreateBidForm(@RequestParam String type, Model model) {
@@ -120,12 +124,14 @@ public class RequestController {
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
         Requests requests = service.findSingleByField(Requests.class, "requestNumber", requestNumber);
+//        service.performAction(requests.getId());
         Employee user = userDetailsService.currentUser();
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreateDate()));
         model.addAttribute("viewForm", true);
         model.addAttribute("role",user.getRole());
+//        model.addAttribute("time", LocalTime.now().format(timeFormatter));
         return "/requests";
     }
 

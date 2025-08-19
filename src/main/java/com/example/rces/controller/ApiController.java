@@ -16,7 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -184,4 +186,13 @@ public class ApiController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+//    @PostMapping("/pause")
+//    public void pause(@RequestParam UUID id, @RequestParam String startTime,
+//                      @RequestParam String endTime, @RequestParam String pauseComment) {
+//        service.pauseBid(id,
+//                LocalTime.parse(startTime, DateTimeFormatter.ofPattern("HH:mm")),
+//                LocalTime.parse(endTime, DateTimeFormatter.ofPattern("HH:mm")),
+//                pauseComment);
+//    }
 }

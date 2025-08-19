@@ -100,7 +100,7 @@ public class MessageBuilder {
     }
 
     private String buildCancelMessage(Requests request) {
-        return String.format("Заявка № %d отменена\n" + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
+        return String.format("Заявка № %d забракована\n" + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
                 request.getRequestNumber(), request.getDescription());
     }
 
@@ -110,7 +110,7 @@ public class MessageBuilder {
     }
 
     private String buildWorkMessage(Requests request) {
-        return String.format("Заявка №%d взято в работу", request.getRequestNumber());
+        return String.format("Заявка №%d взята в работу", request.getRequestNumber());
     }
 
     private String buildCreateMessage(SGI sgi) {

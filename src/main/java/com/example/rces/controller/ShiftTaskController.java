@@ -16,50 +16,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/shift-task")
 public class ShiftTaskController {
 
-    private final SPMService service;
     private final TokenService tokenService;
+    private final BProcessDocStep bpStep;
 
     @Autowired
-    private BProcessDocStep bpStep;
-
-    public ShiftTaskController(SPMService service, TokenService tokenService) {
-        this.service = service;
+    public ShiftTaskController(BProcessDocStep bpStep,TokenService tokenService) {
         this.tokenService = tokenService;
+        this.bpStep = bpStep;
     }
 
     @GetMapping("/task")
     public String task(Model model) throws IOException, InterruptedException {
-
-        List componentList = service.getEntityManager()
-                .createNativeQuery("SELECT * FROM jm_shift_task_line" +
-                        " WHERE CAST(created_at AS DATE) = date(' " + LocalDate.now() + "')",
-                        ShiftTaskLine.class)
-                .getResultList();
-
-        List componentFinishedList = service.getEntityManager()
-                .createNativeQuery(
-                        "SELECT * FROM jm_shift_task_line " +
-                                "WHERE (CAST(created_at AS DATE) = date(' " + LocalDate.now() + "') AND qty_finished >= qty_production)",
-                        ShiftTaskLine.class)
-                .getResultList();
-
-        List<MlmNode> mlmNodeList = service.findAll(MlmNode.class);
-
         model.addAttribute("token", tokenService.getToken("api", "123456"));
-        model.addAttribute("mlmNode", mlmNodeList);
-        model.addAttribute("valueTaskListSize", componentList.size());
-        model.addAttribute("valueFinishedListSize", componentFinishedList.size());
-        model.addAttribute("finished", componentFinishedList);
-        model.addAttribute("taskList", componentList);
+        model.addAttribute("mlmNode", bpStep.getMlmNodeList());
+        model.addAttribute("valueTaskListSize", bpStep.componentList().size());
+        model.addAttribute("valueFinishedListSize", bpStep.componentFinishedList().size());
+        model.addAttribute("finished", bpStep.componentFinishedList());
+        model.addAttribute("taskList", bpStep.componentList());
         model.addAttribute("dateStart", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-
         return "task";
     }
 

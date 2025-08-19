@@ -16,8 +16,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.example.rces.utils.ServiceUtil.*;
@@ -267,5 +271,13 @@ public class ApiServices {
         requests.setCommentAgreed(comment);
         service.save(requests);
     }
+
+//    public void pauseBid(UUID id, LocalTime startTime, LocalTime endTime, String comment) {
+//        Duration duration = Duration.between(startTime, endTime);
+//        if (duration.isNegative()) {
+//            throw new RuntimeException("Время начала должно быть меньше времени окончания!");
+//        }
+//        service.freeze(id,duration.toMinutes(),TimeUnit.MINUTES);
+//    }
 
 }

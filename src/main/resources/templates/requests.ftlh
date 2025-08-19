@@ -257,12 +257,21 @@
                     </div>
                     <!-- Кнопка "Взять в работу" -->
                     <#if role != 'MASTER'>
+                    <div>
                         <button type="button"
-                                class="btn btn-primary mb-3 work"
+                                class="btn btn-success mb-3 work"
                                 id="workId"
                                 data-param="${bid.getId()}">
                             Взять в работу
                         </button>
+<#--                        <button type="button"-->
+<#--                                class="btn btn-danger ms-3 mb-3 work"-->
+<#--                                id="pauseId"-->
+<#--                                data-bs-toggle="modal"-->
+<#--                                data-bs-target="#pauseModal"-->
+<#--                        >Перенести заявку-->
+<#--                        </button>-->
+                    </div>
                     </#if>
                 </#if>
 
@@ -485,6 +494,36 @@
 
 <!-- Модальные окна -->
 
+<#--<div class="modal fade" id="pauseModal" tabindex="-1" aria-labelledby="pauseModalLabel" aria-hidden="true">-->
+<#--    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">-->
+<#--        <div class="modal-content">-->
+<#--            <div class="modal-header">-->
+<#--                <h5 class="modal-title" id="pauseModalLabel">Перевод заявки в статус паузы</h5>-->
+<#--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>-->
+<#--            </div>-->
+<#--            <div class="modal-body">-->
+<#--                <div class="mb-3">-->
+<#--                    <label for="pauseReason" class="form-label">Причина остановки заявки</label>-->
+<#--                    <textarea id="pauseReason" class="form-control" rows="3" placeholder="Введите причину остановки заявки"></textarea>-->
+<#--                </div>-->
+<#--                <div class="row">-->
+<#--                    <div class="col">-->
+<#--                        <label for="start-time" class="form-label">От</label>-->
+<#--                        <input type="time" value="${time}" class="form-control" id="start-time">-->
+<#--                    </div>-->
+<#--                    <div class="col">-->
+<#--                        <label for="end-time" class="form-label">До</label>-->
+<#--                        <input type="time" class="form-control" id="end-time">-->
+<#--                    </div>-->
+<#--                </div>-->
+<#--            </div>-->
+<#--            <div class="modal-footer" id="modalFooter">-->
+<#--                <button type="button" class="btn btn-primary" value=${bid.getId()} id="pauseModalSaveBtn">Сохранить</button>-->
+<#--            </div>-->
+<#--        </div>-->
+<#--    </div>-->
+<#--</div>-->
+
 <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">
         <div class="modal-content">
@@ -704,7 +743,8 @@
         });
     })();
 </script>
-<script> document.addEventListener('DOMContentLoaded', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.openModal').forEach(button => {
             button.addEventListener('click', () => {
                 const endpoint = button.dataset.endpoint;
@@ -728,6 +768,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const button = document.getElementById('commentOtkId');
+        // const savePauseBtnModal = document.getElementById('pauseModalSaveBtn');
+        // savePauseBtnModal.addEventListener('click', () => {
+        //     const pauseComment = document.getElementById('pauseReason').value;
+        //     const startTime = document.getElementById("start-time").value;
+        //     const endTime = document.getElementById("end-time").value;
+        //
+        //     if (!pauseComment || !startTime || !endTime) {
+        //         alert('Пожалуйста, заполните все поля.');
+        //         return;
+        //     }
+        //
+        //     fetch('/api/pause', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/x-www-form-urlencoded'
+        //         },
+        //         body: new URLSearchParams({
+        //             'id': savePauseBtnModal.value,
+        //             'startTime': startTime,
+        //             'endTime': endTime,
+        //             'pauseComment': pauseComment // Добавьте комментарий в тело запроса
+        //         })
+        //     })
+        // });
         if (button) {
             button.addEventListener('click', () => {
                 const id = button.getAttribute('data-param');

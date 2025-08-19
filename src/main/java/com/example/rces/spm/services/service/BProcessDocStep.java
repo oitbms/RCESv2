@@ -4,10 +4,7 @@ package com.example.rces.spm.services.service;
 // и списание строки с нужным заходом и переводом шага на 60
 
 import com.example.rces.services.TokenService;
-import com.example.rces.spm.models.Employee2Warehouse;
-import com.example.rces.spm.models.JobStep;
-import com.example.rces.spm.models.PrimaryDemand;
-import com.example.rces.spm.models.StockNode;
+import com.example.rces.spm.models.*;
 import com.example.rces.spm.services.SPMService;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.PostConstruct;
@@ -135,5 +132,26 @@ public class BProcessDocStep {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
         ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+    }
+
+    public List componentList() {
+        return service.getEntityManager()
+                .createNativeQuery("SELECT * FROM jm_shift_task_line" +
+                                " WHERE CAST(created_at AS DATE) = date(' " + LocalDate.now() + "')",
+                        ShiftTaskLine.class)
+                .getResultList();
+    }
+
+    public List componentFinishedList() {
+        return service.getEntityManager()
+                .createNativeQuery(
+                        "SELECT * FROM jm_shift_task_line " +
+                                "WHERE (CAST(created_at AS DATE) = date(' " + LocalDate.now() + "') AND qty_finished >= qty_production)",
+                        ShiftTaskLine.class)
+                .getResultList();
+    }
+
+    public List getMlmNodeList() {
+        return service.findAll(MlmNode.class);
     }
 }
