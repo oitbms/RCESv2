@@ -64,6 +64,13 @@ public class SGI implements Cloneable {
     @DisplayName("Ответственный сотрудник")
     private Employee employee;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    private SGI parentSGI;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @DisplayName("Подмероприятия")
+    private List<SGI> subSGI = new ArrayList<>();
+
     @Column(name = "desired_date")
     @DisplayName("Желаемая дата")
     private LocalDate desiredDate;
@@ -72,9 +79,9 @@ public class SGI implements Cloneable {
     @DisplayName("Планируемая дата")
     private LocalDate planDate;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne
     @DisplayName("Факт выполнения")
-    private List<FactExecutionSGI> executions = new ArrayList<>();
+    private FactExecutionSGI executions;
 
     @Column(name = "color")
     @Enumerated(EnumType.STRING)
@@ -163,6 +170,22 @@ public class SGI implements Cloneable {
         this.employee = employee;
     }
 
+    public SGI getParentSGI() {
+        return parentSGI;
+    }
+
+    public void setParentSGI(SGI parentSGI) {
+        this.parentSGI = parentSGI;
+    }
+
+    public List<SGI> getSubSGI() {
+        return subSGI;
+    }
+
+    public void setSubSGI(List<SGI> subSGI) {
+        this.subSGI = subSGI;
+    }
+
     public LocalDate getDesiredDate() {
         return desiredDate;
     }
@@ -179,11 +202,11 @@ public class SGI implements Cloneable {
         this.planDate = planDate;
     }
 
-    public List<FactExecutionSGI> getExecutions() {
+    public FactExecutionSGI getExecution() {
         return executions;
     }
 
-    public void setExecutions(List<FactExecutionSGI> executions) {
+    public void setExecution(FactExecutionSGI executions) {
         this.executions = executions;
     }
 

@@ -129,7 +129,7 @@ public class ServiceUtil {
             return SGI.ColorSGI.RED;
         } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
             return SGI.ColorSGI.YELLOW;
-        } else if (sgi.getPlanDate() != null && !sgi.getExecutions().isEmpty()) {
+        } else if (sgi.getPlanDate() != null && sgi.getExecution()!=null) {
             return SGI.ColorSGI.GREEN;
         } else {
             return SGI.ColorSGI.NONE;
@@ -297,7 +297,7 @@ public class ServiceUtil {
             Class<?> clazz = oldRequest.getClass();
             Set<String> ignoredFields = Set.of(
                     "id", "version", "updateDate", "closeDate", "dateWork", "log", "typeRequest", "messageId",
-                    "createdBy", "updateBy", "closedEmployee", "images");
+                    "createdBy", "updateBy", "closedEmployee", "images", "chatId");
             addToMetadata(clazz, ignoredFields, oldRequest, newRequest, metadata);
             if (!metadata.isEmpty()) {
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -329,7 +329,7 @@ public class ServiceUtil {
         try {
             Map<String, String> metadata = new LinkedHashMap<>();
             Class<?> clazz = oldSgi.getClass();
-            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log");
+            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log", "chatId");
             addToMetadata(clazz, ignoredFields, oldSgi, newSgi, metadata);
             if (!metadata.isEmpty()) {
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);

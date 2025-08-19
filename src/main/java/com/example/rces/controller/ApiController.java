@@ -7,6 +7,7 @@ import com.example.rces.services.ApiServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -110,14 +111,14 @@ public class ApiController {
     }
 
     @PostMapping("/commentBid")
-    public void createCommentBid(@RequestParam UUID id,@RequestParam String comment) {
+    public void createCommentBid(@RequestParam UUID id, @RequestParam String comment) {
         service.createCommentBid(id, comment);
     }
 
     @DeleteMapping("/delete-images")
     public ResponseEntity<?> deleteImages(@RequestBody Map<String, String> payload) {
         try {
-            service.deleteImages(UUID.fromString(payload.get("id")),UUID.fromString(payload.get("reqId")));
+            service.deleteImages(UUID.fromString(payload.get("id")), UUID.fromString(payload.get("reqId")));
             return ResponseEntity.ok().build();
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -155,10 +156,17 @@ public class ApiController {
                 .collect(Collectors.toList()));
     }
 
+    @GetMapping("/getPageSGI")
+    @ResponseBody
+    public ResponseEntity<Page<SGIPayload>> getPageSGI(@RequestParam int page, @RequestParam int size) {
+        Page<SGIPayload> pageSgi = service.getPage(page, size).map(SGIPayload::new); // <SGI>
+        return ResponseEntity.ok().body(pageSgi);
+    }
+
     @GetMapping("/sgi")
-    public ResponseEntity<SingleSgi> getSgi(@RequestParam UUID id) {
+    public ResponseEntity<SGIPayload> getSgi(@RequestParam UUID id) {
         SGI sgi = service.getSgi(id);
-        return ResponseEntity.ok(new SingleSgi(sgi.getId(), sgi.getWorkShop(), sgi.getEvent(), sgi.getActions(), sgi.getDepartment().name(), sgi.getDepartment().getName(), sgi.getEmployee().getName(), sgi.getDesiredDate(), sgi.getPlanDate(), sgi.getNote(), sgi.getAgreed(), !sgi.getExecutions().isEmpty()));
+        return ResponseEntity.ok(new SGIPayload(sgi));
     }
 
     @GetMapping("/print")

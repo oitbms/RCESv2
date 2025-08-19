@@ -9,6 +9,7 @@ import com.example.rces.services.telegram.TelegramService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,23 +146,6 @@ public class ApiServices {
                 tgService.sendMessage(request, request.getEmployee(), MessageType.REDIRECT);
             }
         }
-//        if (sendMessage) {
-//            if (request.getStatus().equals(Status.Completed)) {
-//                tgService.sendMessage(request, updaterEmployee, !AppProperties.getBool() ? MessageType.COMPLETED : MessageType.UPDATE);
-//            } else if (!request.getStatus().equals(Status.Closed) || !request.getStatus().equals(Status.Cancel)) {
-//                if (updaterEmployee.getRole().equals(String.valueOf(Role.MASTER))) {
-//                    Employee employee = service.findById(Employee.class, request.getEmployee().getId());
-//                    tgService.sendMessage(request, employee, !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
-//                } else {
-//                    tgService.sendMessage(request, request.getCreatedBy(), !Objects.equals(request.getEmployee().getId(), oldRequest.getEmployee().getId()) ? MessageType.REDIRECT : MessageType.UPDATE);
-//                }
-//            }
-//        }
-//        if (request.getStatus().equals(Status.Closed)) {
-//            tgService.sendMessage(request, updaterEmployee, MessageType.CLOSE);
-//        } else if (request.getStatus().equals(Status.Cancel)) {
-//            tgService.sendMessage(request, updaterEmployee, MessageType.CANCEL);
-//        }
     }
 
     public String getTypeRequest(UUID id) {
@@ -244,6 +228,10 @@ public class ApiServices {
 
     public List<FactExecutionSGI> getExecutions(UUID id) {
         return service.findAllByField(FactExecutionSGI.class, "sgi", service.findById(SGI.class, id));
+    }
+
+    public Page<SGI> getPage(int page, int size) {
+        return service.getPage(SGI.class, page, size);
     }
 
     public SGI getSgi(UUID id) {

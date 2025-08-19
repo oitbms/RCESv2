@@ -10,6 +10,7 @@ import com.example.rces.services.telegram.MessageType;
 import com.example.rces.services.telegram.TelegramService;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,12 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import static com.example.rces.utils.ServiceUtil.*;
+import static com.example.rces.utils.ServiceUtil.colorCalculate;
+import static com.example.rces.utils.ServiceUtil.createLog;
 
 @Controller
 @RequestMapping("/sgi")
@@ -43,28 +43,7 @@ public class SGController {
 
     @GetMapping
     public String getSGIForm(Model model) {
-        Employee updater = userDetailsService.currentUser();
-        List<SGI> sgiList;
-        if (!userDetailsService.isControl()) {
-            sgiList = service.findAllByField(SGI.class, "department",
-                            updater.getMlmNode())
-                    .stream()
-                    .sorted(Comparator.comparing(SGI::getRequestNumber))
-                    .collect(Collectors.toList());
-        } else {
-            sgiList = service.findAll(SGI.class).stream()
-                    .sorted(Comparator.comparing(SGI::getRequestNumber))
-                    .collect(Collectors.toList());
-        }
-        List<String> updateDesiredDate = sgiList.stream()
-                .map(req -> formatedDate(req.getDesiredDate())).toList();
-        List<String> updatePlanDate = sgiList.stream()
-                .map(req -> formatedDate(req.getPlanDate())).toList();
-        model.addAttribute("user", updater);
-        model.addAttribute("sgiList", sgiList);
-        model.addAttribute("updateDesiredDate", updateDesiredDate);
-        model.addAttribute("updatePlanDate", updatePlanDate);
-        return "sgi";
+        return "sgiNew";
     }
 
     @PostMapping("/create")
