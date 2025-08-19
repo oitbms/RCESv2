@@ -4,12 +4,19 @@ import com.example.rces.models.*;
 import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
@@ -101,6 +108,18 @@ public class UniversalRepository {
         }
         entityManager.remove(entity);
         entityManager.flush();
+    }
+
+    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize) {
+        return PageableExecutionUtils.getPage(
+                entityManager.createQuery("FROM " + entityClass.getSimpleName(), entityClass)
+                        .setFirstResult((page - 1) * pageSize)
+                        .setMaxResults(pageSize)
+                        .getResultList(),
+                PageRequest.of(page, pageSize),
+                () -> entityManager.createQuery("SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class)
+                        .getSingleResult()
+        );
     }
 
 

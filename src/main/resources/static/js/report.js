@@ -1,7 +1,7 @@
-
 let currentPage = 1; //Текущая страница
 const itemsPerPage = 100; //Начальное кол-во строк на странице
 let loadLines = 0; //Загружено строк
+let firstLoad = true; //Первая загрузка
 
 //Обработчик ресайза колонок
 $('.table-header-resizer').on('mousedown', function (e) {
@@ -14,7 +14,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
     const startWidth = parseFloat($parentHeader.css('width'));
 
     const minWidthValue = getComputedStyle(document.documentElement)
-        .getPropertyValue(`--${'default-'+dataName}`)
+        .getPropertyValue(`--${'default-' + dataName}`)
         .trim();
 
     const minWidth = parseFloat(minWidthValue) * 16;
@@ -23,7 +23,7 @@ $('.table-header-resizer').on('mousedown', function (e) {
         let newWidth = startWidth + (e.clientX - startX);
         newWidth = Math.max(minWidth, newWidth);
 
-        $(':root').css(`--${dataName}`, (newWidth/16) + 'rem');
+        $(':root').css(`--${dataName}`, (newWidth / 16) + 'rem');
     }
 
     function stopResize() {
@@ -118,10 +118,10 @@ $('main').on('scroll', async function () {
     }
 });
 //Обработчик нажатия на кнопку печать отчета
-$('.print-report').click(function() {
+$('.print-report').click(function () {
     const $btn = $(this).prop('disabled', true);
     const customerOrderId = $('#customerOrderId').data('id');
-    $('<a>', { href: `/report/print?customerOrderId=${customerOrderId}`, download: '' })
+    $('<a>', {href: `/report/print?customerOrderId=${customerOrderId}`, download: ''})
         .appendTo('body')[0].click()
         .remove();
     $btn.prop('disabled', false);
@@ -162,7 +162,7 @@ $('.change-order-button').click(async function () {
     document.getElementById('customerOrderDialog').showModal();
 
     // Обработчик поиска
-    searchInput.on('input', function() {
+    searchInput.on('input', function () {
         const searchText = $(this).val().toLowerCase().trim();
 
         if (searchText === '') {
@@ -178,7 +178,7 @@ $('.change-order-button').click(async function () {
     const customerOrderInput = $('#customerOrderId'); // Добавьте эту строку
 
 // Подсвет выбранной строки
-    rowContainer.on('click', '.dialog-content-rows-row', function() {
+    rowContainer.on('click', '.dialog-content-rows-row', function () {
         $('.dialog-content-rows-row').removeClass('selected');
         $(this).addClass('selected');
         customerOrderInput.attr('data-id', $(this).data('id'));
@@ -186,7 +186,7 @@ $('.change-order-button').click(async function () {
     });
 
 // Кнопка выбрать заказ
-    $('#changeCustomerOrder').on('click', async function() {
+    $('#changeCustomerOrder').on('click', async function () {
         // Проверка, что заказ выбран
         if (!customerOrderInput.data('id')) {
             alert('Выберите заказ из списка');
@@ -197,6 +197,7 @@ $('.change-order-button').click(async function () {
         await displayPage(1, customerOrderInput.data('id'));
     });
 });
+
 //Создание строки
 async function createRow(item, type, parentId, level, hasChildren, isLast, hasNext) {
     const hamburger = `
@@ -272,6 +273,7 @@ async function createRow(item, type, parentId, level, hasChildren, isLast, hasNe
         rowsContainer.append(row);
     }
 }
+
 //Загрузка вложенных строк строки
 async function loadChild(row) {
     const rowId = row.data('id');
@@ -293,6 +295,7 @@ async function loadChild(row) {
     }
     $(row).addClass('cached')
 }
+
 //Рекурсивная загрузка всех строк
 async function makeChildRow(parentId, level, hasChildren, hasNext) {
     if (hasChildren) {
@@ -312,6 +315,7 @@ async function makeChildRow(parentId, level, hasChildren, hasNext) {
         await createRow(js, 'js', parentId, level + 1, false, isLast, hasNext && level > 0);
     }
 }
+
 //Загрузка страниц
 async function displayPage(page, customerOrderId) {
     async function loadPrimaryDemands(page) {
@@ -338,13 +342,22 @@ async function displayPage(page, customerOrderId) {
     const primaryDemandsAndTotalCount = await loadPrimaryDemands(page);
     const primaryDemands = primaryDemandsAndTotalCount.data;
     const totalCount = primaryDemandsAndTotalCount.total;
-    loadLines += primaryDemands.length;
-    const rowsContainer = $(".table-rows");
 
-    if (page === 1) {
+    const rowsContainer = $(".table-rows");
+    const totalCountHtml = $('.total-count');
+    const loadCountHtml = $('.load-count span:eq(0)');
+
+    if (!firstLoad) {
+        loadLines = 0;
+        loadCountHtml.empty();
+        loadCountHtml.append(totalCount);
+    } else loadLines += primaryDemands.length;
+
+    if (page === 1 && firstLoad) {
         $('#table-data').empty();
-        [...('Всего записей: ' + totalCount)].forEach((c, i) => setTimeout(() => $('.total-count').append(c), 90 * i));
-        [...('Загружено записей: ')].forEach((c, i) => setTimeout(() => $('.load-count span:eq(0)').append(c), 120 * i));
+        [...('Всего записей: ' + totalCount)].forEach((c, i) => setTimeout(() => totalCountHtml.append(c), 90 * i));
+        [...('Загружено записей: ')].forEach((c, i) => setTimeout(() => loadCountHtml.append(c), 120 * i));
+        firstLoad = false;
     }
     rowsContainer.children('.load-more').remove();
 
@@ -360,7 +373,12 @@ async function displayPage(page, customerOrderId) {
 
     $('.load-count span:eq(1)').empty();
     setTimeout(() => {
-        [...(String(loadLines))].forEach((c, i) => {setTimeout(() => {$('.load-count span:eq(1)').append(c);}, 120 * i);});},
+            [...(String(loadLines))].forEach((c, i) => {
+                setTimeout(() => {
+                    $('.load-count span:eq(1)').append(c);
+                }, 120 * i);
+            });
+        },
         1600);
 
 
@@ -368,6 +386,7 @@ async function displayPage(page, customerOrderId) {
         rowsContainer.append(`<div class="load-more"><span>Загрузить ещё...</span></div>`)
     }
 }
+
 //Форматирование дат
 function formatDate(dateString) {
     if (!dateString) return "&nbsp;";

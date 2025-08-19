@@ -8,9 +8,6 @@ import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,9 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
 import static com.example.rces.utils.ServiceUtil.saveFiles;
@@ -157,30 +151,4 @@ public class UniversalService {
     public Employee saveEmployee(Long id, String name, String mlmNodeName, Boolean status, String role, String mlmNode, String password, Long chatID) {
         return repository.saveEmployee(id, name, mlmNodeName, status, role, mlmNode, password, chatID);
     }
-
-//    public void freeze(UUID entityId, long duration, TimeUnit timeUnit) {
-//        Requests entity = repository.findById(Requests.class, entityId);
-//        entity.setFrozen(true);
-//        repository.save(entity);
-//        final SecurityContext securityContext = SecurityContextHolder.getContext();
-//        ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
-//        scheduled.schedule(() -> {
-//            SecurityContextHolder.setContext(securityContext);
-//            unfreeze(entityId);
-//            scheduled.shutdown();
-//        }, duration, timeUnit);
-//    }
-//
-//    public void unfreeze(UUID entityId) {
-//        Requests entity = repository.findById(Requests.class, entityId);
-//        entity.setFrozen(false);
-//        repository.save(entity);
-//    }
-//
-//    public void performAction(UUID entityId) {
-//        Requests entity = repository.findById(Requests.class, entityId);
-//        if (entity.isFrozen()) {
-//            throw new RuntimeException("Заявка под id: " + entityId + " остановлена!");
-//        }
-//    }
 }
