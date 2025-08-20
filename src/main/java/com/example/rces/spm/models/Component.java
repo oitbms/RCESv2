@@ -34,7 +34,7 @@ public class Component {
     @Column(name="offset_time")
     private BigDecimal offsetTime; // Смещение
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="component_item_id")
     private Item componentItem;
 

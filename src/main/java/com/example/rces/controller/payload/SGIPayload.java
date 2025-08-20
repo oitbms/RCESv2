@@ -6,26 +6,28 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record SGIPayload(UUID id, String workshop, String event, String actions, String department, String departmentName,
-                         String employee, LocalDate desiredDate, LocalDate planDate, String note, Boolean agree,
-                         Boolean executions, SGIPayload parent ,List<SGI> subSGI) {
+public record SGIPayload(UUID id, String number, String workcenter, String event, String actions, String department, String departmentName,
+                         String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment, Boolean agree,
+                         Boolean executions, SGIPayload parent ,List<SubSGIPayload> subSGI) {
 
     public SGIPayload(SGI sgi) {
         this (
                 sgi.getId(),
+                String.valueOf(sgi.getRequestNumber()),
                 sgi.getWorkShop(),
                 sgi.getEvent(),
                 sgi.getActions(),
-                sgi.getDepartment().getName(),
+                String.valueOf(sgi.getDepartment()),
                 sgi.getDepartment().getName(),
                 sgi.getEmployee().getName(),
                 sgi.getDesiredDate(),
                 sgi.getPlanDate(),
                 sgi.getNote(),
+                sgi.getComment()!=null ? sgi.getComment() : "",
                 sgi.getAgreed(),
                 sgi.getExecution()!=null,
                 sgi.getParentSGI()!=null?new SGIPayload(sgi.getParentSGI()):null,
-                sgi.getSubSGI()
+                sgi.getSubSGI().stream().map(SubSGIPayload::new).toList()
         );
     }
 }

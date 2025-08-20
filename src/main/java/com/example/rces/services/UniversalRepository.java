@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.example.rces.utils.ServiceUtil.allowedCreateOrUpdate;
 
@@ -110,16 +112,20 @@ public class UniversalRepository {
         entityManager.flush();
     }
 
-    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize) {
-        return PageableExecutionUtils.getPage(
-                entityManager.createQuery("FROM " + entityClass.getSimpleName(), entityClass)
-                        .setFirstResult((page - 1) * pageSize)
-                        .setMaxResults(pageSize)
-                        .getResultList(),
-                PageRequest.of(page, pageSize),
-                () -> entityManager.createQuery("SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class)
-                        .getSingleResult()
-        );
+    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+        String orderByClause = "ORDER BY " + sort.stream()
+                    .map(order -> String.format("e.%s %s", order.getProperty(), order.getDirection()))
+                    .collect(Collectors.joining(", "));
+        List<T> content = entityManager.createQuery(
+                "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions + " " + orderByClause, entityClass)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+        TypedQuery<Long> countQuery = entityManager.createQuery(
+                "SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::getSingleResult);
     }
 
 

@@ -7,6 +7,7 @@ import com.example.rces.models.SGI;
 import com.example.rces.services.UniversalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +25,9 @@ public class ApiSGIService {
     }
 
     public Page<SGI> getPage(int page, int size) {
-        return service.getPage(SGI.class, page, size);
+        Sort sort = Sort.by(Sort.Direction.ASC, "requestNumber");
+        String conditions = "WHERE e.parentSGI IS NULL";
+        return service.getPage(SGI.class, page, size, sort, conditions);
     }
 
     public SGI getSgi(UUID id) {
@@ -50,5 +53,4 @@ public class ApiSGIService {
                         image, factExecutionSGI != null ? image.getSgi().getId() : image.getSgim().getId()))
                 .collect(Collectors.toList());
     }
-
 }

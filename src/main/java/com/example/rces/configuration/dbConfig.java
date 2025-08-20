@@ -1,6 +1,7 @@
 package com.example.rces.configuration;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -21,18 +22,10 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.example.rces.services",
-        entityManagerFactoryRef = "primaryEntityManager",
+        entityManagerFactoryRef = "entityManagerFactory",
         transactionManagerRef = "primaryTransactionManager"
 )
 public class dbConfig {
-
-    @Bean(name = "entityManagerFactory")
-    @Primary
-    public EntityManagerFactory entityManagerFactory(
-            @Qualifier("primaryEntityManager") LocalContainerEntityManagerFactoryBean factoryBean) {
-        return factoryBean.getObject();
-    }
-
 
     @Bean
     @Primary
@@ -50,9 +43,9 @@ public class dbConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = "entityManagerFactory")
     @Primary
-    public LocalContainerEntityManagerFactoryBean primaryEntityManager(
+    public LocalContainerEntityManagerFactoryBean primaryEntityManagerFactory(
             EntityManagerFactoryBuilder builder) {
         return builder
                 .dataSource(primaryDataSource())
@@ -61,10 +54,17 @@ public class dbConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = "primaryEntityManager")
+    @Primary
+    public EntityManager primaryEntityManager(
+            @Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return entityManagerFactory.createEntityManager();
+    }
+
+    @Bean(name = "primaryTransactionManager")
     @Primary
     public PlatformTransactionManager primaryTransactionManager(
-            @Qualifier("primaryEntityManager") EntityManagerFactory entityManagerFactory) {
+            @Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

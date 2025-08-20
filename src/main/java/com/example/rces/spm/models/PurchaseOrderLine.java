@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Immutable
 public class PurchaseOrderLine extends PrimaryDemand {
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private PurchaseOrder purchaseorder;
 
     private Integer number;

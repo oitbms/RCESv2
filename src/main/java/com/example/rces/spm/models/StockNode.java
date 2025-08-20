@@ -19,7 +19,7 @@ public class StockNode {
 
     private String description;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private MlmNode mlmNode;
 
     public Long getId() {

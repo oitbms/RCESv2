@@ -18,7 +18,7 @@ public class MlmNode {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private StockNode releaseStockNode; //Склад выпуска
 
     public StockNode getReleaseStockNode() {

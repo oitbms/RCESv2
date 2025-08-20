@@ -23,7 +23,7 @@ public class SgiLog {
 
     private LocalDateTime date;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Employee user;
 
     @Column(columnDefinition = "JSON")

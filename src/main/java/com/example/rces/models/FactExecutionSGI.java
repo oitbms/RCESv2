@@ -17,7 +17,7 @@ public class FactExecutionSGI {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-   @OneToOne(fetch = FetchType.EAGER)
+   @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sgi_id")
     private SGI sgi;
 
@@ -28,7 +28,7 @@ public class FactExecutionSGI {
     @Column(name = "report", length = 1000)
     private String report;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Images> images = new ArrayList<>();
 
     public UUID getId() {

@@ -38,8 +38,9 @@ public class ApiSGIController {
     @GetMapping("/get-page-sgi")
     @ResponseBody
     public ResponseEntity<Page<SGIPayload>> getPageSGI(@RequestParam int page, @RequestParam int size) {
-        Page<SGIPayload> pageSgi = service.getPage(page, size).map(SGIPayload::new);
-        return ResponseEntity.ok().body(pageSgi);
+        Page<SGI> pageSgi = service.getPage(page, size);
+        Page<SGIPayload> sgiPayloadPage = pageSgi.map(SGIPayload::new);
+        return ResponseEntity.ok().body(sgiPayloadPage);
     }
 
     @GetMapping("/get-sgi")

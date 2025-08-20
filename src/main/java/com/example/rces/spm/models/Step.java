@@ -16,7 +16,7 @@ public class Step {
     @Id
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "routerevision_id")
     private RouteRevision routeRevision;
 
@@ -26,7 +26,7 @@ public class Step {
     @Column(name = "description")
     private String description; // Описание
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="mlm_node_id")
     private MlmNode mlmNode; // Узел ПЛМ
 

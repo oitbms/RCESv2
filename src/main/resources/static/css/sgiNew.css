@@ -1,7 +1,7 @@
 :root {
     --no: 98px;
     --workcenter: 90px;
-    --ivent: 164px;
+    --event: 164px;
     --action: 252px;
     --department: 190px;
     --employee: 190px;
@@ -261,6 +261,7 @@ dialog {
                 border: 1px solid #ced4da;
                 border-radius: 4px;
                 font-size: 0.875rem;
+                text-overflow: ellipsis;
             }
 
             & textarea.form-control {
@@ -349,6 +350,7 @@ dialog {
                 border: 1px solid #ced4da;
                 border-radius: 4px;
                 font-size: 0.875rem;
+                text-overflow: ellipsis;
             }
 
             & textarea.form-control {

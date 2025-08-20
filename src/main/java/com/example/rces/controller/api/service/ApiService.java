@@ -27,7 +27,10 @@ public class ApiService {
     }
 
     public List<Employee> findAllEmployees(Object role) {
-        return service.findAllByField(Employee.class, "role", role);
+        if (role!=null) {
+            return service.findAllByField(Employee.class, "role", role);
+        }
+        return service.findAll(Employee.class);
     }
 
     public Employee getUpdater() {

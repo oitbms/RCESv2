@@ -25,8 +25,9 @@ public class ApiController {
     }
 
     @GetMapping("/employees")
-    public List<Employee> getEmployees(@RequestParam Object param) {
-        return service.findAllEmployees(param);
+    public List<EmployeePayload> getEmployees(@RequestParam(required = false) Object param) {
+        List<Employee> employees = service.findAllEmployees(param);
+        return employees.stream().map(EmployeePayload::new).toList();
     }
 
     @GetMapping("/updater")

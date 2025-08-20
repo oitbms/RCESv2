@@ -21,7 +21,7 @@ public class SPMCustomerOrder {
     @Column(name = "str_code")
     private String strCode;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private Site site;
 
     @Column(name="date_due")

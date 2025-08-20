@@ -47,11 +47,11 @@ public class Requests implements Cloneable {
     @DisplayName("Дата начала работы")
     private LocalDateTime dateWork;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private Employee createdBy;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private Employee updateBy;
 
@@ -66,11 +66,11 @@ public class Requests implements Cloneable {
     @Column(name = "request_number")
     private Integer requestNumber;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @DisplayName("Ответственный")
     private Employee employee;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @DisplayName("Заказ клиента")
     private CustomerOrder customerOrder;
 
@@ -83,7 +83,7 @@ public class Requests implements Cloneable {
     @DisplayName("Кол-во деталей к контролю")
     private Integer qty;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
     @Column(name = "inconsistency")
     @Enumerated(EnumType.STRING)
@@ -126,7 +126,7 @@ public class Requests implements Cloneable {
     @DisplayName("Дата закрытия заявки")
     private LocalDateTime closeDate;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "closed_employee")
     @DisplayName("Закрывший заявку")
     private Employee closedEmployee;

@@ -1,8 +1,12 @@
 package com.example.rces.models;
 
 import com.example.rces.models.annotation.DisplayName;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,16 +64,16 @@ public class SGI implements Cloneable {
     @DisplayName("Ответственный отдел")
     private SGI.Department department;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @DisplayName("Ответственный сотрудник")
     private Employee employee;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="parent_sgi_id")
     private SGI parentSGI;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @DisplayName("Подмероприятия")
-    private List<SGI> subSGI = new ArrayList<>();
+    @OneToMany(mappedBy="parentSGI", cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
+    private List<SGI> subSGI;
 
     @Column(name = "desired_date")
     @DisplayName("Желаемая дата")
@@ -95,7 +99,7 @@ public class SGI implements Cloneable {
     @DisplayName("Комментарий")
     private String comment;
 
-    @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @DisplayName("Прикрепленные фото")
     private List<Images> images = new ArrayList<>();
 
@@ -103,7 +107,7 @@ public class SGI implements Cloneable {
     @DisplayName("Согласовано")
     private Boolean agreed;
 
-    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SgiLog> log = new ArrayList<>();
 
     public UUID getId() {

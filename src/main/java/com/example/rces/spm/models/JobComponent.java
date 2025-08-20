@@ -17,19 +17,19 @@ public class JobComponent {
     @Id
     private Long id;
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private PrimaryDemand primarydemand;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private JobStep jobstep;
 
     @Column(name="number")
     private Integer number;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private Item item;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private UnitMeasure unitmeasure;
 
     @Column(name="qty_demand")
@@ -47,11 +47,11 @@ public class JobComponent {
     @Column(name="qty_bom")
     private BigDecimal qtyBom; //Количество
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="parent_jobcomponent_id")
     private JobComponent parentJobComponent;//Входит в компонент
 
-    @OneToMany(mappedBy="jobcomponent", cascade=CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="jobcomponent", cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
     @OrderBy("jobcomponent, number")
     private List<JobStep> jobSteps; //Заходы
 

@@ -1,6 +1,7 @@
 package com.example.rces.spm.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -8,7 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -23,17 +23,10 @@ import java.util.Map;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.example.rces.spm",
-        entityManagerFactoryRef = "spmEntityManager",
+        entityManagerFactoryRef = "spmEntityManagerFactory",
         transactionManagerRef = "spmTransactionManager"
 )
 public class SPMdbConfig {
-
-    @Bean(name = "spmEntityManagerFactory")
-    @Primary
-    public EntityManagerFactory spmEntityManagerFactory(
-            @Qualifier("spmEntityManager") LocalContainerEntityManagerFactoryBean factoryBean) {
-        return factoryBean.getObject();
-    }
 
     @Bean
     @ConfigurationProperties("app.datasource.spm")
@@ -50,8 +43,8 @@ public class SPMdbConfig {
                 .build();
     }
 
-    @Bean(name = "spmEntityManager")
-    public LocalContainerEntityManagerFactoryBean spmEntityManager(
+    @Bean(name = "spmEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean spmEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("spmDataSource") DataSource dataSource) {
         return builder
@@ -62,6 +55,12 @@ public class SPMdbConfig {
                 .build();
     }
 
+    @Bean(name = "spmEntityManager")
+    public EntityManager spmEntityManager(
+            @Qualifier("spmEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return entityManagerFactory.createEntityManager();
+    }
+
     private Map<String, Object> jpaProperties() {
         Map<String, Object> props = new HashMap<>();
         props.put("hibernate.boot.allow_jdbc_metadata_access", "true");
@@ -69,10 +68,9 @@ public class SPMdbConfig {
         return props;
     }
 
-
     @Bean(name = "spmTransactionManager")
     public PlatformTransactionManager spmTransactionManager(
-            @Qualifier("spmEntityManager") EntityManagerFactory entityManagerFactory) {
+            @Qualifier("spmEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

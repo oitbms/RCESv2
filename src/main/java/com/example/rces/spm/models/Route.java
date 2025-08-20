@@ -14,7 +14,7 @@ public class Route {
     @Id
     private Long id;
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private Item item;
 
     @Column(name = "description")
@@ -26,7 +26,7 @@ public class Route {
     @Column(name="route_type")
     private String routeType; //Тип маршрута
 
-    @OneToMany(mappedBy="route", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="route", fetch = FetchType.LAZY)
     private List<RouteRevision> revisions;
 
     public Long getId() {

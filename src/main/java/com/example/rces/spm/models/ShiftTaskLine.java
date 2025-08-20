@@ -19,7 +19,7 @@ public class ShiftTaskLine {
     @Column(name = "created_at")
     private LocalDateTime createDate;
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private JobStep jobstep;
 
     @Column(name="qty_production", length=22, precision=20, scale=8)

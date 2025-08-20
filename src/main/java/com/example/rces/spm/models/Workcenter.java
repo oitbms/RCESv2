@@ -12,10 +12,10 @@ public class Workcenter {
     @Id
     private Long id;
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private MlmNode mlmNode; //Узел ПЛМ
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private Employee foreman; //Мастер участка
 
     public MlmNode getMlmNode() {

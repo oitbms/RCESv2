@@ -9,6 +9,7 @@ import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,8 +62,8 @@ public class UniversalService {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
-    public <T> Page<T> getPage(Class<T> entityClass, int page, int pageSize) {
-        return repository.getPageByEntity(entityClass, page, pageSize);
+    public <T> Page<T> getPage(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
+        return repository.getPageByEntity(entityClass, page, pageSize, sort, conditions);
     }
 
     public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee, String reasonText, String control) {

@@ -26,7 +26,7 @@ public class CustomerOrder {
     @Column(name = "str_code")
     private String name; // Номер заказа
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
 
     public UUID getId() {

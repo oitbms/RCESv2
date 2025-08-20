@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Immutable;
 @Immutable
 public class CustomerOrderLine extends PrimaryDemand {
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private SPMCustomerOrder customerorder;
 
     @Column(name = "number")

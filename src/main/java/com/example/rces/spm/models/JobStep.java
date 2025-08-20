@@ -18,7 +18,7 @@ public class JobStep {
     @Id
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private JobComponent jobcomponent;
 
     @Column(name = "number")
@@ -27,11 +27,11 @@ public class JobStep {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mlm_node_id")
     private MlmNode mlmNode;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Status status;
 
     @Column(name = "qty_production")

@@ -14,7 +14,7 @@ public class RouteRevision {
     @Id
     private Long id;
 
-    @ManyToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.LAZY)
     private Route route;
 
     @Column(name = "name")
@@ -23,10 +23,10 @@ public class RouteRevision {
     @Column(name = "description")
     private String description; //Описание
 
-    @ManyToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.LAZY)
     private Status status;
 
-    @OneToMany(mappedBy="routeRevision", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="routeRevision", fetch = FetchType.LAZY)
     @OrderBy("routeRevision, number")
     private List<Step> steps;
 

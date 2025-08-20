@@ -22,16 +22,16 @@ public abstract class PrimaryDemand {
     @Column(name = "storm_single_string")
     private String stormSingleString;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Item item;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private UnitMeasure unitmeasure;
 
     @Column(name = "date_due")
     private LocalDateTime dateDue;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mlm_node_id")
     private MlmNode mlmNode;
 
