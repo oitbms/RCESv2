@@ -329,7 +329,7 @@ public class ServiceUtil {
         try {
             Map<String, String> metadata = new LinkedHashMap<>();
             Class<?> clazz = oldSgi.getClass();
-            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log", "chatId");
+            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log", "chatId", "parentSGI", "subSGI");
             addToMetadata(clazz, ignoredFields, oldSgi, newSgi, metadata);
             if (!metadata.isEmpty()) {
                 LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);

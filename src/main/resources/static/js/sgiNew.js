@@ -11,7 +11,7 @@ $(document).on('click', '.hamburger', function (e) {
 
     $innerRows.slideToggle(400);
 });
-//Обработчик открытия окна редактирования
+//Обработчик работы с окном редактирования
 $(document).on('click', '.editing-btn', async function (e) {
     const currentRow = e.target.closest('.row-items-row');
     const currentId = $(currentRow).data('id');
@@ -21,6 +21,7 @@ $(document).on('click', '.editing-btn', async function (e) {
     for (const [key, value] of Object.entries(currentSGI)) {
         const field = dialog.find(`[data-field="${key}"]`);
         if (key === 'employee') {
+            field.empty();
             const employeesData = await cache.get('employee');
             const filteredEmployees = employeesData.filter(employee =>
                 ['EVENT', 'CONTROL'].includes(employee.role)
@@ -36,7 +37,45 @@ $(document).on('click', '.editing-btn', async function (e) {
         field.val(value || '');
     }
 
-    dialog.show();
+    dialog[0].showModal();
+
+    $(document).on('click', '#saveBtn', function (e){
+        const formData = new FormData();
+        formData.append('id', currentId);
+        $(dialog).find('[data-field]').each((_, el) => {
+            formData.append(el.dataset.field, el.value);
+        });
+        $.ajax({
+            url: 'sgi/save-change',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {
+                $(dialog).find('[data-field]').each((_, el) => {
+                    const fieldName = el.dataset.field;
+                    const fieldValue = el.value;
+                    const targetElement = $(currentRow).find(`[data-field="${fieldName}"]`);
+                    if (el.tagName === 'SELECT') {
+                        const selectedText = $(el).find('option:selected').text();
+                        targetElement.text(selectedText);
+                    } else {
+                        targetElement.text(fieldValue);
+                    }
+
+                    currentSGI[fieldName] = fieldValue;
+                });
+                localCache.set(currentId, currentSGI);
+
+                dialog[0].close();
+            },
+            error: function () {
+                alert('Редактировать может только создатель задачи или такого пользователя нет');
+                dialog[0].close();
+            }
+        });
+
+    });
 });
 
 async function displayPage(page) {
@@ -69,22 +108,28 @@ async function displayPage(page) {
                             <path class="line" d="M7 16 27 16"></path>
                         </svg>
                     </label>`
+        const borderClass = item.color === 'RED'
+            ? 'border-danger' :
+            item.color === 'YELLOW'
+                ? 'border-warning' :
+                item.color === 'GREEN'
+                    ? 'border-good' : '';
         const row = `
                 <div class="row-items">
                     <div class="row-items-row" data-id="${item.id}">
-                        <div class="row-item no" style="width: var(--no);">
+                        <div class="row-item no ${borderClass}" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
                             ${item.number}
                         </div>
-                        <div class="row-item" style="width: var(--workcenter);">${item.workcenter}</div>
-                        <div class="row-item" style="width: var(--event);">${item.event}</div>
-                        <div class="row-item" style="width: var(--action);">${item.actions}</div>
-                        <div class="row-item" style="width: var(--department);">${item.departmentName}</div>
-                        <div class="row-item" style="width: var(--employee);">${item.employee}</div>
-                        <div class="row-item" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
-                        <div class="row-item" style="width: var(--note);">${item.note}</div>
-                        <div class="row-item" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
-                        <div class="row-item" style="width: var(--comment);">${item.comment}</div>
+                        <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
+                        <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
+                        <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
+                        <div class="row-item" data-field="department"style="width: var(--department);">${item.departmentName}</div>
+                        <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
+                        <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
+                        <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
+                        <div class="row-item ${borderClass}" data-field="planDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
+                        <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
                         <div class="row-item" style="width: var(--editing);">
                             <button type="button" class="btn btn-info btn-sm editing-btn">
                                 <i class="bi bi-pencil-square"></i>
@@ -110,16 +155,16 @@ async function displayPage(page) {
                     <div class="row-items-inner-row">
                         ${item.subSGI.map((subItem) => `
                             <div class="row-items-row" data-id="${subItem.id}">
-                                <div class="row-item no" style="width: var(--no);"></div>
-                                <div class="row-item" style="width: var(--workcenter);">${subItem.workcenter}</div>
-                                <div class="row-item" style="width: var(--event);">${subItem.event}</div>
-                                <div class="row-item" style="width: var(--action);">${subItem.actions}</div>
-                                <div class="row-item" style="width: var(--department);">${subItem.departmentName}</div>
-                                <div class="row-item" style="width: var(--employee);">${subItem.employee}</div>
-                                <div class="row-item" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
-                                <div class="row-item" style="width: var(--note);">${subItem.note}</div>
-                                <div class="row-item" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
-                                <div class="row-item" style="width: var(--comment);">${subItem.comment}</div>
+                                <div class="row-item no ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
+                                <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
+                                <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
+                                <div class="row-item" data-field="departament" style="width: var(--department);">${subItem.departmentName}</div>
+                                <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
+                                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
+                                <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
+                                <div class="row-item ${borderClass}" data-field="planDate" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
+                                <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
                                 <div class="row-item" style="width: var(--editing);">
                                     <button type="button" class="btn btn-info btn-sm editing-btn">
                                         <i class="bi bi-pencil-square"></i>

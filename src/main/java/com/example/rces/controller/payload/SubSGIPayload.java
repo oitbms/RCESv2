@@ -5,7 +5,7 @@ import com.example.rces.models.SGI;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record SubSGIPayload(UUID id, String number, String workcenter, String event, String actions, String department,
+public record SubSGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department,
                             String departmentName,
                             String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment,
                             Boolean agree,
@@ -15,6 +15,7 @@ public record SubSGIPayload(UUID id, String number, String workcenter, String ev
         this(
                 sgi.getId(),
                 String.valueOf(sgi.getRequestNumber()),
+                sgi.getColor().name(),
                 sgi.getWorkShop(),
                 sgi.getEvent(),
                 sgi.getActions(),

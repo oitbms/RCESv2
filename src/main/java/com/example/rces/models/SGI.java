@@ -70,9 +70,11 @@ public class SGI implements Cloneable {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="parent_sgi_id")
+    @DisplayName("Родительская задача")
     private SGI parentSGI;
 
     @OneToMany(mappedBy="parentSGI", cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @DisplayName("Подзадачи")
     private List<SGI> subSGI;
 
     @Column(name = "desired_date")

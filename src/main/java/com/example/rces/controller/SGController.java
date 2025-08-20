@@ -66,7 +66,7 @@ public class SGController {
 
     @PostMapping("/save-change")
     public ResponseEntity<Void> saveChanges(@RequestParam UUID id,
-                                            @RequestParam(required = false) String workshop,
+                                            @RequestParam(required = false) String workcenter,
                                             @RequestParam(required = false) String event,
                                             @RequestParam(required = false) String actions,
                                             @RequestParam(required = false) String department,
@@ -86,7 +86,7 @@ public class SGController {
         } catch (Exception e) {
             throw new NoResultException();
         }
-        sgi.setWorkShop(workshop);
+        sgi.setWorkShop(workcenter);
         sgi.setEvent(event);
         sgi.setActions(actions);
         sgi.setDepartment(SGI.Department.valueOf(department));

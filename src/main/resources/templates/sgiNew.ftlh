@@ -116,7 +116,7 @@
     <div class="modal-body">
         <div class="form-group">
             <label class="form-label">№ цеха</label>
-            <input type="text" class="form-control" data-field="workcenter" value="">
+            <input type="text" class="form-control" data-field="workcenter">
         </div>
 
         <div class="form-group">
@@ -147,17 +147,12 @@
 
         <div class="form-group">
             <label class="form-label">Желаемый срок</label>
-            <input type="date" class="form-control" data-field="desiredDate" value="2025-05-30">
+            <input type="date" class="form-control" data-field="desiredDate">
         </div>
 
         <div class="form-group">
             <label class="form-label">Примечание</label>
             <textarea class="form-control" data-field="note">Примечание</textarea>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Комментарий</label>
-            <textarea class="form-control" data-field="comment">Комментарий</textarea>
         </div>
 
         <div class="form-group">

@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record SGIPayload(UUID id, String number, String workcenter, String event, String actions, String department, String departmentName,
+public record SGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department, String departmentName,
                          String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment, Boolean agree,
                          Boolean executions, SGIPayload parent ,List<SubSGIPayload> subSGI) {
 
@@ -14,6 +14,7 @@ public record SGIPayload(UUID id, String number, String workcenter, String event
         this (
                 sgi.getId(),
                 String.valueOf(sgi.getRequestNumber()),
+                sgi.getColor().name(),
                 sgi.getWorkShop(),
                 sgi.getEvent(),
                 sgi.getActions(),
