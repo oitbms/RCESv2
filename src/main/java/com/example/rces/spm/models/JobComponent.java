@@ -1,6 +1,7 @@
 package com.example.rces.spm.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Subselect;
 import org.springframework.data.annotation.Immutable;
 
@@ -17,48 +18,52 @@ public class JobComponent {
     @Id
     private Long id;
 
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private PrimaryDemand primarydemand;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private JobStep jobstep;
 
-    @Column(name="number")
+    @Column(name = "number")
     private Integer number;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Item item;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private UnitMeasure unitmeasure;
 
-    @Column(name="qty_demand")
+    @Column(name = "qty_demand")
     private BigDecimal qtyDemand; //План брутто
 
-    @Column(name="qty_required")
+    @Column(name = "qty_required")
     private BigDecimal qtyRequired; //Потребность
 
-    @Column(name="qty_finished")
+    @Column(name = "qty_finished")
     private BigDecimal qtyFinished; //Выполнено
 
-    @Column(name="bom_level")
+    @Column(name = "bom_level")
     private Integer bomLevel;
 
-    @Column(name="qty_bom")
+    @Column(name = "qty_bom")
     private BigDecimal qtyBom; //Количество
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="parent_jobcomponent_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_jobcomponent_id")
     private JobComponent parentJobComponent;//Входит в компонент
 
-    @OneToMany(mappedBy="jobcomponent", cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parentJobComponent", fetch = FetchType.EAGER)
+    @BatchSize(size = 20)
+    private List<JobComponent> childJCList;
+
+    @OneToMany(mappedBy = "jobcomponent", fetch = FetchType.LAZY)
     @OrderBy("jobcomponent, number")
     private List<JobStep> jobSteps; //Заходы
 
-    @Column(name="date_start")
+    @Column(name = "date_start")
     private LocalDateTime dateStart;  //Дата начала денормализация
 
-    @Column(name="date_calc_end")
+    @Column(name = "date_calc_end")
     private LocalDateTime dateCalcEnd; //РД завершения
 
     public String getFormattedDateStart() {
@@ -163,6 +168,14 @@ public class JobComponent {
 
     public void setParentJobComponent(JobComponent parentJobComponent) {
         this.parentJobComponent = parentJobComponent;
+    }
+
+    public List<JobComponent> getChildJCList() {
+        return childJCList;
+    }
+
+    public void setChildJCList(List<JobComponent> childJCList) {
+        this.childJCList = childJCList;
     }
 
     public List<JobStep> getJobSteps() {

@@ -3,6 +3,8 @@ package com.example.rces.spm.services;
 import com.example.rces.spm.services.service.*;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,10 @@ public class SPMService {
 
     public <T> List<T> findAllByField(Class<T> entityClass, String fieldName, Object fieldValue) {
         return repository.findByField(entityClass, fieldName, fieldValue);
+    }
+
+    public <T> Page<T> getPage(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
+        return repository.getPageByEntity(entityClass, page, pageSize, sort, conditions);
     }
 
     public EntityManager getEntityManager() {

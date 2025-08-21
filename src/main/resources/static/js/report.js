@@ -281,41 +281,18 @@ async function loadChild(row) {
     const level = row.data('level');
     let hasNext = Boolean(row.data('has-next'));
 
-    const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: rowId});
-    for (jc of jobComponents) {
-        const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
-        const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0 || (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: jc.id})).length > 0;
-        hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
-        await createRow(jc, 'jc', rowId, level + 1, hasChildren, isLast, hasNext);
+    const { left: childJobComponents, right: jobSteps } = await $.get('/spm-api/getChildJobComponentAndJobStepsForJobcomponentId', {jobComponentId: rowId});
+    for (jc of childJobComponents) {
+        const isLast = (childJobComponents.indexOf(jc) === childJobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
+        hasNext = childJobComponents.indexOf(jc) < childJobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
+        await createRow(jc, 'jc', rowId, level + 1, jc.hasChildOrJobSteps, isLast, hasNext);
     }
-    const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId});
     for (js of jobSteps) {
         const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
         await createRow(js, 'js', rowId, level + 1, false, isLast, hasNext && level > 0);
     }
     $(row).addClass('cached')
 }
-
-//Рекурсивная загрузка всех строк
-async function makeChildRow(parentId, level, hasChildren, hasNext) {
-    if (hasChildren) {
-        const jobComponents = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: parentId});
-        for (jc of jobComponents) {
-            const isLast = (jobComponents.indexOf(jc) === jobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length === 0;
-            const hasChildren = (await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: jc.id})).length > 0;
-            await createRow(jc, 'jc', parentId, level + 1, hasChildren, isLast, hasNext);
-            hasNext = jobComponents.indexOf(jc) < jobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId})).length > 0;
-            await makeChildRow(jc.id, level + 1, hasChildren, hasNext);
-        }
-    }
-
-    const jobSteps = await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: parentId});
-    for (js of jobSteps) {
-        const isLast = jobSteps.indexOf(js) === jobSteps.length - 1;
-        await createRow(js, 'js', parentId, level + 1, false, isLast, hasNext && level > 0);
-    }
-}
-
 //Загрузка страниц
 async function displayPage(page, customerOrderId) {
     async function loadPrimaryDemands(page) {
@@ -361,11 +338,8 @@ async function displayPage(page, customerOrderId) {
     }
     rowsContainer.children('.load-more').remove();
 
-    const hasChildrenFlags = await Promise.all(primaryDemands.map(async (pd) => {
-        const children = await $.get('/spm-api/getChildJobComponentForJobcomponentId', {jobComponentId: pd.jobComponent.id});
-        const steps = await $.get('/spm-api/getJobStepsForJobComponentId', {jobComponentId: pd.jobComponent.id});
-        return children.length > 0 || steps.length > 0;
-    }));
+    const jobComponentIds = primaryDemands.map(demand => demand.jobComponent.id);
+    const hasChildrenFlags = await $.get('/spm-api/jobComponentHasChildOrHasJobSteps', {jobComponentIdList: jobComponentIds})
 
     for (let i = 0; i < primaryDemands.length; i++) {
         await createRow(primaryDemands[i], 'pd', '#', 0, hasChildrenFlags[i]);

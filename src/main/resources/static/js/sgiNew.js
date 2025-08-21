@@ -77,6 +77,10 @@ $(document).on('click', '.editing-btn', async function (e) {
 
     });
 });
+//Обработчик работы с окном факт выполнения
+$(document).on('click', '. execution-btn', async function (e) {
+
+});
 
 async function displayPage(page) {
     async function loadSGI(page = 16) {
@@ -117,7 +121,7 @@ async function displayPage(page) {
         const row = `
                 <div class="row-items">
                     <div class="row-items-row" data-id="${item.id}">
-                        <div class="row-item no ${borderClass}" data-field="number" style="width: var(--no);">
+                        <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
                             ${item.number}
                         </div>
@@ -136,7 +140,7 @@ async function displayPage(page) {
                             </button>
                         </div>
                         <div class="row-item" style="width: var(--executions);">
-                            <button type="button" class="btn btn-info btn-sm">
+                            <button type="button" class="btn btn-info btn-sm execution-btn">
                                 ✔
                             </button>
                         </div>
@@ -155,7 +159,7 @@ async function displayPage(page) {
                     <div class="row-items-inner-row">
                         ${item.subSGI.map((subItem) => `
                             <div class="row-items-row" data-id="${subItem.id}">
-                                <div class="row-item no ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                                <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
                                 <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
                                 <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
                                 <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
@@ -171,7 +175,7 @@ async function displayPage(page) {
                                     </button>
                                 </div>
                                 <div class="row-item" style="width: var(--executions);">
-                                    <button type="button" class="btn btn-info btn-sm">
+                                    <button type="button" class="btn btn-info btn-sm execution-btn">
                                         ✔
                                     </button>
                                 </div>

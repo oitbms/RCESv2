@@ -65,6 +65,7 @@ public class SPMdbConfig {
         Map<String, Object> props = new HashMap<>();
         props.put("hibernate.boot.allow_jdbc_metadata_access", "true");
         props.put("hibernate.jdbc.lob.non_contextual_creation", "true");
+        props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         return props;
     }
 

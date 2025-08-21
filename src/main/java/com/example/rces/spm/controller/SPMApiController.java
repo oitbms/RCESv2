@@ -5,16 +5,21 @@ import com.example.rces.spm.controller.payload.JobStepPayload;
 import com.example.rces.spm.controller.payload.PrimaryDemandPayload;
 import com.example.rces.spm.controller.payload.SPMCustomerOrderPayload;
 import com.example.rces.spm.models.JobComponent;
+import com.example.rces.spm.models.JobStep;
 import com.example.rces.spm.models.PrimaryDemand;
 import com.example.rces.spm.models.SPMCustomerOrder;
 import com.example.rces.spm.services.SPMService;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/spm-api")
@@ -46,56 +51,40 @@ public class SPMApiController {
             @RequestParam Long customerOrderId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "85") int size) {
-        Long totalCount = service.getEntityManager().createQuery(
-                        "select count(e.id) from PrimaryDemand e where e.customerorder.id = :id", Long.class)
-                .setParameter("id", customerOrderId).getSingleResult();
-
-        //native потому что тупорылый PostgreSQL
-        List<PrimaryDemand> primaryDemandList = service.getEntityManager()
-                .createNativeQuery("select e.id from dm_primarydemand e where e.customerorder_id = :id order by e.demand_type LIMIT :limit OFFSET :offset", Long.class)
-                .setParameter("id", customerOrderId)
-                .setParameter("limit", size)
-                .setParameter("offset", (page - 1) * size)
-                .getResultList()
+        Sort sort = Sort.by(Sort.Direction.ASC, "demandType, stormSingleString");
+        Page<PrimaryDemand> primaryDemandsPage = service.getPage(PrimaryDemand.class, page, size, sort,
+                String.format("JOIN e.customerorder co WHERE co.id = %d", customerOrderId));
+        Map<PrimaryDemand, JobComponent> pdJcMap = service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(primaryDemandsPage.getContent());
+        List<PrimaryDemandPayload> result = pdJcMap.keySet()
                 .stream()
-                .map(pd -> service.findById(PrimaryDemand.class, pd))
+                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(), new JobComponentPayload(pdJcMap.get(pd))))
                 .toList();
-
-        List<PrimaryDemandPayload> result = primaryDemandList
-                .stream()
-                .map(pd -> new PrimaryDemandPayload(pd.getId(), pd.getStormSingleString(),
-                        new JobComponentPayload(service.getPrimaryDemandService().getMainJobComponentForPrimaryDemand(pd))))
-                .toList();
-
         return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(totalCount))
+                .header("X-Total-Count", String.valueOf(primaryDemandsPage.getTotalElements()))
                 .header("X-Page", String.valueOf(page))
                 .header("X-Page-Size", String.valueOf(size))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(result);
     }
 
-//    @GetMapping("/getMainJobComponentForPrimaryDemandId")
-//    @ResponseBody
-//    public ResponseEntity<JobComponentPayload> getMainJobComponentForPrimaryDemandId(Long primaryDemandId) {
-//        JobComponent jobComponent = service.getPrimaryDemandService()
-//                .getMainJobComponentForPrimaryDemand(service.findById(PrimaryDemand.class, primaryDemandId));
-//        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-//                .body(new JobComponentPayload(jobComponent));
-//    }
-
-    @GetMapping("/getChildJobComponentForJobcomponentId")
+    @GetMapping("/jobComponentHasChildOrHasJobSteps")
     @ResponseBody
-    public ResponseEntity<List<JobComponentPayload>> getChildJobComponentForJobcomponentId(Long jobComponentId) {
+    public ResponseEntity<List<Boolean>> getJobComponentHasChildOrHasJobStepsList(@RequestParam List<Long> jobComponentIdList) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(
-                        service.getJobComponentService().getChildJobComponents(service.findById(JobComponent.class, jobComponentId))
-                                .stream()
-                                .map(JobComponentPayload::new)
-                                .toList()
-                );
+                .body(service.getJobComponentService().jobComponentHasChildOrHasJobSteps(jobComponentIdList));
     }
 
+    @GetMapping("/getChildJobComponentAndJobStepsForJobcomponentId")
+    @ResponseBody
+    public ResponseEntity<Pair<List<JobComponentPayload>, List<JobStep>>> getChildJobComponentForJobcomponentId(Long jobComponentId) {
+        Pair<Map<JobComponent, Boolean>, List<JobStep>> jcHasChildMapJobStepList = service.getJobComponentService()
+                .getChildJobComponentAndHasChildOrJobStepsAndCurrentJobSteps(jobComponentId);
+        List<JobComponentPayload> jobComponentPayloadList = jcHasChildMapJobStepList.getLeft().entrySet()
+                .stream()
+                .map(entry -> new JobComponentPayload(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(Pair.of(jobComponentPayloadList, jcHasChildMapJobStepList.getRight()));
+    }
 
     @GetMapping("/getJobStepsForJobComponentId")
     @ResponseBody

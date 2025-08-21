@@ -86,21 +86,8 @@ main {
                     flex-shrink: 0;
                     flex-grow: 0;
                 }
-
-                & .no {
-                    color: #3a56d4;
-                    position: relative;
-                }
-
                 &:hover {
-                    & .no {
-                        color: white;
-                        background-color: #5675ff;
-                        border-radius: 1rem;
-                        transition: hover, 0.8s;
-                    }
-
-
+                    background-color: #f5f5f5;
                 }
             }
 

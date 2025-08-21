@@ -1,15 +1,22 @@
 package com.example.rces.spm.services;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional(transactionManager = "spmTransactionManager")
@@ -54,6 +61,22 @@ public class SPMRepository {
 
     public <T> T findSingleByField(Class<T> entityClass, String fieldName, Object fieldValue) {
         return findByField(entityClass, fieldName, fieldValue).stream().findFirst().orElse(null);
+    }
+
+    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+        String orderByClause = "ORDER BY " + sort.stream()
+                .map(order -> String.format("e.%s %s", order.getProperty(), order.getDirection()))
+                .collect(Collectors.joining(", "));
+        List<T> content = entityManager.createQuery(
+                        "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions + " " + orderByClause, entityClass)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+        TypedQuery<Long> countQuery = entityManager.createQuery(
+                "SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::getSingleResult);
     }
 
     public EntityManager getEntityManager() {
