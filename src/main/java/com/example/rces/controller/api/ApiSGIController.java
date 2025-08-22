@@ -31,7 +31,7 @@ public class ApiSGIController {
     public ResponseEntity<List<ExecutionsPayload>> getExecutions(@RequestParam UUID param) {
         List<FactExecutionSGI> executions = service.getExecutions(param);
         return ResponseEntity.ok(executions.stream()
-                .map(ex -> new ExecutionsPayload(ex.getId(), ex.getExecutionDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")), ex.getReport()))
+                .map(ExecutionsPayload::new)
                 .collect(Collectors.toList()));
     }
 

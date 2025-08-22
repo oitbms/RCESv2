@@ -71,7 +71,7 @@
                 <button class="btn btn-secondary">2</button>
             </div>
             <div class="buttons">
-                <button class="btn btn-primary btn-action">
+                <button class="btn btn-primary btn-action" id="createSGI">
                     <i class="bi bi-plus-circle"></i>
                     <span class="btn-text">Добавить</span>
                 </button>
@@ -107,6 +107,71 @@
         </div>
     </div>
 </footer>
+<dialog id="create-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Создание мероприятия</h2>
+    </div>
+
+    <form action="/sgi/create" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">№ цеха</label>
+                <input type="text" class="form-control" name="workcenter" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Мероприятие</label>
+                <textarea class="form-control" name="event" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Сопутствующие действия</label>
+                <textarea class="form-control" name="actions" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Отдел</label>
+                <select class="form-control" name="department" required>
+                    <option value="">Выберите отдел</option>
+                    <option value="mechanic">ОГМ</option>
+                    <option value="builder">ОРС</option>
+                    <option value="protection">ОТиПК</option>
+                    <option value="energy">ОГЭ</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ответственный</label>
+                <select class="form-control" name="employee" required>
+                    <option value="">Выберите сотрудника</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Желаемый срок</label>
+                <input type="date" class="form-control" name="desiredDate" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Примечание</label>
+                <textarea class="form-control" name="note"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Прикрепленные фото</label>
+                <div class="file-upload">
+                    <div>Кликните для добавления фото-отчетов</div>
+                    <input type="file" multiple accept="image/*" style="display: none;">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="document.getElementById('create-dialog').close()">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">Создать</button>
+        </div>
+    </form>
+
+</dialog>
 <dialog id="editing-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Редактирование мероприятия</h2>
@@ -165,22 +230,23 @@
     </div>
 
     <div class="modal-footer">
+        <button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>
         <button class="btn btn-primary" id="saveBtn">Сохранить</button>
     </div>
 </dialog>
 <dialog id="execution-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Факт выполнения</h2>
-        <button class="close-btn">&times;</button>
+        <button class="close-btn" onclick="document.getElementById('execution-dialog').close()">&times;</button>
     </div>
     <div class="modal-body">
         <div class="form-group">
             <label class="form-label">Дата выполнения</label>
-            <input type="date" class="form-control" value="2025-08-06">
+            <input type="date" class="form-control" data-field="executionDate">
         </div>
         <div class="form-group">
             <label class="form-label">Отчет</label>
-            <textarea class="form-control ">Отчет</textarea>
+            <textarea class="form-control" data-field="report"></textarea>
         </div>
         <div class="form-group">
             <label class="form-label">Прикрепленные фото</label>

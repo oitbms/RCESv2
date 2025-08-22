@@ -1,16 +1,12 @@
 package com.example.rces.controller;
 
-import com.example.rces.controller.payload.ExecutionsPayload;
-import com.example.rces.models.Employee;
-import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import com.example.rces.services.CustomUserDetailsService;
 import com.example.rces.services.UniversalService;
 import com.example.rces.services.telegram.MessageType;
 import com.example.rces.services.telegram.TelegramService;
-import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +30,7 @@ public class SGController {
 
     private final CustomUserDetailsService userDetailsService;
 
+    @Autowired
     public SGController(UniversalService service, TelegramService tgService, CustomUserDetailsService userDetailsService) {
         this.service = service;
         this.tgService = tgService;
@@ -47,19 +44,18 @@ public class SGController {
 
     @PostMapping("/create")
     public String createSGI(
-            @RequestParam String workshopModal,
-            @RequestParam String eventModal,
-            @RequestParam String actionsModal,
-            @RequestParam String departmentModal,
-            @RequestParam String employeesModal,
-            @RequestParam(required = false) String noteModal,
-            @RequestParam LocalDate desiredDateModal,
+            @RequestParam String workcenter,
+            @RequestParam String event,
+            @RequestParam String actions,
+            @RequestParam String department,
+            @RequestParam String employee,
+            @RequestParam LocalDate desiredDate,
+            @RequestParam(required = false) String note,
             @RequestParam(required = false) MultipartFile[] additionalFiles) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
-        Employee employee = service.findSingleByField(Employee.class, "name", employeesModal);
-        SGI sgi = service.createRequestSGI(workshopModal, eventModal, actionsModal, departmentModal, noteModal, desiredDateModal, employee, additionalFiles);
+        SGI sgi = service.createRequestSGI(workcenter, event, actions, department, desiredDate, note, employee, additionalFiles);
         tgService.sendMessage(sgi, null, MessageType.CREATE);
         return "redirect:/sgi";
     }
@@ -72,63 +68,52 @@ public class SGController {
                                             @RequestParam(required = false) String department,
                                             @RequestParam(required = false) LocalDate desiredDate,
                                             @RequestParam(required = false) String employee,
-                                            @RequestParam(required = false) LocalDate planDate,
-                                            @RequestParam(required = false) String note) throws CloneNotSupportedException {
-        if (!userDetailsService.isControl()) {
-            throw new ForbiddenException("Редактировать может только создатель задачи");
-        }
+                                            @RequestParam(required = false) String note,
+                                            @RequestParam(required = true) Boolean factExecutionSGIBool,
+                                            @RequestParam(required = false) LocalDate executionDate,
+                                            @RequestParam(required = false) String report,
+                                            @RequestParam(required = false) MultipartFile[] imagesSGI,
+                                            @RequestParam(required = false) MultipartFile[] imagesFactSGI
+    ) throws CloneNotSupportedException {
         SGI sgi = service.findById(SGI.class, id);
-        SGI oldSgi = (SGI) sgi.clone();
-        boolean planDateExist = !(sgi.getPlanDate() == null);
-        try {
-            Employee newEmployee = userDetailsService.loadUserByUsername(employee);
-            sgi.setEmployee(newEmployee);
-        } catch (Exception e) {
-            throw new NoResultException();
-        }
-        sgi.setWorkShop(workcenter);
-        sgi.setEvent(event);
-        sgi.setActions(actions);
-        sgi.setDepartment(SGI.Department.valueOf(department));
-        sgi.setPlanDate(planDate);
-        sgi.setDesiredDate(desiredDate);
-        sgi.setNote(note);
-        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-        service.save(sgi);
-        if (!planDateExist && planDate != null) {
-            tgService.sendMessage(sgi, null, MessageType.WORK);
+        if (!factExecutionSGIBool) {
+            if (!userDetailsService.isControl()) {
+                throw new ForbiddenException("Редактировать может только создатель задачи");
+            }
+            SGI oldSgi = (SGI) sgi.clone();
+            boolean planDateExist = !(sgi.getPlanDate() == null);
+            service.saveSGI(sgi, workcenter, event, actions, department, desiredDate, employee,
+                    note, executionDate, false, executionDate, report, imagesSGI, imagesFactSGI);
+            if (!planDateExist && executionDate != null) {
+                tgService.sendMessage(sgi, null, MessageType.WORK);
+            } else {
+                tgService.sendMessage(sgi, null, MessageType.UPDATE);
+            }
+            createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
         } else {
-            tgService.sendMessage(sgi, null, MessageType.UPDATE);
+            if (!userDetailsService.isResponsible(sgi.getEmployee()) & !userDetailsService.isControl()) {
+                throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
+            }
+            service.saveSGI(sgi, workcenter, event, actions, department, desiredDate, employee,
+                    note, executionDate, true, executionDate, report, imagesSGI, imagesFactSGI);
         }
-        createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
+
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/create/execution")
-    public ResponseEntity<Void> createSGIExecution(
-            @RequestParam UUID id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate executionDate,
-            @RequestParam(required = false) String report,
-            @RequestParam(required = false) MultipartFile[] images) {
-        SGI sgi = service.findById(SGI.class, id);
-        if (!userDetailsService.isResponsible(sgi.getEmployee()) & !userDetailsService.isControl()) {
-            throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
-        }
-        service.createFactExecutionSGI(sgi, new ExecutionsPayload(null, executionDate.toString(), report), images);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/add-photoEx")
-    public ResponseEntity<Void> addPhotoEx(@RequestParam UUID id, @RequestParam MultipartFile[] additionalFiles) {
-        service.addPhotoEx(id, additionalFiles);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/add-photo")
-    public ResponseEntity<Void> addPhoto(@RequestParam UUID id, @RequestParam MultipartFile[] additionalFiles) {
-        service.addPhoto(id, additionalFiles);
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/create/execution")
+//    public ResponseEntity<Void> createSGIExecution(
+//            @RequestParam UUID id,
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate executionDate,
+//            @RequestParam(required = false) String report,
+//            @RequestParam(required = false) MultipartFile[] images) {
+//        SGI sgi = service.findById(SGI.class, id);
+//        if (!userDetailsService.isResponsible(sgi.getEmployee()) & !userDetailsService.isControl()) {
+//            throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
+//        }
+//        service.createFactExecutionSGI(sgi, executionDate, report, images);
+//        return ResponseEntity.ok().build();
+//    }
 
     @DeleteMapping("/delete")
     @ResponseBody
@@ -137,17 +122,6 @@ public class SGController {
             service.delete(service.findById(SGI.class, id));
             tgService.sendMessage(service.findById(SGI.class, id), null, MessageType.DELETE);
         });
-    }
-
-    @DeleteMapping("/delete-fact")
-    public ResponseEntity<Void> deleteFactSGI(@RequestParam("id") UUID id) {
-        service.deleteById(FactExecutionSGI.class, id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/delete-photo")
-    public void deletePhoto(@RequestParam UUID id) {
-        service.deletePhoto(id);
     }
 
     @PostMapping("/agree")

@@ -1,19 +1,26 @@
 package com.example.rces.services;
 
-import com.example.rces.controller.payload.ExecutionsPayload;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NoResultException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -93,10 +100,10 @@ public class UniversalService {
         return repository.save(request);
     }
 
-    public SGI createRequestSGI(String workShop, String event, String actions, String department, String note, LocalDate desiredDate, Employee employee,
-                                MultipartFile[] additionalFiles) {
+    @Transactional
+    public SGI createRequestSGI(String workShop, String event, String actions, String department,
+                                LocalDate desiredDate, String note,String employee, MultipartFile[] additionalFiles) {
         SGI sgi = new SGI();
-
         sgi.setWorkShop(workShop);
         sgi.setColor(SGI.ColorSGI.NONE);
         sgi.setEvent(event);
@@ -106,48 +113,87 @@ public class UniversalService {
         sgi.setDesiredDate(desiredDate);
         sgi.setRequestNumber(repository.generateRequestNumber(SGI.class));
         sgi.setCreateDate(LocalDate.now());
-        sgi.setEmployee(employee);
+        sgi.setEmployee(repository.findSingleByField(Employee.class, "name", employee));
+        sgi.setAgreed(false);
+
         if (additionalFiles != null) {
             List<Images> images = saveFiles(additionalFiles, sgi);
             sgi.setImages(images);
         }
-
-        sgi.setAgreed(false);
-
-
+        FactExecutionSGI factExecutionSGI =createFactExecutionSGI(sgi);
+        sgi.setExecution(factExecutionSGI);
         return repository.save(sgi);
     }
 
-    public FactExecutionSGI createFactExecutionSGI(SGI sgi, ExecutionsPayload payload, MultipartFile[] additionalFiles) {
+    public FactExecutionSGI createFactExecutionSGI(SGI sgi) {
         FactExecutionSGI factExecutionSGI = new FactExecutionSGI();
-
         factExecutionSGI.setSgi(sgi);
-        sgi.setExecution(factExecutionSGI);
-        factExecutionSGI.setExecutionDate(LocalDate.parse(payload.executionDate()));
-        factExecutionSGI.setReport(payload.report());
-
-        if (additionalFiles != null) {
-            List<Images> images = saveFiles(additionalFiles, factExecutionSGI);
-            factExecutionSGI.setImages(images);
-        }
-
-        factExecutionSGI = repository.save(factExecutionSGI);
-        sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-        save(sgi);
-
         return factExecutionSGI;
+    }
+
+    public void saveSGI(SGI sgi,
+                        String workcenter, String event, String actions, String department, LocalDate desiredDate,
+                        String employee, String note, LocalDate planDate, Boolean factExecutionSGIBool, LocalDate executionDate, String report,
+                        MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) {
+
+        if (!factExecutionSGIBool) {
+            try {
+                Employee newEmployee = repository.findSingleByField(Employee.class, "name", employee);
+                sgi.setEmployee(newEmployee);
+            } catch (Exception e) {
+                throw new NoResultException();
+            }
+            sgi.setWorkShop(workcenter);
+            sgi.setEvent(event);
+            sgi.setActions(actions);
+            sgi.setDepartment(SGI.Department.valueOf(department));
+            sgi.setDesiredDate(desiredDate);
+            sgi.setNote(note);
+            sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+            if (imagesSGI!=null) {
+                for (MultipartFile file : imagesSGI) {
+                    if (!file.isEmpty()) {
+                        Images imageEntity = new Images();
+                        imageEntity.setName(file.getOriginalFilename());
+                        try {
+                            imageEntity.setData(file.getBytes());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        imageEntity.setSgim(sgi);
+                        save(imageEntity);
+                    }
+                }
+            }
+            repository.save(sgi);
+        } else {
+            FactExecutionSGI factExecutionSGI = sgi.getExecution();
+            factExecutionSGI.setExecutionDate(executionDate);
+            factExecutionSGI.setReport(report);
+            if (imagesFactSGI!=null) {
+                for (MultipartFile file : imagesFactSGI) {
+                    if (!file.isEmpty()) {
+                        Images imageEntity = new Images();
+                        imageEntity.setName(file.getOriginalFilename());
+                        try {
+                            imageEntity.setData(file.getBytes());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        imageEntity.setSgi(factExecutionSGI);
+                        save(imageEntity);
+                    }
+                }
+            }
+            sgi.setPlanDate(executionDate);
+            sgi.setExecution(factExecutionSGI);
+            sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+            repository.save(sgi);
+        }
     }
 
     public CustomerOrder createOrGetCustomerOrder(ObjectMapper objectMapper, Employee employee, String customerOrderName, String customerOrderJson) {
         return repository.createOrGetCustomerOrder(objectMapper, employee, customerOrderName, customerOrderJson);
-    }
-
-    public void addPhotoEx(UUID id, MultipartFile[] additionalFiles) {
-        repository.addPhotoEx(id, additionalFiles);
-    }
-
-    public void addPhoto(UUID id, MultipartFile[] additionalFiles) {
-        repository.addPhoto(id, additionalFiles);
     }
 
     public void deletePhoto(UUID photoId) {

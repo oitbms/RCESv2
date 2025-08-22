@@ -85,7 +85,7 @@ public class SGI implements Cloneable {
     @DisplayName("Планируемая дата")
     private LocalDate planDate;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @DisplayName("Факт выполнения")
     private FactExecutionSGI executions;
 

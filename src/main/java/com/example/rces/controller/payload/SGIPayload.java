@@ -1,5 +1,6 @@
 package com.example.rces.controller.payload;
 
+import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 
 import java.time.LocalDate;
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public record SGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department, String departmentName,
                          String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment, Boolean agree,
-                         Boolean executions, SGIPayload parent ,List<SubSGIPayload> subSGI) {
+                         Boolean executions, SGIPayload parent , List<SubSGIPayload> subSGI, ExecutionsPayload factExecutionSGI) {
 
     public SGIPayload(SGI sgi) {
         this (
@@ -28,7 +29,8 @@ public record SGIPayload(UUID id, String number, String color, String workcenter
                 sgi.getAgreed(),
                 sgi.getExecution()!=null,
                 sgi.getParentSGI()!=null?new SGIPayload(sgi.getParentSGI()):null,
-                sgi.getSubSGI().stream().map(SubSGIPayload::new).toList()
+                sgi.getSubSGI().stream().map(SubSGIPayload::new).toList(),
+                sgi.getExecution()!=null ? new ExecutionsPayload(sgi.getExecution()) : null
         );
     }
 }

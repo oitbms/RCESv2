@@ -1,30 +1,34 @@
 package com.example.rces.services;
 
-import com.example.rces.models.*;
+import com.example.rces.models.CustomerOrder;
+import com.example.rces.models.Employee;
+import com.example.rces.models.FactExecutionSGI;
+import com.example.rces.models.SGI;
 import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -35,12 +39,9 @@ import static com.example.rces.utils.ServiceUtil.allowedCreateOrUpdate;
 @Repository
 @Transactional(transactionManager = "primaryTransactionManager")
 public class UniversalRepository {
-    private final EntityManager entityManager;
 
-    @Autowired
-    public UniversalRepository(@Qualifier("primaryEntityManager") EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
+    @PersistenceContext(unitName = "primary")
+    private EntityManager entityManager;
 
     public <T> T findById(Class<T> entityClass, Object id) {
         return entityManager.find(entityClass, id);
@@ -88,7 +89,8 @@ public class UniversalRepository {
             if (id != null && entityManager.find(entity.getClass(), id) != null && allowedCreateOrUpdate(entity, updaterCreaterEmployee, false)) {
                 return entityManager.merge(entity);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при сохранения сущности", e);
         }
         allowedCreateOrUpdate(entity, updaterCreaterEmployee, true);
         entityManager.persist(entity);
@@ -115,10 +117,10 @@ public class UniversalRepository {
     public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
         String orderByClause = "ORDER BY " + sort.stream()
-                    .map(order -> String.format("e.%s %s", order.getProperty(), order.getDirection()))
-                    .collect(Collectors.joining(", "));
+                .map(order -> String.format("e.%s %s", order.getProperty(), order.getDirection()))
+                .collect(Collectors.joining(", "));
         List<T> content = entityManager.createQuery(
-                "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions + " " + orderByClause, entityClass)
+                        "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions + " " + orderByClause, entityClass)
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
@@ -167,39 +169,6 @@ public class UniversalRepository {
                 .getSingleResult();
     }
 
-    public void addPhotoEx(UUID id, MultipartFile[] additionalFiles) {
-        for (MultipartFile file : additionalFiles) {
-            if (!file.isEmpty()) {
-                Images imageEntity = new Images();
-                imageEntity.setName(file.getOriginalFilename());
-                try {
-                    imageEntity.setData(file.getBytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                imageEntity.setSgi(findById(FactExecutionSGI.class, id));
-                save(imageEntity);
-            }
-        }
-    }
-
-    public void addPhoto(UUID id, MultipartFile[] additionalFiles) {
-        for (MultipartFile file : additionalFiles) {
-            if (!file.isEmpty()) {
-                Images imageEntity = new Images();
-                imageEntity.setName(file.getOriginalFilename());
-                try {
-                    imageEntity.setData(file.getBytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                imageEntity.setSgim(findById(SGI.class, id));
-                save(imageEntity);
-            }
-        }
-    }
-
-
     public void deletePhoto(UUID photoId) {
         entityManager.createQuery("DELETE FROM Images e WHERE e.id = :photoId")
                 .setParameter("photoId", photoId)
@@ -222,9 +191,8 @@ public class UniversalRepository {
             employee.setActive(status);
             employee.setMlmNode(MlmNode.valueOf(mlmNode));
             employee.setPassword(password);
-           employee.setChatId(chatID != -1 ? chatID : null);
+            employee.setChatId(chatID != -1 ? chatID : null);
         }
         return save(employee);
     }
-
 }

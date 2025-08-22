@@ -193,8 +193,8 @@ dialog {
     }
 }
 
-#editing-dialog {
-    width: 90%;
+#create-dialog {
+    width: 50%;
 
     & .modal-title {
         margin: 0;
@@ -277,7 +277,97 @@ dialog {
         background: #f8f9fa;
         border-top: 1px solid #dee2e6;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+}
+
+#editing-dialog {
+    width: 55%;
+
+    & .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    & .modal-header {
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        & .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+
+            &:hover {
+                color: red;
+                transition: color, 0.5s;
+            }
+        }
+    }
+
+    & .modal-body {
+        padding: 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        max-height: 60vh;
+        overflow-y: auto;
+
+        & .form-group {
+            margin-bottom: 16px;
+
+            & .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                font-size: 0.875rem;
+            }
+
+            & .form-control {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                font-size: 0.875rem;
+                text-overflow: ellipsis;
+            }
+
+            & textarea.form-control {
+                min-height: 80px;
+                resize: vertical;
+            }
+
+            .file-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 4px;
+                padding: 16px;
+                text-align: center;
+                cursor: pointer;
+
+                &:hover {
+                    border-color: #0d6efd;
+                    transition: border-color, 0.5s;
+                }
+            }
+
+        }
+    }
+
+    & .modal-footer {
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
         gap: 8px;
     }
 
@@ -488,14 +578,14 @@ dialog {
 }
 
 .border-danger {
-    border: 1px solid;
+    border: 2px solid;
     border-radius: 1rem;
     animation: pulse-border-danger 6s infinite;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     margin: 2px 0 2px 0;
 }
 .border-warning {
-    border: 1px solid;
+    border: 2px solid;
     border-radius: 1rem;
     animation: pulse-border-warning 6s infinite;
     animation-timing-function: ease-in-out;
@@ -503,8 +593,20 @@ dialog {
 }
 .border-good {
     border-radius: 1rem;
-    border: 1px solid #66c500 !important;
+    border: 2px solid #66c500 !important;
     margin: 2px 0 2px 0;
+}
+.complete {
+    &::before {
+        content: "";
+        position: relative;
+        left: 45px;
+        top: 50%;
+        width: calc(100% - 398px);
+        height: 2px;
+        background-color: black;
+        transition: all 0.3s ease;
+    }
 }
 @keyframes pulse-border-danger {
     0% {

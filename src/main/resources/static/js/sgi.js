@@ -70,9 +70,7 @@ async function toggleAgreement(sgiId, button) {
         contentType: false,
         processData: false,
         success: function () {
-            icon.toggleClass('bi-check-circle-fill text-success');
-            icon.toggleClass('bi-circle');
-            reload();
+            $(this).append('checked')
         },
         error: function () {
             alert('Вы не можете закрывать заявку')
