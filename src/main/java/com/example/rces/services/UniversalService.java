@@ -6,16 +6,10 @@ import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.NoResultException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -102,7 +96,7 @@ public class UniversalService {
 
     @Transactional
     public SGI createRequestSGI(String workShop, String event, String actions, String department,
-                                LocalDate desiredDate, String note,String employee, MultipartFile[] additionalFiles) {
+                                LocalDate desiredDate, String note, String employee, MultipartFile[] additionalFiles, String parentId) {
         SGI sgi = new SGI();
         sgi.setWorkShop(workShop);
         sgi.setColor(SGI.ColorSGI.NONE);
@@ -115,12 +109,15 @@ public class UniversalService {
         sgi.setCreateDate(LocalDate.now());
         sgi.setEmployee(repository.findSingleByField(Employee.class, "name", employee));
         sgi.setAgreed(false);
+        if (!parentId.isEmpty()) {
+            sgi.setParentSGI(repository.findById(SGI.class, UUID.fromString(parentId)));
+        }
 
         if (additionalFiles != null) {
             List<Images> images = saveFiles(additionalFiles, sgi);
             sgi.setImages(images);
         }
-        FactExecutionSGI factExecutionSGI =createFactExecutionSGI(sgi);
+        FactExecutionSGI factExecutionSGI = createFactExecutionSGI(sgi);
         sgi.setExecution(factExecutionSGI);
         return repository.save(sgi);
     }
@@ -150,7 +147,7 @@ public class UniversalService {
             sgi.setDesiredDate(desiredDate);
             sgi.setNote(note);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-            if (imagesSGI!=null) {
+            if (imagesSGI != null) {
                 for (MultipartFile file : imagesSGI) {
                     if (!file.isEmpty()) {
                         Images imageEntity = new Images();
@@ -170,7 +167,7 @@ public class UniversalService {
             FactExecutionSGI factExecutionSGI = sgi.getExecution();
             factExecutionSGI.setExecutionDate(executionDate);
             factExecutionSGI.setReport(report);
-            if (imagesFactSGI!=null) {
+            if (imagesFactSGI != null) {
                 for (MultipartFile file : imagesFactSGI) {
                     if (!file.isEmpty()) {
                         Images imageEntity = new Images();

@@ -51,11 +51,12 @@ public class SGController {
             @RequestParam String employee,
             @RequestParam LocalDate desiredDate,
             @RequestParam(required = false) String note,
-            @RequestParam(required = false) MultipartFile[] additionalFiles) {
+            @RequestParam(required = false) MultipartFile[] additionalFiles,
+            @RequestParam(required = false) String parentId) {
         if (!userDetailsService.isControl()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
-        SGI sgi = service.createRequestSGI(workcenter, event, actions, department, desiredDate, note, employee, additionalFiles);
+        SGI sgi = service.createRequestSGI(workcenter, event, actions, department, desiredDate, note, employee, additionalFiles, parentId);
         tgService.sendMessage(sgi, null, MessageType.CREATE);
         return "redirect:/sgi";
     }
@@ -101,20 +102,6 @@ public class SGController {
         return ResponseEntity.ok().build();
     }
 
-//    @PostMapping("/create/execution")
-//    public ResponseEntity<Void> createSGIExecution(
-//            @RequestParam UUID id,
-//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate executionDate,
-//            @RequestParam(required = false) String report,
-//            @RequestParam(required = false) MultipartFile[] images) {
-//        SGI sgi = service.findById(SGI.class, id);
-//        if (!userDetailsService.isResponsible(sgi.getEmployee()) & !userDetailsService.isControl()) {
-//            throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
-//        }
-//        service.createFactExecutionSGI(sgi, executionDate, report, images);
-//        return ResponseEntity.ok().build();
-//    }
-
     @DeleteMapping("/delete")
     @ResponseBody
     public void deleteSGI(@RequestBody List<UUID> ids) {
@@ -129,15 +116,16 @@ public class SGController {
         SGI sgi = service.findById(SGI.class, id);
         SGI oldSgi = (SGI) sgi.clone();
         if (userDetailsService.isControl()) {
-            sgi.setAgreed(agreed);
-            sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-            service.save(sgi);
-            tgService.sendMessage(sgi, null, MessageType.CLOSE);
-            createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.badRequest().build();
+            if (sgi.getSubSGI().stream().allMatch(SGI::getAgreed)) {
+                sgi.setAgreed(agreed);
+                sgi.setColor(colorCalculate(sgi, LocalDate.now()));
+                service.save(sgi);
+                tgService.sendMessage(sgi, null, MessageType.CLOSE);
+                createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
+                return ResponseEntity.ok().build();
+            }
         }
+        return ResponseEntity.badRequest().build();
     }
 
     @PostMapping("/calculate-color")

@@ -4,6 +4,7 @@ const localCache = new Map();
 //Обработчик работы с окном создания задачи
 $(document).on('click', '#createSGI', async function (e) {
     const dialog = $('#create-dialog');
+    dialog.find('[name="parentId"]').empty();
 
     const field = dialog.find('[name="employee"]');
     field.find('option').not(':first').remove();
@@ -53,6 +54,11 @@ $(document).on('click', '.editing-btn', async function (e) {
         }
         field.val(value || '');
     }
+    if ($(currentRow).data('inner')) {
+        dialog.find('#createSubSGI').remove();
+    } else {
+        dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
+    }
 
     dialog[0].showModal();
 
@@ -98,11 +104,26 @@ $(document).on('click', '.editing-btn', async function (e) {
         });
 
     });
-    $(document).on('click', '#createSubSGI', function (e) {
+    $(document).on('click', '#createSubSGI', async function (e) {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
+        dialog[0].close();
+        const createDialog = $('#create-dialog');
+        createDialog.find('[name="parentId"]').val(currentId);
 
+        const field = createDialog.find('[name="employee"]');
+        field.find('option').not(':first').remove();
+        const employeesData = await cache.get('employee');
+        const filteredEmployees = employeesData.filter(employee =>
+            ['EVENT', 'CONTROL'].includes(employee.role)
+        );
+        filteredEmployees.forEach(employee => {
+            field.append($('<option>', {text: employee.name})
+            );
+        });
+
+        createDialog[0].showModal();
     });
 });
 //Обработчик работы с окном факт выполнения
@@ -160,7 +181,6 @@ $(document).on('click', '.execution-btn', async function (e) {
 //Обработчик согласования
 $(document).on('click', '#toggleAgreement', async function (event) {
     event.preventDefault();
-
     const isChecked = this.checked;
     const currentRow = $(this).closest('.row-items-row');
     const currentId = $(currentRow).data('id');
@@ -170,8 +190,10 @@ $(document).on('click', '#toggleAgreement', async function (event) {
     formData.append("id", currentId);
     formData.append("agreed", isChecked);
 
-    if (currentSGI.planDate === null || currentSGI.planDate === "") return alert("Не заполнено поле планируемый срок");
-    if (!currentSGI.executions) return alert("У мероприятия нет факта выполнения");
+    if (currentSGI.planDate === null || currentSGI.planDate === "") return alert("Не заполнено поле планируемый срок!");
+    if (!currentSGI.executions) return alert("У мероприятия нет факта выполнения!");
+    if (isChecked && currentSGI.subSGI && !currentSGI.subSGI?.every(sub => sub.agree)) return alert("Все подзадачи должны быть согласованы!");
+    if (!isChecked && currentSGI?.parent && currentSGI.parent.agree) return alert("Нельзя отменить согласование подзадачи, если родительская задача согласована!");
     await $.ajax({
         url: '/sgi/agree',
         method: 'POST',
@@ -179,17 +201,17 @@ $(document).on('click', '#toggleAgreement', async function (event) {
         contentType: false,
         processData: false,
         success: function () {
-            $('#toggleAgreement').prop('checked', isChecked);
             currentSGI.agree = isChecked;
             localCache.set(currentId, currentSGI);
             if (isChecked) {
-                currentRow.closest('.row-items ').addClass('complete');
+                currentRow.addClass('complete');
             } else {
-                currentRow.closest('.row-items ').removeClass('complete');
+                currentRow.removeClass('complete');
             }
+            currentRow.find('#toggleAgreement').prop('checked', isChecked);
         },
         error: function () {
-            alert('Вы не можете закрывать заявку')
+            alert('Вы не можете закрывать заявку');
         }
     });
 });
@@ -231,8 +253,8 @@ async function displayPage(page) {
                 item.color === 'GREEN'
                     ? 'border-good' : '';
         const row = `
-                <div class="row-items ${item.color === 'GREY' ? 'complete' : ''}">
-                    <div class="row-items-row" data-id="${item.id}">
+                <div class="row-items">
+                    <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}">
                         <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
                             ${item.number}
@@ -270,7 +292,7 @@ async function displayPage(page) {
                     ${item.subSGI && item.subSGI.length > 0 ? `
                     <div class="row-items-inner-row">
                         ${item.subSGI.map((subItem) => `
-                            <div class="row-items-row" data-id="${subItem.id}">
+                            <div class="row-items-row ${subItem.color === 'GREY' ? 'complete' : ''}" data-id="${subItem.id}" data-inner="true">
                                 <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
                                 <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
                                 <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
@@ -293,7 +315,7 @@ async function displayPage(page) {
                                 </div>
                                 <div class="row-item" style="width: var(--status);">
                                     <div class="checkbox-wrapper-31">
-                                        <input type="checkbox" ${subItem.agree ? 'checked' : ''}>
+                                        <input type="checkbox" id="toggleAgreement" ${subItem.agree ? 'checked' : ''}>
                                         <svg viewBox="0 0 35.6 35.6">
                                             <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
                                             <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>

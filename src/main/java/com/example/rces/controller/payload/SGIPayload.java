@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public record SGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department, String departmentName,
-                         String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment, Boolean agree,
-                         Boolean executions, SGIPayload parent , List<SubSGIPayload> subSGI, ExecutionsPayload factExecutionSGI) {
+                         String employee, LocalDate desiredDate, LocalDate planDate, String note,
+                         String comment, List<ImagesPayload> images, Boolean agree,
+                         Boolean executions, List<SubSGIPayload> subSGI, ExecutionsPayload factExecutionSGI) {
 
     public SGIPayload(SGI sgi) {
         this (
@@ -26,9 +27,9 @@ public record SGIPayload(UUID id, String number, String color, String workcenter
                 sgi.getPlanDate(),
                 sgi.getNote(),
                 sgi.getComment()!=null ? sgi.getComment() : "",
+                sgi.getImages().stream().map(img -> new ImagesPayload(img, sgi.getId())).toList(),
                 sgi.getAgreed(),
                 sgi.getExecution()!=null,
-                sgi.getParentSGI()!=null?new SGIPayload(sgi.getParentSGI()):null,
                 sgi.getSubSGI().stream().map(SubSGIPayload::new).toList(),
                 sgi.getExecution()!=null ? new ExecutionsPayload(sgi.getExecution()) : null
         );

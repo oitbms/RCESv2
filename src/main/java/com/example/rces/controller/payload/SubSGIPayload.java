@@ -8,8 +8,7 @@ import java.util.UUID;
 public record SubSGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department,
                             String departmentName,
                             String employee, LocalDate desiredDate, LocalDate planDate, String note, String comment,
-                            Boolean agree,
-                            Boolean executions) {
+                            Boolean agree, Boolean executions, ExecutionsPayload factExecutionSGI, SubSGIPayload parent ) {
 
     public SubSGIPayload(SGI sgi) {
         this(
@@ -27,7 +26,9 @@ public record SubSGIPayload(UUID id, String number, String color, String workcen
                 sgi.getNote(),
                 sgi.getComment() != null ? sgi.getComment() : "",
                 sgi.getAgreed(),
-                sgi.getExecution() != null
+                sgi.getExecution() != null,
+                new ExecutionsPayload(sgi.getExecution()),
+                sgi.getParentSGI()!=null ? new SubSGIPayload(sgi.getParentSGI()):null
         );
     }
 }

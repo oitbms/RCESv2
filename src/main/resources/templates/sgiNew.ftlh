@@ -113,6 +113,7 @@
     </div>
 
     <form action="/sgi/create" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="parentId" id="parentIdInput">
         <div class="modal-body">
             <div class="form-group">
                 <label class="form-label">№ цеха</label>
@@ -159,9 +160,10 @@
 
             <div class="form-group">
                 <label class="form-label">Прикрепленные фото</label>
-                <div class="file-upload">
+                <div class="file-upload" id="fileUploadArea">
                     <div>Кликните для добавления фото-отчетов</div>
-                    <input type="file" multiple accept="image/*" style="display: none;">
+                    <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles" id="additionalFiles">
+                    <div class="file-list" id="fileList"></div>
                 </div>
             </div>
         </div>
@@ -230,7 +232,6 @@
     </div>
 
     <div class="modal-footer">
-        <button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>
         <button class="btn btn-primary" id="saveBtn">Сохранить</button>
     </div>
 </dialog>

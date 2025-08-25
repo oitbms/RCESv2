@@ -77,6 +77,7 @@ main {
             & .row-items-row {
                 display: flex;
                 flex-direction: row;
+                position: relative;
 
                 & .row-item {
                     display: flex;
@@ -599,13 +600,13 @@ dialog {
 .complete {
     &::before {
         content: "";
-        position: relative;
+        position: absolute;
         left: 45px;
-        top: 50%;
-        width: calc(100% - 398px);
+        width: calc(100% - 542px);
         height: 2px;
         background-color: black;
         transition: all 0.3s ease;
+        top: 50%;
     }
 }
 @keyframes pulse-border-danger {
