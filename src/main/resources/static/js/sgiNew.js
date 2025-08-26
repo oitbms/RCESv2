@@ -3,8 +3,12 @@ const localCache = new Map();
 
 //Обработчик работы с окном создания задачи
 $(document).on('click', '#createSGI', async function (e) {
+    e.preventDefault();
+
     const dialog = $('#create-dialog');
     dialog.find('[name]').val('');
+    dialog.find('input[type="file"]').files = new DataTransfer();
+    dialog.find('.file-list').empty();
 
     const field = dialog.find('[name="employee"]');
     field.find('option').not(':first').remove();
@@ -15,6 +19,20 @@ $(document).on('click', '#createSGI', async function (e) {
     filteredEmployees.forEach(employee => {
         field.append($('<option>', {text: employee.name})
         );
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
+    //Клик по "Отменить"
+    dialog.on('click', '#cancelButton', () => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
     });
 
     dialog[0].showModal();
@@ -38,6 +56,7 @@ $(document).on('click', '.editing-btn', async function (e) {
 
     for (const [key, value] of Object.entries(currentSGI)) {
         const field = dialog.find(`[data-field="${key}"]`);
+        if (!field.length) continue;
         if (key === 'employee') {
             field.empty();
             const employeesData = await cache.get('employee');
@@ -52,25 +71,33 @@ $(document).on('click', '.editing-btn', async function (e) {
                 );
             });
         }
+        if (key === 'imagesSGI') continue;
         field.val(value || '');
     }
-    if ($(currentRow).data('inner')) {
-        dialog.find('#createSubSGI').remove();
-    } else {
+    if (!dialog.find('#createSubSGI').length) {
         dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
     }
 
+    await renderImages(dialog, currentSGI.imagesSGI);
     dialog[0].showModal();
 
-    $(document).on('click', '#editing-dialog #saveBtn', function (e) {
+    $('#editing-dialog #saveBtn').off('click').on('click', function (e) {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
+        e.preventDefault;
+
         const formData = new FormData();
         formData.append('id', currentId);
         formData.append('factExecutionSGIBool', false)
         $(dialog).find('[data-field]').each((_, el) => {
-            formData.append(el.dataset.field, el.value);
+            if (el.type !== 'file') {
+                formData.append(el.dataset.field, el.value);
+            } else {
+                for (let file of el.files) {
+                    formData.append(el.dataset.field, file);
+                }
+            }
         });
         $.ajax({
             url: 'sgi/save-change',
@@ -91,10 +118,12 @@ $(document).on('click', '.editing-btn', async function (e) {
                     } else if (fieldName === 'planDate') {
                         return true;
                     } else targetElement.text(fieldValue);
-                    currentSGI[fieldName] = fieldValue;
+                    if (fieldName === 'imagesSGI') {
+
+                    } else currentSGI[fieldName] = fieldValue;
                 });
                 localCache.set(currentId, currentSGI);
-
+                localCache.delete('validFileMap');
                 dialog[0].close();
             },
             error: function () {
@@ -104,7 +133,7 @@ $(document).on('click', '.editing-btn', async function (e) {
         });
 
     });
-    $(document).on('click', '#createSubSGI', async function (e) {
+    $('#createSubSGI').off('click').on('click', async function (e) {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
@@ -125,9 +154,25 @@ $(document).on('click', '.editing-btn', async function (e) {
 
         createDialog[0].showModal();
     });
+    //Клик на крестик
+    dialog.find('#cancelButton').off('click').on('click', (e) => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
 });
 //Обработчик работы с окном факт выполнения
 $(document).on('click', '.execution-btn', async function (e) {
+    e.preventDefault;
+
     const currentRow = e.target.closest('.row-items-row');
     const currentId = $(currentRow).data('id');
     const currentSGI = localCache.get(currentId);
@@ -135,19 +180,27 @@ $(document).on('click', '.execution-btn', async function (e) {
 
     for (const [key, value] of Object.entries(currentSGI.factExecutionSGI)) {
         const field = dialog.find(`[data-field="${key}"]`);
+        if (!field.length) continue;
+        if (key === 'imagesFactSGI') continue;
         field.val(value || '');
     }
-    dialog[0].showModal();
 
     $(document).on('click', '#execution-dialog #saveBtn', function (e) {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
+        if (dialog.find(`[data-field="executionDate"]`).val() === '') return alert("Не заполнена дата выполнения")
         const formData = new FormData();
         formData.append('id', currentId);
         formData.append('factExecutionSGIBool', true)
         $(dialog).find('[data-field]').each((_, el) => {
-            formData.append(el.dataset.field, el.value);
+            if (el.type !== 'file') {
+                formData.append(el.dataset.field, el.value);
+            } else {
+                for (let file of el.files) {
+                    formData.append(el.dataset.field, file);
+                }
+            }
         });
 
         $.ajax({
@@ -165,10 +218,12 @@ $(document).on('click', '.execution-btn', async function (e) {
                         targetElement.text(formatDate(fieldValue));
                         currentSGI.planDate = fieldValue;
                     } else targetElement.text(fieldValue);
-                    currentSGI.factExecutionSGI[fieldName] = fieldValue;
+                    if (fieldName === 'imagesFactSGI') {
+
+                    } else currentSGI.factExecutionSGI[fieldName] = fieldValue;
                 });
                 localCache.set(currentId, currentSGI);
-
+                localCache.delete('validFileMap');
                 dialog[0].close();
             },
             error: function () {
@@ -176,6 +231,24 @@ $(document).on('click', '.execution-btn', async function (e) {
                 dialog[0].close();
             }
         });
+    });
+
+    await renderImages(dialog, currentSGI.factExecutionSGI.imagesFactSGI);
+    dialog[0].showModal();
+
+    //Клик на крестик
+    dialog.find('#cancelButton').off('click').on('click', (e) => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
     });
 });
 //Обработчик согласования
@@ -215,13 +288,14 @@ $(document).on('click', '#toggleAgreement', async function (event) {
         }
     });
 });
-//Обработчик фото
-$(document).on('click', '.file-upload',  async function (event) {
+//Обработчик фото добавление фото
+$(document).on('click', '.file-upload', async function (event) {
     $(this).prop('disabled', true);
     const currentDialog = $(this).closest('dialog');
     const inputFiles = currentDialog.find('[name="additionalFiles"]');
     const imageContainer = currentDialog.find('.file-list');
 
+    //Добавление фото в инпут
     inputFiles.off('change').on('change', async function (e) {
         e.preventDefault();
 
@@ -229,13 +303,16 @@ $(document).on('click', '.file-upload',  async function (event) {
         const files = input.files;
         input.files = new DataTransfer().files;
 
+        if (!localCache.has('imagesMap')) {
+            localCache.set('imagesMap', new Map);
+        }
         for (let file of files) {
-            if (!localCache.has(file.name)) {
-                localCache.set(file.name, file);
+            if (!localCache.get('imagesMap').has(file.name)) {
+                localCache.get('imagesMap').set(file.name, file);
             }
         }
         const dataTransfer = new DataTransfer();
-        for (const [fileName, file] of localCache) {
+        for (const [fileName, file] of localCache.get('imagesMap')) {
             if (file instanceof File) {
                 dataTransfer.items.add(file)
                 const imageUrl = URL.createObjectURL(file);
@@ -244,18 +321,62 @@ $(document).on('click', '.file-upload',  async function (event) {
                     <img src="${imageUrl}" alt="${file.name}">
                 </div>`;
                 imageContainer.append(fileItem);
-                localCache.set(fileName, null);
+                localCache.get('imagesMap').set(file.name, null);
             }
         }
-        const validFileSet = localCache.has('validFileSet') ? localCache.get('validFileSet') : new Set();
+        const validFileMap = localCache.has('validFileMap') ? localCache.get('validFileMap') : new Map();
         for (let file of dataTransfer.files) {
-            validFileSet.add(file);
+            validFileMap.set(file.name, file);
         }
-        localCache.set('validFileSet', validFileSet);
-        input.files = Array.from(validFileSet).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+        localCache.set('validFileMap', validFileMap);
+        input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
     });
     inputFiles.click();
+    $(document).on('click', () => $('.context-menu').remove());
     $(this).prop('disabled', false);
+});
+//Удаление фото ПКМ В диалоге
+$(document).on('contextmenu', 'dialog img', e => {
+    e.preventDefault();
+    const currentDialog = $(e.target).closest('dialog');
+    $('.context-menu').remove();
+    let menu = $('<div class="context-menu"><button class="context-btn">Удалить</button></div>');
+    $(currentDialog).append(menu);
+    let dialogOffset = $(currentDialog).offset();
+    menu.css({
+        'position': 'absolute',
+        'top': (e.pageY - dialogOffset.top) + 'px',
+        'left': (e.pageX - dialogOffset.left) + 'px',
+        'background': '#f8f9fa',
+        'border': '1px solid #dee2e6',
+        'padding': '8px',
+        'border-radius': '4px',
+        'box-shadow': '0 4px 12px rgba(0,0,0,0.15)'
+    });
+    menu.find('.context-btn').css({
+        'background': '#dc3545',
+        'color': 'white',
+        'border': 'none',
+        'padding': '6px 12px',
+        'cursor': 'pointer',
+        'border-radius': '3px',
+        'font-size': '0.875rem'
+    });
+
+    menu.find('.context-btn').click(() => {
+        const imgName = $(e.target).attr('alt');
+        if (localCache.has('imagesMap')) {
+            localCache.get('imagesMap').delete(imgName);
+        }
+        const validFileMap = localCache.get('validFileMap');
+        validFileMap.delete(imgName)
+        localCache.set('validFileMap', validFileMap)
+        let input = currentDialog.find('input[type="file"]').clone()[0];
+        input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+        currentDialog.find('input[type="file"]').replaceWith(input);
+        $(e.target).remove();
+        menu.remove();
+    });
 });
 
 async function displayPage(page) {
@@ -378,6 +499,31 @@ async function displayPage(page) {
     for (sgi of SGIPage.content) {
         await createRow(sgi);
     }
+}
+
+async function renderImages(currentDialog, images) {
+    // Конвертация base64 в File
+    const base64ToFile = (base64, name) => {
+        const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+        return new File([u8arr], name, {type: mime});
+    };
+    const imageContainer = currentDialog.find('.file-list');
+    imageContainer.empty();
+    const validFileMap = new Map();
+    for (const image of images) {
+        imageContainer.append(`
+            <div class="file-item">
+                <img src="${image.data}" alt="${image.name}">
+            </div>`);
+        localCache.set(image.name, null);
+        validFileMap.set(image.name, base64ToFile(image.data, image.name));
+    }
+    localCache.set('validFileMap', validFileMap)
+    let input = currentDialog.find('input[type="file"]').clone()[0];
+    input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+    currentDialog.find('input[type="file"]').replaceWith(input);
 }
 
 $(document).ready(async function () {

@@ -5,7 +5,7 @@ import com.example.rces.models.FactExecutionSGI;
 import java.util.List;
 import java.util.UUID;
 
-public record ExecutionsPayload(UUID id, String executionDate, String report, List<ImagesPayload> images) {
+public record ExecutionsPayload(UUID id, String executionDate, String report, List<ImagesPayload> imagesFactSGI) {
 
     public ExecutionsPayload(FactExecutionSGI factExecutionSGI) {
         this(

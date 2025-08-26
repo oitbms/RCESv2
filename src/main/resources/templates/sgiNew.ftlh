@@ -169,7 +169,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-primary" onclick="document.getElementById('create-dialog').close()">Отмена</button>
+            <button class="btn btn-primary" id="cancelButton">Отмена</button>
             <button type="submit" class="btn btn-primary" id="saveBtn">Создать</button>
         </div>
     </form>
@@ -178,7 +178,7 @@
 <dialog id="editing-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Редактирование мероприятия</h2>
-        <button class="close-btn" onclick="document.getElementById('editing-dialog').close()">&times;</button>
+        <button class="close-btn" id="cancelButton">&times;</button>
     </div>
 
     <div class="modal-body">
@@ -226,9 +226,10 @@
         <div class="form-group">
             <label class="form-label">Прикрепленные фото</label>
             <div class="file-upload">
-                <div>Кликните для редактирования фото-отчетов</div>
-                <input type="file" multiple accept="image/*" style="display: none;">
+                <div class="file-list">
+                </div>
             </div>
+            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles" data-field="imagesSGI">
         </div>
     </div>
 
@@ -239,7 +240,7 @@
 <dialog id="execution-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Факт выполнения</h2>
-        <button class="close-btn" onclick="document.getElementById('execution-dialog').close()">&times;</button>
+        <button class="close-btn" id="cancelButton">&times;</button>
     </div>
     <div class="modal-body">
         <div class="form-group">
@@ -253,9 +254,10 @@
         <div class="form-group">
             <label class="form-label">Прикрепленные фото</label>
             <div class="file-upload">
-                <div>Фото-отчет</div>
-                <input type="file" multiple accept="image/*" style="display: none;">
+                <div class="file-list">
+                </div>
             </div>
+            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles" data-field="imagesFactSGI">
         </div>
     </div>
     <div class="modal-footer">

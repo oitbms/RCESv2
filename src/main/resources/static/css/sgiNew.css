@@ -186,9 +186,9 @@ dialog {
     top: -30%;
     margin: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
+    overflow: visible;
 
-    &:backdrop {
+    &::backdrop {
         background-color: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(2px);
     }
@@ -264,7 +264,7 @@ dialog {
                 cursor: pointer;
                 z-index: 100;
                 height: 100px;
-                overflow: auto; /* или overflow: hidden; если не нужна прокрутка */
+                overflow: auto;
 
                 &:hover {
                     border-color: #0d6efd;
@@ -285,8 +285,8 @@ dialog {
                         justify-content: center;
 
                         & img {
-                            width: 28px;
-                            height: 28px;
+                            width: 46px;
+                            height: 48px;
                             object-fit: contain;
                         }
 
@@ -374,13 +374,38 @@ dialog {
             .file-upload {
                 border: 2px dashed #dee2e6;
                 border-radius: 4px;
-                padding: 16px;
-                text-align: center;
+                padding: 4px;
                 cursor: pointer;
+                z-index: 100;
+                height: 100px;
+                overflow: auto;
+                width: 220px;
 
                 &:hover {
                     border-color: #0d6efd;
                     transition: border-color, 0.5s;
+                }
+
+                & .file-list {
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    gap: 8px;
+
+                    & .file-item {
+                        max-width: 46px;
+                        max-height: 48px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        & img {
+                            width: 46px;
+                            height: 48px;
+                            object-fit: contain;
+                        }
+
+                    }
                 }
             }
 
@@ -463,13 +488,37 @@ dialog {
             .file-upload {
                 border: 2px dashed #dee2e6;
                 border-radius: 4px;
-                padding: 16px;
-                text-align: center;
+                padding: 4px;
                 cursor: pointer;
+                z-index: 100;
+                height: 100px;
+                overflow: auto;
 
                 &:hover {
                     border-color: #0d6efd;
                     transition: border-color, 0.5s;
+                }
+
+                & .file-list {
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    gap: 8px;
+
+                    & .file-item {
+                        max-width: 46px;
+                        max-height: 48px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        & img {
+                            width: 46px;
+                            height: 48px;
+                            object-fit: contain;
+                        }
+
+                    }
                 }
             }
 

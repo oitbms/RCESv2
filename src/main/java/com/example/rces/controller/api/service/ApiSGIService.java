@@ -27,11 +27,6 @@ public class ApiSGIService {
     public Page<SGI> getPage(int page, int size) {
         Sort sort = Sort.by(Sort.Direction.ASC, "requestNumber");
         String conditions = """
-                LEFT JOIN FETCH e.parentSGI
-                LEFT JOIN FETCH e.subSGI
-                JOIN FETCH e.executions
-                JOIN FETCH e.employee
-                LEFT JOIN e.images
                 WHERE e.parentSGI IS NULL
                 """;
         return service.getPage(SGI.class, page, size, sort, conditions);

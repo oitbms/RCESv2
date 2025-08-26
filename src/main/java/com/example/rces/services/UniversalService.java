@@ -149,6 +149,8 @@ public class UniversalService {
                 List<Images> newImages = saveFiles(imagesSGI, sgi);
                 sgi.getImages().clear();
                 sgi.getImages().addAll(newImages);
+            } else {
+                sgi.getImages().clear();
             }
             repository.save(sgi);
             createLog(oldSgi, sgi, currentUser, this);
@@ -159,11 +161,13 @@ public class UniversalService {
             if (imagesFactSGI != null) {
                 for (MultipartFile file : imagesFactSGI) {
                     if (!file.isEmpty()) {
-                        List<Images> newImages = saveFiles(imagesSGI, factExecutionSGI);
+                        List<Images> newImages = saveFiles(imagesFactSGI, factExecutionSGI);
                         factExecutionSGI.getImages().clear();
                         factExecutionSGI.getImages().addAll(newImages);
                     }
                 }
+            } else {
+                factExecutionSGI.getImages().clear();
             }
             sgi.setPlanDate(executionDate);
             sgi.setExecution(factExecutionSGI);
