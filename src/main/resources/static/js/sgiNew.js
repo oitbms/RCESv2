@@ -4,7 +4,7 @@ const localCache = new Map();
 //Обработчик работы с окном создания задачи
 $(document).on('click', '#createSGI', async function (e) {
     const dialog = $('#create-dialog');
-    dialog.find('[name="parentId"]').empty();
+    dialog.find('[name]').val('');
 
     const field = dialog.find('[name="employee"]');
     field.find('option').not(':first').remove();
@@ -214,6 +214,48 @@ $(document).on('click', '#toggleAgreement', async function (event) {
             alert('Вы не можете закрывать заявку');
         }
     });
+});
+//Обработчик фото
+$(document).on('click', '.file-upload',  async function (event) {
+    $(this).prop('disabled', true);
+    const currentDialog = $(this).closest('dialog');
+    const inputFiles = currentDialog.find('[name="additionalFiles"]');
+    const imageContainer = currentDialog.find('.file-list');
+
+    inputFiles.off('change').on('change', async function (e) {
+        e.preventDefault();
+
+        const input = e.target;
+        const files = input.files;
+        input.files = new DataTransfer().files;
+
+        for (let file of files) {
+            if (!localCache.has(file.name)) {
+                localCache.set(file.name, file);
+            }
+        }
+        const dataTransfer = new DataTransfer();
+        for (const [fileName, file] of localCache) {
+            if (file instanceof File) {
+                dataTransfer.items.add(file)
+                const imageUrl = URL.createObjectURL(file);
+                const fileItem = `
+                <div class="file-item">
+                    <img src="${imageUrl}" alt="${file.name}">
+                </div>`;
+                imageContainer.append(fileItem);
+                localCache.set(fileName, null);
+            }
+        }
+        const validFileSet = localCache.has('validFileSet') ? localCache.get('validFileSet') : new Set();
+        for (let file of dataTransfer.files) {
+            validFileSet.add(file);
+        }
+        localCache.set('validFileSet', validFileSet);
+        input.files = Array.from(validFileSet).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+    });
+    inputFiles.click();
+    $(this).prop('disabled', false);
 });
 
 async function displayPage(page) {

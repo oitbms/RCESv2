@@ -83,19 +83,18 @@ public class SGController {
             }
             SGI oldSgi = (SGI) sgi.clone();
             boolean planDateExist = !(sgi.getPlanDate() == null);
-            service.saveSGI(sgi, workcenter, event, actions, department, desiredDate, employee,
+            service.saveSGI(sgi, oldSgi, userDetailsService.currentUser(), workcenter, event, actions, department, desiredDate, employee,
                     note, executionDate, false, executionDate, report, imagesSGI, imagesFactSGI);
             if (!planDateExist && executionDate != null) {
                 tgService.sendMessage(sgi, null, MessageType.WORK);
             } else {
                 tgService.sendMessage(sgi, null, MessageType.UPDATE);
             }
-            createLog(oldSgi, sgi, userDetailsService.currentUser(), service);
         } else {
             if (!userDetailsService.isResponsible(sgi.getEmployee()) & !userDetailsService.isControl()) {
                 throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
             }
-            service.saveSGI(sgi, workcenter, event, actions, department, desiredDate, employee,
+            service.saveSGI(sgi, null, null, workcenter, event, actions, department, desiredDate, employee,
                     note, executionDate, true, executionDate, report, imagesSGI, imagesFactSGI);
         }
 

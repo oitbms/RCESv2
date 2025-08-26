@@ -260,13 +260,37 @@ dialog {
             .file-upload {
                 border: 2px dashed #dee2e6;
                 border-radius: 4px;
-                padding: 16px;
-                text-align: center;
+                padding: 4px;
                 cursor: pointer;
+                z-index: 100;
+                height: 100px;
+                overflow: auto; /* или overflow: hidden; если не нужна прокрутка */
 
                 &:hover {
                     border-color: #0d6efd;
                     transition: border-color, 0.5s;
+                }
+
+                & .file-list {
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    gap: 8px;
+
+                    & .file-item {
+                        max-width: 40px;
+                        max-height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        & img {
+                            width: 28px;
+                            height: 28px;
+                            object-fit: contain;
+                        }
+
+                    }
                 }
             }
 

@@ -14,14 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.utils.ServiceUtil.colorCalculate;
-import static com.example.rces.utils.ServiceUtil.saveFiles;
+import static com.example.rces.utils.ServiceUtil.*;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -128,7 +126,7 @@ public class UniversalService {
         return factExecutionSGI;
     }
 
-    public void saveSGI(SGI sgi,
+    public void saveSGI(SGI sgi, SGI oldSgi, Employee currentUser,
                         String workcenter, String event, String actions, String department, LocalDate desiredDate,
                         String employee, String note, LocalDate planDate, Boolean factExecutionSGIBool, LocalDate executionDate, String report,
                         MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) {
@@ -148,21 +146,12 @@ public class UniversalService {
             sgi.setNote(note);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (imagesSGI != null) {
-                for (MultipartFile file : imagesSGI) {
-                    if (!file.isEmpty()) {
-                        Images imageEntity = new Images();
-                        imageEntity.setName(file.getOriginalFilename());
-                        try {
-                            imageEntity.setData(file.getBytes());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        imageEntity.setSgim(sgi);
-                        save(imageEntity);
-                    }
-                }
+                List<Images> newImages = saveFiles(imagesSGI, sgi);
+                sgi.getImages().clear();
+                sgi.getImages().addAll(newImages);
             }
             repository.save(sgi);
+            createLog(oldSgi, sgi, currentUser, this);
         } else {
             FactExecutionSGI factExecutionSGI = sgi.getExecution();
             factExecutionSGI.setExecutionDate(executionDate);
@@ -170,15 +159,9 @@ public class UniversalService {
             if (imagesFactSGI != null) {
                 for (MultipartFile file : imagesFactSGI) {
                     if (!file.isEmpty()) {
-                        Images imageEntity = new Images();
-                        imageEntity.setName(file.getOriginalFilename());
-                        try {
-                            imageEntity.setData(file.getBytes());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        imageEntity.setSgi(factExecutionSGI);
-                        save(imageEntity);
+                        List<Images> newImages = saveFiles(imagesSGI, factExecutionSGI);
+                        factExecutionSGI.getImages().clear();
+                        factExecutionSGI.getImages().addAll(newImages);
                     }
                 }
             }
