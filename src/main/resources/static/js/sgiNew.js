@@ -1,13 +1,21 @@
 const itemsPerPage = 16; //Начальное кол-во строк на странице
 const localCache = new Map();
 
+let currentPage = 1;
+let totalPagesCount = 1;
+
 //Обработчик работы с окном создания задачи
 $(document).on('click', '#createSGI', async function (e) {
     e.preventDefault();
 
     const dialog = $('#create-dialog');
     dialog.find('[name]').val('');
-    dialog.find('input[type="file"]').files = new DataTransfer();
+    // reset file input properly
+    dialog.find('input[type="file"]').each(function () {
+        const input = $(this).clone();
+        input.val('');
+        $(this).replaceWith(input);
+    });
     dialog.find('.file-list').empty();
 
     const field = dialog.find('[name="employee"]');
@@ -78,7 +86,7 @@ $(document).on('click', '.editing-btn', async function (e) {
         dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
     }
 
-    await renderImages(dialog, currentSGI.imagesSGI);
+    await renderImages(dialog, currentSGI.imagesSGI || []);
     dialog[0].showModal();
 
     $('#editing-dialog #saveBtn').off('click').on('click', function (e) {
@@ -178,7 +186,7 @@ $(document).on('click', '.execution-btn', async function (e) {
     const currentSGI = localCache.get(currentId);
     const dialog = $('#execution-dialog');
 
-    for (const [key, value] of Object.entries(currentSGI.factExecutionSGI)) {
+    for (const [key, value] of Object.entries(currentSGI.factExecutionSGI || {})) {
         const field = dialog.find(`[data-field="${key}"]`);
         if (!field.length) continue;
         if (key === 'imagesFactSGI') continue;
@@ -233,7 +241,7 @@ $(document).on('click', '.execution-btn', async function (e) {
         });
     });
 
-    await renderImages(dialog, currentSGI.factExecutionSGI.imagesFactSGI);
+    await renderImages(dialog, currentSGI.factExecutionSGI?.imagesFactSGI || []);
     dialog[0].showModal();
 
     //Клик на крестик
@@ -314,7 +322,8 @@ $(document).on('click', '.file-upload', async function (event) {
         const dataTransfer = new DataTransfer();
         for (const [fileName, file] of localCache.get('imagesMap')) {
             if (file instanceof File) {
-                dataTransfer.items.add(file)
+                dataTransfer.items.
+                add(file)
                 const imageUrl = URL.createObjectURL(file);
                 const fileItem = `
                 <div class="file-item">
@@ -379,27 +388,76 @@ $(document).on('contextmenu', 'dialog img', e => {
     });
 });
 
-async function displayPage(page) {
-    async function loadSGI(page = 16) {
-        const response = await $.ajax({
+async function loadSGI(page = 1) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
             url: '/api/sgi/get-page-sgi',
             type: 'GET',
-            data: {page: page, size: itemsPerPage},
-            dataType: 'json'
+            data: {
+                page: page,
+                size: itemsPerPage
+            },
+            success: function (data, textStatus, jqXHR) {
+                resolve({
+                    content: data.content,
+                    totalPages: data.totalPages,
+                    totalRaw: data.totalRaw
+                });
+            }
         });
-        const content = response.content;
-        const totalPages = response.total;
+    });
+}
 
-        content.forEach(sgi => {
-            localCache.set(sgi.id, sgi);
-            sgi.subSGI.forEach(subSgi => localCache.set(subSgi.id, subSgi));
-        })
+async function buildPagination(totalPages, current) {
+    const $p = $('.pagination');
+    $p.empty();
 
-        return {content: content, totalPages};
+    const createBtn = (label, page, extraClass = '') => {
+        const btn = $(`<button class="btn btn-secondary page-btn ${extraClass}" data-page="${page}">${label}</button>`);
+        if (page === current) btn.addClass('active');
+        return btn;
+    };
+
+    // Prev
+    if (current > 1) {
+        $p.append(createBtn('‹', current - 1, 'prev-btn'));
+    } else {
+        $p.append($('<button class="btn btn-secondary" disabled>‹</button>'));
     }
 
-    async function createRow(item) {
-        const hamburger = `
+    // Показываем компактную навигацию: максимум 7 кнопок (приближённо)
+    const maxButtons = 7;
+    let start = Math.max(1, current - Math.floor(maxButtons / 2));
+    let end = start + maxButtons - 1;
+    if (end > totalPages) {
+        end = totalPages;
+        start = Math.max(1, end - maxButtons + 1);
+    }
+
+    if (start > 1) {
+        $p.append(createBtn('1', 1));
+        if (start > 2) $p.append($('<span class="dots">...</span>'));
+    }
+
+    for (let i = start; i <= end; i++) {
+        $p.append(createBtn(i, i));
+    }
+
+    if (end < totalPages) {
+        if (end < totalPages - 1) $p.append($('<span class="dots">...</span>'));
+        $p.append(createBtn(totalPages, totalPages));
+    }
+
+    // Next
+    if (current < totalPages) {
+        $p.append(createBtn('›', current + 1, 'next-btn'));
+    } else {
+        $p.append($('<button class="btn btn-secondary" disabled>›</button>'));
+    }
+}
+
+async function createRow(item, indexOnPage) {
+    const hamburger = `
                     <label class="hamburger">
                         <input type="checkbox">
                         <svg viewBox="0 0 32 32">
@@ -408,19 +466,24 @@ async function displayPage(page) {
                             </path>
                             <path class="line" d="M7 16 27 16"></path>
                         </svg>
-                    </label>`
-        const borderClass = item.color === 'RED'
-            ? 'border-danger' :
-            item.color === 'YELLOW'
-                ? 'border-warning' :
-                item.color === 'GREEN'
-                    ? 'border-good' : '';
-        const row = `
+                    </label>`;
+
+    const borderClass = item.color === 'RED'
+        ? 'border-danger' :
+        item.color === 'YELLOW'
+            ? 'border-warning' :
+            item.color === 'GREEN'
+                ? 'border-good' : '';
+
+    // вычисляем порядковый номер (глобальный) — начиная с 1
+    const displayNumber = (currentPage - 1) * itemsPerPage + indexOnPage + 1;
+
+    const row = `
                 <div class="row-items">
                     <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}">
                         <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
-                            ${item.number}
+                            ${displayNumber}
                         </div>
                         <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
                         <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
@@ -432,7 +495,7 @@ async function displayPage(page) {
                         <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
                         <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
                         <div class="row-item" style="width: var(--editing);">
-                            <button type="button" class="btn btn-info btn-sm editing-btn">
+<button type="button" class="btn btn-info btn-sm editing-btn">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                         </div>
@@ -481,7 +544,7 @@ async function displayPage(page) {
                                         <input type="checkbox" id="toggleAgreement" ${subItem.agree ? 'checked' : ''}>
                                         <svg viewBox="0 0 35.6 35.6">
                                             <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
-                                            <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+<circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
                                             <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
                                         </svg>
                                     </div>
@@ -489,16 +552,9 @@ async function displayPage(page) {
                             </div>
                         `).join('')}
                     </div>`
-            : ''}
+        : ''}
                 </div>`;
-        $('.table-content-rows').append(row);
-    }
-
-    const SGIPage = await loadSGI(1);
-
-    for (sgi of SGIPage.content) {
-        await createRow(sgi);
-    }
+    $('.table-content-rows').append(row);
 }
 
 async function renderImages(currentDialog, images) {
@@ -512,7 +568,7 @@ async function renderImages(currentDialog, images) {
     const imageContainer = currentDialog.find('.file-list');
     imageContainer.empty();
     const validFileMap = new Map();
-    for (const image of images) {
+    for (const image of images || []) {
         imageContainer.append(`
             <div class="file-item">
                 <img src="${image.data}" alt="${image.name}">
@@ -525,6 +581,35 @@ async function renderImages(currentDialog, images) {
     input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
     currentDialog.find('input[type="file"]').replaceWith(input);
 }
+
+async function displayPage(page = 1) {
+    // Переключатель — подчищаем старый контент
+    $('.table-content-rows').empty();
+    currentPage = page;
+
+    const SGIPage = await loadSGI(page);
+    totalPagesCount = SGIPage.totalPages;
+
+    // Сохраняем объекты в кэше и рендерим
+    SGIPage.content.forEach((sgi, idx) => {
+        localCache.set(sgi.id, sgi);
+        if (sgi.subSGI && sgi.subSGI.length) sgi.subSGI.forEach(subSgi => localCache.set(subSgi.id, subSgi));
+    });
+
+    for (let i = 0; i < SGIPage.content.length; i++) {
+        await createRow(SGIPage.content[i], i);
+    }
+
+    await buildPagination(totalPagesCount, currentPage);
+}
+
+// пагинация — клик по кнопке
+$(document).on('click', '.pagination .page-btn', function () {
+    const page = parseInt($(this).data('page'), 10);
+    if (!isNaN(page) && page >= 1 && page <= totalPagesCount) {
+        displayPage(page);
+    }
+});
 
 $(document).ready(async function () {
     await displayPage(1);

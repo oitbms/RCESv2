@@ -6,6 +6,7 @@ import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.NoResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -61,8 +62,8 @@ public class UniversalService {
         return findAllByField(entityClass, fieldName, fieldValue).get(0);
     }
 
-    public <T> Page<T> getPage(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
-        return repository.getPageByEntity(entityClass, page, pageSize, sort, conditions);
+    public <T> Page<T> getPage(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions, String entityGraphName, String additionalQuery) {
+        return repository.getPageByEntity(entityClass, page, pageSize, sort, conditions, entityGraphName, additionalQuery);
     }
 
     public Requests createRequest(String type, Employee employee, MlmNode mlmNode, Item item, Integer qty, CustomerOrder customerOrder, GeneralReason reason, String comment, MultipartFile[] additionalFiles, Employee createdEmployee, String reasonText, String control) {

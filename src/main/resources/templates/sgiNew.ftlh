@@ -67,8 +67,7 @@
     <div class="footer-wrapper">
         <div class="footer-content">
             <div class="pagination">
-                <button class="btn btn-secondary">1</button>
-                <button class="btn btn-secondary">2</button>
+                <!-- Динамические кнопки пагинации формируются скриптом -->
             </div>
             <div class="buttons">
                 <button class="btn btn-primary btn-action" id="createSGI">
@@ -264,6 +263,7 @@
         <button class="btn btn-primary" id="saveBtn">Сохранить</button>
     </div>
 </dialog>
-</body>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
 </html>

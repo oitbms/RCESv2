@@ -1,12 +1,11 @@
 package com.example.rces.models;
 
 import com.example.rces.models.annotation.DisplayName;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,6 +14,15 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "plan_sgi")
+@NamedEntityGraph(
+        name = "SGI.withAssociations",
+        attributeNodes = {
+                @NamedAttributeNode("executions"),
+                @NamedAttributeNode("images"),
+                @NamedAttributeNode("employee")
+        }
+)
+@BatchSize(size = 20)
 public class SGI implements Cloneable {
 
     public enum Department {
@@ -68,13 +76,14 @@ public class SGI implements Cloneable {
     @DisplayName("Ответственный сотрудник")
     private Employee employee;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="parent_sgi_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_sgi_id")
     @DisplayName("Родительская задача")
     private SGI parentSGI;
 
-    @OneToMany(mappedBy="parentSGI", cascade=CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parentSGI", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @DisplayName("Подзадачи")
+    @BatchSize(size = 20)
     private List<SGI> subSGI;
 
     @Column(name = "desired_date")

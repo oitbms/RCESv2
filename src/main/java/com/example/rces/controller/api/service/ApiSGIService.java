@@ -5,6 +5,7 @@ import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;
 import com.example.rces.models.SGI;
 import com.example.rces.services.UniversalService;
+import jakarta.persistence.EntityGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -29,7 +30,15 @@ public class ApiSGIService {
         String conditions = """
                 WHERE e.parentSGI IS NULL
                 """;
-        return service.getPage(SGI.class, page, size, sort, conditions);
+        String entityGraphName = "SGI.withAssociations";
+        String additionalQuery = """
+                SELECT s from SGI s
+                JOIN s.employee
+                LEFT JOIN FETCH s.executions
+                LEFT JOIN FETCH s.images
+                WHERE s.parentSGI.id IN :parentIds
+                """;
+        return service.getPage(SGI.class, page, size, sort, conditions, entityGraphName, additionalQuery);
     }
 
     public SGI getSgi(UUID id) {

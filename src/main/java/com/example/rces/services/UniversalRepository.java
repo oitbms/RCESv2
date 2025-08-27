@@ -8,22 +8,13 @@ import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContextException;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.orm.jpa.SharedEntityManagerCreator;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
@@ -114,20 +105,28 @@ public class UniversalRepository {
         entityManager.flush();
     }
 
-    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize, Sort sort, String conditions) {
-        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
-        String orderByClause = "ORDER BY " + sort.stream()
-                .map(order -> String.format("e.%s %s", order.getProperty(), order.getDirection()))
-                .collect(Collectors.joining(", "));
-        List<T> content = entityManager.createQuery(
-                        "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions + " " + orderByClause, entityClass)
-                .setFirstResult((int) pageable.getOffset())
-                .setMaxResults(pageable.getPageSize())
-                .getResultList();
-        TypedQuery<Long> countQuery = entityManager.createQuery(
-                "SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e", Long.class);
+    public <T> Page<T> getPageByEntity(Class<T> entityClass, int page, int pageSize, Sort sort,
+                                       String conditions, String graphName, String additionalQuery) {
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::getSingleResult);
+        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+        String queryStr = "SELECT e FROM " + entityClass.getSimpleName() + " e " + conditions;
+        TypedQuery<T> query = entityManager.createQuery(queryStr, entityClass);
+        if (graphName != null) {
+            query.setHint("jakarta.persistence.loadgraph", entityManager.getEntityGraph(graphName));
+        }
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+        List<T> content = query.getResultList();
+        if (additionalQuery != null && !additionalQuery.trim().isEmpty()) {
+            entityManager.createQuery(additionalQuery, entityClass)
+                    .setParameter("parentIds", content.stream().map(s -> ((SGI)s).getId()).collect(Collectors.toList()))
+                    .getResultList();
+        }
+
+        Long total = entityManager.createQuery(
+                        "SELECT COUNT(e) FROM " + entityClass.getSimpleName() + " e " + conditions, Long.class)
+                .getSingleResult();
+        return new PageImpl<>(content, pageable, total);
     }
 
 

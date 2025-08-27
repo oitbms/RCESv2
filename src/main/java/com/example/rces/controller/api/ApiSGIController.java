@@ -8,6 +8,7 @@ import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.SGI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,12 @@ public class ApiSGIController {
     public ResponseEntity<Page<SGIPayload>> getPageSGI(@RequestParam int page, @RequestParam int size) {
         Page<SGI> pageSgi = service.getPage(page, size);
         Page<SGIPayload> sgiPayloadPage = pageSgi.map(SGIPayload::new);
-        return ResponseEntity.ok().body(sgiPayloadPage);
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(pageSgi.getTotalElements()))
+                .header("X-Page", String.valueOf(page))
+                .header("X-Page-Size", String.valueOf(size))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(sgiPayloadPage);
     }
 
     @GetMapping("/get-sgi")
