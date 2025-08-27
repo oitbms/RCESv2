@@ -22,11 +22,15 @@ public class ReportService {
         this.service = service;
     }
 
-    public List<SGI> getSgiList (List<UUID> ids, String department) {
-        return service.findAllByField(SGI.class, "id", ids)
-                .stream().filter(sgi -> sgi.getDepartment().getName().equals(department))
-                .sorted(Comparator.comparing(SGI::getRequestNumber))
-                .toList();
+    public List<SGI> getSgiList(List<UUID> ids, String department) {
+        if (department != null) {
+            return service.findAll(SGI.class)
+                    .stream().filter(sgi -> sgi.getDepartment().getName().equals(department))
+                    .sorted(Comparator.comparing(SGI::getRequestNumber))
+                    .toList();
+        } else {
+            return service.findAllByField(SGI.class, "id", ids);
+        }
     }
 
     public ByteArrayResource getExcelFile(List<SGI> sgiList) {

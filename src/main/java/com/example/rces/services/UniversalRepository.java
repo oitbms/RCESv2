@@ -194,4 +194,10 @@ public class UniversalRepository {
         }
         return save(employee);
     }
+
+    public <T> void deleteAll(List<T> entities) {
+        for (T entity : entities) {
+            delete(entity);
+        }
+    }
 }

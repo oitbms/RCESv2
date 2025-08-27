@@ -39,7 +39,7 @@ public class SGController {
 
     @GetMapping
     public String getSGIForm(Model model) {
-        return "sgiNew";
+        return "sgi";
     }
 
     @PostMapping("/create")
@@ -105,8 +105,9 @@ public class SGController {
     @ResponseBody
     public void deleteSGI(@RequestBody List<UUID> ids) {
         ids.forEach(id -> {
-            service.delete(service.findById(SGI.class, id));
-            tgService.sendMessage(service.findById(SGI.class, id), null, MessageType.DELETE);
+            SGI sgi = service.findById(SGI.class, id);
+            tgService.sendMessage(sgi, null, MessageType.DELETE);
+            service.delete(sgi);
         });
     }
 
