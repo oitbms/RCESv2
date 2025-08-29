@@ -1,7 +1,6 @@
 package com.example.rces.configuration;
 
-import com.example.rces.models.Requests;
-import com.example.rces.services.UniversalService;
+import com.example.rces.service.impl.ServiceShit;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -11,10 +10,10 @@ import java.util.regex.Pattern;
 public class TypeBasedRequestMatcher implements RequestMatcher {
 
     private final Pattern pattern = Pattern.compile("/view/(\\d+)");
-    private final UniversalService service;
+    private final ServiceShit serviceShit;
 
-    public TypeBasedRequestMatcher(UniversalService service) {
-        this.service = service;
+    public TypeBasedRequestMatcher(ServiceShit serviceShit) {
+        this.serviceShit = serviceShit;
     }
 
     @Override
@@ -22,7 +21,7 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
         Matcher matcher = pattern.matcher(request.getRequestURI());
         if (matcher.matches()) {
             String requestNumber = matcher.group(1);
-            String type = String.valueOf(service.findSingleByField(Requests.class, "requestNumber", requestNumber).getTypeRequest());
+            String type = String.valueOf(serviceShit.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
 
             return switch (type) {
                 case "otk" -> request.isUserInRole("OTK") ||

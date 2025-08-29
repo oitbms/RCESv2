@@ -4,8 +4,6 @@ import com.example.rces.models.annotation.DisplayName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ public class SGI implements Cloneable {
     @OneToMany(mappedBy = "parentSGI", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @DisplayName("Подзадачи")
     @BatchSize(size = 20)
-    private List<SGI> subSGI;
+    private List<SGI> subSGI = new ArrayList<>();
 
     @Column(name = "desired_date")
     @DisplayName("Желаемая дата")
@@ -112,6 +110,7 @@ public class SGI implements Cloneable {
 
     @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @DisplayName("Прикрепленные фото")
+    @BatchSize(size = 20)
     private List<Images> images = new ArrayList<>();
 
     @Column(name = "agreed")

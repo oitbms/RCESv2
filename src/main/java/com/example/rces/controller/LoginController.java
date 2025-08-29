@@ -1,7 +1,7 @@
 package com.example.rces.controller;
 
 import com.example.rces.configuration.CustomAuthenticationProvider;
-import com.example.rces.services.CustomUserDetailsService;
+import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,13 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class LoginController {
 
     private final CustomAuthenticationProvider customAuthenticationProvider;
-
-    private final CustomUserDetailsService customUserDetailsService;
+    private final EmployeeService employeeService;
 
     @Autowired
-    public LoginController(CustomAuthenticationProvider customAuthenticationProvider, CustomUserDetailsService customUserDetailsService) {
+    public LoginController(CustomAuthenticationProvider customAuthenticationProvider, EmployeeService employeeService) {
         this.customAuthenticationProvider = customAuthenticationProvider;
-        this.customUserDetailsService = customUserDetailsService;
+        this.employeeService = employeeService;
     }
 
     @GetMapping("/login")
@@ -35,7 +34,7 @@ public class LoginController {
     @PostMapping("/login")
     public String login(@RequestParam String username, Model model) {
         try {
-            UserDetails user = customUserDetailsService.loadUserByUsername(username);
+            UserDetails user = employeeService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authRequest =
                     new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
             Authentication authentication = customAuthenticationProvider.authenticate(authRequest);

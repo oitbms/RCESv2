@@ -280,11 +280,12 @@ async function loadChild(row) {
     const parentId = row.data('parent-id');
     const level = row.data('level');
     let hasNext = Boolean(row.data('has-next'));
-
-    const { left: childJobComponents, right: jobSteps } = await $.get('/spm-api/getChildJobComponentAndJobStepsForJobcomponentId', {jobComponentId: rowId});
-    for (jc of childJobComponents) {
-        const isLast = (childJobComponents.indexOf(jc) === childJobComponents.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
-        hasNext = childJobComponents.indexOf(jc) < childJobComponents.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
+    const result = await $.get('/spm-api/getChildJobComponentAndJobStepsForJobcomponentId', { jobComponentId: rowId });
+    const childJobComponent = result.left;
+    const jobSteps = result.right;
+    for (jc of childJobComponent) {
+        const isLast = (childJobComponent.indexOf(jc) === childJobComponent.length - 1) && (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length === 0;
+        hasNext = result.left.indexOf(jc) < childJobComponent.length - 1 ? true : (await $.get('spm-api/getJobStepsForJobComponentId', {jobComponentId: rowId})).length > 0;
         await createRow(jc, 'jc', rowId, level + 1, jc.hasChildOrJobSteps, isLast, hasNext);
     }
     for (js of jobSteps) {
@@ -293,6 +294,7 @@ async function loadChild(row) {
     }
     $(row).addClass('cached')
 }
+
 //Загрузка страниц
 async function displayPage(page, customerOrderId) {
     async function loadPrimaryDemands(page) {

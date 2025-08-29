@@ -1,9 +1,6 @@
 package com.example.rces.controller;
 
-import com.example.rces.services.TokenService;
-import com.example.rces.spm.models.MlmNode;
-import com.example.rces.spm.models.ShiftTaskLine;
-import com.example.rces.spm.services.SPMService;
+import com.example.rces.service.TokenService;
 import com.example.rces.spm.services.service.BProcessDocStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,7 +23,7 @@ public class ShiftTaskController {
     private final BProcessDocStep bpStep;
 
     @Autowired
-    public ShiftTaskController(BProcessDocStep bpStep,TokenService tokenService) {
+    public ShiftTaskController(TokenService tokenService, BProcessDocStep bpStep) {
         this.tokenService = tokenService;
         this.bpStep = bpStep;
     }

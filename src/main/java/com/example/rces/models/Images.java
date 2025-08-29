@@ -36,6 +36,14 @@ public class Images {
     public Images() {
     }
 
+    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, String name) {
+        this.data = data;
+        this.request = request;
+        this.sgi = sgi;
+        this.sgim = sgim;
+        this.name = name;
+    }
+
     public Images(String base64, Requests request) {
         setBase64Data(base64);
         setName("Фото от " + LocalDateTime.now());
@@ -51,11 +59,6 @@ public class Images {
     public String getBase64Data() {
         return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
     }
-
-//    public void setBase64Data(String base64Image) {
-//        String base64 = base64Image.substring("data:image/jpeg;base64,".length());
-//        setData(Base64.getDecoder().decode(base64));
-//    }
 
     public void setBase64Data(String base64Image) {
         if (base64Image == null || !base64Image.startsWith("data:")) {

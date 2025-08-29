@@ -1,10 +1,13 @@
-package com.example.rces.services;
+package com.example.rces.service.impl;
 
 import com.example.rces.models.SGI;
+import com.example.rces.service.ReportService;
+import com.example.rces.service.SgiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,26 +16,29 @@ import java.util.UUID;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
 
 @Service
-public class ReportService {
+@Transactional(transactionManager = "primaryTransactionManager")
+public class ReportServiceImpl implements ReportService {
 
-    private final UniversalService service;
+    private final SgiService sgiService;
 
     @Autowired
-    public ReportService(UniversalService service) {
-        this.service = service;
+    public ReportServiceImpl(SgiService sgiService) {
+        this.sgiService = sgiService;
     }
 
+    @Override
     public List<SGI> getSgiList(List<UUID> ids, String department) {
         if (department != null) {
-            return service.findAll(SGI.class)
+            return sgiService.findAll()
                     .stream().filter(sgi -> sgi.getDepartment().getName().equals(department))
                     .sorted(Comparator.comparing(SGI::getRequestNumber))
                     .toList();
         } else {
-            return service.findAllByField(SGI.class, "id", ids);
+            return sgiService.findAllByIds(ids);
         }
     }
 
+    @Override
     public ByteArrayResource getExcelFile(List<SGI> sgiList) {
         try {
             return generateManyWordFile(sgiList, List.of(

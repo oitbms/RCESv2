@@ -1,18 +1,12 @@
 package com.example.rces.controller;
 
 import com.example.rces.configuration.DeviceDetector;
-import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.models.enums.GeneralReason;
-import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
-import com.example.rces.services.CustomUserDetailsService;
-import com.example.rces.services.UniversalService;
-import com.example.rces.services.telegram.MessageType;
-import com.example.rces.services.telegram.TelegramService;
+import com.example.rces.service.EmployeeService;
+import com.example.rces.service.RequestsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,14 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.example.rces.utils.ServiceUtil.formatedDate;
@@ -36,22 +26,16 @@ import static com.example.rces.utils.ServiceUtil.formatedDate;
 @Controller
 public class RequestController {
 
-    @Autowired
-    private UniversalService service;
+    private final EmployeeService employeeService;
+    private final DeviceDetector detector;
+    private final RequestsService requestsService;
 
     @Autowired
-    private TelegramService tgService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-
-    @Autowired
-    private DeviceDetector detector;
-
-    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    public RequestController(EmployeeService employeeService, DeviceDetector detector, RequestsService requestsService) {
+        this.employeeService = employeeService;
+        this.detector = detector;
+        this.requestsService = requestsService;
+    }
 
     @GetMapping("/create")
     public String getCreateBidForm(@RequestParam String type, Model model) {
@@ -59,11 +43,12 @@ public class RequestController {
             model.addAttribute("type", type);
             return "error";
         }
-        MlmNode node = userDetailsService.currentUser().getMlmNode();
+        Employee currentUser = employeeService.getCurrentUser();
+        MlmNode node = currentUser.getMlmNode();
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
         model.addAttribute(type, true);
-        model.addAttribute("employeeName", userDetailsService.currentUser().getName());
+        model.addAttribute("employeeName", currentUser.getName());
         model.addAttribute("mlmNodeEmployee", node);
         return "/requests";
     }
@@ -82,56 +67,23 @@ public class RequestController {
                                 @RequestParam(required = false) MultipartFile[] additionalFiles,
                                 Model model) throws JsonProcessingException {
         model.addAttribute("create", true);
-        Employee createdEmployee = userDetailsService.currentUser();
-
-        Employee employee = objectMapper.readValue(employeeJson, Employee.class);
-        CustomerOrder customerOrder = service.createOrGetCustomerOrder(objectMapper, employee, customerOrderString, customerOrderJson);
-
-        GeneralReason reason = null;
-        String reasonText = null;
-        if (Objects.equals(type, "otk")) {
-            reasonText = String.valueOf(reasonsJson);
-        } else {
-            if (!reasonsJson.isBlank()) {
-                reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
-            }
-        }
-        Item item = null;
-        if (itemJson != null && !itemJson.isBlank()) {
-            item = objectMapper.readValue(itemJson, Item.class);
-        }
-        MlmNode mlmNode = null;
-        if (!mlmNodeJson.isBlank()) {
-            mlmNode = MlmNode.valueOf(mlmNodeJson);
-        }
-        try {
-            if (employee.getChatId() == null) {
-                throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
-            }
-            Requests request = service.createRequest(type, employee, mlmNode, item, qty, customerOrder, reason, comment, additionalFiles, createdEmployee, reasonText, control);
-            tgService.sendMessage(request, employee, MessageType.CREATE);
-            model.addAttribute("requestNumber", request.getRequestNumber());
-        } catch (HttpClientErrorException e) {
-            throw new RuntimeException("Ошибка при отправке сообщения через Telegram: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Произошла ошибка при обработке запроса: " + e.getMessage(), e);
-        }
-
+        Employee createdEmployee = employeeService.getCurrentUser();
+        Requests request = requestsService.createRequest(createdEmployee, employeeJson, type, mlmNodeJson, itemJson, reasonsJson, qty, control,
+                customerOrderString, customerOrderJson, comment, additionalFiles);
+        model.addAttribute("requestNumber", request.getRequestNumber());
         return "success";
     }
 
 
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
-        Requests requests = service.findSingleByField(Requests.class, "requestNumber", requestNumber);
-//        service.performAction(requests.getId());
-        Employee user = userDetailsService.currentUser();
+        Requests requests = requestsService.findByRequestNumber(requestNumber);
+        Employee user = employeeService.getCurrentUser();
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreateDate()));
         model.addAttribute("viewForm", true);
-        model.addAttribute("role",user.getRole());
-//        model.addAttribute("time", LocalTime.now().format(timeFormatter));
+        model.addAttribute("role", user.getRole());
         return "/requests";
     }
 
@@ -142,7 +94,7 @@ public class RequestController {
         if (detector.isMobile(httpRequest)) {
             return "/mobiledevice";
         }
-        List<Requests> requestsList = service.findAll(Requests.class).stream().filter(requests -> requests.getTypeRequest().equals(Requests.Type.valueOf(type))).toList();
+        List<Requests> requestsList = requestsService.findAllByTypeRequest(Requests.Type.valueOf(type));
         List<String> formattedDates = requestsList.stream()
                 .map(request -> formatedDate(request.getCreateDate()))
                 .collect(Collectors.toList());

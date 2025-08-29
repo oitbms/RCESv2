@@ -4,7 +4,8 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
-import com.example.rces.services.UniversalService;
+import com.example.rces.service.EmployeeService;
+import com.example.rces.service.RequestsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +22,21 @@ import static com.example.rces.utils.ServiceUtil.*;
 @Controller
 public class RegistrationsController {
 
+    private final EmployeeService employeeService;
+    private final RequestsService requestsService;
+
     @Autowired
-    private UniversalService service;
+    public RegistrationsController(EmployeeService employeeService, RequestsService requestsService) {
+        this.employeeService = employeeService;
+        this.requestsService = requestsService;
+    }
 
     @GetMapping("/admin")
-    public String admin(Model model, Principal principal) {
-        Employee employee = service.findSingleByField(Employee.class, "name", principal.getName());
+    public String admin(Model model) {
+        Employee employee = employeeService.getCurrentUser();
         List<Role> roles = List.of(Role.values());
         List<MlmNode> mlmNodes = List.of(MlmNode.values());
-        model.addAttribute("users", service.findAll(Employee.class));
+        model.addAttribute("users", employeeService.findAll());
         model.addAttribute("user", employee);
         model.addAttribute("mlmNodes", mlmNodes);
         model.addAttribute("roles", roles);
@@ -38,14 +44,14 @@ public class RegistrationsController {
     }
 
     @GetMapping("/menu")
-    public String menu(Principal principal, Model model) {
-        List<Requests> requests = service.findAll(Requests.class);
-        Employee user = service.findSingleByField(Employee.class, "name", principal.getName());
+    public String menu(Model model) {
+        List<Requests> requests = requestsService.findAll();
+        Employee user = employeeService.getCurrentUser();
         List<Requests> requestsList;
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
-            requestsList = service.findAllByField(Requests.class,"createdBy",user);
+            requestsList = requestsService.findAllByCreatedBy(user);
         } else {
-            requestsList = service.findAllByField(Requests.class,"employee",user);
+            requestsList = requestsService.findAllByEmployee(user);
         }
         Map<String, List<Requests>> createMasterRequest = getCreateRequestsMaster(requestsList);
         Map<String, List<Integer>> dailyCountsMap = getCountDays(requests);
@@ -80,19 +86,14 @@ public class RegistrationsController {
                           @RequestParam String role,
                           @RequestParam String password,
                           @RequestParam Long chatId) {
-        service.saveEmployee(null, username, mlmNode,true, role, mlmNode, password, chatId);
+        employeeService.save(username, mlmNode, role, password, chatId);
         return "redirect:/admin";
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        Employee user = service.findById(Employee.class, id);
-        if (user != null) {
-            service.delete(user);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        employeeService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/update")
@@ -102,7 +103,7 @@ public class RegistrationsController {
                              @RequestParam(required = false) String roleName,
                              @RequestParam(required = false) Long chatName,
                              @RequestParam(required = false) Boolean active) {
-        service.saveEmployee(id, userName, mlmNodeName, active, roleName, null, null, chatName);
+        employeeService.update(id, userName, mlmNodeName, roleName, chatName, active);
         return "redirect:/admin";
     }
 }

@@ -1,0 +1,25 @@
+package com.example.rces.repository;
+
+import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface RequestsRepository extends JpaRepository<Requests, UUID> {
+
+    @Query(value = "SELECT COALESCE(MAX(requestNumber) + 1, 1) FROM Requests ")
+    int findNextRequestNumber();
+
+    Requests findByRequestNumber(Integer requestNumber);
+
+    List<Requests> findAllByTypeRequest(Requests.Type type);
+
+    List<Requests> findAllByCreatedBy(Employee createdBy);
+
+    List<Requests> findAllByEmployee(Employee employee);
+}

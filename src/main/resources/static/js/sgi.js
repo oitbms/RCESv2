@@ -1,7 +1,7 @@
 const itemsPerPage = 16; //Начальное кол-во строк на странице
 const localCache = new Map();
 
-let currentPage = 1;
+let currentPage = 0;
 let totalPagesCount = 1;
 let selectedRows = [];
 
@@ -43,8 +43,50 @@ $(document).on('click', '#createSGI', async function (e) {
         localCache.delete('imagesMap');
         dialog[0].close();
     });
+    //Нажатие esc
+    $(document).on('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            dialog[0].close();
+        }
+    });
 
     dialog[0].showModal();
+});
+//Обработчик создания задачи
+$(document).on('click', '#createBtn', async function (e) {
+    e.preventDefault();
+
+    const button = $(this);
+    const form = button.closest('form').get(0);
+    const dialog = $('#create-dialog');
+    const totalRows = $('.row-items').length;
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    button.disabled = true;
+
+    const formData = new FormData(form);
+    const newSGI = await $.ajax({
+        url: '/api/sgi/create',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json'
+    });
+    localCache.set(newSGI.id, newSGI);
+    dialog[0].close();
+    if (totalRows >= itemsPerPage && !dialog.find('[name="parentId"]').val().length) {
+        saveBtn.disabled = false;
+        return alert("Создано мероприятие под номером: " + newSGI.number);
+    } else {
+        await createRow(newSGI, dialog.find('[name="parentId"]').val().length ? newSGI.parent.id : null);
+        saveBtn.disabled = false;
+    }
 });
 //Обработчик открытия подзадач
 $(document).on('click', '.hamburger', function (e) {
@@ -58,6 +100,7 @@ $(document).on('click', '.hamburger', function (e) {
 //Обработчик работы с окном редактирования
 $(document).on('click', '.editing-btn', async function (e) {
     const currentRow = e.target.closest('.row-items-row');
+    const currentIndex = $(currentRow).index();
     const currentId = $(currentRow).data('id');
     const currentSGI = localCache.get(currentId);
     const dialog = $('#editing-dialog');
@@ -82,14 +125,14 @@ $(document).on('click', '.editing-btn', async function (e) {
         if (key === 'imagesSGI') continue;
         field.val(value || '');
     }
-    if (!dialog.find('#createSubSGI').length) {
+    if ($(currentRow).data('inner') === undefined && !dialog.find('#createSubSGI').length) {
         dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
     }
 
-    await renderImages(dialog, currentSGI.imagesSGI || []);
+    await renderImages(dialog, 'edit', currentSGI, currentSGI.imagesSGI);
     dialog[0].showModal();
 
-    $('#editing-dialog #saveBtn').off('click').on('click', function (e) {
+    $('#editing-dialog #saveBtn').off('click').on('click', async function (e) {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
@@ -107,45 +150,31 @@ $(document).on('click', '.editing-btn', async function (e) {
                 }
             }
         });
-        $.ajax({
-            url: 'sgi/save-change',
-            method: 'POST',
+        const updateSGI = await $.ajax({
+            url: '/api/sgi/update',
+            type: 'PATCH',
             data: formData,
-            contentType: false,
             processData: false,
-            success: function () {
-                $(dialog).find('[data-field]').each((_, el) => {
-                    const fieldName = el.dataset.field;
-                    const fieldValue = el.value;
-                    const targetElement = $(currentRow).find(`[data-field="${fieldName}"]`);
-                    if (el.tagName === 'SELECT') {
-                        const selectedText = $(el).find('option:selected').text();
-                        targetElement.text(selectedText);
-                    } else if (fieldName === 'desiredDate') {
-                        targetElement.text(formatDate(fieldValue));
-                    } else if (fieldName === 'planDate') {
-                        return true;
-                    } else targetElement.text(fieldValue);
-                    if (fieldName === 'imagesSGI') {
-
-                    } else currentSGI[fieldName] = fieldValue;
-                });
-                localCache.set(currentId, currentSGI);
-                localCache.delete('validFileMap');
+            contentType: false,
+            dataType: 'json',
+            error: () => {
                 dialog[0].close();
-            },
-            error: function () {
-                alert('Редактировать может только создатель задачи или такого пользователя нет');
-                dialog[0].close();
+                dialog.find('#createSubSGI').remove();
+                alert('Редактировать может только создатель задачи')
             }
         });
-
+        localCache.set(currentId, updateSGI);
+        localCache.delete('validFileMap');
+        await createRow(updateSGI, null);
+        dialog[0].close();
+        dialog.find('#createSubSGI').remove();
     });
     $('#createSubSGI').off('click').on('click', async function () {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
         dialog[0].close();
+        dialog.find('#createSubSGI').remove();
         const createDialog = $('#create-dialog');
         createDialog.find('[name="parentId"]').val(currentId);
 
@@ -167,6 +196,7 @@ $(document).on('click', '.editing-btn', async function (e) {
         localCache.delete('validFileMap');
         localCache.delete('imagesMap');
         dialog[0].close();
+        dialog.find('#createSubSGI').remove();
     });
     //Клик вне диалога
     dialog.off('click').on('click', (e) => {
@@ -174,6 +204,16 @@ $(document).on('click', '.editing-btn', async function (e) {
             localCache.delete('validFileMap');
             localCache.delete('imagesMap');
             e.target.close();
+            dialog.find('#createSubSGI').remove();
+        }
+    });
+    //Нажатие esc
+    $(document).on('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            dialog[0].close();
+            dialog.find('#createSubSGI').remove();
         }
     });
 });
@@ -193,7 +233,7 @@ $(document).on('click', '.execution-btn', async function (e) {
         field.val(value || '');
     }
 
-    $(document).on('click', '#execution-dialog #saveBtn', function () {
+    $(document).on('click', '#execution-dialog #saveBtn', async function () {
         if (currentSGI.agree) {
             return alert("Нельзя редактировать выполненное мероприятие")
         }
@@ -210,38 +250,25 @@ $(document).on('click', '.execution-btn', async function (e) {
                 }
             }
         });
-
-        $.ajax({
-            url: 'sgi/save-change',
-            method: 'POST',
+        const updateSGI = await $.ajax({
+            url: '/api/sgi/update',
+            type: 'PATCH',
             data: formData,
-            contentType: false,
             processData: false,
-            success: function () {
-                $(dialog).find('[data-field]').each((_, el) => {
-                    const fieldName = el.dataset.field;
-                    const fieldValue = el.value;
-                    const targetElement = $(currentRow).find(`[data-field="${fieldName}"]`);
-                    if (fieldName === 'executionDate') {
-                        targetElement.text(formatDate(fieldValue));
-                        currentSGI.planDate = fieldValue;
-                    } else targetElement.text(fieldValue);
-                    if (fieldName === 'imagesFactSGI') {
-
-                    } else currentSGI.factExecutionSGI[fieldName] = fieldValue;
-                });
-                localCache.set(currentId, currentSGI);
-                localCache.delete('validFileMap');
+            contentType: false,
+            dataType: 'json',
+            error: () => {
                 dialog[0].close();
-            },
-            error: function () {
-                alert('Редактировать может только создатель задачи или такого пользователя нет');
-                dialog[0].close();
+                alert('Редактировать может только создатель задачи')
             }
         });
+        localCache.set(currentId, updateSGI);
+        localCache.delete('validFileMap');
+        await createRow(updateSGI, null);
+        dialog[0].close();
     });
 
-    await renderImages(dialog, currentSGI.factExecutionSGI?.imagesFactSGI || []);
+    await renderImages(dialog, 'fact', currentSGI, currentSGI.factExecutionSGI?.imagesFactSGI);
     dialog[0].showModal();
 
     //Клик на крестик
@@ -258,8 +285,15 @@ $(document).on('click', '.execution-btn', async function (e) {
             e.target.close();
         }
     });
+    //Нажатие esc
+    $(document).on('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            dialog[0].close();
+        }
+    });
 });
-
 //Обработчик работы с фильтрами
 $(document).on('click', '.btn-filters', async function (e) {
     e.preventDefault();
@@ -326,6 +360,7 @@ $(document).on('click', '.btn-filters', async function (e) {
         }
     });
 });
+
 // Функция применения фильтров к текущей странице
 function applyFiltersToCurrentPage(filters) {
     const rows = document.querySelectorAll('.row-items');
@@ -443,7 +478,7 @@ $(document).on('click', '.file-upload', async function () {
     $(this).prop('disabled', false);
 });
 //Удаление фото ПКМ В диалоге
-$(document).on('contextmenu', 'dialog img', e => {
+$('dialog').on('contextmenu', 'img', function(e) {
     e.preventDefault();
     const currentDialog = $(e.target).closest('dialog');
     $('.context-menu').remove();
@@ -484,6 +519,42 @@ $(document).on('contextmenu', 'dialog img', e => {
         $(e.target).remove();
         menu.remove();
     });
+});
+//ЛКМ по фото для приближения
+$(document).on('click', 'dialog img', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const imgSrc = $(this).attr('src');
+    const imgAlt = $(this).attr('alt');
+    const currentDialog = $(this).closest('dialog');
+
+    if (!$('#imagePreviewModal').length) {
+
+        currentDialog.append(`
+            <div id="imagePreviewModal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9);">
+                <span class="close" style="position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
+                <img class="modal-content" id="previewImage" style="margin: auto; display: block; width: 80%; max-width: 700px; margin-top: 40px;">
+            </div>
+        `);
+
+        // Обработчики для закрытия модального окна
+        $(document).on('click', '#imagePreviewModal .close, #imagePreviewModal', function(e) {
+            if (e.target.id === 'imagePreviewModal' || e.target.className === 'close') {
+                $('#imagePreviewModal').hide();
+            }
+        });
+
+        // Закрытие по ESC
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $('#imagePreviewModal').is(':visible')) {
+                $('#imagePreviewModal').hide();
+            }
+        });
+    }
+
+    $('#previewImage').attr('src', imgSrc).attr('alt', imgAlt);
+    $('#imagePreviewModal').show();
 });
 //Обработчик двойного клика таблицы
 $(document).off('dblclick').on('dblclick', '.row-items-row', function () {
@@ -539,6 +610,9 @@ $(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) 
             success: function () {
                 rowIds.forEach(id => {
                     $('.row-items-row[data-id="' + id + '"]').remove();
+                    localCache.get(id).subSGI?.forEach(sub => {
+                        $('.row-items-row[data-id="' + sub.id + '"]').remove();
+                    });
                     localCache.delete(id);
                 });
                 selectedRows = selectedRows.filter(id => !rowIds.includes(id));
@@ -559,7 +633,7 @@ $(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) 
     });
 });
 //Обработчик печати из менью
-$('.print-menu-item').on('click', function() {
+$('.print-menu-item').on('click', function () {
     const department = $(this).data('department');
     $('<a>', {
         href: `/report/print/sgi?department=${department}`,
@@ -568,7 +642,7 @@ $('.print-menu-item').on('click', function() {
 });
 
 
-async function loadSGI(page = 1) {
+async function loadSGI(page = 0) {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: '/api/sgi/get-page-sgi',
@@ -636,7 +710,7 @@ async function buildPagination(totalPages, current) {
     }
 }
 
-async function createRow(item, indexOnPage) {
+async function createRow(item, inner) {
     const hamburger = `
     <label class="hamburger">
         <input type="checkbox">
@@ -652,16 +726,14 @@ async function createRow(item, indexOnPage) {
             ? 'border-warning' :
             item.color === 'GREEN'
                 ? 'border-good' : '';
-
-    // вычисляем порядковый номер (глобальный) — начиная с 1
-    const displayNumber = (currentPage - 1) * itemsPerPage + indexOnPage + 1;
-
-    const row = `
+    let row;
+    if (inner == null) {
+        row = `
                 <div class="row-items">
                     <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}">
                         <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
-                            ${displayNumber}
+                            ${item.number}
                         </div>
                         <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
                         <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
@@ -693,49 +765,96 @@ async function createRow(item, indexOnPage) {
                             </div>
                         </div>
                     </div>
-                    ${item.subSGI && item.subSGI.length > 0 ? `
                     <div class="row-items-inner-row">
-                        ${item.subSGI.map((subItem) => `
-                            <div class="row-items-row ${subItem.color === 'GREY' ? 'complete' : ''}" data-id="${subItem.id}" data-inner="true">
-                                <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
-                                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
-                                <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
-                                <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
-                                <div class="row-item" data-field="departament" style="width: var(--department);">${subItem.departmentName}</div>
-                                <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
-                                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
-                                <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
-                                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
-                                <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
-                                <div class="row-item" style="width: var(--editing);">
-                                    <button type="button" class="btn btn-info btn-sm editing-btn">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                </div>
-                                <div class="row-item" style="width: var(--executions);">
-                                    <button type="button" class="btn btn-info btn-sm execution-btn">
-                                        ✔
-                                    </button>
-                                </div>
-                                <div class="row-item" style="width: var(--status);">
-                                    <div class="checkbox-wrapper-31">
-                                        <input type="checkbox" id="toggleAgreement" ${subItem.agree ? 'checked' : ''}>
-                                        <svg viewBox="0 0 35.6 35.6">
-                                            <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
-<circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
-                                            <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
-                                        </svg>
+                        ${item.subSGI && item.subSGI.length > 0 ? `
+                            ${item.subSGI.map((subItem) => `
+                                <div class="row-items-row ${subItem.color === 'GREY' ? 'complete' : ''}" data-id="${subItem.id}" data-inner="true">
+                                    <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                                    <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
+                                    <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
+                                    <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
+                                    <div class="row-item" data-field="departament" style="width: var(--department);">${subItem.departmentName}</div>
+                                    <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
+                                    <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
+                                    <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
+                                    <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
+                                    <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
+                                    <div class="row-item" style="width: var(--editing);">
+                                        <button type="button" class="btn btn-info btn-sm editing-btn">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row-item" style="width: var(--executions);">
+                                        <button type="button" class="btn btn-info btn-sm execution-btn">
+                                            ✔
+                                        </button>
+                                    </div>
+                                    <div class="row-item" style="width: var(--status);">
+                                        <div class="checkbox-wrapper-31">
+                                            <input type="checkbox" id="toggleAgreement" ${subItem.agree ? 'checked' : ''}>
+                                            <svg viewBox="0 0 35.6 35.6">
+                                                <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                                <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                                <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </div>`
-        : ''}
+                            `).join('')}
+                        ` : ''}
+                    </div>
                 </div>`;
-    $('.table-content-rows').append(row);
+    } else {
+        row = `
+            <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}" data-inner="true">
+                <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
+                <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
+                <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
+                <div class="row-item" data-field="departament" style="width: var(--department);">${item.departmentName}</div>
+                <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
+                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
+                <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
+                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
+                <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
+                <div class="row-item" style="width: var(--editing);">
+                    <button type="button" class="btn btn-info btn-sm editing-btn">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>                            
+                </div>
+                <div class="row-item" style="width: var(--executions);">
+                    <button type="button" class="btn btn-info btn-sm execution-btn">
+                        ✔
+                    </button>
+                </div>
+                <div class="row-item" style="width: var(--status);">
+                    <div class="checkbox-wrapper-31">
+                        <input type="checkbox" id="toggleAgreement" ${item.agree ? 'checked' : ''}>
+                        <svg viewBox="0 0 35.6 35.6">
+                            <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                            <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                            <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>`
+
+    }
+    const existingRow = $(`.row-items-row[data-id="${item.id}"]`);
+    if (existingRow.length) {
+        existingRow.replaceWith(row);
+    } else if (inner == null) {
+        $('.table-content-rows').append(row);
+    } else {
+        const parentRow = $(`.row-items-row[data-id="${inner}"]`);
+        parentRow.closest('.row-items').children('.row-items-inner-row').append(row);
+        if (parentRow.find('.hamburder').length === 0) {
+            parentRow.find('.row-item').first().append(hamburger)
+        }
+    }
 }
 
-async function renderImages(currentDialog, images) {
+async function renderImages(currentDialog, type, currentSGI, images) {
     // Конвертация base64 в File
     const base64ToFile = (base64, name) => {
         const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -746,6 +865,20 @@ async function renderImages(currentDialog, images) {
     const imageContainer = currentDialog.find('.file-list');
     imageContainer.empty();
     const validFileMap = new Map();
+    if (images === null) {
+        const url = `/api/sgi/get-images-${type === 'fact' ? 'fact-sgi' : 'sgi'}`;
+        images = await $.ajax({
+            url: url,
+            type: 'GET',
+            data: { id: currentSGI.id }
+        });
+        const processedImages = Array.isArray(images) ? images : [];
+        if (type === 'fact') {
+            currentSGI.factExecutionSGI.imagesFactSGI = processedImages
+        } else {
+            currentSGI.imagesSGI = processedImages;
+        }
+    }
     for (const image of images || []) {
         imageContainer.append(`
             <div class="file-item">
@@ -760,7 +893,7 @@ async function renderImages(currentDialog, images) {
     currentDialog.find('input[type="file"]').replaceWith(input);
 }
 
-async function displayPage(page = 1) {
+async function displayPage(page = 0) {
     $('.table-content-rows').empty();
     currentPage = page;
 
@@ -772,21 +905,21 @@ async function displayPage(page = 1) {
     });
 
     for (let i = 0; i < SGIPage.content.length; i++) {
-        await createRow(SGIPage.content[i], i);
+        await createRow(SGIPage.content[i], null);
     }
 
     await buildPagination(totalPagesCount, currentPage);
 }
 
-$(document).on('click', '.pagination .page-btn', function () {
-    const page = parseInt($(this).data('page'), 10);
-    if (!isNaN(page) && page >= 1 && page <= totalPagesCount) {
-        displayPage(page);
+$(document).on('click', '.pagination .page-btn', async function () {
+    const page = parseInt($(this).data('page') - 1, 10);
+    if (!isNaN(page) && page >= 0 && page <= totalPagesCount) {
+        await displayPage(page);
     }
 });
 
 $(document).ready(async function () {
-    await displayPage(1);
+    await displayPage(0);
     const style = document.createElement('style');
     style.textContent = `
     .selected-row {

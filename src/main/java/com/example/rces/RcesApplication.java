@@ -43,7 +43,7 @@ public class RcesApplication {
     }
 
 //    @Bean
-//    public TelegramBotsApi telegramBotsApi(TelegramService bot) throws TelegramApiException {
+//    public TelegramBotsApi telegramBotsApi(TelegramServiceImpl bot) throws TelegramApiException {
 //        TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
 //        api.registerBot(bot);
 //        return api;

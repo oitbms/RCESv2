@@ -1,16 +1,16 @@
 package com.example.rces.controller.api;
 
-import com.example.rces.controller.api.service.ApiRequestService;
 import com.example.rces.controller.payload.ImagesPayload;
 import com.example.rces.controller.payload.LogPayload;
-import com.example.rces.models.RequestLog;
+import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
+import com.example.rces.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,24 +19,30 @@ import java.util.UUID;
 @RequestMapping("/api/request")
 public class ApiRequestController {
 
-    private final ApiRequestService service;
+    private final EmployeeService employeeService;
+    private final RequestsService requestsService;
+    private final RequestLogService requestLogService;
+    private final ImageService imageService;
 
     @Autowired
-    public ApiRequestController(ApiRequestService service) {
-        this.service = service;
+    public ApiRequestController(EmployeeService employeeService, RequestsService requestsService, RequestLogService requestLogService, ImageService imageService) {
+        this.employeeService = employeeService;
+        this.requestsService = requestsService;
+        this.requestLogService = requestLogService;
+        this.imageService = imageService;
     }
 
     @PostMapping("/in-work")
     public void inWork(@RequestParam UUID param,
                        @RequestParam(required = false) String description,
                        @RequestParam(required = false) Boolean status) {
-        service.getRequest(param, description, status);
+        requestsService.save(param, description, status);
     }
 
     @GetMapping("/type-request")
     @ResponseBody
     public String getTypeRequest(@RequestParam UUID param) {
-        return "\"" + service.getTypeRequest(param) + "\"";
+        return "\"" + requestsService.getTypeRequest(param) + "\"";
     }
 
 
@@ -46,47 +52,35 @@ public class ApiRequestController {
                            @RequestParam(required = false) Boolean sendMessage, // отправлять сообщение в ТГ
                            @RequestBody Map<String, Object> updatedFields) // ключ - название поля в классе bid, значение - значение поля в bid
     {
-        service.update(id, sendMessage, updatedFields);
+        requestsService.update(id, sendMessage, updatedFields);
     }
 
     @PostMapping("/comment-bid")
     public void createCommentBid(@RequestParam UUID id, @RequestParam String comment) {
-        service.createCommentBid(id, comment);
+        requestsService.createComment(id, comment);
     }
 
     @GetMapping("/images")
     public List<ImagesPayload> getImages(@RequestParam UUID param) {
-        return service.findImages(param);
+        return imageService.getImagesByRequestId(param);
     }
 
     @DeleteMapping("/delete-images")
-    public ResponseEntity<?> deleteImages(@RequestBody Map<String, String> payload) {
-        try {
-            service.deleteImages(UUID.fromString(payload.get("id")), UUID.fromString(payload.get("reqId")));
-            return ResponseEntity.ok().build();
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    public ResponseEntity<Void> deleteImages(@RequestBody Map<String, String> payload) {
+        UUID imageId = UUID.fromString(payload.get("id"));
+        UUID requestId = UUID.fromString(payload.get("reqId"));
+        Requests requests = requestsService.findById(requestId);
+        Employee currentUser = employeeService.getCurrentUser();
+        if (!requests.getEmployee().getName().equals(currentUser.getName())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Пользователь не может удалять фото!");
         }
+        imageService.deleteById(imageId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/logs")
     public ResponseEntity<List<LogPayload>> getLogs(@RequestParam UUID id) {
-        List<RequestLog> logs = service.getLogs(id);
-        return ResponseEntity.ok(logs.stream()
-                .map(log -> new LogPayload(log.getDate(), log.getUser().getName(), log.getMetadata()))
-                .sorted(Comparator.comparing(LogPayload::date))
-                .toList());
+        List<LogPayload> logs = requestLogService.getAllByRequestId(id);
+        return ResponseEntity.ok(logs);
     }
-
-//    @PostMapping("/pause")
-//    public void pause(@RequestParam UUID id, @RequestParam String startTime,
-//                      @RequestParam String endTime, @RequestParam String pauseComment) {
-//        service.pauseBid(id,
-//                LocalTime.parse(startTime, DateTimeFormatter.ofPattern("HH:mm")),
-//                LocalTime.parse(endTime, DateTimeFormatter.ofPattern("HH:mm")),
-//                pauseComment);
-//    }
-
 }

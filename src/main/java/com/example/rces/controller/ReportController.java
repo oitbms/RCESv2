@@ -1,7 +1,7 @@
 package com.example.rces.controller;
 
 import com.example.rces.models.SGI;
-import com.example.rces.services.ReportService;
+import com.example.rces.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;

@@ -1,17 +1,25 @@
-package com.example.rces.services.telegram;
+package com.example.rces.service.impl;
 
 import com.example.rces.configuration.AppProperties;
+import com.example.rces.event.TelegramRegularEvent;
+import com.example.rces.event.TelegramRequestEvent;
+import com.example.rces.event.TelegramSgiEvent;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
-import com.example.rces.services.CustomUserDetailsService;
-import com.example.rces.services.UniversalService;
+import com.example.rces.service.RequestsService;
+import com.example.rces.service.SgiService;
+import com.example.rces.service.TelegramService;
+import com.example.rces.service.impl.telegram.ChatIdResolver;
+import com.example.rces.service.impl.telegram.MessageBuilder;
+import com.example.rces.service.impl.telegram.MessageType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -25,50 +33,59 @@ import java.util.List;
 
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
-@Component
-public class TelegramService extends TelegramLongPollingBot {
+@Service
+@Transactional(transactionManager = "primaryTransactionManager")
+public class TelegramServiceImpl extends TelegramLongPollingBot implements TelegramService {
 
-    private final UniversalService service;
-    private final CustomUserDetailsService userDetailsService;
-    private final RestTemplate restTemplate;
+    private final ServiceShit shitService;
     private final MessageBuilder messageBuilder;
     //    private final TelegramUrlBuilder urlBuilder;
     private final ChatIdResolver chatIdResolver;
     private final String controlChatId;
     private final String testChatId;
+    private final ServiceShit serviceShit;
 
     @Value("${telegram.bot.token}")
     private String botToken;
 
     @Autowired
-    public TelegramService(UniversalService service,
-                           CustomUserDetailsService userDetailsService,
-                           @Value("${telegram.chat.constructor.id}") String constructorGroupChatId,
-                           @Value("${telegram.chat.technologist.id}") String technologistGroupChatId,
-                           @Value("${telegram.chat.control.id}") String controlChatId,
-                           @Value("${telegram.chat.test.id}") String testChatId,
-                           @Value("${url.mobile}") String urlMobile) {
-        this.service = service;
-        this.userDetailsService = userDetailsService;
-        this.restTemplate = new RestTemplate();
+    public TelegramServiceImpl(ServiceShit shitService, @Value("${telegram.chat.constructor.id}") String constructorGroupChatId,
+                               @Value("${telegram.chat.technologist.id}") String technologistGroupChatId,
+                               @Value("${telegram.chat.control.id}") String controlChatId,
+                               @Value("${telegram.chat.test.id}") String testChatId,
+                               @Value("${url.mobile}") String urlMobile, ServiceShit serviceShit) {
+        this.shitService = shitService;
         this.messageBuilder = new MessageBuilder(urlMobile);
         this.chatIdResolver = new ChatIdResolver(constructorGroupChatId, technologistGroupChatId);
-//        this.urlBuilder = new TelegramUrlBuilder();
         this.controlChatId = controlChatId;
         this.testChatId = testChatId;
+        this.serviceShit = serviceShit;
+    }
+
+    @EventListener
+    public void handleTelegramRequestEvent(TelegramRequestEvent event) {
+        sendMessage(event.getRequest(), event.getUpdaterEmployee(), event.getMessageType());
+    }
+
+    @EventListener
+    public void handleTelegramSgiEvent(TelegramSgiEvent event) {
+        sendMessage(event.getSgi(), event.getUpdaterEmployee(), event.getMessageType());
+    }
+
+    @EventListener
+    public void handleTelegramRegularEvent(TelegramRegularEvent event) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(controlChatId);
+        sendMessage.setText(event.getMessage());
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new ApplicationContextException("Ошибка при отправке регулярного сообщения: " + e.getMessage());
+        }
     }
 
     @Override
-    public String getBotUsername() {
-        return "BormashRequestBot";
-    }
-
-    @Override
-    public String getBotToken() {
-        return botToken;
-    }
-
-    public void sendMessage(Object entity, Employee updaterEmployee, MessageType messageType) {
+    public void sendMessage(Object entity, Employee updaterEmployee, MessageType messageType) throws ApplicationContextException {
         SendMessage sendMessage = new SendMessage();
         if (entity instanceof Requests request) {
             sendMessage.setText(messageBuilder.buildRequestMessage(request, messageType));
@@ -86,10 +103,11 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         } else if (entity instanceof SGI sgi) {
             sendMessage.setText(messageBuilder.buildRequestMessage(sgi, messageType));
-            //TODO
-            sendMessage.setChatId(this.testChatId);
-//            sendMessage.setMessageThreadId(ThreadIdResolver.resolve(sgi.getDepartment() != null ? sgi.getDepartment().getName() : ""));
+            sendMessage.setChatId(this.controlChatId);
+        } else {
+            throw new ApplicationContextException("Невозможно отправить сообщение т.к сущность " + entity.getClass() + " не поддерживается");
         }
+
         try {
             Message message = execute(sendMessage);
             if ((messageType.equals(MessageType.CLOSE) || messageType.equals(MessageType.CANCEL)) && entity instanceof Requests request) {
@@ -99,10 +117,10 @@ public class TelegramService extends TelegramLongPollingBot {
                 request.setMessageId(message.getMessageId());
                 sendMessage.setChatId(request.getEmployee().getChatId());
                 execute(sendMessage);
-                service.save(request);
+                serviceShit.save(request);
             }
         } catch (TelegramApiException e) {
-            throw new RuntimeException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s", sendMessage.getText(), e.getMessage()));
+            throw new ApplicationContextException(String.format("Ошибка при отправке сообщения в ТГ - %s\n%s", sendMessage.getText(), e.getMessage()));
         }
     }
 
@@ -160,7 +178,7 @@ public class TelegramService extends TelegramLongPollingBot {
     @Transactional
     public void notifyExpiredDeviations() {
         LocalDate today = LocalDate.now();
-        List<SGI> sgiList = service.findAll(SGI.class);
+        List<SGI> sgiList = serviceShit.findAll();
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
         if (!requestsNumbers.isEmpty()) {
             AppProperties.setString(requestsNumbers);
@@ -194,5 +212,15 @@ public class TelegramService extends TelegramLongPollingBot {
             }
         }
         return requestsNumbers.toString();
+    }
+
+    @Override
+    public String getBotUsername() {
+        return "BormashRequestBot";
+    }
+
+    @Override
+    public String getBotToken() {
+        return botToken;
     }
 }

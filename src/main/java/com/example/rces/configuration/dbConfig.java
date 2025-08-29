@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.example.rces.services",
+        basePackages = {"com.example.rces.services", "com.example.rces.service", "com.example.rces.repository"},
         entityManagerFactoryRef = "entityManagerFactory",
         transactionManagerRef = "primaryTransactionManager"
 )

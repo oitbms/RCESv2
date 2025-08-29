@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,15 +76,24 @@ public class SPMApiController {
     }
 
     @GetMapping("/getChildJobComponentAndJobStepsForJobcomponentId")
-    @ResponseBody
-    public ResponseEntity<Pair<List<JobComponentPayload>, List<JobStep>>> getChildJobComponentForJobcomponentId(Long jobComponentId) {
-        Pair<Map<JobComponent, Boolean>, List<JobStep>> jcHasChildMapJobStepList = service.getJobComponentService()
-                .getChildJobComponentAndHasChildOrJobStepsAndCurrentJobSteps(jobComponentId);
+    public ResponseEntity<Map<String, Object>> getChildJobComponentAndJobStepsForJobcomponentId(@RequestParam("jobComponentId") Long jobComponentId) {
+        Pair<Map<JobComponent, Boolean>, List<JobStep>> jcHasChildMapJobStepList =
+                service.getJobComponentService()
+                        .getChildJobComponentAndHasChildOrJobStepsAndCurrentJobSteps(jobComponentId);
         List<JobComponentPayload> jobComponentPayloadList = jcHasChildMapJobStepList.getLeft().entrySet()
                 .stream()
                 .map(entry -> new JobComponentPayload(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(Pair.of(jobComponentPayloadList, jcHasChildMapJobStepList.getRight()));
+        List<JobStepPayload> jobStepPayloadList = jcHasChildMapJobStepList.getRight()
+                .stream()
+                .map(JobStepPayload::new)
+                .collect(Collectors.toList());
+        Map<String, Object> result = new HashMap<>();
+        result.put("left", jobComponentPayloadList);
+        result.put("right", jobStepPayloadList);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(result);
     }
 
     @GetMapping("/getJobStepsForJobComponentId")

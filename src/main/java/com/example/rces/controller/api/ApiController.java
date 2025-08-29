@@ -1,10 +1,11 @@
 package com.example.rces.controller.api;
 
-import com.example.rces.controller.api.service.ApiService;
 import com.example.rces.controller.payload.*;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.*;
+import com.example.rces.service.CustomerOrderService;
+import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,28 +18,33 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ApiController {
 
-    private final ApiService service;
+    private final CustomerOrderService customerOrderService;
+    private final EmployeeService employeeService;
 
     @Autowired
-    public ApiController(ApiService service) {
-        this.service = service;
+    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService) {
+        this.customerOrderService = customerOrderService;
+        this.employeeService = employeeService;
     }
 
     @GetMapping("/employees")
     public List<EmployeePayload> getEmployees(@RequestParam(required = false) Object param) {
-        List<Employee> employees = service.findAllEmployees(param);
-        return employees.stream().map(EmployeePayload::new).toList();
+        if (param != null) {
+            return employeeService.findAllByRole((String) param);
+        } else {
+            return employeeService.findAll();
+        }
     }
 
     @GetMapping("/updater")
     @ResponseBody
     public Employee getUpdater() {
-        return service.getUpdater();
+        return employeeService.getCurrentUser();
     }
 
     @GetMapping("/customer-orders")
     public List<CustomerOrder> getCustomerOrders() {
-        return service.findAllCustomerOrder();
+        return customerOrderService.findAll();
     }
 
     @GetMapping("/reasons")

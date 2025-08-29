@@ -1,4 +1,4 @@
-package com.example.rces.services.telegram;
+package com.example.rces.service.impl.telegram;
 
 import com.example.rces.models.Requests;
 

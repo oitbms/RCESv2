@@ -1,11 +1,9 @@
 package com.example.rces.utils;
 
-import com.example.rces.configuration.AppProperties;
 import com.example.rces.models.*;
 import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
-import com.example.rces.services.UniversalService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
@@ -20,7 +18,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -129,7 +126,7 @@ public class ServiceUtil {
             return SGI.ColorSGI.RED;
         } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
             return SGI.ColorSGI.YELLOW;
-        } else if (sgi.getPlanDate() != null && sgi.getExecution()!=null) {
+        } else if (sgi.getPlanDate() != null && sgi.getExecution() != null) {
             return SGI.ColorSGI.GREEN;
         } else {
             return SGI.ColorSGI.NONE;
@@ -283,76 +280,8 @@ public class ServiceUtil {
         } else return true;
     }
 
-    public static void createLog(Object oldEntity, Object newEntity, Employee updaterUser, UniversalService service) {
-        if (oldEntity instanceof Requests oldRequests && newEntity instanceof Requests newRequest) {
-            createLogForRequest(oldRequests, newRequest, updaterUser, service);
-        } else if (oldEntity instanceof SGI oldSgi && newEntity instanceof SGI newSgi) {
-            createLogForSgi(oldSgi, newSgi, updaterUser, service);
-        }
-    }
-
-    private static void createLogForRequest(Requests oldRequest, Requests newRequest, Employee updaterUser, UniversalService service) {
-        try {
-            Map<String, String> metadata = new LinkedHashMap<>();
-            Class<?> clazz = oldRequest.getClass();
-            Set<String> ignoredFields = Set.of(
-                    "id", "version", "updateDate", "closeDate", "dateWork", "log", "typeRequest", "messageId",
-                    "createdBy", "updateBy", "closedEmployee", "images", "chatId");
-            addToMetadata(clazz, ignoredFields, oldRequest, newRequest, metadata);
-            if (!metadata.isEmpty()) {
-                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-                List<RequestLog> logs = service.findAllByField(RequestLog.class, "request", oldRequest)
-                        .stream()
-                        .filter(log -> log.getDate().equals(now)).toList();
-                if (logs.isEmpty()) {
-                    RequestLog log = new RequestLog(newRequest, updaterUser, metadata);
-                    service.save(log);
-                    if (!metadata.containsKey("Статус")) {
-                        AppProperties.setBool(true);
-                    }
-                    return;
-                }
-                for (RequestLog log : logs) {
-                    log.addToMetadata(metadata);
-                    service.save(log);
-                }
-                if (!metadata.containsKey("Статус")) {
-                    AppProperties.setBool(true);
-                }
-            }
-        } catch (Exception e) {
-            throw new ApplicationContextException("Ошибка при создании лога заявки", e);
-        }
-    }
-
-    private static void createLogForSgi(SGI oldSgi, SGI newSgi, Employee updaterUser, UniversalService service) {
-        try {
-            Map<String, String> metadata = new LinkedHashMap<>();
-            Class<?> clazz = oldSgi.getClass();
-            Set<String> ignoredFields = Set.of("id", "createDate", "requestNumber", "color", "log", "chatId", "parentSGI", "subSGI", "executions");
-            addToMetadata(clazz, ignoredFields, oldSgi, newSgi, metadata);
-            if (!metadata.isEmpty()) {
-                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-                List<SgiLog> logs = service.findAllByField(SgiLog.class, "sgi", oldSgi)
-                        .stream()
-                        .filter(log -> log.getDate().equals(now)).toList();
-                if (logs.isEmpty()) {
-                    SgiLog log = new SgiLog(newSgi, updaterUser, metadata);
-                    service.save(log);
-                    return;
-                }
-                for (SgiLog log : logs) {
-                    log.addToMetadata(metadata);
-                    service.save(log);
-                }
-            }
-
-        } catch (Exception e) {
-            throw new ApplicationContextException("Ошибка при создании лога сги", e);
-        }
-    }
-
-    private static void addToMetadata(Class<?> clazz, Set<String> ignoredFields, Object oldEntity, Object newEntity, Map<String, String> metadata) {
+    public static Map<String, String> getMetadata(Class<?> clazz, Set<String> ignoredFields, Object oldEntity, Object newEntity) {
+        Map<String, String> metadata = new LinkedHashMap<>();
         try {
             List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
                     .filter(f -> !ignoredFields
@@ -374,6 +303,7 @@ public class ServiceUtil {
         } catch (Exception e) {
             throw new ApplicationContextException("Ошибка при добавлении в metadata", e);
         }
+        return metadata;
     }
 
     private static String getFieldValue(Field field, Object clazz) throws Exception {
@@ -413,6 +343,14 @@ public class ServiceUtil {
         );
         if (dangerousPattern.matcher(query).find()) {
             throw new IllegalArgumentException("Потенциальная sql-инъекция остановлена: " + query);
+        }
+    }
+
+    public static byte[] getBytes(MultipartFile file) {
+        try {
+            return file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при получении байт: " + file.getOriginalFilename(), e);
         }
     }
 

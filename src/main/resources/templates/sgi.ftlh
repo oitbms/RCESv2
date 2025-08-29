@@ -110,7 +110,7 @@
         <h2 class="modal-title">Создание мероприятия</h2>
     </div>
 
-    <form action="/sgi/create" method="POST" enctype="multipart/form-data">
+    <form id="sgiForm" enctype="multipart/form-data">
         <input type="hidden" name="parentId" id="parentIdInput">
         <div class="modal-body">
             <div class="form-group">
@@ -168,7 +168,7 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-primary" id="cancelButton">Отмена</button>
-            <button type="submit" class="btn btn-primary" id="saveBtn">Создать</button>
+            <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
         </div>
     </form>
 

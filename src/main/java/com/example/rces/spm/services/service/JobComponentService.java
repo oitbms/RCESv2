@@ -60,7 +60,7 @@ public class JobComponentService {
                 .setParameter("parentJobComponentId", parentJobComponentId)
                 .getResultList();
         List<JobStep> jobSteps = repository.getEntityManager().createQuery(
-                "select e from JobStep e where e.jobcomponent.id =:id" , JobStep.class)
+                "SELECT e FROM JobStep e WHERE e.jobcomponent.id =:id" , JobStep.class)
                 .setParameter("id", parentJobComponentId)
                 .getResultList();
 

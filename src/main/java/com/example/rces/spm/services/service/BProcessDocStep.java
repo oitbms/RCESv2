@@ -3,11 +3,12 @@ package com.example.rces.spm.services.service;
 //Создание Документа "Комплектация ПрП" для формы комплектация ДДЦ
 // и списание строки с нужным заходом и переводом шага на 60
 
-import com.example.rces.services.TokenService;
+import com.example.rces.service.TokenService;
 import com.example.rces.spm.models.*;
 import com.example.rces.spm.services.SPMService;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,11 +23,10 @@ import java.util.*;
 public class BProcessDocStep {
 
     private final SPMService service;
-
     private final TokenService tokenService;
-
     private HttpEntity<String> entity;
 
+    @Autowired
     public BProcessDocStep(SPMService service, TokenService tokenService) {
         this.service = service;
         this.tokenService = tokenService;

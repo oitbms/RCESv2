@@ -1,9 +1,9 @@
 package com.example.rces.configuration;
 
-import com.example.rces.services.UniversalService;
+import com.example.rces.service.impl.ServiceShit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,15 +16,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+    private final ServiceShit serviceShit;
     private final CustomAuthenticationProvider customAuthenticationProvider;
-
-    private final UniversalService service;
-
     private final AppProperties appProperties;
 
-    public WebSecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, UniversalService service, AppProperties appProperties) {
+    @Autowired
+    public WebSecurityConfig(ServiceShit serviceShit, CustomAuthenticationProvider customAuthenticationProvider, AppProperties appProperties) {
+        this.serviceShit = serviceShit;
         this.customAuthenticationProvider = customAuthenticationProvider;
-        this.service = service;
         this.appProperties = appProperties;
     }
 
@@ -40,7 +39,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/create", "/requestslist/**")
                         .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
-                        .requestMatchers(new TypeBasedRequestMatcher(service)).authenticated()
+                        .requestMatchers(new TypeBasedRequestMatcher(serviceShit)).authenticated()
+                        .requestMatchers("/api/sgi/test").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
