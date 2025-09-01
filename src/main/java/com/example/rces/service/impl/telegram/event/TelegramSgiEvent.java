@@ -7,14 +7,16 @@ import com.example.rces.service.impl.telegram.MessageType;
 public class TelegramSgiEvent extends TelegramEvent {
 
     private final SGI sgi;
+    private final String chatId;
 
-    public TelegramSgiEvent(Object source, SGI sgi, Employee updaterEmployee, MessageType messageType) {
+    public TelegramSgiEvent(Object source, SGI sgi, Employee updaterEmployee, MessageType messageType, String chatId) {
         super(source, sgi, updaterEmployee, messageType);
         this.sgi = sgi;
+        this.chatId = chatId;
     }
 
-    public TelegramSgiEvent(SGI sgi, Employee updaterEmployee, MessageType messageType) {
-        this(null, sgi, updaterEmployee, messageType);
+    public TelegramSgiEvent(SGI sgi, Employee updaterEmployee, MessageType messageType, String chatId) {
+        this(null, sgi, updaterEmployee, messageType, chatId);
     }
 
     public SGI getSgi() {
@@ -26,4 +28,7 @@ public class TelegramSgiEvent extends TelegramEvent {
         return sgi;
     }
 
+    public String getChatId() {
+        return chatId;
+    }
 }

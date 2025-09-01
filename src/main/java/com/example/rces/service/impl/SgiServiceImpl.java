@@ -8,18 +8,22 @@ import com.example.rces.models.SGI;
 import com.example.rces.repository.SgiRepository;
 import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
+import com.example.rces.service.impl.telegram.event.TelegramRegularEvent;
 import com.example.rces.service.impl.telegram.event.TelegramSgiEvent;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,14 +43,21 @@ public class SgiServiceImpl implements SgiService {
     private final SgiLogService sgiLogService;
     private final TelegramService telegramService;
 
+    private final String controlChatId;
+    private final String testChatId;
+
     @Autowired
-    public SgiServiceImpl(SgiRepository repository, EmployeeService employeeService, ImageService imageService, FactExecutionSgiService factExecutionSgiService, SgiLogService sgiLogService, TelegramService telegramService) {
+    public SgiServiceImpl(SgiRepository repository, EmployeeService employeeService, ImageService imageService,
+                          FactExecutionSgiService factExecutionSgiService, SgiLogService sgiLogService, TelegramService telegramService,
+                          @Value("${telegram.chat.control.id}") String controlChatId, @Value("${telegram.chat.test.id}") String testChatId) {
         this.repository = repository;
         this.employeeService = employeeService;
         this.imageService = imageService;
         this.factExecutionSgiService = factExecutionSgiService;
         this.sgiLogService = sgiLogService;
         this.telegramService = telegramService;
+        this.controlChatId = controlChatId;
+        this.testChatId = testChatId;
     }
 
     public SGIPayload createSGI(String workShop, String event, String actions, String department,
@@ -80,7 +91,7 @@ public class SgiServiceImpl implements SgiService {
         }
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         repository.save(sgi);
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CREATE));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CREATE, this.testChatId));
         return new SGIPayload(sgi);
     }
 
@@ -107,7 +118,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public void delete(SGI sgi) {
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.DELETE));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.DELETE, this.testChatId));
         repository.delete(sgi);
     }
 
@@ -130,7 +141,7 @@ public class SgiServiceImpl implements SgiService {
                 sgi.setColor(colorCalculate(sgi, LocalDate.now()));
                 sgi.getLog().addAll(sgiLogService.createLog(oldSgi, sgi, employeeService.getCurrentUser()));
                 repository.save(sgi);
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CLOSE));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CLOSE, this.testChatId));
                 return sgi;
             }
             throw new ApplicationContextException("Все подзадачи должны быть согласованы");
@@ -172,9 +183,9 @@ public class SgiServiceImpl implements SgiService {
             repository.save(sgi);
             boolean planDateExist = !(sgi.getPlanDate() == null);
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.WORK));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.WORK, this.testChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.UPDATE));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.UPDATE, this.testChatId));
             }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
@@ -200,6 +211,31 @@ public class SgiServiceImpl implements SgiService {
             repository.save(sgi);
         }
         return new SGIPayload(sgi);
+    }
+
+    @Scheduled(cron = "0 0 9 * * *")
+    @Transactional
+    public void notifyExpiredDeviations() {
+        LocalDate today = LocalDate.now();
+        List<SGI> sgiList = repository.findAll();
+        String requestsNumbers = buildExpiredRequestsString(sgiList, today);
+        if (!requestsNumbers.isEmpty()) {
+            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.controlChatId));
+        }
+    }
+
+    private String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {
+        StringBuilder requestsNumbers = new StringBuilder();
+        for (SGI sgi : sgiList.stream().sorted(Comparator.comparing(SGI::getRequestNumber)).toList()) {
+            sgi.setColor(colorCalculate(sgi, today));
+            if (sgi.getColor().equals(SGI.ColorSGI.RED)) {
+                if (!requestsNumbers.isEmpty()) {
+                    requestsNumbers.append(", ");
+                }
+                requestsNumbers.append(String.format("%d (%s)", sgi.getRequestNumber(), sgi.getDepartment().getName()));
+            }
+        }
+        return requestsNumbers.toString();
     }
 
 }
