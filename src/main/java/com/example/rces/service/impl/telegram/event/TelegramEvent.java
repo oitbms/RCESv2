@@ -1,4 +1,4 @@
-package com.example.rces.event;
+package com.example.rces.service.impl.telegram.event;
 
 import com.example.rces.models.Employee;
 import com.example.rces.service.impl.telegram.MessageType;

@@ -1,0 +1,26 @@
+package com.example.rces.service.impl.telegram.event;
+
+import com.example.rces.service.impl.telegram.MessageType;
+
+public class TelegramRegularEvent extends TelegramEvent {
+    private final String message;
+    private final String chatId;
+
+    public TelegramRegularEvent(Object source, String message, String chatId) {
+        super(source, null, null, MessageType.REGULAR);
+        this.message = message;
+        this.chatId = chatId;
+    }
+
+    public TelegramRegularEvent(String message, String chatId) {
+        this(null, message, chatId);
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getChatId() {
+        return chatId;
+    }
+}

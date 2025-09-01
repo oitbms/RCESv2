@@ -8,6 +8,7 @@ import com.example.rces.models.enums.*;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
+import com.example.rces.service.impl.telegram.event.TelegramRequestEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
@@ -16,6 +17,7 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -96,7 +98,7 @@ public class RequestServiceImpl implements RequestsService {
             request.setImages(imageService.createImages(additionalFiles, request, false));
         }
         repository.save(request);
-        telegramService.sendMessage(request, employee, MessageType.CREATE);
+        telegramService.sendMessageForRequest(new TelegramRequestEvent(request, employee, MessageType.CREATE));
         return request;
     }
 
@@ -122,28 +124,40 @@ public class RequestServiceImpl implements RequestsService {
                 if (request.getStatus() == Status.New) {
                     if (request.getEmployee().equals(updaterEmployee)) {
                         request.setStatus(Status.InWork);
-                        telegramService.sendMessage(request, request.getCreatedBy(), MessageType.WORK);
+                        telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.WORK));
                     } else {
                         throw new RuntimeException("Пользователь не ответственный за заявку!");
                     }
                 } else if (request.getStatus() == Status.InWork) {
                     request.setDescription(description);
                     request.setStatus(Status.Completed);
-                    telegramService.sendMessage(request, request.getCreatedBy(), MessageType.COMPLETED);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.COMPLETED));
                 }
             } else {
                 if (status) {
                     request.setStatus(Status.Closed);
-                    telegramService.sendMessage(request, request.getCreatedBy(), MessageType.CLOSE);
+                    Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.CLOSE));
+                    request.setCloseDate(LocalDateTime.now());
+                    request.setClosedEmployee(updaterEmployee);
+                    request.setChatId(message.getChatId());
+                    request.setMessageId(message.getMessageId());
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.COMPLETED_WORK));
+                    repository.save(request);
                 } else {
                     request.setStatus(Status.New);
-                    telegramService.sendMessage(request, request.getEmployee(), MessageType.UPDATE);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getEmployee(), MessageType.UPDATE));
                 }
             }
         } else {
             request.setDescription(description);
             request.setStatus(Status.Cancel);
-            telegramService.sendMessage(request, request.getCreatedBy(), MessageType.CANCEL);
+            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.CANCEL));
+            request.setCloseDate(LocalDateTime.now());
+            request.setClosedEmployee(updaterEmployee);
+            request.setChatId(message.getChatId());
+            request.setMessageId(message.getMessageId());
+            telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getCreatedBy(), MessageType.COMPLETED_WORK));
+            repository.save(request);
         }
 
         request.setUpdateBy(updaterEmployee);
@@ -227,7 +241,7 @@ public class RequestServiceImpl implements RequestsService {
         repository.save(request);
         if (sendMessage) {
             if (!updaterEmployee.getId().equals(request.getEmployee().getId())) {
-                telegramService.sendMessage(request, request.getEmployee(), MessageType.REDIRECT);
+                telegramService.sendMessageForRequest(new TelegramRequestEvent(request, request.getEmployee(), MessageType.REDIRECT));
             }
         }
     }

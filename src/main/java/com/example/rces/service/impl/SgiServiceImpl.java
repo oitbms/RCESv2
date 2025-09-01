@@ -8,6 +8,7 @@ import com.example.rces.models.SGI;
 import com.example.rces.repository.SgiRepository;
 import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
+import com.example.rces.service.impl.telegram.event.TelegramSgiEvent;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class SgiServiceImpl implements SgiService {
         }
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         repository.save(sgi);
-        telegramService.sendMessage(sgi, null, MessageType.CREATE);
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CREATE));
         return new SGIPayload(sgi);
     }
 
@@ -106,7 +107,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public void delete(SGI sgi) {
-        telegramService.sendMessage(sgi, null, MessageType.DELETE);
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.DELETE));
         repository.delete(sgi);
     }
 
@@ -129,7 +130,7 @@ public class SgiServiceImpl implements SgiService {
                 sgi.setColor(colorCalculate(sgi, LocalDate.now()));
                 sgi.getLog().addAll(sgiLogService.createLog(oldSgi, sgi, employeeService.getCurrentUser()));
                 repository.save(sgi);
-                telegramService.sendMessage(sgi, null, MessageType.CLOSE);
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.CLOSE));
                 return sgi;
             }
             throw new ApplicationContextException("Все подзадачи должны быть согласованы");
@@ -171,9 +172,9 @@ public class SgiServiceImpl implements SgiService {
             repository.save(sgi);
             boolean planDateExist = !(sgi.getPlanDate() == null);
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessage(sgi, null, MessageType.WORK);
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.WORK));
             } else {
-                telegramService.sendMessage(sgi, null, MessageType.UPDATE);
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(sgi, null, MessageType.UPDATE));
             }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
