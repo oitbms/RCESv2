@@ -54,11 +54,11 @@ public class JobComponentService {
         List<Object[]> results = repository.getEntityManager()
                 .createQuery("""
                         SELECT childComponent,
-                               (SELECT CASE WHEN COUNT(subJc) > 0 OR COUNT(subJs) > 0 THEN true ELSE false END
-                                FROM JobComponent subJc
-                                JOIN subJc.jobstep subJs
-                                WHERE subJc.parentJobComponent.id = childComponent.id),
- 
+                                (SELECT CASE WHEN COUNT(childCurrentJc) > 0 OR COUNT(currentJs) > 0 THEN true ELSE false END
+                                 FROM JobComponent currentJc
+                                 LEFT JOIN JobComponent childCurrentJc on currentJc.id = childCurrentJc.parentJobComponent.id
+                                 LEFT JOIN currentJc.jobSteps currentJs
+                                 WHERE currentJc.id = childComponent.id),
                                 (SELECT jo.id
                                 FROM PrimaryDemand currentPd
                                 JOIN JobOrder jo ON currentPd.id = jo.id

@@ -148,7 +148,7 @@
 
             <div class="form-group">
                 <label class="form-label">Желаемый срок</label>
-                <input type="date" class="form-control" name="desiredDate" required>
+                <input type="date" class="form-control" name="desiredDate">
             </div>
 
             <div class="form-group">

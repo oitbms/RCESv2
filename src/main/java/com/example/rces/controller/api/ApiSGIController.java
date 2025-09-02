@@ -36,7 +36,7 @@ public class ApiSGIController {
                                                 @RequestParam String actions,
                                                 @RequestParam String department,
                                                 @RequestParam String employee,
-                                                @RequestParam LocalDate desiredDate,
+                                                @RequestParam(required = false) LocalDate desiredDate,
                                                 @RequestParam(required = false) String note,
                                                 @RequestParam(required = false) MultipartFile[] additionalFiles,
                                                 @RequestParam(required = false) String parentId) {
