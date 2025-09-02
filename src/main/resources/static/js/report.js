@@ -250,7 +250,7 @@ async function createRow(item, type, parentId, level, hasChildren, isLast, hasNe
                     ${type === "jc" ? hasChildren ? hamburger : "" : ""}
                     <div class="row-item first-element" style="width: var(--primarydemand); padding-left: ${(1.5 + (level * 0.5)) + 'rem'}" data-name="primarydemand">
                         <p>
-                            ${primaryDemand}
+                            ${type === "jc" ? item.pdName : primaryDemand}
                             <span class="line-container ${isLast ? 'last-line' : ''}">
                                 <span class="third-line"></span>
                                 ${isLast && hasNext ? '<span class="second-line"></span>' : ''}
@@ -266,7 +266,7 @@ async function createRow(item, type, parentId, level, hasChildren, isLast, hasNe
                     <div class="row-item" style="width: var(--date-start);" data-name="date-start">${formatDate(item.dateStart)}</div>
                     <div class="row-item" style="width: var(--date-end);" data-name="date-end">${formatDate(item.dateEnd)}</div>
                     <div class="row-item" style="width: var(--date-calc-start);" data-name="date-calc-start">${type === 'jc' ? "" : formatDate(item.dateCalcStart)}</div>
-                    <div class="row-item" style="width: var(--date-calc-end);" data-name="date-calc-end">${type === 'jc' ? "" : formatDate(item.dateCalcEnd)}</div>
+                    <div class="row-item" style="width: var(--date-calc-end);" data-name="date-calc-end">${formatDate(item.dateCalcEnd)}</div>
                 </div>
                 <div class="inner-rows"></div>
             </div>`;

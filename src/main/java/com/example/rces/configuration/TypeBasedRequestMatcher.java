@@ -1,6 +1,6 @@
 package com.example.rces.configuration;
 
-import com.example.rces.service.impl.ServiceShit;
+import com.example.rces.service.impl.WebSecurityService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -10,10 +10,10 @@ import java.util.regex.Pattern;
 public class TypeBasedRequestMatcher implements RequestMatcher {
 
     private final Pattern pattern = Pattern.compile("/view/(\\d+)");
-    private final ServiceShit serviceShit;
+    private final WebSecurityService webSecurityService;
 
-    public TypeBasedRequestMatcher(ServiceShit serviceShit) {
-        this.serviceShit = serviceShit;
+    public TypeBasedRequestMatcher(WebSecurityService webSecurityService) {
+        this.webSecurityService = webSecurityService;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
         Matcher matcher = pattern.matcher(request.getRequestURI());
         if (matcher.matches()) {
             String requestNumber = matcher.group(1);
-            String type = String.valueOf(serviceShit.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
+            String type = String.valueOf(webSecurityService.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
 
             return switch (type) {
                 case "otk" -> request.isUserInRole("OTK") ||

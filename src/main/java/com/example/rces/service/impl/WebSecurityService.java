@@ -12,13 +12,13 @@ import java.util.List;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
-public class ServiceShit {
+public class WebSecurityService {
 
     private final RequestsRepository requestsRepository;
     private final SgiRepository sgiRepository;
 
     @Autowired
-    public ServiceShit(RequestsRepository requestsRepository, SgiRepository sgiRepository) {
+    public WebSecurityService(RequestsRepository requestsRepository, SgiRepository sgiRepository) {
         this.requestsRepository = requestsRepository;
         this.sgiRepository = sgiRepository;
     }

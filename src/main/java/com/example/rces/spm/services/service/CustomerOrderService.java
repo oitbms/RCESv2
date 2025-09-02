@@ -1,11 +1,7 @@
 package com.example.rces.spm.services.service;
 
-import com.example.rces.spm.models.PrimaryDemand;
 import com.example.rces.spm.models.SPMCustomerOrder;
 import com.example.rces.spm.services.SPMRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.support.PageableUtils;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

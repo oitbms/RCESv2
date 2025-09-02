@@ -11,12 +11,8 @@ public class BProcess {
     @Id
     private Long id;
 
-
-
     @ManyToOne(fetch= FetchType.LAZY)
     private Item item; //ТМЦ
-
-
 
     public Item getItem() {
         return item;

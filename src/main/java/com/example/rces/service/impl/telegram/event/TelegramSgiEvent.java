@@ -15,10 +15,6 @@ public class TelegramSgiEvent extends TelegramEvent {
         this.chatId = chatId;
     }
 
-    public TelegramSgiEvent(SGI sgi, Employee updaterEmployee, MessageType messageType, String chatId) {
-        this(null, sgi, updaterEmployee, messageType, chatId);
-    }
-
     public SGI getSgi() {
         return sgi;
     }

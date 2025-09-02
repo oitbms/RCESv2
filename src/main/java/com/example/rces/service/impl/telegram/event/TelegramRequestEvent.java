@@ -13,10 +13,6 @@ public class TelegramRequestEvent extends TelegramEvent {
         this.request = request;
     }
 
-    public TelegramRequestEvent(Requests request, Employee updaterEmployee, MessageType messageType) {
-        this(null, request, updaterEmployee, messageType);
-    }
-
     public Requests getRequest() {
         return request;
     }

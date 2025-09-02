@@ -32,7 +32,7 @@ public class SPMReportController {
     }
 
     @GetMapping
-    public String getReportForm(Model model) {
+    public String getReportForm() {
         return "report/tree";
     }
 

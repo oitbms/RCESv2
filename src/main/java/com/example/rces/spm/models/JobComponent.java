@@ -61,7 +61,10 @@ public class JobComponent {
     private List<JobStep> jobSteps; //Заходы
 
     @Column(name = "date_start")
-    private LocalDateTime dateStart;  //Дата начала денормализация
+    private LocalDateTime dateStart;
+
+    @Transient
+    private LocalDateTime dateEnd;
 
     @Column(name = "date_calc_end")
     private LocalDateTime dateCalcEnd; //РД завершения
@@ -192,6 +195,14 @@ public class JobComponent {
 
     public void setDateStart(LocalDateTime dateStart) {
         this.dateStart = dateStart;
+    }
+
+    public LocalDateTime getDateEnd() {
+        return dateEnd;
+    }
+
+    public void setDateEnd(LocalDateTime dateEnd) {
+        this.dateEnd = dateEnd;
     }
 
     public LocalDateTime getDateCalcEnd() {

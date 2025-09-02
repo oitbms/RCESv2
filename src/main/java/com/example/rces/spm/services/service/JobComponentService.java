@@ -1,6 +1,7 @@
 package com.example.rces.spm.services.service;
 
 import com.example.rces.spm.models.JobComponent;
+import com.example.rces.spm.models.JobOrder;
 import com.example.rces.spm.models.JobStep;
 import com.example.rces.spm.services.SPMRepository;
 import org.apache.commons.lang3.tuple.Pair;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,22 +54,51 @@ public class JobComponentService {
         List<Object[]> results = repository.getEntityManager()
                 .createQuery("""
                         SELECT childComponent,
-                               (SELECT CASE WHEN COUNT(subJc) > 0 THEN true ELSE false END
+                               (SELECT CASE WHEN COUNT(subJc) > 0 OR COUNT(subJs) > 0 THEN true ELSE false END
                                 FROM JobComponent subJc
-                                WHERE subJc.parentJobComponent.id = childComponent.id)
+                                JOIN subJc.jobstep subJs
+                                WHERE subJc.parentJobComponent.id = childComponent.id),
+ 
+                                (SELECT jo.id
+                                FROM PrimaryDemand currentPd
+                                JOIN JobOrder jo ON currentPd.id = jo.id
+                                WHERE currentPd.item.id = childComponent.item.id
+                                AND currentPd.customerorder.id = parrentPd.customerorder.id
+                                ORDER BY currentPd.stormSingleString
+                                LIMIT 1)
                         FROM JobComponent childComponent
+                        JOIN childComponent.primarydemand parrentPd
                         WHERE childComponent.parentJobComponent.id = :parentJobComponentId
                         """, Object[].class)
                 .setParameter("parentJobComponentId", parentJobComponentId)
                 .getResultList();
         List<JobStep> jobSteps = repository.getEntityManager().createQuery(
-                "SELECT e FROM JobStep e WHERE e.jobcomponent.id =:id" , JobStep.class)
+                        "SELECT e FROM JobStep e WHERE e.jobcomponent.id =:id ORDER BY e.number ", JobStep.class)
                 .setParameter("id", parentJobComponentId)
                 .getResultList();
+        Set<Long> jobOrderIds = results.stream().map(r -> (Long) r[2]).collect(Collectors.toSet()); //потому что под-запрос возвращает Long вместо сущности
+        Map<Long, JobOrder> jobOrders = repository.getEntityManager()
+                .createQuery("SELECT e FROM JobOrder e WHERE e.id IN  :ids", JobOrder.class)
+                .setParameter("ids", jobOrderIds)
+                .getResultStream().collect(Collectors.toMap(JobOrder::getId, Function.identity()));
+
 
         Map<JobComponent, Boolean> map = results.stream()
                 .collect(Collectors.toMap(
-                        result -> (JobComponent) result[0],
+                        result -> {
+                            JobComponent jobComponent = (JobComponent) result[0];
+                            JobOrder jobOrder = jobOrders.get((Long) result[2]);
+                            if (jobOrder != null) {
+                                jobComponent.setPrimarydemand(jobOrder);
+                                jobComponent.setDateStart(jobOrder.getDate_start());
+                                if (jobOrder.getDateActualEnd() != null) {
+                                    jobComponent.setDateEnd(jobOrder.getDateActualEnd());
+                                }
+                                jobComponent.setDateCalcEnd(jobOrder.getDateCalcEnd());
+                            }
+
+                            return jobComponent;
+                        },
                         result -> (Boolean) result[1]
                 ));
 
@@ -112,6 +144,37 @@ public class JobComponentService {
                         """, JobComponent.class)
                 .setParameter("parentJobComponentId", parentJobComponentId)
                 .getResultList();
+    }
+
+    public Map<List<JobComponent>, List<JobStep>> getAllChildJobComponentsAndCurrentJobSteps(Long parentJobComponentId) {
+        List<JobComponent> jobComponents = getAllChildJobComponents(parentJobComponentId);
+        for (JobComponent jobComponent : jobComponents) {
+            JobOrder jobOrder = repository.getEntityManager().createQuery("""
+                            SELECT jo
+                            FROM PrimaryDemand currentPd
+                            JOIN JobOrder jo ON currentPd.id = jo.id
+                            WHERE currentPd.item = :item
+                            AND currentPd.customerorder = :customerOrder
+                            ORDER BY currentPd.stormSingleString
+                            """, JobOrder.class)
+                    .setParameter("item", jobComponent.getItem())
+                    .setParameter("customerOrder", jobComponent.getPrimarydemand().getCustomerorder())
+                    .getResultStream().findFirst().orElse(null);
+            if (jobOrder != null) {
+                jobComponent.setPrimarydemand(jobOrder);
+                jobComponent.setDateStart(jobOrder.getDate_start());
+                if (jobOrder.getDateActualEnd() != null) {
+                    jobComponent.setDateEnd(jobOrder.getDateActualEnd());
+                }
+                jobComponent.setDateCalcEnd(jobOrder.getDateCalcEnd());
+            }
+
+        }
+        List<JobStep> jobSteps = repository.getEntityManager().createQuery(
+                        "SELECT e FROM JobStep e WHERE e.jobcomponent.id =:id ORDER BY e.number ", JobStep.class)
+                .setParameter("id", parentJobComponentId)
+                .getResultList();
+        return Map.of(jobComponents, jobSteps);
     }
 
 }

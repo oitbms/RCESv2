@@ -406,7 +406,6 @@ $(document).on('click', '#toggleAgreement', async function (event) {
     formData.append("agreed", isChecked);
 
     if (currentSGI.planDate === null || currentSGI.planDate === "") return alert("Не заполнено поле планируемый срок!");
-    if (!currentSGI.executions) return alert("У мероприятия нет факта выполнения!");
     if (isChecked && currentSGI.subSGI && !currentSGI.subSGI?.every(sub => sub.agree)) return alert("Все подзадачи должны быть согласованы!");
     if (!isChecked && currentSGI?.parent && currentSGI.parent.agree) return alert("Нельзя отменить согласование подзадачи, если родительская задача согласована!");
     await $.ajax({

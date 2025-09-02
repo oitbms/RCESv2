@@ -1,6 +1,6 @@
 package com.example.rces.configuration;
 
-import com.example.rces.service.impl.ServiceShit;
+import com.example.rces.service.impl.WebSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,13 +16,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    private final ServiceShit serviceShit;
+    private final WebSecurityService webSecurityService;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final AppProperties appProperties;
 
     @Autowired
-    public WebSecurityConfig(ServiceShit serviceShit, CustomAuthenticationProvider customAuthenticationProvider, AppProperties appProperties) {
-        this.serviceShit = serviceShit;
+    public WebSecurityConfig(WebSecurityService webSecurityService, CustomAuthenticationProvider customAuthenticationProvider, AppProperties appProperties) {
+        this.webSecurityService = webSecurityService;
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.appProperties = appProperties;
     }
@@ -39,7 +39,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/create", "/requestslist/**")
                         .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
-                        .requestMatchers(new TypeBasedRequestMatcher(serviceShit)).authenticated()
+                        .requestMatchers(new TypeBasedRequestMatcher(webSecurityService)).authenticated()
                         .requestMatchers("/api/sgi/test").permitAll()
                         .anyRequest().authenticated()
                 )

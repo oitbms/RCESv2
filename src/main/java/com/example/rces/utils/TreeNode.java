@@ -50,8 +50,8 @@ public class TreeNode {
         this.type = "pd";
     }
 
-    public TreeNode(JobComponentPayload jc, String pdName, Long parentId) {
-        this.primaryDemand = pdName;
+    public TreeNode(JobComponentPayload jc, Long parentId) {
+        this.primaryDemand = jc.pdName();
         this.item = jc.name();
         this.mlmNode = "";
         this.description = "";
@@ -61,7 +61,7 @@ public class TreeNode {
         this.dateStart = formatedDate(jc.dateStart());
         this.dateEnd = formatedDate(jc.dateEnd());
         this.dateCalcStart = "";
-        this.dateCalcEnd = "";
+        this.dateCalcEnd = formatedDate(jc.dateCalcEnd());
         this.id = jc.id();
         this.parentId = parentId;
         this.type = "jc";

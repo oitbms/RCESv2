@@ -12,10 +12,6 @@ public class TelegramRegularEvent extends TelegramEvent {
         this.chatId = chatId;
     }
 
-    public TelegramRegularEvent(String message, String chatId) {
-        this(null, message, chatId);
-    }
-
     public String getMessage() {
         return message;
     }
