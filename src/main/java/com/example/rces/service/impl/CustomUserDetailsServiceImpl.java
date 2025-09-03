@@ -80,10 +80,10 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         return repository.findAllByRole(role).stream().map(EmployeePayload::new).toList();
     }
 
-    @Override
     public Employee getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return loadUserByUsername(authentication.getName());
+        Object principal = authentication.getPrincipal();
+        return (Employee) principal;
     }
 
     @Override

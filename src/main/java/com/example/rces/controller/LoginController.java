@@ -31,7 +31,7 @@ public class LoginController {
         return "login";
     }
 
-    @PostMapping("/login")
+    @PostMapping("/perform-login")
     public String login(@RequestParam String username, Model model) {
         try {
             UserDetails user = employeeService.loadUserByUsername(username);

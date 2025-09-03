@@ -2,6 +2,7 @@ let currentPage = 1; //Текущая страница
 const itemsPerPage = 100; //Начальное кол-во строк на странице
 let loadLines = 0; //Загружено строк
 let firstLoad = true; //Первая загрузка
+let customerOrderId;
 
 //Обработчик ресайза колонок
 $('.table-header-resizer').on('mousedown', function (e) {
@@ -85,7 +86,7 @@ $(document).on('click', '.hamburger', function (e) {
 //Обработчик загрузки доп строк
 $(document).on('click', '.load-more', async function (e) {
     currentPage++;
-    await displayPage(currentPage);
+    await displayPage(currentPage, customerOrderId);
 });
 //Динамическая загрузка/удаление строк при скролле(не работает)
 $('main').on('scroll', async function () {
@@ -136,11 +137,10 @@ $('.change-order-button').click(async function () {
     const customerOrders = await $.get('/spm-api/getBurningAndAllCustomerOrder');
     const primaryOrders = customerOrders.burning;
     const allCustomerOrder = customerOrders.all;
-    let selectedCustomerOrderName = '';
+    let selectedCustomerOrder = null; // Храним весь объект заказа
     const rowContainer = $('.dialog-content-rows');
     const searchInput = $('.choice-order input');
 
-    // Функция отрисовки заказов
     function renderOrders(orders) {
         rowContainer.empty();
         for (const co of orders) {
@@ -155,46 +155,51 @@ $('.change-order-button').click(async function () {
         }
     }
 
-    // Изначальная отрисовка горящих заказов
     renderOrders(primaryOrders);
 
-    // Показ диалога
     document.getElementById('customerOrderDialog').showModal();
 
-    // Обработчик поиска
-    searchInput.on('input', function () {
+    searchInput.off('input').on('input', function () {
         const searchText = $(this).val().toLowerCase().trim();
-
-        if (searchText === '') {
-            renderOrders(primaryOrders);
-        } else {
-            const filteredOrders = allCustomerOrder.filter(co =>
-                co.name.toLowerCase().includes(searchText)
-            );
-            renderOrders(filteredOrders);
-        }
+        const filteredOrders = searchText === ''
+            ? primaryOrders
+            : allCustomerOrder.filter(co => co.name.toLowerCase().includes(searchText));
+        renderOrders(filteredOrders);
     });
 
-    const customerOrderInput = $('#customerOrderId'); // Добавьте эту строку
+    // Обработчик выбора строки
+    rowContainer.off('click').on('click', '.dialog-content-rows-row', function() {
+        const orderId = $(this).data('id');
+        const ordersArray = searchInput.val() ? allCustomerOrder : primaryOrders;
 
-// Подсвет выбранной строки
-    rowContainer.on('click', '.dialog-content-rows-row', function () {
+        selectedCustomerOrder = ordersArray.find(order => order.id === orderId);
+
         $('.dialog-content-rows-row').removeClass('selected');
         $(this).addClass('selected');
-        customerOrderInput.attr('data-id', $(this).data('id'));
-        selectedCustomerOrderName = $(this).children('.content-row-column').first().text();
     });
 
-// Кнопка выбрать заказ
-    $('#changeCustomerOrder').on('click', async function () {
-        // Проверка, что заказ выбран
-        if (!customerOrderInput.data('id')) {
+    // Обработчик подтверждения выбора
+    $('#changeCustomerOrder').off('click').on('click', async function () {
+        if (!selectedCustomerOrder) {
             alert('Выберите заказ из списка');
             return;
         }
-        customerOrderInput.val(selectedCustomerOrderName);
+
+        $('#customerOrderId')
+            .val(selectedCustomerOrder.name)
+            .data('id', selectedCustomerOrder.id);
+
         document.getElementById('customerOrderDialog').close();
-        await displayPage(1, customerOrderInput.data('id'));
+
+        // Сброс и загрузка данных
+        $(".table-rows").empty();
+        $('.total-count').empty();
+        $('.load-count span:eq(0)').empty();
+        $('.load-count span:eq(1)').empty();
+        firstLoad = true;
+        loadLines = 0;
+        customerOrderId = selectedCustomerOrder.id;
+        await displayPage(1, selectedCustomerOrder.id);
     });
 });
 
