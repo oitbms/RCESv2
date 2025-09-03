@@ -1,14 +1,26 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
+import com.example.rces.models.enums.Status;
+import com.example.rces.service.EmployeeService;
 import com.example.rces.service.ReportService;
+import com.example.rces.service.RequestsService;
 import com.example.rces.service.SgiService;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +33,15 @@ public class ReportServiceImpl implements ReportService {
 
     private final SgiService sgiService;
 
+    private final RequestsService requestsService;
+
+    private final EmployeeService employeeService;
+
     @Autowired
-    public ReportServiceImpl(SgiService sgiService) {
+    public ReportServiceImpl(SgiService sgiService, RequestsService requestsService, EmployeeService employeeService) {
         this.sgiService = sgiService;
+        this.requestsService = requestsService;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -47,6 +65,54 @@ public class ReportServiceImpl implements ReportService {
                     "Примечание", "Планируемый срок", "Комментарий", "Статус"));
         } catch (Exception e) {
             throw new ApplicationContextException("Ошибка при создании отчета СГИ", e);
+        }
+    }
+
+    @Override
+    public byte[] reportBid() throws IOException {
+        Employee user = employeeService.getCurrentUser();
+        List<Requests> rejectedBid = requestsService.findAll().stream()
+                .filter(requests -> requests.getMlmNode().equals(user.getMlmNode()))
+                .filter(requests -> requests.getStatus().equals(Status.Rejected))
+                .toList();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Rejected Bids");
+
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(user.getMlmNode().getName() + " отчет о забракованной продукции");
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+            titleCell.setCellStyle(titleStyle);
+
+            Row headerRow = sheet.createRow(1);
+            headerRow.createCell(0).setCellValue("№");
+            headerRow.createCell(1).setCellValue("Обозначение/Наименование");
+            headerRow.createCell(2).setCellValue("ЗК");
+            headerRow.createCell(3).setCellValue("Дата");
+
+            int rowNum = 2;
+            for (Requests reject : rejectedBid) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(reject.getRequestNumber());
+                row.createCell(1).setCellValue(reject.getTitle() != null ? reject.getTitle() : "");
+                row.createCell(2).setCellValue(reject.getCustomerOrder().getName());
+                row.createCell(3).setCellValue(reject.getUpdateDate() != null ? reject.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "");
+            }
+
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
         }
     }
 }

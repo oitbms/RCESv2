@@ -57,6 +57,7 @@ public class RequestController {
     public String createRequest(@RequestParam String type,
                                 @RequestParam String employeeJson,
                                 @RequestParam String mlmNodeJson,
+                                @RequestParam String titleJson,
                                 @RequestParam(value = "itemNameJson") String itemJson,
                                 @RequestParam(required = false) Integer qty,
                                 @RequestParam(required = false) String control,
@@ -69,7 +70,7 @@ public class RequestController {
         model.addAttribute("create", true);
         Employee createdEmployee = employeeService.getCurrentUser();
         Requests request = requestsService.createRequest(createdEmployee, employeeJson, type, mlmNodeJson, itemJson, reasonsJson, qty, control,
-                customerOrderString, customerOrderJson, comment, additionalFiles);
+                customerOrderString, customerOrderJson, comment, additionalFiles, titleJson);
         model.addAttribute("requestNumber", request.getRequestNumber());
         return "success";
     }

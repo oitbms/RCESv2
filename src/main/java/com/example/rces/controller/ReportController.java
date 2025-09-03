@@ -1,18 +1,18 @@
 package com.example.rces.controller;
 
+import com.example.rces.models.Employee;
 import com.example.rces.models.SGI;
 import com.example.rces.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -51,6 +51,19 @@ public class ReportController {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/print/bid")
+    public ResponseEntity<byte[]> printBid() throws IOException {
+        byte[] report = service.reportBid();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDisposition(ContentDisposition.builder("attachment")
+                .filename("rejected_bids_.xlsx")
+                .build());
+
+        return new ResponseEntity<>(report, headers, HttpStatus.OK);
     }
 
 }

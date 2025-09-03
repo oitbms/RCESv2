@@ -54,6 +54,13 @@
                 </div>
             </div>
 
+            <!-- ПОЛЕ ОБОЗНАЧЕНИЕ/НАИМЕНОВАНИЕ-->
+            <div class="mb-3" id="titleJsonId">
+                <label for="titleJson" class="form-label">Обозначение/Наименование</label>
+                <input type="text" id="titleJson" name="titleJson" class="form-control"
+                       placeholder="Обозначение/Наименование" required>
+            </div>
+
             <!-- ТМЦ -->
             <div class="mb-3">
                 <label class="form-label">Тип ТМЦ</label>
@@ -73,7 +80,7 @@
             <!-- Кол-во деталей -->
             <#if type == 'otk'>
                 <div class="mb-3" id="qtyCreateField">
-                    <label for="qty" class="form-label">Кол-во деталей к контролю</label>
+                    <label for="qty" class="form-label">Количество деталей к контролю</label>
                     <#if mlmNodeEmployee.getName() == 'Цех №1'>
                     <input type="text" id="qty" name="qty" class="form-control" >
                     <#else >
@@ -176,35 +183,53 @@
     <form id="viewRequestForm" class="container mt-4">
         <input type="hidden" id="id" value="${bid.id}"/>
 
-        <!-- Номер заявки -->
-        <div class="mb-3">
-            <span class="fs-5 fw-bold">Заявка №${bid.requestNumber}</span>
-            <a href="/requestslist/${type}" class="btn btn-outline-secondary d-none d-md-block" style="margin-left:550px;">Перейти в список</a>
-        </div>
-
         <!-- Информация -->
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+            <#if bid.getStatus().getName() == 'Новый'>
+            <div class="card-header bg-secondary text-white">
                 Информация
             </div>
+                <#elseif bid.getStatus().getName() == 'В работе'>
+                    <div class="card-header bg-warning text-white">
+                        Информация
+                    </div>
+                <#elseif bid.getStatus().getName() == 'Забракована'>
+                <div class="card-header bg-danger text-white">
+                    Информация
+                </div>
+                <#elseif bid.getStatus().getName() == 'Закрыт'>
+                <div class="card-header btn-success text-white">
+                    Информация
+                </div>
+            </#if>
             <div class="card-body">
-                <#if bid.status.getName() != "Новый">
-                    <p class="mb-2"><strong>Ответственный:</strong> ${(bid.getEmployee().getName())!""}</p>
+                <#if bid.getStatus().getName() == 'Новый'>
+                    <p class="card-header fs-5 fw-bold bg-secondary text-center text-white">Заявка №${bid.requestNumber}</p>
+                <#elseif bid.getStatus().getName() == 'В работе'>
+                    <p class="card-header fs-5 fw-bold bg-warning text-center text-white">Заявка №${bid.requestNumber}</p>
+                <#elseif bid.getStatus().getName() == 'Забракована'>
+                    <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка №${bid.requestNumber}</p>
+                <#elseif bid.getStatus().getName() == 'Закрыта'>
+                    <p class="card-header fs-5 fw-bold btn-success text-center text-white">Заявка №${bid.requestNumber}</p>
                 </#if>
-                <p class="mb-2"><strong>Дата создания:</strong> ${(date)!""}</p>
-                <p class="mb-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
-                <p class="mb-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
-                <p class="mb-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!"Не указан"}</p>
+                <#if bid.status.getName() != "Новый">
+                    <p class="mb-2 m-lg-2"><strong>Ответственный:</strong> ${(bid.getEmployee().getName())!""}</p>
+                </#if>
+                <p class="mt-2 mb-2 m-lg-2"><strong>Дата создания:</strong> ${(date)!""}</p>
+                <p class="mb-2 m-lg-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
+                <p class="mb-2 m-lg-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
+                <p class="mb-2 m-lg-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!"Не указан"}</p>
+                <p class="mb-2 m-lg-2"><strong>Обозначение/Наименование:</strong> ${(bid.getTitle())!"Не указан"}</p>
                 <#if bid.typeRequest == 'otk'>
-                    <p class="mb-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
-                    <p class="mb-2"><strong>Кол-во деталей к контролю:</strong> ${(bid.qty)!0}</p>
-                    <p class="mb-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
-                    <p class="mb-2"><strong>Дефект:</strong> ${(bid.getCommentAgreed())!"Не указан"}
+                    <p class="mb-2 m-lg-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
+                    <p class="mb-2 m-lg-2"><strong>Количество деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                    <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
+                    <p class="mb-2 m-lg-2"><strong>Дефект:</strong> ${(bid.getCommentAgreed())!"Не указан"}</p>
                     <#else >
-                        <p class="mb-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
+                        <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
                 </#if>
                 <#if bid.status.getName() == "В работе">
-                <p class="mb-2"><strong>Комментарий:</strong>
+                <p class="mb-2 m-lg-2"><strong>Комментарий:</strong>
                     <textarea class="form-control"
                               id="comment"
                               name="comment"
@@ -215,11 +240,36 @@
             </div>
         </div>
 
+        <div class="d-flex justify-content-between">
+            <a href="/requestslist/${type}" class="btn btn-outline-secondary d-none d-md-block mb-3">Перейти в список</a>
+            <#if bid.getQtyRejected() = 0>
+                <a class="btn btn-outline-secondary mb-3">Количество брака заявки: ${(bid.getQtyRejected())!0}</a>
+                <#else>
+                    <a class="btn btn-danger mb-3">Количество брака заявки: ${(bid.getQtyRejected())!0}</a>
+            </#if>
+
+        </div>
+
+
         <!-- Редактирование -->
         <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                Редактирование
-            </div>
+            <#if bid.getStatus().getName() == 'Новый'>
+                <div class="card-header bg-secondary text-white">
+                    Редактирование
+                </div>
+            <#elseif bid.getStatus().getName() == 'В работе'>
+                <div class="card-header bg-warning text-white">
+                    Редактирование
+                </div>
+            <#elseif bid.getStatus().getName() == 'Забракована'>
+                <div class="card-header bg-danger text-white">
+                    Редактирование
+                </div>
+            <#elseif bid.getStatus().getName() == 'Закрыт'>
+                <div class="card-header btn-success text-white">
+                    Редактирование
+                </div>
+            </#if>
             <div class="card-body">
 
                 <#if bid.status.getName() == "Новый">
@@ -289,6 +339,7 @@
                     <button type="button"
                             class="btn btn-success mb-3 work"
                             id="workId"
+                            data-status="true"
                             data-param="${bid.getId()}">
                         Выполнено
                     </button>
@@ -315,20 +366,6 @@
                         <input type="text" readonly class="form-control" value="${bid.status.getName()}">
                     </#if>
 
-                    <button type="button"
-                            class="btn btn-danger mt-3 work"
-                            id="canceledBtn"
-                            data-param="${bid.getId()}"
-                            data-status="false"
-                    >Не согласовано</button>
-
-                    <button type="button"
-                            class="btn btn-success mt-3 work"
-                            id="successBtn"
-                            data-param="${bid.getId()}"
-                            data-status="true"
-                    >Согласовано</button>
-
                 <#elseif role != ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
                     <p class="text-success fs-3 fw-bold">Решение отправлено</p>
                 </#if>
@@ -337,7 +374,7 @@
                     <p class="text-success fs-3 fw-bold">Заявка закрыта!</p>
                 </#if>
 
-                <#if bid.getStatus().getName() == 'Отменен'>
+                <#if bid.getStatus().getName() == 'Забракована'>
                     <p class="text-danger fs-3 fw-bold">Заявка забракована!</p>
                     <label for="closed" class="form-label">Несоответствия</label>
                     <input type="text" class="form-control"
@@ -349,6 +386,16 @@
                               rows="3"
                               readonly>${bid.getDescription()!""}
                     </textarea>
+
+                    <#if role == 'MASTER'>
+                        <button type="button"
+                                class="btn btn-success mt-3 work"
+                                id="canceledBtn"
+                                data-param="${bid.getId()}"
+                                data-status="false"
+                        >Отправить повторно</button>
+                    </#if>
+
                 </#if>
 
                 <!-- Модальное окно "Выполнение заявки" -->
@@ -452,7 +499,7 @@
                 </#if>
                 <#if bid.status.getName() == "В работе" && role == "OTK">
                     <div class="mb-1 mt-2">
-                        <button class="btn btn-primary" id="openOtkId" type="button">Комментарий для детали которая пропущена с дефектами  ↓</button>
+                        <button class="btn btn-outline-secondary" id="openOtkId" type="button">Комментарий для детали которая пропущена с дефектами  ↓</button>
                         <textarea class="form-control mt-2"
                                   id="commentOtk"
                                   name="commentAgreed"
@@ -480,7 +527,7 @@
 
         <!-- Кнопки действий -->
         <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-outline-primary"
+            <button class="btn btn-outline-secondary"
                     type="button"
                     id="openPhotoModal"
                     data-bs-toggle="modal"
@@ -768,30 +815,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const button = document.getElementById('commentOtkId');
-        // const savePauseBtnModal = document.getElementById('pauseModalSaveBtn');
-        // savePauseBtnModal.addEventListener('click', () => {
-        //     const pauseComment = document.getElementById('pauseReason').value;
-        //     const startTime = document.getElementById("start-time").value;
-        //     const endTime = document.getElementById("end-time").value;
-        //
-        //     if (!pauseComment || !startTime || !endTime) {
-        //         alert('Пожалуйста, заполните все поля.');
-        //         return;
-        //     }
-        //
-        //     fetch('/api/request/pause', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/x-www-form-urlencoded'
-        //         },
-        //         body: new URLSearchParams({
-        //             'id': savePauseBtnModal.value,
-        //             'startTime': startTime,
-        //             'endTime': endTime,
-        //             'pauseComment': pauseComment // Добавьте комментарий в тело запроса
-        //         })
-        //     })
-        // });
         if (button) {
             button.addEventListener('click', () => {
                 const id = button.getAttribute('data-param');
@@ -845,11 +868,6 @@
     // ==============================
     function handleItemSelection(selectedItem) {
         const itemName = selectedItem.name || selectedItem;
-
-        // Проверяем, равна ли выбранная деталь "Карта раскроя"
-        // const isKartaRaskroya = itemName === 'Карта раскроя';
-
-        // Показываем или скрываем поля
         const qtyField = document.getElementById('qtyCreateField');
         const controlField = document.getElementById('divControlId');
         const reasonField = document.getElementById('divReasonsId');
@@ -870,7 +888,6 @@
             if (customerField) customerField.style.display = 'block';
         }
     }
-
 </script>
 </body>
 </html>

@@ -64,7 +64,7 @@ public class MessageBuilder {
                         request.getEmployee().getName(),
                         request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
                         request.getCustomerOrder().getName(),
-                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "Тип не задан",
+                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "\nТип не задан",
                         !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                         request.getComment() != null ? request.getComment() : "",
                         reason,
@@ -91,7 +91,7 @@ public class MessageBuilder {
                         request.getEmployee().getName(),
                         request.getMlmNode().getName(),
                         request.getCustomerOrder().getName(),
-                        request.getItem() != null ? request.getItem().getName() : "Тип не задан",
+                        request.getItem() != null ? request.getItem().getName() : "\nТип не задан",
                         !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                         request.getComment() != null ? request.getComment() : "",
                         reason,
@@ -119,7 +119,7 @@ public class MessageBuilder {
                         request.getEmployee().getName(),
                         request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",
                         request.getCustomerOrder().getName(),
-                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "Тип не задан",
+                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "\nТип не задан",
                         !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                         request.getComment() != null ? request.getComment() : "",
                         request.getReason() != null ? request.getReason().getName() : "Причина не указана",
@@ -161,9 +161,7 @@ public class MessageBuilder {
     private void buildCloseMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         message.setChatId(updaterEmployee.getChatId());
         message.setText(
-                String.format("Заявка № %d закрыта\n"
-                                + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
-                        request.getRequestNumber(), request.getDescription()));
+                String.format("Заявка № %d закрыта",request.getRequestNumber()));
     }
 
     private void buildCreateMessage(SGI sgi, SendMessage message) {

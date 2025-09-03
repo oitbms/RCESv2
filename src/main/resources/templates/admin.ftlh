@@ -80,17 +80,6 @@
                 </div>
             </th>
             <th>
-                Состояние
-                <button type="button" class="toggleInput">
-                    <svg viewBox="0 0 24 24" width=16>
-                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                    </svg>
-                </button>
-                <div class="inputContainer">
-                    <input type="text" class="form-control" id="active">
-                </div>
-            </th>
-            <th>
                 Роль
                 <button type="button" class="toggleInput">
                     <svg viewBox="0 0 24 24" width=16>
@@ -117,30 +106,25 @@
         </thead>
         <tbody>
         <#list users as req>
-            <tr id="req-${req.id}">
-                <td>${req.username}</td>
-                <td>${(req.mlmNode.getName())!""}</td>
-                <#if req.enabled>
-                    <td>Активный</td>
-                    <#else >
-                    <td>Не активный</td>
-                </#if>
-                <td>${req.getRole()!""}</td>
-                <td>${req.getChatId()!""}</td>
+            <tr id="req-${req.id()}">
+                <td>${req.name()}</td>
+                <td>${(req.mlmNode())!""}</td>
+                <td>${req.role()!""}</td>
+                <td>${req.chatId()!""}</td>
                 <td>
                     <button type="button"
                             class="btn btn-primary d-none d-md-inline-block create-btn"
                             data-bs-toggle="modal"
                             data-bs-target="#createModal"
-                            data-id="${req.getId()}"
-                            data-user="${req.getName()}"
+                            data-id="${req.id()}"
+                            data-user="${req.name()}"
                     >
                         Редактировать
                     </button>
                     <button
                             type="button"
                             class="btn btn-danger delete-btn"
-                            data-id="${req.getId()}"
+                            data-id="${req.id()}"
                     >
                         Удалить
                     </button>
