@@ -21,7 +21,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String username = authentication.getName();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         try {
-            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(userDetails, userDetails, userDetails.getAuthorities());
         } catch (NullPointerException e) {
             throw new BadCredentialsException(e.getMessage());
         }
