@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Меню пользователя</title>
-    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
 </head>
 <body>
@@ -57,32 +57,32 @@
 
 <div class="container mb-4">
     <div class="row">
-        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Список заявок для ОГТ</h5>
-                        <p class="card-text">
-                            Количество заявок:${qtuRequestTechnologist}<br>
-                        </p>
-                        <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
-                    </div>
-                </div>
-            </div>
-        </#if>
-        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Список заявок для ОГК</h5>
-                        <p class="card-text">
-                            Количество заявок:${qtuRequests}<br>
-                        </p>
-                        <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>
-                    </div>
-                </div>
-            </div>
-        </#if>
+<#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>-->
+<#--            <div class="col-md-4">-->
+<#--                <div class="card text-center">-->
+<#--                    <div class="card-body">-->
+<#--                        <h5 class="card-title">Список заявок для ОГТ</h5>-->
+<#--                        <p class="card-text">-->
+<#--                            Количество заявок:${qtuRequestTechnologist}<br>-->
+<#--                        </p>-->
+<#--                        <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>-->
+<#--                    </div>-->
+<#--                </div>-->
+<#--            </div>-->
+<#--        </#if>-->
+<#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>-->
+<#--            <div class="col-md-4">-->
+<#--                <div class="card text-center">-->
+<#--                    <div class="card-body">-->
+<#--                        <h5 class="card-title">Список заявок для ОГК</h5>-->
+<#--                        <p class="card-text">-->
+<#--                            Количество заявок:${qtuRequests}<br>-->
+<#--                        </p>-->
+<#--                        <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>-->
+<#--                    </div>-->
+<#--                </div>-->
+<#--            </div>-->
+<#--        </#if>-->
         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
@@ -348,11 +348,12 @@
                 </thead>
                 <tbody>
                 <#list requests as bid>
+                    <#assign req = bid_index>
                     <tr>
                         <td class="text-center">${bid.getRequestNumber()}</td>
                         <td class="text-center">${(bid.getTitle()!"Не указано")}</td>
                         <td class="text-center">${bid.getCustomerOrder().getName()}</td>
-                        <td class="text-center">${bid.getCreateDate()}</td>
+                        <td class="text-center">${(requestsDate[req])!""}</td>
                         <td class="text-center">${(bid.getReason_wr()!"Не указана")}</td>
                         <td class="text-center"><a href="view/${bid.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a></td>
                     </tr>
@@ -360,7 +361,6 @@
                 </tbody>
             </table>
 
-            <!-- Мобильная версия таблицы -->
             <div class="d-md-none mobile-table-container">
                 <#list requests as bid>
                     <div class="mobile-table-item card mb-2">
@@ -379,7 +379,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-6"><strong>Дата:</strong></div>
-                                <div class="col-6">${bid.getCreateDate()}</div>
+                                <div class="col-6">${(requestsDate[req])!""}</div>
                             </div>
                             <div class="row">
                                 <div class="col-12"><strong>Причина:</strong></div>

@@ -113,7 +113,8 @@ public class Requests implements Cloneable {
     @DisplayName("Тип контроля")
     private String reason_wr;
 
-    @Column(name = "description")
+    @Lob
+    @Column(name = "description", columnDefinition = "TEXT")
     @DisplayName("Описание решения")
     private String description;
 

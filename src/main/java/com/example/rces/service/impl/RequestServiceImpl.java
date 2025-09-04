@@ -277,4 +277,14 @@ public class RequestServiceImpl implements RequestsService {
         return requests.getTypeRequest().name();
     }
 
+    @Override
+    public List<Requests> findAllByCreatedBy(Employee createdBy) {
+        return repository.findAllByCreatedBy(createdBy);
+    }
+
+    @Override
+    public List<Requests> findAllByEmployee(Employee employee) {
+        return repository.findAllByEmployee(employee);
+    }
+
 }

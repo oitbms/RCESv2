@@ -33,5 +33,8 @@ public interface RequestsService {
 
     String getTypeRequest(UUID id);
 
+    List<Requests> findAllByCreatedBy(Employee createdBy);
+
+    List<Requests> findAllByEmployee(Employee employee);
 
 }

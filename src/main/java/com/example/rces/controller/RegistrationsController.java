@@ -1,9 +1,11 @@
 package com.example.rces.controller;
 
+import com.example.rces.controller.payload.EmployeePayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
+import com.example.rces.models.enums.Status;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +41,8 @@ public class RegistrationsController {
     public String admin(@AuthenticationPrincipal Employee currentUser, Model model) {
         List<Role> roles = List.of(Role.values());
         List<MlmNode> mlmNodes = List.of(MlmNode.values());
-        model.addAttribute("users", employeeService.findAll());
+        List<EmployeePayload> employees = employeeService.findAll();
+        model.addAttribute("users", employees);
         model.addAttribute("user", currentUser);
         model.addAttribute("mlmNodes", mlmNodes);
         model.addAttribute("roles", roles);
@@ -44,21 +50,44 @@ public class RegistrationsController {
     }
 
     @GetMapping("/menu")
-    public String menu(@AuthenticationPrincipal Employee currentUser, Model model) {
-        List<Requests> allRequest = requestsService.findAll();
+    public String menu(Model model) {
+        List<Requests> requests = requestsService.findAll();
+        Employee user = employeeService.getCurrentUser();
         List<Requests> requestsList;
-        if (currentUser.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
-            requestsList = allRequest.stream().filter(r -> currentUser.equals(r.getCreatedBy())).toList();
+
+        if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
+            requestsList = requestsService.findAllByCreatedBy(user);
         } else {
-            requestsList = allRequest.stream().filter(r -> currentUser.equals(r.getEmployee())).toList();
+            requestsList = requestsService.findAllByEmployee(user).stream()
+                    .filter(req -> req.getStatus().equals(Status.New))
+                    .sorted(Comparator.comparing(Requests::getRequestNumber))
+                    .toList();
         }
+
         Map<String, List<Requests>> createMasterRequest = getCreateRequestsMaster(requestsList);
-        Map<String, List<Integer>> dailyCountsMap = getCountDays(allRequest);
-        Map<String, Integer> qtyRequests = countRequest(allRequest);
+        Map<String, List<Integer>> dailyCountsMap = getCountDays(requests);
+        Map<String, Integer> qtyRequests = countRequest(requests);
+
         List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
-                allRequest, LocalDate.now());
+                requests, LocalDate.now());
+
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
-        model.addAttribute("user", currentUser);
+
+        List<Requests> rejectedBid = requests.stream()
+                .filter(req -> req.getMlmNode().equals(user.getMlmNode()))
+                .filter(req -> req.getStatus().equals(Status.Rejected))
+                .sorted(Comparator.comparing(Requests::getRequestNumber))
+                .toList();
+
+        List<String> rejectedDate = rejectedBid.stream()
+                .map(req -> formatedDate(req.getUpdateDate()))
+                .toList();
+
+        List<String> requestsDate = requestsList.stream()
+                .map(req -> formatedDate(req.getCreateDate()))
+                .toList();
+
+        model.addAttribute("user", user);
         model.addAttribute("requests", requestsList);
         model.addAttribute("requestsMaster", createMasterRequest);
         model.addAttribute("dailyCounts", dailyCountsList);
@@ -67,6 +96,9 @@ public class RegistrationsController {
         model.addAttribute("dailyCountTechnologist", dailyCountsMap.get("technologist"));
         model.addAttribute("qtuRequests", qtyRequests.get("constructor"));
         model.addAttribute("qtuRequestsOtk", qtyRequests.get("otk"));
+        model.addAttribute("rejectedBid", rejectedBid);
+        model.addAttribute("rejectedDate", rejectedDate);
+        model.addAttribute("requestsDate",requestsDate);
         model.addAttribute("qtuRequestTechnologist", qtyRequests.get("technologist"));
         return "menu";
     }

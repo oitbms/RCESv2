@@ -8,7 +8,7 @@ public record EmployeePayload(Long id, String name, String mlmNode, String role,
         this(
                 employee.getId(),
                 employee.getName(),
-                employee.getMlmNode().getName(),
+                employee.getMlmNode().name(),
                 employee.getRole(),
                 employee.getChatId()
         );
