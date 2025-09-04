@@ -6,6 +6,14 @@
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script>
+        const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>,</#if></#list>];
+        const dailyCountConstructor = [<#list dailyCountsConstructor as item>${item}<#if item_has_next>,</#if></#list>];
+        const dailyCountOtk = [<#list dailyCountOtk as item>${item}<#if item_has_next>,</#if></#list>];
+        const dailyCountTechnologist = [<#list dailyCountTechnologist as item>${item}<#if item_has_next>,</#if></#list>];
+    </script>
+    <script src="js/menu.js"></script>
+
 </head>
 <body>
 <div class="container mb-1">
@@ -57,32 +65,6 @@
 
 <div class="container mb-4">
     <div class="row">
-<#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>-->
-<#--            <div class="col-md-4">-->
-<#--                <div class="card text-center">-->
-<#--                    <div class="card-body">-->
-<#--                        <h5 class="card-title">Список заявок для ОГТ</h5>-->
-<#--                        <p class="card-text">-->
-<#--                            Количество заявок:${qtuRequestTechnologist}<br>-->
-<#--                        </p>-->
-<#--                        <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>-->
-<#--                    </div>-->
-<#--                </div>-->
-<#--            </div>-->
-<#--        </#if>-->
-<#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'CONSTRUCTOR' || user.getRole() == 'CONTROL'>-->
-<#--            <div class="col-md-4">-->
-<#--                <div class="card text-center">-->
-<#--                    <div class="card-body">-->
-<#--                        <h5 class="card-title">Список заявок для ОГК</h5>-->
-<#--                        <p class="card-text">-->
-<#--                            Количество заявок:${qtuRequests}<br>-->
-<#--                        </p>-->
-<#--                        <a href="requestslist/constructor" class="btn btn-primary">Просмотр заявок</a>-->
-<#--                    </div>-->
-<#--                </div>-->
-<#--            </div>-->
-<#--        </#if>-->
         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
             <div class="col-md-4">
                 <div class="card text-center">
@@ -288,7 +270,7 @@
                     <#assign rejIn = reject_index>
                     <tr>
                         <td class="text-center">${reject.getRequestNumber()}</td>
-                        <td class="text-center">${reject.getTitle()}</td>
+                        <td class="text-center">${(reject.getTitle()!"")}</td>
                         <td class="text-center">${reject.getCustomerOrder().getName()}</td>
                         <td class="text-center">${(rejectedDate[rejIn])!""}</td>
                         <td class="text-center"><a href="view/${reject.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a></td>
@@ -398,77 +380,11 @@
     </div>
 </div>
 
-
 <div class="container mt-5" id="chartContainer">
     <h1 class="text-center" id="chartTitle" style="display: none">График заявок</h1>
     <canvas id="myChart" width="400" height="200" style="display: none;"></canvas>
 </div>
-
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const dailyCounts = [${dailyCounts?join(",")}];
-    const dailyCountConstructor = [${dailyCountsConstructor?join(",")}];
-    const dailyCountOtk = [${dailyCountOtk?join(",")}];
-    const dailyCountTechnologist = [${dailyCountTechnologist?join(",")}];
-    let chartInstance;
-    document.getElementById("graf").addEventListener("click", function() {
-        const titleElement = document.getElementById('chartTitle');
-        const canvasElement = document.getElementById('myChart');
-
-        if (!canvasElement.style.display || canvasElement.style.display === "none") {
-            const ctx = canvasElement.getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [...Array(dailyCounts.length).keys()].map(i => i + 1), // От 1 до N
-                    datasets: [
-                        {
-                            label: 'ОГК',
-                            backgroundColor: 'rgba(0, 0, 0, 1)',
-                            borderColor: 'rgba(0, 0, 0, 1)',
-                            data: dailyCountConstructor,
-                            fill: true
-
-                        },
-                        {
-                            label: 'ОГТ',
-                            backgroundColor: 'rgba(0, 0, 255, 1)',
-                            borderColor: 'rgba(0, 0, 255, 1)',
-                            data: dailyCountTechnologist,
-                            fill: true
-                        },
-                        {
-                            label: 'ОТК',
-                            backgroundColor: 'rgba(128, 0, 128, 1)',
-                            borderColor: 'rgba(128, 0, 128, 1)',
-                            data: dailyCountOtk,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'right',
-                        },
-                    },
-                },
-            });
-
-            canvasElement.style.display = 'block';
-            titleElement.style.display = 'block';
-            this.textContent = 'Скрыть график';
-        } else {
-            chartInstance.destroy();
-            canvasElement.style.display = 'none';
-            titleElement.style.display = 'none';
-            this.textContent = 'Показать график';
-        }
-    });
-</script>
 <script src="/js/bootstrap.bundle.js"></script>
 </body>
 </html>
