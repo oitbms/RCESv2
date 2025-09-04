@@ -17,7 +17,7 @@ public class FactExecutionSGI {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-   @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sgi_id")
     private SGI sgi;
 

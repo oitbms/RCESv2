@@ -640,7 +640,6 @@ $('.print-menu-item').on('click', function () {
     }).appendTo('body')[0].click().remove();
 });
 
-
 async function loadSGI(page = 0) {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -730,9 +729,9 @@ async function createRow(item, inner) {
         row = `
                 <div class="row-items">
                     <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}">
-                        <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
+                        <div class="row-item" data-field="number" style="width: var(--no);">
                             ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
-                            ${item.number}
+                            <span class="${borderClass}">${item.number}</span>
                         </div>
                         <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
                         <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
@@ -741,7 +740,9 @@ async function createRow(item, inner) {
                         <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
                         <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                         <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
-                        <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
+                        <div class="row-item" data-field="executionDate" style="width: var(--planDate);">
+                             <span class="${borderClass}">${formatDate(item.planDate)}</span>
+                        </div>
                         <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
                         <div class="row-item" style="width: var(--editing);">
                             <button type="button" class="btn btn-info btn-sm editing-btn">
@@ -768,7 +769,9 @@ async function createRow(item, inner) {
                         ${item.subSGI && item.subSGI.length > 0 ? `
                             ${item.subSGI.map((subItem) => `
                                 <div class="row-items-row ${subItem.color === 'GREY' ? 'complete' : ''}" data-id="${subItem.id}" data-inner="true">
-                                    <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                                    <div class="row-item" data-field="number" style="width: var(--no);">
+                                        <span class="${borderClass}"></span>
+                                    </div>
                                     <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
                                     <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
                                     <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
@@ -776,7 +779,9 @@ async function createRow(item, inner) {
                                     <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
                                     <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
                                     <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
-                                    <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
+                                    <div class="row-item" data-field="executionDate" style="width: var(--planDate);">
+                                        <span class="${borderClass}">${formatDate(subItem.planDate)}</span>
+                                    </div>
                                     <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
                                     <div class="row-item" style="width: var(--editing);">
                                         <button type="button" class="btn btn-info btn-sm editing-btn">
@@ -806,7 +811,9 @@ async function createRow(item, inner) {
     } else {
         row = `
             <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}" data-inner="true">
-                <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                <div class="row-item" data-field="number" style="width: var(--no);">
+                    <span class="${borderClass}"></span>
+                </div>
                 <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
                 <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
                 <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
@@ -814,7 +821,9 @@ async function createRow(item, inner) {
                 <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
                 <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                 <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
-                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
+                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">
+                   <span class="${borderClass}">${formatDate(item.planDate)}</span>
+                </div>
                 <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
                 <div class="row-item" style="width: var(--editing);">
                     <button type="button" class="btn btn-info btn-sm editing-btn">
