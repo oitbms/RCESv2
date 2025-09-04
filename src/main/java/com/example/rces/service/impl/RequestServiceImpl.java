@@ -12,6 +12,7 @@ import com.example.rces.service.impl.telegram.event.TelegramRequestEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
@@ -51,9 +52,19 @@ public class RequestServiceImpl implements RequestsService {
     }
 
     @Override
-    public Requests createRequest(Employee createdEmployee, String employeeJson, String type,
-                                  String mlmNodeJson, String itemJson, String reasonsJson, Integer qty, String control,
-                                  String customerOrderName, String customerOrderJson, String comment, MultipartFile[] additionalFiles) throws JsonProcessingException {
+    public Requests createRequest(Employee createdEmployee,
+                                  String employeeJson,
+                                  String type,
+                                  String mlmNodeJson,
+                                  String itemJson,
+                                  String reasonsJson,
+                                  Integer qty,
+                                  String control,
+                                  String customerOrderName,
+                                  String customerOrderJson,
+                                  String comment,
+                                  MultipartFile[] additionalFiles,
+                                  String titleJson) throws JsonProcessingException {
         Employee employee = objectMapper.readValue(employeeJson, Employee.class);
         if (employee.getChatId() == null) {
             throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
@@ -94,6 +105,7 @@ public class RequestServiceImpl implements RequestsService {
         request.setComment(comment != null ? comment : "");
         request.setStatus(Status.New);
         request.setReason_wr(reasonText);
+        request.setTitle(titleJson);
         if (additionalFiles != null) {
             request.setImages(imageService.createImages(additionalFiles, request, false));
         }
@@ -119,45 +131,31 @@ public class RequestServiceImpl implements RequestsService {
             throw new RuntimeException(e);
         }
 
-        if (request.getInconsistency().isEmpty()) {
-            if (status == null) {
-                if (request.getStatus() == Status.New) {
-                    if (request.getEmployee().equals(updaterEmployee)) {
-                        request.setStatus(Status.InWork);
-                        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.WORK));
-                    } else {
-                        throw new RuntimeException("Пользователь не ответственный за заявку!");
-                    }
-                } else if (request.getStatus() == Status.InWork) {
+        if (status == null) {
+            if (request.getEmployee().equals(updaterEmployee)) {
+                if (request.getStatus().equals(Status.New)) {
+                    request.setStatus(Status.InWork);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.WORK));
+                } else if (!request.getInconsistency().isEmpty()) {
+                    request.setStatus(Status.Rejected);
                     request.setDescription(description);
-                    request.setStatus(Status.Completed);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.COMPLETED));
+                    request.setQtyRejected(request.getQtyRejected() + 1);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CANCEL));
                 }
             } else {
-                if (status) {
-                    request.setStatus(Status.Closed);
-                    Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
-                    request.setCloseDate(LocalDateTime.now());
-                    request.setClosedEmployee(updaterEmployee);
-                    request.setChatId(message.getChatId());
-                    request.setMessageId(message.getMessageId());
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.COMPLETED_WORK));
-                    repository.save(request);
-                } else {
-                    request.setStatus(Status.New);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.UPDATE));
-                }
+                throw new ForbiddenException("Пользователь не может изменять заявку!");
             }
-        } else {
-            request.setDescription(description);
-            request.setStatus(Status.Cancel);
-            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CANCEL));
+        } else if (status) {
+            request.setStatus(Status.Closed);
+            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
             request.setCloseDate(LocalDateTime.now());
             request.setClosedEmployee(updaterEmployee);
             request.setChatId(message.getChatId());
             request.setMessageId(message.getMessageId());
-            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.COMPLETED_WORK));
-            repository.save(request);
+        } else {
+            request.setStatus(Status.New);
+            request.getInconsistency().clear();
+            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.UPDATE));
         }
 
         request.setUpdateBy(updaterEmployee);
@@ -207,7 +205,7 @@ public class RequestServiceImpl implements RequestsService {
                                     .filter(LinkedHashMap.class::isInstance)
                                     .map(img -> UUID.fromString((String) ((LinkedHashMap<?, ?>) img).get("id")))
                                     .toList();
-                            List<Images> images = imageService.findAllByIds(imageIds);
+                            List<Images> images = new ArrayList<>(imageService.findAllByIds(imageIds));
                             ((ArrayList<?>) value).stream()
                                     .filter(String.class::isInstance)
                                     .map(String.class::cast)
@@ -239,7 +237,7 @@ public class RequestServiceImpl implements RequestsService {
         request.setVersion(request.getVersion() + 1);
         request.getLog().addAll(requestLogService.createLog(oldRequest, request, updaterEmployee));
         repository.save(request);
-        if (sendMessage) {
+        if (!request.getEmployee().equals(oldRequest.getEmployee())) {
             if (!updaterEmployee.getId().equals(request.getEmployee().getId())) {
                 telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.REDIRECT));
             }
@@ -277,6 +275,16 @@ public class RequestServiceImpl implements RequestsService {
     public String getTypeRequest(UUID id) {
         Requests requests = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
         return requests.getTypeRequest().name();
+    }
+
+    @Override
+    public List<Requests> findAllByCreatedBy(Employee createdBy) {
+        return repository.findAllByCreatedBy(createdBy);
+    }
+
+    @Override
+    public List<Requests> findAllByEmployee(Employee employee) {
+        return repository.findAllByEmployee(employee);
     }
 
 }

@@ -25,4 +25,8 @@ public interface RequestsRepository extends JpaRepository<Requests, UUID> {
     Requests findByRequestNumber(Integer requestNumber);
 
     List<Requests> findAllByTypeRequest(Requests.Type type);
+
+    List<Requests> findAllByCreatedBy(Employee createdBy);
+
+    List<Requests> findAllByEmployee(Employee employee);
 }

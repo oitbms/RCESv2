@@ -38,13 +38,11 @@ $(document).ready(function () {
 
     const checkRowFilters = (row) => {
         const employee = $(row).find('td:nth-child(1)').text().toLowerCase();
-        const active = $(row).find('td:nth-child(3)').text().toLowerCase();
-        const role = $(row).find('td:nth-child(4)').text().toLowerCase();
-        const chatId = $(row).find('td:nth-child(5)').text().toLowerCase();
+        const role = $(row).find('td:nth-child(3)').text().toLowerCase();
+        const chatId = $(row).find('td:nth-child(4)').text().toLowerCase();
 
         return (
             employee.includes($('#employee').val().toLowerCase()) &&
-            active.includes($('#active').val().toLowerCase()) &&
             role.includes($('#role').val().toLowerCase()) &&
             chatId.includes($('#chatId').val().toLowerCase())
         );
@@ -72,7 +70,7 @@ $(document).ready(function () {
         }
     };
 
-    $('#employee, #active, #role, #chatId').on('keyup change', filterData);
+    $('#employee, #role, #chatId').on('keyup change', filterData);
     filterData();
 
     $('.toggleInput').on('click', function () {

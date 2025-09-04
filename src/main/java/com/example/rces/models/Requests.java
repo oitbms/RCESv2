@@ -113,7 +113,8 @@ public class Requests implements Cloneable {
     @DisplayName("Тип контроля")
     private String reason_wr;
 
-    @Column(name = "description")
+    @Lob
+    @Column(name = "description", columnDefinition = "TEXT")
     @DisplayName("Описание решения")
     private String description;
 
@@ -155,7 +156,31 @@ public class Requests implements Cloneable {
     @DisplayName("Причина не согласования")
     private String commentAgreed;
 
+    @Column(name = "title")
+    @DisplayName("Обозначение/Наименование")
+    private String title;
+
+    @Column(name = "qty_rejected")
+    @DisplayName("Забраковано")
+    private int qtyRejected = 0;
+
     private boolean frozen;
+
+    public int getQtyRejected() {
+        return qtyRejected;
+    }
+
+    public void setQtyRejected(int qtyRejected) {
+        this.qtyRejected = qtyRejected;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public boolean isFrozen() {
         return frozen;

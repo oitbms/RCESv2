@@ -241,6 +241,7 @@ public class ServiceUtil {
                         Enum::name,
                         type -> requests.stream()
                                 .filter(req -> req.getTypeRequest() == type)
+                                .filter(req -> req.getStatus().equals(Status.New))
                                 .collect(Collectors.toList())
                 ));
     }

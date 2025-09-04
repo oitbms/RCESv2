@@ -75,7 +75,7 @@
         <tr class="table-success" data-request-number="${req.requestNumber}">
         <#elseif req.getStatus().getName() == "В работе">
             <tr class="table-warning" data-request-number="${req.requestNumber}">
-        <#elseif req.getStatus().getName() == "Отменен">
+        <#elseif req.getStatus().getName() == "Отменен" || req.getStatus().getName() == "Забракована">
             <tr class="table-danger" data-request-number="${req.requestNumber}">
         </#if>
             <td>${req.getRequestNumber()}</td>

@@ -11,7 +11,7 @@ const photoModalInstance = new bootstrap.Modal(document.getElementById('photoMod
 
 // Получение данных с сервера
 async function fetchData(endpoint, param) {
-    const url = new URL('/api/' + endpoint, window.location.origin);
+    const url = new URL('/api/request/' + endpoint, window.location.origin);
     url.searchParams.append('param', param != null ? param : bidType);
     const response = await fetch(url.toString());
     console.log(param);
@@ -138,8 +138,7 @@ async function deletePhoto(index) {
     });
 
     if (!response.ok) {
-        const errorMessage = await response.text();
-        alert("Ошибка: " + errorMessage);
+        alert("Ошибка: Удалить фото может только Ответственный за заявку!");
         return;
     }
 
@@ -297,3 +296,4 @@ if (document.title.includes("Заявка на вызов")) {
         }
     });
 }
+

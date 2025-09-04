@@ -13,7 +13,7 @@ public interface RequestsService {
 
     Requests createRequest(Employee createdEmployee, String employeeJson, String type,
                            String mlmNodeJson, String itemJson, String reasonsJson, Integer qty, String control,
-                           String customerOrderName, String customerOrderJson, String comment, MultipartFile[] additionalFiles) throws JsonProcessingException;
+                           String customerOrderName, String customerOrderJson, String comment, MultipartFile[] additionalFiles, String titleJson) throws JsonProcessingException;
 
     void save(Requests requests);
 
@@ -33,5 +33,8 @@ public interface RequestsService {
 
     String getTypeRequest(UUID id);
 
+    List<Requests> findAllByCreatedBy(Employee createdBy);
+
+    List<Requests> findAllByEmployee(Employee employee);
 
 }

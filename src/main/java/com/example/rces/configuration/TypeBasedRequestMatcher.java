@@ -12,6 +12,8 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
     private final Pattern pattern = Pattern.compile("/view/(\\d+)");
     private final WebSecurityService webSecurityService;
 
+    String type;
+
     public TypeBasedRequestMatcher(WebSecurityService webSecurityService) {
         this.webSecurityService = webSecurityService;
     }
@@ -21,7 +23,10 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
         Matcher matcher = pattern.matcher(request.getRequestURI());
         if (matcher.matches()) {
             String requestNumber = matcher.group(1);
-            String type = String.valueOf(webSecurityService.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
+            if (requestNumber != null) {
+                type = String.valueOf(webSecurityService.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
+            }
+
 
             return switch (type) {
                 case "otk" -> request.isUserInRole("OTK") ||
