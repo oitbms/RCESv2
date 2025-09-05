@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -28,15 +27,10 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         this.objectMapper = objectMapper;
     }
 
-    private CustomerOrderPayload toPayload(CustomerOrder order) {
-        return new CustomerOrderPayload(order);
-    }
-
+    @Override
     public List<CustomerOrderPayload> findAllPayload() {
         List<CustomerOrder> orders = repository.findAll();
-        return orders.stream()
-                .map(this::toPayload)
-                .collect(Collectors.toList());
+        return orders.stream().map(CustomerOrderPayload::new).toList();
     }
 
     @Override

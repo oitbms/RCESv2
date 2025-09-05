@@ -17,8 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -56,14 +54,14 @@ public class RegistrationsController {
         List<Requests> requestsList;
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
             requestsList = requests.stream()
-                    .filter(requests1 -> requests1.getCreatedBy().equals(user))
-                    .filter(requests1 -> requests1.getStatus().equals(Status.New))
+                    .filter(r -> r.getCreatedBy().equals(user))
+                    .filter(r -> r.getStatus().equals(Status.New))
                     .sorted(Comparator.comparing(Requests::getRequestNumber))
                     .toList();
         } else {
             requestsList = requests.stream()
-                    .filter(requests1 -> requests1.getEmployee().equals(user))
-                    .filter(requests1 -> requests1.getStatus().equals(Status.New))
+                    .filter(r -> r.getEmployee().equals(user))
+                    .filter(r -> r.getStatus().equals(Status.New))
                     .sorted(Comparator.comparing(Requests::getRequestNumber))
                     .toList();
         }
@@ -95,7 +93,7 @@ public class RegistrationsController {
         model.addAttribute("qtuRequestsOtk", qtyRequests.get("otk"));
         model.addAttribute("rejectedBid", rejectedBid);
         model.addAttribute("rejectedDate", rejectedDate);
-        model.addAttribute("requestsDate",requestsDate);
+        model.addAttribute("requestsDate", requestsDate);
         model.addAttribute("qtuRequestTechnologist", qtyRequests.get("technologist"));
         return "menu";
     }

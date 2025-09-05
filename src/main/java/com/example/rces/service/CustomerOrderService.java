@@ -1,5 +1,6 @@
 package com.example.rces.service;
 
+import com.example.rces.controller.payload.CustomerOrderPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 
@@ -10,4 +11,6 @@ public interface CustomerOrderService {
     CustomerOrder createOrGetCustomerOrder(Employee createdEmployee, String customerOrderName, String customerOrderJson);
 
     List<CustomerOrder> findAll();
+
+    List<CustomerOrderPayload> findAllPayload();
 }
