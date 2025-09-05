@@ -878,7 +878,7 @@ async function renderImages(currentDialog, type, currentSGI, images) {
         images = await $.ajax({
             url: url,
             type: 'GET',
-            data: { id: currentSGI.id }
+            data: { id:  type === 'fact' ? currentSGI.factExecutionSGI.id : currentSGI.id}
         });
         const processedImages = Array.isArray(images) ? images : [];
         if (type === 'fact') {
