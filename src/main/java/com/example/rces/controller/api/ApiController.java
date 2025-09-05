@@ -1,11 +1,11 @@
 package com.example.rces.controller.api;
 
 import com.example.rces.controller.payload.*;
-import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.*;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
+import com.example.rces.service.impl.CustomerOrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,8 +43,8 @@ public class ApiController {
     }
 
     @GetMapping("/customer-orders")
-    public List<CustomerOrder> getCustomerOrders() {
-        return customerOrderService.findAll();
+    public List<CustomerOrderPayload> getCustomerOrders() {
+        return ((CustomerOrderServiceImpl)customerOrderService).findAllPayload();
     }
 
     @GetMapping("/reasons")

@@ -2,6 +2,7 @@
 package com.example.rces.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "customerorder")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerOrder {
 
     @Id
@@ -20,7 +22,7 @@ public class CustomerOrder {
             name = "created_at",
             updatable = false
     )
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     private LocalDateTime createDate;
 
     @Column(name = "str_code")

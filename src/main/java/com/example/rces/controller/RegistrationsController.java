@@ -54,39 +54,36 @@ public class RegistrationsController {
         List<Requests> requests = requestsService.findAll();
         Employee user = employeeService.getCurrentUser();
         List<Requests> requestsList;
-
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
-            requestsList = requestsService.findAllByCreatedBy(user);
+            requestsList = requests.stream()
+                    .filter(requests1 -> requests1.getCreatedBy().equals(user))
+                    .filter(requests1 -> requests1.getStatus().equals(Status.New))
+                    .sorted(Comparator.comparing(Requests::getRequestNumber))
+                    .toList();
         } else {
-            requestsList = requestsService.findAllByEmployee(user).stream()
-                    .filter(req -> req.getStatus().equals(Status.New))
+            requestsList = requests.stream()
+                    .filter(requests1 -> requests1.getEmployee().equals(user))
+                    .filter(requests1 -> requests1.getStatus().equals(Status.New))
                     .sorted(Comparator.comparing(Requests::getRequestNumber))
                     .toList();
         }
-
         Map<String, List<Requests>> createMasterRequest = getCreateRequestsMaster(requestsList);
         Map<String, List<Integer>> dailyCountsMap = getCountDays(requests);
         Map<String, Integer> qtyRequests = countRequest(requests);
-
         List<Requests> requestsFilterDate = filterRequestsByCurrentMonth(
                 requests, LocalDate.now());
-
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
-
         List<Requests> rejectedBid = requests.stream()
                 .filter(req -> req.getMlmNode().equals(user.getMlmNode()))
                 .filter(req -> req.getStatus().equals(Status.Rejected))
                 .sorted(Comparator.comparing(Requests::getRequestNumber))
                 .toList();
-
         List<String> rejectedDate = rejectedBid.stream()
                 .map(req -> formatedDate(req.getUpdateDate()))
                 .toList();
-
         List<String> requestsDate = requestsList.stream()
                 .map(req -> formatedDate(req.getCreateDate()))
                 .toList();
-
         model.addAttribute("user", user);
         model.addAttribute("requests", requestsList);
         model.addAttribute("requestsMaster", createMasterRequest);

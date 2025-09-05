@@ -1,5 +1,6 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.controller.payload.CustomerOrderPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.repository.CustomerOrderRepository;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -26,6 +28,16 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         this.objectMapper = objectMapper;
     }
 
+    private CustomerOrderPayload toPayload(CustomerOrder order) {
+        return new CustomerOrderPayload(order);
+    }
+
+    public List<CustomerOrderPayload> findAllPayload() {
+        List<CustomerOrder> orders = repository.findAll();
+        return orders.stream()
+                .map(this::toPayload)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public CustomerOrder createOrGetCustomerOrder(Employee createdEmployee, String customerOrderName, String customerOrderJson) {
