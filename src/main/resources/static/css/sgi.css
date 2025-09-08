@@ -49,6 +49,7 @@ main {
     color: white;
     font-weight: 600;
     letter-spacing: 0.5px;
+    z-index: 100;
 
     & .table-header-item {
         position: relative;
