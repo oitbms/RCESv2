@@ -8,6 +8,8 @@ import com.example.rces.service.impl.telegram.MessageBuilder;
 import com.example.rces.service.impl.telegram.event.TelegramRegularEvent;
 import com.example.rces.service.impl.telegram.event.TelegramRequestEvent;
 import com.example.rces.service.impl.telegram.event.TelegramSgiEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
@@ -23,6 +25,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
 public class TelegramServiceImpl extends TelegramLongPollingBot implements TelegramService {
+
+    Logger log = LoggerFactory.getLogger(TelegramServiceImpl.class);
 
     private final MessageBuilder messageBuilder;
 
@@ -60,7 +64,8 @@ public class TelegramServiceImpl extends TelegramLongPollingBot implements Teleg
         try {
             return execute(sendMessage);
         } catch (Exception e) {
-            throw new ApplicationContextException("Ошибка при отправке сообщения в ТГ - Request " + e.getMessage());
+            log.error("Ошибка при отправке сообщения в Telegram: {}", e.getMessage(), e);
+            return null;
         }
     }
 
