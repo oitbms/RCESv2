@@ -740,7 +740,7 @@ async function createRow(item, inner) {
                         <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
                         <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                         <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
-                        <div class="row-item" data-field="executionDate" style="width: var(--planDate);">
+                        <div class="row-item" data-field="planDate" style="width: var(--planDate);">
                              <span class="${borderClass}">${formatDate(item.planDate)}</span>
                         </div>
                         <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
@@ -779,7 +779,7 @@ async function createRow(item, inner) {
                                     <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
                                     <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
                                     <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
-                                    <div class="row-item" data-field="executionDate" style="width: var(--planDate);">
+                                    <div class="row-item" data-field="planDate" style="width: var(--planDate);">
                                         <span class="${borderClass}">${formatDate(subItem.planDate)}</span>
                                     </div>
                                     <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
@@ -821,7 +821,7 @@ async function createRow(item, inner) {
                 <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
                 <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                 <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
-                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">
+                <div class="row-item ${borderClass}" data-field="planDate" style="width: var(--planDate);">
                    <span class="${borderClass}">${formatDate(item.planDate)}</span>
                 </div>
                 <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>

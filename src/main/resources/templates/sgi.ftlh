@@ -217,6 +217,11 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Планируемый срок</label>
+            <input type="date" class="form-control" data-field="planDate">
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Примечание</label>
             <textarea class="form-control" data-field="note">Примечание</textarea>
         </div>

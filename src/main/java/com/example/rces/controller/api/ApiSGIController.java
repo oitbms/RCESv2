@@ -51,6 +51,7 @@ public class ApiSGIController {
                                                 @RequestParam(required = false) String actions,
                                                 @RequestParam(required = false) String department,
                                                 @RequestParam(required = false) LocalDate desiredDate,
+                                                @RequestParam(required = false) LocalDate planDate,
                                                 @RequestParam(required = false) String employee,
                                                 @RequestParam(required = false) String note,
                                                 @RequestParam Boolean factExecutionSGIBool,
@@ -59,8 +60,8 @@ public class ApiSGIController {
                                                 @RequestParam(required = false) MultipartFile[] imagesSGI,
                                                 @RequestParam(required = false) MultipartFile[] imagesFactSGI) throws CloneNotSupportedException {
         SGI sgi = sgiService.findById(id).orElseThrow(() -> new ApplicationContextException("Передан null в id SGI на сохранение изменений"));
-        SGIPayload updateSGI = sgiService.save(sgi, workcenter, event, actions, department, desiredDate, employee,
-                note, executionDate, factExecutionSGIBool, executionDate, report, imagesSGI, imagesFactSGI);
+        SGIPayload updateSGI = sgiService.save(sgi, workcenter, event, actions, department, desiredDate, planDate,
+                employee, note, executionDate, factExecutionSGIBool, executionDate, report, imagesSGI, imagesFactSGI);
         return ResponseEntity.ok(updateSGI);
     }
 

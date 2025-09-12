@@ -33,7 +33,7 @@ public interface SgiService {
 
     SGI save(SGI sgi, Boolean agreed) throws ApplicationContextException, CloneNotSupportedException;
 
-    SGIPayload save(SGI sgi, String workcenter, String event, String actions, String department, LocalDate desiredDate,
+    SGIPayload save(SGI sgi, String workcenter, String event, String actions, String department, LocalDate desiredDate, LocalDate planDate,
               String employee, String note, LocalDate executionDate, Boolean factExecutionSGIBool, LocalDate executionDate2, String report,
               MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) throws CloneNotSupportedException;
 

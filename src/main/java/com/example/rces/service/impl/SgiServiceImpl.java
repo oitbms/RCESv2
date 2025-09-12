@@ -151,7 +151,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public SGIPayload save(SGI sgi, String workcenter, String event, String actions,
-                           String department, LocalDate desiredDate, String employee, String note, LocalDate executionDate,
+                           String department, LocalDate desiredDate, LocalDate planDate, String employee, String note, LocalDate executionDate,
                            Boolean factExecutionSGIBool, LocalDate executionDate2, String report,
                            MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) throws CloneNotSupportedException {
         if (!factExecutionSGIBool) {
@@ -170,6 +170,7 @@ public class SgiServiceImpl implements SgiService {
             sgi.setActions(actions);
             sgi.setDepartment(SGI.Department.valueOf(department));
             sgi.setDesiredDate(desiredDate);
+            sgi.setPlanDate(planDate);
             sgi.setNote(note);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (imagesSGI != null) {
@@ -191,17 +192,13 @@ public class SgiServiceImpl implements SgiService {
             factExecutionSGI.setExecutionDate(executionDate);
             factExecutionSGI.setReport(report);
             if (imagesFactSGI != null) {
-                for (MultipartFile file : imagesFactSGI) {
-                    if (!file.isEmpty()) {
-                        List<Images> newImages = saveFiles(imagesFactSGI, factExecutionSGI);
-                        factExecutionSGI.getImages().clear();
-                        factExecutionSGI.getImages().addAll(newImages);
-                    }
-                }
+                List<Images> newImages = saveFiles(imagesFactSGI, factExecutionSGI);
+                factExecutionSGI.getImages().clear();
+                factExecutionSGI.getImages().addAll(newImages);
             } else {
                 factExecutionSGI.getImages().clear();
             }
-            sgi.setPlanDate(executionDate);
+//            sgi.setPlanDate(executionDate);
             sgi.setExecution(factExecutionSGI);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (!planDateExist && executionDate != null) {
