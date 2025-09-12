@@ -156,6 +156,7 @@ public class SgiServiceImpl implements SgiService {
                            MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) throws CloneNotSupportedException {
         if (!factExecutionSGIBool) {
             SGI oldSgi = (SGI) sgi.clone();
+            boolean planDateExist = !(oldSgi.getPlanDate() == null);
             if (!employeeService.currentUserHaveControlRoles()) {
                 throw new ForbiddenException("Редактировать может только создатель задачи");
             }
@@ -182,7 +183,11 @@ public class SgiServiceImpl implements SgiService {
             }
             sgi.getLog().addAll(sgiLogService.createLog(oldSgi, sgi, employeeService.getCurrentUser()));
             repository.save(sgi);
-            telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
+            if (!planDateExist && executionDate != null) {
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.controlChatId));
+            } else {
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
+            }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
                 throw new ForbiddenException("Создавать факт выполнения может только ответственный за мероприятие сотрудник");
@@ -198,11 +203,10 @@ public class SgiServiceImpl implements SgiService {
             } else {
                 factExecutionSGI.getImages().clear();
             }
-//            sgi.setPlanDate(executionDate);
             sgi.setExecution(factExecutionSGI);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.controlChatId));
             } else {
                 telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
             }

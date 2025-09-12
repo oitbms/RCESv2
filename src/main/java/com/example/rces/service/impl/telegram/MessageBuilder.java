@@ -37,6 +37,7 @@ public class MessageBuilder {
             case CREATE -> buildCreateMessage(sgi, message);
             case WORK -> buildWorkMessage(sgi, message);
             case UPDATE -> buildUpdateMessage(sgi, message);
+            case COMPLETED -> buildCompleteMessage(sgi, message);
             case CLOSE -> buildCloseMessage(sgi, message);
             case DELETE -> buildDeleteMessage(sgi, message);
             case REGULAR -> buildRegularMessage(message);
@@ -175,6 +176,10 @@ public class MessageBuilder {
 
     private void buildUpdateMessage(SGI sgi, SendMessage message) {
         message.setText(String.format("Мероприятие №%d обновлено", sgi.getRequestNumber()));
+    }
+
+    private void buildCompleteMessage(SGI sgi, SendMessage message) {
+        message.setText(String.format("Мероприятие №%d выполнено", sgi.getRequestNumber()));
     }
 
     private void buildCloseMessage(SGI sgi, SendMessage message) {
