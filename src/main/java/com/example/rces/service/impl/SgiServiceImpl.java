@@ -23,13 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.example.rces.utils.FilesUtil.saveFiles;
+import static com.example.rces.utils.ServiceUtil.buildExpiredRequestsString;
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
-import static com.example.rces.utils.ServiceUtil.saveFiles;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -224,20 +224,6 @@ public class SgiServiceImpl implements SgiService {
         if (!requestsNumbers.isEmpty()) {
             telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.controlChatId));
         }
-    }
-
-    private String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {
-        StringBuilder requestsNumbers = new StringBuilder();
-        for (SGI sgi : sgiList.stream().sorted(Comparator.comparing(SGI::getRequestNumber)).toList()) {
-            sgi.setColor(colorCalculate(sgi, today));
-            if (sgi.getColor().equals(SGI.ColorSGI.RED)) {
-                if (!requestsNumbers.isEmpty()) {
-                    requestsNumbers.append(", ");
-                }
-                requestsNumbers.append(String.format("%d (%s)", sgi.getRequestNumber(), sgi.getDepartment().getName()));
-            }
-        }
-        return requestsNumbers.toString();
     }
 
 }

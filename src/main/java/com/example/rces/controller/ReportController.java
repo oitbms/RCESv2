@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static com.example.rces.utils.ServiceUtil.formatedDate;
+import static com.example.rces.utils.DateUtil.formatedDate;
 
 @Controller
 @RequestMapping("/report")
