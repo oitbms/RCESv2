@@ -60,7 +60,7 @@ public class SgiServiceImpl implements SgiService {
         this.testChatId = testChatId;
     }
 
-    public SGIPayload createSGI(String workShop, String event, String actions, String department,
+    public synchronized SGIPayload createSGI(String workShop, String event, String actions, String department,
                                 LocalDate desiredDate, String note, String employee,
                                 MultipartFile[] additionalFiles, String parentId) {
         if (!employeeService.currentUserHaveControlRoles()) {
