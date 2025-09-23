@@ -1,7 +1,9 @@
 
 let chartInstance;
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById("graf").addEventListener("click", function () {
+    const graf = document.getElementById("graf");
+    if(!graf) return;
+    graf.addEventListener("click", function () {
         const titleElement = document.getElementById('chartTitle');
         const canvasElement = document.getElementById('myChart');
 

@@ -1,6 +1,5 @@
 package com.example.rces.controller;
 
-import com.example.rces.models.Employee;
 import com.example.rces.models.SGI;
 import com.example.rces.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;

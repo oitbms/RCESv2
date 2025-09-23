@@ -7,9 +7,11 @@
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/bootstrap.bundle.js"></script>
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;
+        <#if viewForm?? && viewForm>const bidQty = ${bid.getQty()}</#if>;
     </script>
     <script src="/js/script.js" defer></script>
 </head>
@@ -45,13 +47,6 @@
                 <div class="input-group">
                     <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех" value="${mlmNodeEmployee.getName()}" required>
                     <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee}">
-<#--                    <button type="button" class="btn btn-outline-primary openModal"-->
-<#--                            data-endpoint="mlm-node"-->
-<#--                            data-input-id="mlmNodeName"-->
-<#--                            data-hidden-entity="mlmNodeJson"-->
-<#--                            data-modal-id="mlmNodeModal">-->
-<#--                        Выбрать-->
-<#--                    </button>-->
                 </div>
             </div>
 
@@ -174,7 +169,7 @@
             </div>
 
             <!-- Кнопка отправки -->
-            <div class="d-grid">
+            <div class="d-grid" id="createId">
                 <button type="submit" class="btn btn-success">Создать заявку</button>
             </div>
         </form>
@@ -223,7 +218,13 @@
                 <p class="mb-2 m-lg-2"><strong>Обозначение/Наименование:</strong> ${(bid.getTitle())!"Не указан"}</p>
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2 m-lg-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
-                    <p class="mb-2 m-lg-2"><strong>Количество деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                    <#if bid.typeRequest == 'otk' && (bid.status.getName() == "Новый" || bid.status.getName() == "В работе")>
+                        <p class="mb-2 m-lg-2"><strong>Количество деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                        <#elseif bid.typeRequest == 'otk' && bid.status.getName() == "Закрыт">
+                            <p class="mb-2 m-lg-2"><strong>Количество деталей принято:</strong> ${(bid.qty)!0}</p>
+                            <#elseif bid.typeRequest == 'otk' && bid.status.getName() == "Забракована">
+                                <p class="mb-2 m-lg-2"><strong>Количество деталей отклонено:</strong> ${(bid.qty)!0}</p>
+                    </#if>
                     <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
                     <p class="mb-2 m-lg-2"><strong>Дефект:</strong> ${(bid.getCommentAgreed())!"Не указан"}</p>
                     <#else >
@@ -315,13 +316,6 @@
                                 data-param="${bid.getId()}">
                             Взять в работу
                         </button>
-<#--                        <button type="button"-->
-<#--                                class="btn btn-danger ms-3 mb-3 work"-->
-<#--                                id="pauseId"-->
-<#--                                data-bs-toggle="modal"-->
-<#--                                data-bs-target="#pauseModal"-->
-<#--                        >Перенести заявку-->
-<#--                        </button>-->
                     </div>
                     </#if>
                 </#if>
@@ -340,8 +334,9 @@
                     <button type="button"
                             class="btn btn-success mb-3 work"
                             id="workId"
-                            data-status="true"
-                            data-param="${bid.getId()}">
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                        >
                         Выполнено
                     </button>
                     <button type="button"
@@ -356,7 +351,7 @@
 
                 <#if role == ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
                     <#if type != 'otk'>
-                    <label for="closed" class="form-label">Описание решения</label>
+                    <label for="closed" class="form-label">Описание несоответствия</label>
                     <textarea class="form-control"
                               name="description"
                               id="description"
@@ -377,10 +372,30 @@
 
                 <#if bid.getStatus().getName() == 'Забракована'>
                     <p class="text-danger fs-3 fw-bold">Заявка забракована!</p>
+                    <label for="employeeName" class="form-label">Ответственный:</label>
+                    <div class="input-group">
+                        <input type="text" id="employeeName"
+                               value="${bid.employee.name?trim}"
+                               readonly
+                               class="form-control">
+                        <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                        <input type="hidden" id="employeeJson"
+                               value='${employeeJson}'
+                               name="employee">
+                        <button type="button"
+                                class="btn btn-outline-secondary openModal"
+                                data-endpoint="employees"
+                                data-input-id="employeeName"
+                                data-hidden-entity="employeeJson"
+                                data-modal-id="employeesModal"
+                                data-param="${bid.getTypeRequest().name()}">
+                            Изменить
+                        </button>
+                    </div>
                     <label for="closed" class="form-label">Несоответствия</label>
                     <input type="text" class="form-control"
-                           value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
-                    <label for="closed" class="form-label">Описание решения</label>
+                           value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}" readonly>
+                    <label for="closed" class="form-label">Описание несоответствия</label>
                     <textarea class="form-control"
                               name="description"
                               id="description"
@@ -393,30 +408,74 @@
                                 class="btn btn-success mt-3 work"
                                 id="canceledBtn"
                                 data-param="${bid.getId()}"
-                                data-status="false"
+                                data-status="update"
                         >Отправить повторно</button>
                     </#if>
 
                 </#if>
 
-                <!-- Модальное окно "Выполнение заявки" -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                     aria-hidden="true">
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalLabel">Выполнение заявки</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Закрыть"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                             </div>
                             <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Решение:</label>
-                                    <textarea class="form-control"
-                                              id="description"
-                                              name="description"
-                                              rows="4"
-                                              placeholder="Введите описание решения">${bid.description!''}</textarea>
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <label for="qtyCompleted" class="form-label mt-2">Количество принятых деталей: </label>
+                                    <div style="width: 450px;">
+                                        <input type="number" id="qtyCompleted" name="qtyCompleted" class="form-control"
+                                               min="0"
+                                               max="${bid.getQty()}">
+                                        <div class="invalid-feedback">
+                                            Введите корректное количество (Количество деталей к контролю: ${bid.getQty()})
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="rejectedBidOtk" class="d-none">
+                                    <div class="mb-2">
+                                        <div class="mb-2">
+                                            <p class="text-danger">Количество, которое будет перемещено в заявку с браком:
+                                                <span id="movedQuantity">0</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="inconsistencyName1" class="mb-3">Несоответствия:</label>
+                                        <input type="text" id="inconsistencyName1" readonly
+                                               class="form-control readonly-scroll"
+                                               value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}">
+                                        <input type="hidden" id="inconsistencyJson1" name="inconsistencies"
+                                               value='[<#list bid.inconsistencies as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
+                                        <button type="button" class="btn btn-primary mt-2 openModal"
+                                                data-endpoint="inconsistency"
+                                                data-input-id="inconsistencyName1"
+                                                data-hidden-entity="inconsistencyJson1"
+                                                data-modal-id="inconsistencyModal"
+                                                data-multiple="true"
+                                                data-param="${bid.getControl()!""}">
+                                            Изменить
+                                        </button>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Описание несоответствия:</label>
+                                        <textarea class="form-control"
+                                                  id="description1"
+                                                  name="description"
+                                                  rows="4"
+                                                  placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
+                                    </div>
+                                    <div>
+                                        <!-- ДОБАВЛЕНИЕ ФОТО -->
+                                        <button class="btn btn-outline-secondary"
+                                                type="button"
+                                                id="openPhotoModal1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#photoModal"
+                                        >Прикрепленные фото
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -426,8 +485,7 @@
                                         class="btn btn-success work"
                                         data-endpoint="request/in-work"
                                         data-param="${bid.getId()}"
-                                        data-description="${bid.getDescription()!""}"
-                                >
+                                        data-status="closed">
                                     Сохранить
                                 </button>
                             </div>
@@ -435,41 +493,56 @@
                     </div>
                 </div>
 
-                <div class="modal fade" id="exampleModalOtk" tabindex="-1" aria-labelledby="exampleModalOtkLabel"
-                     aria-hidden="true">
+                <div class="modal fade" id="exampleFullPhotoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center">
+                                <img id="exampleFullPhoto" src="" style="max-width:100%; max-height:80vh;">
+                                <button type="button" class="btn btn-secondary mt-2 close">Закрыть</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="exampleModalOtk" tabindex="-1" aria-labelledby="exampleModalOtkLabel" aria-hidden="true" >
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalOtkLabel">Выполнение заявки</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Закрыть"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                             </div>
                             <div class="modal-body">
+
                                 <div class="mb-2">
-                                    <label for="inconsistencyName" class="mb-3">Несоответствия:</label>
-                                    <input type="text" id="inconsistencyName" readonly
+                                    <label for="inconsistencyName2" class="mb-3">Несоответствия:</label>
+                                    <input type="text" id="inconsistencyName2" readonly
                                            class="form-control readonly-scroll"
-                                           value="${(bid.inconsistency??)?then(bid.inconsistency?map(i -> i.getName())?join(', '), '')}">
-                                    <input type="hidden" id="inconsistencyJson" name="inconsistency"
-                                           value='[<#list bid.inconsistency as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
+                                           value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}">
+                                    <input type="hidden" id="inconsistencyJson2" name="inconsistencies"
+                                           value='[<#list bid.inconsistencies as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
                                     <button type="button" class="btn btn-primary mt-2 openModal"
                                             data-endpoint="inconsistency"
-                                            data-input-id="inconsistencyName"
-                                            data-hidden-entity="inconsistencyJson"
+                                            data-input-id="inconsistencyName2"
+                                            data-hidden-entity="inconsistencyJson2"
                                             data-modal-id="inconsistencyModal"
                                             data-multiple="true"
-                                            data-param="${bid.getControl()!""}"
-                                    >
+                                            data-param="${bid.getControl()!""}">
                                         Изменить
                                     </button>
                                 </div>
+                                <div class="mb-2">
+                                    <p>Добавить несоответствие:
+                                        <button type="button" class="btn btn-primary m-lg-2" id="openModalBtn" data-bs-toggle="modal"
+                                                data-bs-target="#addInconsistenciesModal">✅</button>
+                                    </p>
+                                </div>
                                 <div class="mb-3">
-                                    <label for="description" class="form-label">Решение:</label>
+                                    <label for="description" class="form-label">Описание несоответствия:</label>
                                     <textarea class="form-control"
                                               id="description2"
                                               name="description"
                                               rows="4"
-                                              placeholder="Введите описание решения">${bid.description!''}</textarea>
+                                              placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -479,8 +552,7 @@
                                         class="btn btn-success work"
                                         data-endpoint="request/in-work"
                                         data-param="${bid.getId()}"
-                                        data-description="${bid.getDescription()!""}"
-                                >
+                                        data-description="${bid.getDescription()!""}">
                                     Сохранить
                                 </button>
                             </div>
@@ -540,38 +612,6 @@
     </form>
 </#if>
 
-<!-- Модальные окна -->
-
-<#--<div class="modal fade" id="pauseModal" tabindex="-1" aria-labelledby="pauseModalLabel" aria-hidden="true">-->
-<#--    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">-->
-<#--        <div class="modal-content">-->
-<#--            <div class="modal-header">-->
-<#--                <h5 class="modal-title" id="pauseModalLabel">Перевод заявки в статус паузы</h5>-->
-<#--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>-->
-<#--            </div>-->
-<#--            <div class="modal-body">-->
-<#--                <div class="mb-3">-->
-<#--                    <label for="pauseReason" class="form-label">Причина остановки заявки</label>-->
-<#--                    <textarea id="pauseReason" class="form-control" rows="3" placeholder="Введите причину остановки заявки"></textarea>-->
-<#--                </div>-->
-<#--                <div class="row">-->
-<#--                    <div class="col">-->
-<#--                        <label for="start-time" class="form-label">От</label>-->
-<#--                        <input type="time" value="${time}" class="form-control" id="start-time">-->
-<#--                    </div>-->
-<#--                    <div class="col">-->
-<#--                        <label for="end-time" class="form-label">До</label>-->
-<#--                        <input type="time" class="form-control" id="end-time">-->
-<#--                    </div>-->
-<#--                </div>-->
-<#--            </div>-->
-<#--            <div class="modal-footer" id="modalFooter">-->
-<#--                <button type="button" class="btn btn-primary" value=${bid.getId()} id="pauseModalSaveBtn">Сохранить</button>-->
-<#--            </div>-->
-<#--        </div>-->
-<#--    </div>-->
-<#--</div>-->
-
 <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">
         <div class="modal-content">
@@ -592,6 +632,35 @@
                 <button type="button" id="addPhotoBtn" class="btn btn-primary">Добавить фото</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addInconsistenciesModal" tabindex="-1" aria-labelledby="addInconsistenciesModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered modal-lg custom-modal-width">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addInconsistenciesModalLabel">Добавление несоответствия</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <form id="inconsistenciesForm" action="/inconsistencies/create" method="post">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <label for="addInconsistencies">Название
+                            <input type="text" class="form-control" name="name" id="inconsistenciesNameId" required>
+                        </label>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <label for="addInconsistencies">Тип контроля
+                            <input type="text" class="form-control text-center" name="typeControl" id="inconsistenciesControlTypeId" value="ВИК">
+                        </label>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button type="submit" id="addInconsistenciesBtn" class="btn btn-success">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -132,7 +132,7 @@
 
     <#if RequestParameters.message??>
         <div class="error-code">
-            ${RequestParameters.message}
+            ${errorMessage}
         </div>
     </#if>
 

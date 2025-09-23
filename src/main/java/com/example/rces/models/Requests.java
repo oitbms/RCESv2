@@ -1,26 +1,16 @@
 package com.example.rces.models;
 
 import com.example.rces.models.annotation.DisplayName;
+
 import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.extern.java.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 @Entity
 public class Requests implements Cloneable {
-
-    private static final Logger logger = LoggerFactory.getLogger(Requests.class);
 
     public enum Type {
         constructor, otk, technologist
@@ -83,12 +73,21 @@ public class Requests implements Cloneable {
     @DisplayName("Кол-во деталей к контролю")
     private Integer qty;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
-    @Column(name = "inconsistency")
-    @Enumerated(EnumType.STRING)
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
+//    @Column(name = "inconsistency")
+//    @Enumerated(EnumType.STRING)
+//    @DisplayName("Причины несоответствий")
+//    private Set<Inconsistency> inconsistency;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "request_incosistencies",
+            joinColumns = @JoinColumn(name = "request_id"),
+            inverseJoinColumns = @JoinColumn(name = "incosistency_id")
+    )
     @DisplayName("Причины несоответствий")
-    private Set<Inconsistency> inconsistency;
+    private Set<Inconsistency> inconsistencies;
 
     @Column(name = "mlm_node")
     @Enumerated(EnumType.STRING)
@@ -164,7 +163,19 @@ public class Requests implements Cloneable {
     @DisplayName("Забраковано")
     private int qtyRejected = 0;
 
+    @Transient
+    @DisplayName("Количество выполненного")
+    private int qtyCompleted;
+
     private boolean frozen;
+
+    public int getQtyCompleted() {
+        return qtyCompleted;
+    }
+
+    public void setQtyCompleted(int qtyCompleted) {
+        this.qtyCompleted = qtyCompleted;
+    }
 
     public int getQtyRejected() {
         return qtyRejected;
@@ -329,12 +340,12 @@ public class Requests implements Cloneable {
         this.qty = qty;
     }
 
-    public Set<Inconsistency> getInconsistency() {
-        return inconsistency;
+    public Set<Inconsistency> getInconsistencies() {
+        return inconsistencies;
     }
 
-    public void setInconsistency(Set<Inconsistency> inconsistency) {
-        this.inconsistency = inconsistency;
+    public void setInconsistencies(Set<Inconsistency> inconsistencies) {
+        this.inconsistencies = inconsistencies;
     }
 
     public MlmNode getMlmNode() {

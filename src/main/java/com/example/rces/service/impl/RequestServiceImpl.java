@@ -1,10 +1,11 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.Employee;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
-import com.example.rces.models.enums.*;
+import com.example.rces.models.*;
+
+import com.example.rces.models.enums.GeneralReason;
+import com.example.rces.models.enums.Item;
+import com.example.rces.models.enums.MlmNode;
+import com.example.rces.models.enums.Status;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
@@ -39,9 +40,10 @@ public class RequestServiceImpl implements RequestsService {
     private final ImageService imageService;
     private final EmployeeService employeeService;
     private final RequestLogService requestLogService;
+    private final InconsistenciesService inconsistenciesService;
 
     @Autowired
-    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper, TelegramService telegramService, CustomerOrderService customerOrderService, ImageService imageService, EmployeeService employeeService, RequestLogService requestLogService) {
+    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper, TelegramService telegramService, CustomerOrderService customerOrderService, ImageService imageService, EmployeeService employeeService, RequestLogService requestLogService, InconsistenciesService inconsistenciesService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.telegramService = telegramService;
@@ -49,8 +51,10 @@ public class RequestServiceImpl implements RequestsService {
         this.imageService = imageService;
         this.employeeService = employeeService;
         this.requestLogService = requestLogService;
+        this.inconsistenciesService = inconsistenciesService;
     }
 
+    @Transactional
     @Override
     public Requests createRequest(Employee createdEmployee,
                                   String employeeJson,
@@ -120,7 +124,7 @@ public class RequestServiceImpl implements RequestsService {
     }
 
     @Override
-    public void save(UUID id, String description, Boolean status) {
+    public void save(UUID id, String description, String status, Integer qty, Set<Inconsistency> inconsistencyData) {
         Requests request = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
         Requests oldRequest;
         Employee updaterEmployee = employeeService.getCurrentUser();
@@ -136,7 +140,7 @@ public class RequestServiceImpl implements RequestsService {
                 if (request.getStatus().equals(Status.New)) {
                     request.setStatus(Status.InWork);
                     telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.WORK));
-                } else if (!request.getInconsistency().isEmpty()) {
+                } else if (!request.getInconsistencies().isEmpty()) {
                     request.setStatus(Status.Rejected);
                     request.setDescription(description);
                     request.setQtyRejected(request.getQtyRejected() + 1);
@@ -145,17 +149,30 @@ public class RequestServiceImpl implements RequestsService {
             } else {
                 throw new ForbiddenException("Пользователь не может изменять заявку!");
             }
-        } else if (status) {
-            request.setStatus(Status.Closed);
-            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
-            request.setCloseDate(LocalDateTime.now());
-            request.setClosedEmployee(updaterEmployee);
-            request.setChatId(message.getChatId());
-            request.setMessageId(message.getMessageId());
-        } else {
+        } else if (status.equals("closed")) {
+            if (request.getQty() == qty) {
+                request.setStatus(Status.Closed);
+                Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
+                request.setCloseDate(LocalDateTime.now());
+                request.setClosedEmployee(updaterEmployee);
+                request.setChatId(message != null ? message.getChatId() : -1);
+                request.setMessageId(message != null ? message.getMessageId() : -1);
+            } else if (request.getQty() > qty) {
+                Requests requestsRejected = addRequestRejected(request, qty, repository, description, inconsistencyData);
+                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requestsRejected, requestsRejected.getCreatedBy(), MessageType.REJECTED));
+                request.getImages().clear();
+                request.setStatus(Status.Closed);
+                request.setQty(qty);
+                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
+                request.setCloseDate(LocalDateTime.now());
+            }
+
+        } else if (status.equals("update")) {
             request.setStatus(Status.New);
-            request.getInconsistency().clear();
+            request.getInconsistencies().clear();
             telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.UPDATE));
+        } else if (status.equals("refresh")) {
+            request.setStatus(Status.New);
         }
 
         request.setUpdateBy(updaterEmployee);
@@ -219,8 +236,8 @@ public class RequestServiceImpl implements RequestsService {
                         }
                         handleImageCollection(request, (List<?>) value);
                         return;
-                    } else if (key.equals("inconsistency")) {
-                        value = Inconsistency.fromField(value);
+                    } else if (key.equals("inconsistencies")) {
+                        value = Inconsistency.fromField(value, new HashSet<>(inconsistenciesService.findAllInconsistencies()));
                     }
 
                     method.invoke(request, value);
@@ -275,6 +292,32 @@ public class RequestServiceImpl implements RequestsService {
     public String getTypeRequest(UUID id) {
         Requests requests = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
         return requests.getTypeRequest().name();
+    }
+
+    private static Requests addRequestRejected(Requests request, int qty, RequestsRepository repository, String description, Set<Inconsistency> inconsistencyData) {
+        Requests requestsRejected = new Requests();
+        requestsRejected.setCreatedBy(request.getCreatedBy());
+        requestsRejected.setRequestNumber(repository.findNextRequestNumber());
+        requestsRejected.setEmployee(request.getEmployee());
+        requestsRejected.setMlmNode(request.getMlmNode());
+        requestsRejected.setReason_wr(request.getReason_wr());
+        requestsRejected.setCreateDate(LocalDateTime.now());
+        requestsRejected.setStatus(Status.Rejected);
+        requestsRejected.setQty(request.getQty() - qty);
+        requestsRejected.setTitle(request.getTitle());
+        requestsRejected.setItem(request.getItem());
+        requestsRejected.setTypeRequest(request.getTypeRequest());
+        requestsRejected.setCustomerOrder(request.getCustomerOrder());
+        requestsRejected.setUpdateBy(request.getEmployee());
+        requestsRejected.setControl(request.getControl());
+        requestsRejected.setInconsistencies(inconsistencyData);
+        requestsRejected.setDescription(description);
+        requestsRejected.setQtyRejected(request.getQtyRejected() + 1);
+        requestsRejected.setImages(new ArrayList<>(request.getImages()).stream()
+                .peek(images -> images.setRequest(requestsRejected))
+                .toList());
+        repository.save(requestsRejected);
+        return requestsRejected;
     }
 
 }

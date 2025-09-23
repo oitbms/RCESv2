@@ -28,6 +28,7 @@ public class MessageBuilder {
             case COMPLETED_WORK -> buildCompletedWorkMessage(request, message, type);
             case CANCEL -> buildCancelMessage(request, message, updaterEmployee);
             case CLOSE -> buildCloseMessage(request, message, updaterEmployee);
+            case REJECTED -> buildRejectedMessage(request, message, updaterEmployee);
             default -> throw new IllegalArgumentException("Не валидный тип сообщения Request");
         }
     }
@@ -154,9 +155,15 @@ public class MessageBuilder {
     private void buildCancelMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         message.setChatId(updaterEmployee.getChatId());
         message.setText(
-                String.format("Заявка № %d забракована\n"
-                                + (!request.getDescription().isEmpty() ? "Описание: %s" : ""),
-                        request.getRequestNumber(), request.getDescription()));
+                String.format("Заявка № %d забракована\n",
+                        request.getRequestNumber()));
+    }
+
+    private void buildRejectedMessage(Requests requests, SendMessage message, Employee createEmployee) {
+        message.setChatId(createEmployee.getChatId());
+        message.setText(
+                String.format("Заявка № %d не прошла ОТК в количестве: %d",requests.getRequestNumber(),requests.getQty())
+        );
     }
 
     private void buildCloseMessage(Requests request, SendMessage message, Employee updaterEmployee) {

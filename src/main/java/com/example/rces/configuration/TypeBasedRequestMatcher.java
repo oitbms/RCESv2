@@ -27,7 +27,6 @@ public class TypeBasedRequestMatcher implements RequestMatcher {
                 type = String.valueOf(webSecurityService.findByRequestNumber(Integer.valueOf(requestNumber)).getTypeRequest());
             }
 
-
             return switch (type) {
                 case "otk" -> request.isUserInRole("OTK") ||
                         request.isUserInRole("ADMIN") ||

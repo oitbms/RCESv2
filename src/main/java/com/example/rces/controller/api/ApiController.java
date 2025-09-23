@@ -2,9 +2,11 @@ package com.example.rces.controller.api;
 
 import com.example.rces.controller.payload.*;
 import com.example.rces.models.Employee;
+import com.example.rces.models.Inconsistency;
 import com.example.rces.models.enums.*;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
+import com.example.rces.service.InconsistenciesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +19,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ApiController {
 
+    private final InconsistenciesService inconsistenciesService;
     private final CustomerOrderService customerOrderService;
     private final EmployeeService employeeService;
 
     @Autowired
-    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService) {
+    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
+        this.inconsistenciesService = inconsistenciesService;
     }
 
     @GetMapping("/employees")
@@ -56,7 +60,7 @@ public class ApiController {
 
     @GetMapping("/inconsistency")
     public List<InconsistencyPayload> getInconsistency(@RequestParam String param) {
-        return Arrays.stream(Inconsistency.values())
+        return inconsistenciesService.findAllInconsistencies().stream()
                 .filter(req -> req.getControlType().equals(param))
                 .map(inconsistency -> new InconsistencyPayload(inconsistency.getName()))
                 .collect(Collectors.toList());

@@ -41,6 +41,7 @@
                                 <a class="btn btn-primary" href="/sgi">СГИ</a>
                             </#if>
                             <a class="btn btn-primary " href="/logout">Выйти</a>
+<#--                            <a class="btn btn-primary " href="/help">Справка по заявкам</a>-->
                         </li>
                     </ul>
                 </nav>
