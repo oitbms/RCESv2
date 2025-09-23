@@ -3,6 +3,7 @@ package com.example.rces.service.impl;
 import com.example.rces.controller.payload.EmployeePayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
+import com.example.rces.models.enums.Role;
 import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-
-import static com.example.rces.utils.ServiceUtil.controlRoles;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
 public class CustomUserDetailsServiceImpl implements UserDetailsService, EmployeeService {
+
+    public final static Set<String> controlRoles = Set.of(
+            Role.ADMIN.name(),
+            Role.CONTROL.name()
+    );
 
     private final EmployeeRepository repository;
 

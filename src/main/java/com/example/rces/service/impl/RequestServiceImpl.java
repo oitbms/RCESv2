@@ -26,8 +26,8 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.example.rces.utils.ServiceUtil.handleImageCollection;
-import static com.example.rces.utils.ServiceUtil.isJson;
+import static com.example.rces.utils.FilesUtil.handleImageCollection;
+import static com.example.rces.utils.FilesUtil.isJson;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -56,7 +56,7 @@ public class RequestServiceImpl implements RequestsService {
 
     @Transactional
     @Override
-    public Requests createRequest(Employee createdEmployee,
+    public synchronized Requests createRequest(Employee createdEmployee,
                                   String employeeJson,
                                   String type,
                                   String mlmNodeJson,

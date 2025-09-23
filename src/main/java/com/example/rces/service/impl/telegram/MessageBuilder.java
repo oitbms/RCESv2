@@ -6,7 +6,7 @@ import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import static com.example.rces.utils.ServiceUtil.formatedDate;
+import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class MessageBuilder {
 
@@ -169,7 +169,7 @@ public class MessageBuilder {
     private void buildCloseMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         message.setChatId(updaterEmployee.getChatId());
         message.setText(
-                String.format("Заявка № %d закрыта",request.getRequestNumber()));
+                String.format("Заявка № %d закрыта", request.getRequestNumber()));
     }
 
     private void buildCreateMessage(SGI sgi, SendMessage message) {

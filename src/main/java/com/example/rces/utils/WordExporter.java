@@ -9,7 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.util.List;
 
-import static com.example.rces.utils.ServiceUtil.formatedDate;
+import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class WordExporter {
 

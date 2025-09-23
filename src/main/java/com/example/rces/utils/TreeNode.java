@@ -8,7 +8,7 @@ import org.apache.commons.collections4.list.TreeList;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.example.rces.utils.ServiceUtil.formatedDate;
+import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class TreeNode {
     public Long id;

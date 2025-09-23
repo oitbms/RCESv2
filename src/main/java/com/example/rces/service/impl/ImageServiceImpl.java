@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.rces.utils.ServiceUtil.getBytes;
+import static com.example.rces.utils.FilesUtil.getBytes;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
