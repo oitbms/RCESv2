@@ -1,7 +1,6 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.models.*;
-
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
@@ -56,7 +55,7 @@ public class RequestServiceImpl implements RequestsService {
 
     @Transactional
     @Override
-    public synchronized Requests createRequest(Employee createdEmployee,
+    public Requests createRequest(Employee createdEmployee,
                                   String employeeJson,
                                   String type,
                                   String mlmNodeJson,
@@ -150,7 +149,7 @@ public class RequestServiceImpl implements RequestsService {
                 throw new ForbiddenException("Пользователь не может изменять заявку!");
             }
         } else if (status.equals("closed")) {
-            if (request.getQty() == qty) {
+            if (Objects.equals(request.getQty(), qty)) {
                 request.setStatus(Status.Closed);
                 Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
                 request.setCloseDate(LocalDateTime.now());
@@ -158,7 +157,7 @@ public class RequestServiceImpl implements RequestsService {
                 request.setChatId(message != null ? message.getChatId() : -1);
                 request.setMessageId(message != null ? message.getMessageId() : -1);
             } else if (request.getQty() > qty) {
-                Requests requestsRejected = addRequestRejected(request, qty, repository, description, inconsistencyData);
+                Requests requestsRejected = addRequestRejected(request, qty, description, inconsistencyData);
                 telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requestsRejected, requestsRejected.getCreatedBy(), MessageType.REJECTED));
                 request.getImages().clear();
                 request.setStatus(Status.Closed);
@@ -294,7 +293,7 @@ public class RequestServiceImpl implements RequestsService {
         return requests.getTypeRequest().name();
     }
 
-    private static Requests addRequestRejected(Requests request, int qty, RequestsRepository repository, String description, Set<Inconsistency> inconsistencyData) {
+    public Requests addRequestRejected(Requests request, int qty,  String description, Set<Inconsistency> inconsistencyData) {
         Requests requestsRejected = new Requests();
         requestsRejected.setCreatedBy(request.getCreatedBy());
         requestsRejected.setRequestNumber(repository.findNextRequestNumber());

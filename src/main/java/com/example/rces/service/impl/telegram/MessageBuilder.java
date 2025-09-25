@@ -162,7 +162,7 @@ public class MessageBuilder {
     private void buildRejectedMessage(Requests requests, SendMessage message, Employee createEmployee) {
         message.setChatId(createEmployee.getChatId());
         message.setText(
-                String.format("Заявка № %d не прошла ОТК в количестве: %d",requests.getRequestNumber(),requests.getQty())
+                String.format("Заявка № %d не прошла ОТК в количестве: %d", requests.getRequestNumber(), requests.getQty())
         );
     }
 

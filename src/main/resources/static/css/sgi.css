@@ -1,17 +1,17 @@
 :root {
-    --no: 98px;
-    --workcenter: 90px;
+    --no: 90px;
+    --workcenter: 140px;
     --event: 164px;
-    --action: 252px;
+    --action: 272px;
     --department: 190px;
     --employee: 190px;
-    --desiredDate: 166px;
+    --desiredDate: 164px;
     --note: 150px;
-    --planDate: 180px;
+    --planDate: 150px;
     --comment: 158px;
     --editing: 42px;
     --executions: 148px;
-    --status: 90px;
+    --status: 60px;
     --font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
@@ -685,7 +685,7 @@ dialog {
     animation: pulse-border-danger 6s infinite;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     margin: 2px 0;
-    padding: 0.5rem 3rem 0.5rem 3rem;
+    padding: 0.5rem 2rem 0.5rem 2rem;
 }
 
 .border-warning {
@@ -694,14 +694,14 @@ dialog {
     animation: pulse-border-warning 6s infinite;
     animation-timing-function: ease-in-out;
     margin: 2px 0;
-    padding: 0.5rem 3rem 0.5rem 3rem;
+    padding: 0.5rem 2rem 0.5rem 2rem;
 }
 
 .border-good {
     border-radius: 1rem;
     border: 2px solid #66c500 !important;
     margin: 2px 0;
-    padding: 0.5rem 3rem 0.5rem 3rem;
+    padding: 0.5rem 2rem 0.5rem 2rem;
 }
 
 .complete {
