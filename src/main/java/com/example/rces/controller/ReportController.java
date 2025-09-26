@@ -56,7 +56,7 @@ public class ReportController {
     public ResponseEntity<byte[]> printBid() throws IOException {
         byte[] report = service.reportBid();
 
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDisposition(ContentDisposition.builder("attachment")
                 .filename("rejected_bids_.xlsx")

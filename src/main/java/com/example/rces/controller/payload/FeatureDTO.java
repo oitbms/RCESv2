@@ -1,12 +1,12 @@
-package com.example.rces.models;
+package com.example.rces.controller.payload;
 
-public class Feature {
+public class FeatureDTO {
     private String name;
     private String description;
     private boolean enabled;
     private String category;
 
-    public Feature(String name, String description, boolean enabled, String category) {
+    public FeatureDTO(String name, String description, boolean enabled, String category) {
         this.name = name;
         this.description = description;
         this.enabled = enabled;

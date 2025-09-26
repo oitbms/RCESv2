@@ -1,12 +1,12 @@
-package com.example.rces.models;
+package com.example.rces.controller.payload;
 
 import java.util.List;
 
-public class ApplicationInfo {
+public class ApplicationInfoDTO {
     private String title;
     private String version;
     private String description;
-    private List<Feature> features;
+    private List<FeatureDTO> features;
     private String contactEmail;
     private String documentationUrl;
 
@@ -34,11 +34,11 @@ public class ApplicationInfo {
         this.description = description;
     }
 
-    public List<Feature> getFeatures() {
+    public List<FeatureDTO> getFeatures() {
         return features;
     }
 
-    public void setFeatures(List<Feature> features) {
+    public void setFeatures(List<FeatureDTO> features) {
         this.features = features;
     }
 

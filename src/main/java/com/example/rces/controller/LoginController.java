@@ -35,8 +35,7 @@ public class LoginController {
     public String login(@RequestParam String username, Model model) {
         try {
             UserDetails user = employeeService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authRequest =
-                    new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
+            var authRequest = new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
             Authentication authentication = customAuthenticationProvider.authenticate(authRequest);
             if (authentication.isAuthenticated()) {
                 SecurityContextHolder.getContext().setAuthentication(authentication);

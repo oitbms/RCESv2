@@ -1,7 +1,8 @@
 package com.example.rces.controller;
 
-import com.example.rces.models.ApplicationInfo;
+import com.example.rces.controller.payload.ApplicationInfoDTO;
 import com.example.rces.service.HelpService;
+import com.example.rces.service.impl.HelpServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,19 +14,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/help")
 public class HelpController {
 
+    private final HelpService helpService;
+
     @Autowired
-    private HelpService helpService;
+    public HelpController(HelpServiceImpl helpService) {
+        this.helpService = helpService;
+    }
 
     @GetMapping
     public String showHelpPage(Model model) {
-        ApplicationInfo appInfo = helpService.getApplicationInfo();
+        ApplicationInfoDTO appInfo = helpService.getApplicationInfo();
         model.addAttribute("appInfo", appInfo);
         return "application-info";
     }
 
     @GetMapping("/api/json")
     @ResponseBody
-    public ApplicationInfo getApplicationInfoJson() {
+    public ApplicationInfoDTO getApplicationInfoJson() {
         return helpService.getApplicationInfo();
     }
 }
