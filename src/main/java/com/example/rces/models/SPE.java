@@ -2,8 +2,9 @@ package com.example.rces.models;
 
 import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -19,13 +20,19 @@ public class SPE extends BaseAuditingEntity {
     @Column(name = "number")
     private Integer number;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
+    @NotBlank(message = "Наименование оборудования не может быть пустым")
+    @Size(min = 1, message = "Наименование оборудования должно содержать минимум 6 символов")
     private String name;
 
     @Column(name = "type")
+    @NotBlank(message = "Тип оборудования не может быть пустым")
+    @Size(min = 1, message = "Тип оборудования должно содержать минимум 1 символ")
     private String type;
 
     @Column(name = "out_number")
+    @NotBlank(message = "Заводской номер не может быть пустым")
+    @Size(min = 1, message = "Заводской номер должно содержать минимум 3 символа")
     private String outNumber;
 
     @Column(name = "accuracy_class")
@@ -41,26 +48,29 @@ public class SPE extends BaseAuditingEntity {
     private String mark;
 
     @Column(name = "date_preparation")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate datePreparation;
 
     @Column(name = "date_verification")
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateVerification;
 
     @Column(name = "certificate_number")
     private String certificateNumber;
 
     @Column(name = "periodicity")
+    @NotBlank(message = "Периодичность поверки не может быть пустой")
+    @Size(min = 1, message = "Периодичность поверки должно содержать минимум 1 символ")
     private Integer periodicity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Document document;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private StatusSPE status;
+    private StatusSPE status = StatusSPE.NONE;
 
     @Column(name = "color")
     @Enumerated(EnumType.STRING)
-    private Color color;
+    private Color color = Color.NONE;
 
     public Integer getNumber() {
         return number;
@@ -172,5 +182,13 @@ public class SPE extends BaseAuditingEntity {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
     }
 }
