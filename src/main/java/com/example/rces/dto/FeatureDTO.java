@@ -1,4 +1,4 @@
-package com.example.rces.controller.payload;
+package com.example.rces.dto;
 
 public class FeatureDTO {
     private String name;

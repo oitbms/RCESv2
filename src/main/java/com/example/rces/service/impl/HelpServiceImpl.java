@@ -1,8 +1,8 @@
 package com.example.rces.service.impl;
 
 
-import com.example.rces.controller.payload.ApplicationInfoDTO;
-import com.example.rces.controller.payload.FeatureDTO;
+import com.example.rces.dto.ApplicationInfoDTO;
+import com.example.rces.dto.FeatureDTO;
 import com.example.rces.service.HelpService;
 import org.springframework.stereotype.Service;
 

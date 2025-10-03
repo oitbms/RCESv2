@@ -3,6 +3,7 @@ package com.example.rces.utils;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import com.example.rces.models.annotation.DisplayName;
+import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.Entity;
 import org.apache.commons.lang3.ObjectUtils;
@@ -18,17 +19,17 @@ import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class ServiceUtil {
 
-    public static SGI.ColorSGI colorCalculate(SGI sgi, LocalDate date) {
+    public static Color colorCalculate(SGI sgi, LocalDate date) {
         if (sgi.getAgreed()) {
-            return SGI.ColorSGI.GREY;
+            return Color.GREY;
         } else if (sgi.getPlanDate() != null && !date.isBefore(sgi.getPlanDate().plusDays(2))) {
-            return SGI.ColorSGI.RED;
+            return Color.RED;
         } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
-            return SGI.ColorSGI.YELLOW;
+            return Color.YELLOW;
         } else if (sgi.getPlanDate() != null && sgi.getExecution() != null) {
-            return SGI.ColorSGI.GREEN;
+            return Color.GREEN;
         } else {
-            return SGI.ColorSGI.NONE;
+            return Color.NONE;
         }
     }
 
@@ -104,7 +105,7 @@ public class ServiceUtil {
         StringBuilder requestsNumbers = new StringBuilder();
         for (SGI sgi : sgiList.stream().sorted(Comparator.comparing(SGI::getRequestNumber)).toList()) {
             sgi.setColor(colorCalculate(sgi, today));
-            if (sgi.getColor().equals(SGI.ColorSGI.RED)) {
+            if (sgi.getColor().equals(Color.RED)) {
                 if (!requestsNumbers.isEmpty()) {
                     requestsNumbers.append(", ");
                 }

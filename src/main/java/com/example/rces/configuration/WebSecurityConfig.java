@@ -1,6 +1,7 @@
 package com.example.rces.configuration;
 
 import com.example.rces.service.impl.WebSecurityService;
+import com.example.rces.utils.AppUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,13 +19,13 @@ public class WebSecurityConfig {
 
     private final WebSecurityService webSecurityService;
     private final CustomAuthenticationProvider customAuthenticationProvider;
-    private final AppProperties appProperties;
+    private final AppUtil appUtil;
 
     @Autowired
-    public WebSecurityConfig(WebSecurityService webSecurityService, CustomAuthenticationProvider customAuthenticationProvider, AppProperties appProperties) {
+    public WebSecurityConfig(WebSecurityService webSecurityService, CustomAuthenticationProvider customAuthenticationProvider, AppUtil appUtil) {
         this.webSecurityService = webSecurityService;
         this.customAuthenticationProvider = customAuthenticationProvider;
-        this.appProperties = appProperties;
+        this.appUtil = appUtil;
     }
 
     @Bean
@@ -48,7 +49,7 @@ public class WebSecurityConfig {
                         .permitAll()
                 ).
                 logout(logout -> logout
-                        .addLogoutHandler(appProperties)
+                        .addLogoutHandler(appUtil)
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .invalidateHttpSession(true)

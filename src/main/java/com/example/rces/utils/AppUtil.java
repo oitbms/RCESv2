@@ -1,4 +1,4 @@
-package com.example.rces.configuration;
+package com.example.rces.utils;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +13,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class AppProperties implements LogoutHandler {
+public class AppUtil implements LogoutHandler {
     private static final Map<String, UserProperties> userPropertiesMap = new ConcurrentHashMap<>();
     private static final long CLEANUP_DELAY_MS = 10_000; // 10 секунд
 

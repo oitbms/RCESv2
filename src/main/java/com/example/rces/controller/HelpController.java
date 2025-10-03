@@ -1,6 +1,6 @@
 package com.example.rces.controller;
 
-import com.example.rces.controller.payload.ApplicationInfoDTO;
+import com.example.rces.dto.ApplicationInfoDTO;
 import com.example.rces.service.HelpService;
 import com.example.rces.service.impl.HelpServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.example.rces.controller.payload;
+package com.example.rces.dto;
 
 import java.util.List;
 

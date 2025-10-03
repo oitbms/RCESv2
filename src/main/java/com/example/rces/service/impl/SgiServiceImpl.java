@@ -5,6 +5,7 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;
 import com.example.rces.models.SGI;
+import com.example.rces.models.enums.Color;
 import com.example.rces.repository.SgiRepository;
 import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
@@ -61,15 +62,15 @@ public class SgiServiceImpl implements SgiService {
     }
 
     public synchronized SGIPayload createSGI(String workShop, String event, String actions, String department,
-                                LocalDate desiredDate, String note, String employee,
-                                MultipartFile[] additionalFiles, String parentId) {
+                                             LocalDate desiredDate, String note, String employee,
+                                             MultipartFile[] additionalFiles, String parentId) {
         if (!employeeService.currentUserHaveControlRoles()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
 
         SGI sgi = new SGI();
         sgi.setWorkShop(workShop);
-        sgi.setColor(SGI.ColorSGI.NONE);
+        sgi.setColor(Color.NONE);
         sgi.setEvent(event);
         sgi.setActions(actions);
         sgi.setDepartment(SGI.Department.valueOf(department));

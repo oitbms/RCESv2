@@ -1,6 +1,6 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.configuration.AppProperties;
+import com.example.rces.utils.AppUtil;
 import com.example.rces.controller.payload.LogPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.RequestLog;
@@ -42,7 +42,7 @@ public class RequestLogServiceImpl implements RequestLogService {
             if (logs.isEmpty()) {
                 RequestLog log = new RequestLog(newRequest, updaterUser, metadata);
                 if (!metadata.containsKey("Статус")) {
-                    AppProperties.setBool(true);
+                    AppUtil.setBool(true);
                 }
                 return List.of(log);
             }
@@ -50,7 +50,7 @@ public class RequestLogServiceImpl implements RequestLogService {
                 log.addToMetadata(metadata);
             }
             if (!metadata.containsKey("Статус")) {
-                AppProperties.setBool(true);
+                AppUtil.setBool(true);
             }
         }
         return logs;

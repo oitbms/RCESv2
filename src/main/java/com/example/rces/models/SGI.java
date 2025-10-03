@@ -1,6 +1,7 @@
 package com.example.rces.models;
 
 import com.example.rces.models.annotation.DisplayName;
+import com.example.rces.models.enums.Color;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
@@ -35,10 +36,6 @@ public class SGI implements Cloneable {
         public String getName() {
             return name;
         }
-    }
-
-    public enum ColorSGI {
-        NONE, RED, GREEN, YELLOW, GREY
     }
 
     @Id
@@ -98,7 +95,7 @@ public class SGI implements Cloneable {
 
     @Column(name = "color")
     @Enumerated(EnumType.STRING)
-    private ColorSGI color;
+    private Color color;
 
     @Column(name = "note", length = 1000)
     @DisplayName("Примечание")
@@ -224,11 +221,11 @@ public class SGI implements Cloneable {
         this.executions = executions;
     }
 
-    public ColorSGI getColor() {
+    public Color getColor() {
         return color;
     }
 
-    public void setColor(ColorSGI color) {
+    public void setColor(Color color) {
         this.color = color;
     }
 

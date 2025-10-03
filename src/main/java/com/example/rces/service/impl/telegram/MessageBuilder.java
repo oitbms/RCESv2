@@ -1,6 +1,6 @@
 package com.example.rces.service.impl.telegram;
 
-import com.example.rces.configuration.AppProperties;
+import com.example.rces.utils.AppUtil;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
@@ -198,6 +198,6 @@ public class MessageBuilder {
     }
 
     private void buildRegularMessage(SendMessage message) {
-        message.setText(String.format("Просрочен срок выполнения мероприятий: №%s", AppProperties.getString()));
+        message.setText(String.format("Просрочен срок выполнения мероприятий: №%s", AppUtil.getString()));
     }
 }
