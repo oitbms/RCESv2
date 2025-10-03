@@ -3,6 +3,12 @@ package com.example.rces.models;
 import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.DefaultValue;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,28 +19,37 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "employees")
-public class Employee implements UserDetails {
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+public class Employee extends BaseAuditingEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "name", nullable = false, unique = true)
+    @NotBlank(message = "Имя сотрудника не может быть пустым")
+    @Size(min = 4, max = 100, message = "Имя сотрудника должно содержать от 4 до 100 символов")
     private String name;
 
     @Column(nullable = false)
+    @NotBlank(message = "Пароль не может быть пустым")
+    @Size(min = 6, message = "Пароль должен содержать минимум 6 символов")
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Узел ПЛМ не может быть пустым")
     private MlmNode mlmNode;
 
     @Column(nullable = false)
+    @NotBlank(message = "Роль не может быть пустой")
     private String role;
 
     @Column(nullable = false)
     private boolean isActive = true;
 
     @Column(name = "chat_id")
+    @NotNull(message = "Идентификатор чата не может быть пустым")
     private Long chatId;
 
     @Override

@@ -43,17 +43,17 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, Requests request, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, SGI sgi, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, FactExecutionSGI factExecutionSGI, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, null, file.getOriginalFilename()), save);
     }
 
     @Override

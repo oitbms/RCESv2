@@ -4,13 +4,15 @@ import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "plan_spe")
-public class SPE {
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+public class SPE extends BaseAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +37,9 @@ public class SPE {
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
 
+    @Column(name = "mark")
+    private String mark;
+
     @Column(name = "date_preparation")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate datePreparation;
@@ -56,12 +61,6 @@ public class SPE {
     @Column(name = "color")
     @Enumerated(EnumType.STRING)
     private Color color;
-
-    @Column(name = "created", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private Instant created;
-
-    @Column(name = "updated", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Instant updated;
 
     public Integer getNumber() {
         return number;
@@ -119,6 +118,14 @@ public class SPE {
         this.employee = employee;
     }
 
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
+    }
+
     public LocalDate getDatePreparation() {
         return datePreparation;
     }
@@ -165,21 +172,5 @@ public class SPE {
 
     public void setColor(Color color) {
         this.color = color;
-    }
-
-    public Instant getCreated() {
-        return created;
-    }
-
-    public void setCreated(Instant created) {
-        this.created = created;
-    }
-
-    public Instant getUpdated() {
-        return updated;
-    }
-
-    public void setUpdated(Instant updated) {
-        this.updated = updated;
     }
 }

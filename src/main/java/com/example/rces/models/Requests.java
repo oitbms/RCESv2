@@ -5,12 +5,15 @@ import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
 public class Requests implements Cloneable {
+
+    //TODO сделать нормальный аудит
 
     public enum Type {
         constructor, otk, technologist
@@ -30,6 +33,7 @@ public class Requests implements Cloneable {
 
     @Column(name = "type_request")
     @Enumerated(EnumType.STRING)
+    @NotNull
     private Type typeRequest;
 
     @Column(name = "workDate")

@@ -33,14 +33,19 @@ public class Images {
     @JoinColumn(name = "sgim_id")
     private SGI sgim;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id")
+    private Document document;
+
     public Images() {
     }
 
-    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, String name) {
+    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, Document document, String name) {
         this.data = data;
         this.request = request;
         this.sgi = sgi;
         this.sgim = sgim;
+        this.document = document;
         this.name = name;
     }
 
@@ -122,5 +127,13 @@ public class Images {
 
     public void setSgim(SGI sgim) {
         this.sgim = sgim;
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
     }
 }

@@ -2,6 +2,8 @@ package com.example.rces.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +13,8 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "inconsistencies")
-public class Inconsistency {
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+public class Inconsistency extends BaseAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,5 +81,13 @@ public class Inconsistency {
 
     public void setControlType(String controlType) {
         this.controlType = controlType;
+    }
+
+    public Set<Requests> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(Set<Requests> requests) {
+        this.requests = requests;
     }
 }

@@ -10,6 +10,7 @@ public class SpeCreateDTO {
     private String accuracyClass;
     private String limitMeasurement;
     private EmployeeDTO employee;
+    private String mark;
     private LocalDate datePreparation;
     private LocalDate dateVerification;
     private String certificateNumber;
@@ -93,5 +94,13 @@ public class SpeCreateDTO {
 
     public void setPeriodicity(Integer periodicity) {
         this.periodicity = periodicity;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
     }
 }

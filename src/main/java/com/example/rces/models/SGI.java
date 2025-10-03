@@ -24,6 +24,8 @@ import java.util.UUID;
 @BatchSize(size = 20)
 public class SGI implements Cloneable {
 
+    //TODO сделать нормальный аудит
+
     public enum Department {
         mechanic("ОГМ"), builder("ОРС"), protection("ОТиПК"), energy("ОГЭ");
 

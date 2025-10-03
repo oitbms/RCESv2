@@ -11,8 +11,8 @@ public record CustomerOrderPayload(UUID id, String name, LocalDateTime createDat
         this(
         customerOrder.getId(),
         customerOrder.getName(),
-        customerOrder.getCreateDate(),
-        customerOrder.getEmployee() != null ? customerOrder.getEmployee().getName() : null
+        LocalDateTime.from(customerOrder.getCreatedDate()),
+        customerOrder.getCreatedBy() != null ? customerOrder.getCreatedBy().getName() : null
         );
     }
 }

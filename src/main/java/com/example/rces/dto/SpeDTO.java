@@ -15,11 +15,12 @@ public class SpeDTO {
     private String accuracyClass;
     private String limitMeasurement;
     private EmployeeDTO employee;
+    private String mark;
     private LocalDate datePreparation;
     private LocalDate dateVerification;
     private String certificateNumber;
     private Integer periodicity;
-    private StatusSPE status;
+    private String status;
     private Color color;
     private Instant created;
     private Instant updated;
@@ -112,12 +113,12 @@ public class SpeDTO {
         this.periodicity = periodicity;
     }
 
-    public StatusSPE getStatus() {
+    public String getStatus() {
         return status;
     }
 
     public void setStatus(StatusSPE status) {
-        this.status = status;
+        this.status = status.getDescription();
     }
 
     public Color getColor() {
@@ -142,5 +143,13 @@ public class SpeDTO {
 
     public void setUpdated(Instant updated) {
         this.updated = updated;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
     }
 }

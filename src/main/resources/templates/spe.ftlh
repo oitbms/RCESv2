@@ -48,23 +48,23 @@
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-label">Всего единиц</div>
-                    <div class="stat-value" id="total-units">9</div>
+                    <div class="stat-value" id="total-units"></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Списано</div>
-                    <div class="stat-value" id="written-off">7</div>
+                    <div class="stat-value" id="written-off"></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Требуется поверка</div>
-                    <div class="stat-value" id="verification-required">2</div>
+                    <div class="stat-value" id="verification-required"></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Истек срок поверки</div>
-                    <div class="stat-value" id="verification-period-has-expired">2</div>
+                    <div class="stat-value" id="verification-period-has-expired"></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">На поверке</div>
-                    <div class="stat-value" id="at-inspection">2</div>
+                    <div class="stat-value" id="at-inspection"></div>
                 </div>
             </div>
 
@@ -94,55 +94,8 @@
 
             <div class="table-body">
 
-                <div class="table-row">
-                    <div class="table-cell" style="width: var(--equipment);">
-                        <div class="equipment">
-                            Виброметр
-                            <div class="equipments">
-                                <div class="equipment-type">29Е4/2Р/485/4М/F-РВ/12УВ/12Р</div>
-                                <div class="equipment-number">34762809/507</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-cell" style="width: var(--characteristics);">
-                        <div class="characteristics">
-                            <div>
-                                0,1
-                            </div>
-                            <div>
-                                0-10
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-cell" style="width: var(--subdivision);">Склад (ОФ)</div>
-                    <div class="table-cell" style="width: var(--responsible);">
-                        <div class="responsible">
-                            <div>Парфенова Е.В.</div>
-                        </div>
-                    </div>
-                    <div class="table-cell" style="width: var(--mark);">и</div>
-                    <div class="table-cell" style="width: var(--preparationDate);">07.09.2025</div>
-                    <div class="table-cell" style="width: var(--verificationDate);">07.10.2025</div>
-                    <div class="table-cell" style="width: var(--certificate);">C:BM/08-10-2024/37701227</div>
-                    <div class="table-cell" style="width: var(--periodicity);">12</div>
-                    <div class="table-cell" style="width: var(--file);">
-                        +
-                    </div>
-                    <div class="table-cell" style="width: var(--status);">
-                        <span class="status-indicator status-good">Исправен</span>
-                    </div>
-                </div>
-
             </div>
 
-            <div class="pagination">
-                <div class="page-info">Показано 1-9 из 9 записей</div>
-                <div class="page-controls">
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
