@@ -42,22 +42,6 @@ CREATE TABLE IF NOT EXISTS rces.documents
     INDEX idx_name (name)
 );
 
-CREATE TABLE IF NOT EXISTS rces.images
-(
-    id          BINARY(16) PRIMARY KEY,
-    name        VARCHAR(255),
-    data        LONGBLOB,
-    request_id  VARCHAR(36),
-    sgi_id      VARCHAR(36),
-    sgim_id     VARCHAR(36),
-    document_id VARCHAR(36),
-
-    FOREIGN KEY (request_id) REFERENCES rces.requests (id),
-    FOREIGN KEY (sgi_id) REFERENCES rces.fact_execution_sgi (id),
-    FOREIGN KEY (sgim_id) REFERENCES rces.plan_sgi (id),
-    FOREIGN KEY (document_id) REFERENCES rces.documents (id)
-);
-
 CREATE TABLE IF NOT EXISTS rces.requests
 (
     id                       BINARY(16) PRIMARY KEY,
@@ -175,4 +159,20 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     FOREIGN KEY (document_id) REFERENCES rces.documents (id),
 
     INDEX idx_name (name)
+);
+
+CREATE TABLE IF NOT EXISTS rces.images
+(
+    id          BINARY(16) PRIMARY KEY,
+    name        VARCHAR(255),
+    data        LONGBLOB,
+    request_id  VARCHAR(36),
+    sgi_id      VARCHAR(36),
+    sgim_id     VARCHAR(36),
+    document_id VARCHAR(36),
+
+    FOREIGN KEY (request_id) REFERENCES rces.requests (id),
+    FOREIGN KEY (sgi_id) REFERENCES rces.fact_execution_sgi (id),
+    FOREIGN KEY (sgim_id) REFERENCES rces.plan_sgi (id),
+    FOREIGN KEY (document_id) REFERENCES rces.documents (id)
 );
