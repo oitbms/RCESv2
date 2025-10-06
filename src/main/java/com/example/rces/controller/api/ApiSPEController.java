@@ -6,10 +6,9 @@ import com.example.rces.dto.SpeResponseDTO;
 import com.example.rces.service.SpeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/spe")
@@ -35,9 +34,12 @@ public class ApiSPEController {
         return ResponseEntity.ok(service.createSPE(dto));
     }
 
-    @GetMapping("/update-spe")
-    public ResponseEntity<SpeDTO> updateSPE(@RequestBody SpeDTO dto) {
-        return ResponseEntity.ok(service.updateSPE(dto));
+    @PatchMapping("/update/{number}")
+    public ResponseEntity<SpeDTO> update(@PathVariable Integer number,
+                                         @RequestParam Long version,
+                                         @RequestBody Map<String, Object> changes) {
+        var updatedSPE = service.updateSPE(number, version, changes);
+        return ResponseEntity.ok(updatedSPE);
     }
 
 }

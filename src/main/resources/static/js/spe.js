@@ -1,5 +1,6 @@
 let selectedRow = new Set();
 let editMode = false;
+const localCache = new Map();
 let saveMap = new Map();
 
 //Сразу после загрузки страницы
@@ -34,7 +35,11 @@ $(document).on('click', '#edit-button', async function () {
 });
 //Обработчик изменения в textArea
 $(document).on('input', 'textarea', async function () {
-
+    const currentTextArea = $(this);
+    const fieldName = currentTextArea.attr('data-name');
+    const fieldValue = currentTextArea.val();
+    saveMap.set(fieldName, fieldValue);
+    currentTextArea.addClass('change-textarea');
 });
 
 async function displayPage() {
@@ -48,6 +53,7 @@ async function displayPage() {
 
     for (spe of data.speDTOList) {
         await createRow(spe, false);
+        localCache.set(spe.number, spe);
     }
 }
 
@@ -78,34 +84,34 @@ async function createRow(spe, update) {
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
-                        <p data-name="accuracyClass">Склад (ОФ)</p>
+                        <p data-name="subDivision">${spe.subDivision}</p>
                     </div>
                     <div class="table-cell" style="width: var(--responsible);">
                         <div class="responsible">
-                            <p data-name="accuracyClass">${spe.employee.name}</p>
+                            <p data-name="employee">${spe.employee.name}</p>
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
-                        <p data-name="accuracyClass">${spe.mark}</p>
+                        <p data-name="mark">${spe.mark}</p>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
-                        <p data-name="accuracyClass">${formatDate(spe.datePreparation)}</p>
+                        <p data-name="datePreparation">${formatDate(spe.datePreparation)}</p>
                     </div>
                     <div class="table-cell" style="width: var(--verificationDate);">
-                        <p data-name="accuracyClass">${formatDate(spe.dateVerification)}</p>
+                        <p data-name="dateVerification">${formatDate(spe.dateVerification)}</p>
                     </div>
                     <div class="table-cell" style="width: var(--certificate);">
-                        <p data-name="accuracyClass">${spe.certificateNumber}</p>
+                        <p data-name="certificateNumber">${spe.certificateNumber}</p>
                     </div>
                     <div class="table-cell" style="width: var(--periodicity);">
-                        <p data-name="accuracyClass">${spe.periodicity + ' месяцев'}</p>
+                        <p data-name="periodicity">${spe.periodicity}</p> месяцев
                     </div>
                     <div class="table-cell" style="width: var(--file);">
                         файл
                     </div>
                     <div class="table-cell" style="width: var(--status);">
                         <span class="status-indicator status-good">
-                            <p data-name="accuracyClass">${spe.status}</p>
+                           ${spe.status}
                         </span>
                     </div>
                 </div>`;
@@ -118,11 +124,12 @@ async function createRow(spe, update) {
 
 async function enableEditMode(row) {
     if (row) {
-        const row = row.attr('id');
-        row.find('p').each(function() {
+        const thisRow = row.attr('id');
+        thisRow.find('p').each(function() {
             const $p = $(this);
             const text = $p.text();
-            const textarea = $('<textarea rows="3">').val(text);
+            const dataName = $p.attr('data-name');
+            const textarea = $(`<textarea data-name="${dataName}" rows="3">`).val(text);
             $p.replaceWith(textarea);
         });
         return;
@@ -132,19 +139,21 @@ async function enableEditMode(row) {
         row.find('p').each(function() {
             const $p = $(this);
             const text = $p.text();
-            const textarea = $('<textarea rows="3">').val(text);
+            const dataName = $p.attr('data-name');
+            const textarea = $(`<textarea data-name="${dataName}" rows="3">`).val(text);
             $p.replaceWith(textarea);
         });
     }
 }
-async function desableEditMode() {
+async function disableEditMode() {
     for (rowId of selectedRow) {
         const row = $(`.table-row[id="${rowId}"]`);
-        row.find('p').each(function() {
-            const $p = $(this);
-            const text = $p.text();
-            const textarea = $('<textarea rows="3">').val(text);
-            $p.replaceWith(textarea);
+        row.find('textarea').each(function() {
+            const $textarea = $(this);
+            const text = $textarea.text();
+            const dataName = $textarea.attr('data-name');
+            const p = $(`<p data-name="${dataName}">`).val(text);
+            $textarea.replaceWith(p);
         });
 
     }

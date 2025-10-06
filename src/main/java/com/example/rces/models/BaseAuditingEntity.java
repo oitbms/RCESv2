@@ -14,6 +14,11 @@ import java.time.Instant;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseAuditingEntity {
 
+    @Version
+    @Column(name = "version")
+    @NotAudited
+    private Long version;
+
     @CreatedDate
     @Column(name = "created_date", updatable = false)
     @NotAudited
@@ -35,6 +40,14 @@ public class BaseAuditingEntity {
     @JoinColumn(name = "updated_by")
     @NotAudited
     private Employee updatedBy;
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
     public Instant getCreatedDate() {
         return createdDate;

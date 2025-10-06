@@ -295,6 +295,11 @@ h1:after {
 
         & textarea {
             all: unset;
+            border-radius: 4px;
+
+            & .change-textarea {
+                border: 1px solid var(--danger);
+            }
         }
     }
 }

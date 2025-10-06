@@ -4,6 +4,7 @@ import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SpeService {
 
@@ -11,7 +12,7 @@ public interface SpeService {
 
     List<SpeDTO> getAllSPE();
 
-    SpeDTO updateSPE(SpeDTO dto);
+    SpeDTO updateSPE(Integer number, Long version, Map<String, Object> changes);
 
     void deleteSpe(SpeDTO dto);
 }
