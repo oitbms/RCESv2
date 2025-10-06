@@ -15,8 +15,26 @@
 <body>
 <div class="container">
     <header>
-        <h1>Перечень УМИ ООО «БорМаш»</h1>
-        <p class="subtitle">Актуальная информация о состоянии и поверке оборудования</p>
+        <div class="title">
+            <h1>Перечень УМИ ООО «БорМаш»</h1>
+            <p class="subtitle">Актуальная информация о состоянии и поверке оборудования</p>
+        </div>
+        <div class="toolbar">
+            <div class="tool edit">
+                <button id="edit-button" title="Редактировать">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            </div>
+            <div class="tool save">
+                <button title="Сохранить">
+                    <i class="fas fa-floppy-disk"></i>
+                </button>
+            </div>
+            <div class="tool create">
+                <button title="Создать">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
     </header>
 
     <div class="controls">

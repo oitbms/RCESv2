@@ -43,6 +43,11 @@ public class SPE extends BaseAuditingEntity {
     @Column(name = "limit_measurement")
     private String limitMeasurement;
 
+    @Column(name = "subdivision")
+    @NotBlank(message = "Подразделение не может быть пустым")
+    @Size(min = 3, message = "Подразделение должно содержать минимум 3 символа")
+    private String subDivision;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
 
@@ -120,6 +125,14 @@ public class SPE extends BaseAuditingEntity {
 
     public void setLimitMeasurement(String limitMeasurement) {
         this.limitMeasurement = limitMeasurement;
+    }
+
+    public String getSubDivision() {
+        return subDivision;
+    }
+
+    public void setSubDivision(String subDivision) {
+        this.subDivision = subDivision;
     }
 
     public Employee getEmployee() {
