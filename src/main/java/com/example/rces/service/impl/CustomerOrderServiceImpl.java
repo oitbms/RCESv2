@@ -3,7 +3,7 @@ package com.example.rces.service.impl;
 import com.example.rces.controller.payload.CustomerOrderPayload;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
-import com.example.rces.repository.CustomerOrderRepository;
+import com.example.rces.repository.CustomerOrderAuditingRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,11 +17,11 @@ import java.util.List;
 @Transactional(transactionManager = "primaryTransactionManager")
 public class CustomerOrderServiceImpl implements CustomerOrderService {
 
-    private final CustomerOrderRepository repository;
+    private final CustomerOrderAuditingRepository repository;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public CustomerOrderServiceImpl(CustomerOrderRepository repository, ObjectMapper objectMapper) {
+    public CustomerOrderServiceImpl(CustomerOrderAuditingRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
         this.objectMapper = objectMapper;
     }

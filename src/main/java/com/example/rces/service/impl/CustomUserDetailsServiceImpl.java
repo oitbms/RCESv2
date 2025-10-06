@@ -4,7 +4,7 @@ import com.example.rces.controller.payload.EmployeePayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
-import com.example.rces.repository.EmployeeRepository;
+import com.example.rces.repository.EmployeeAuditingRepository;
 import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
@@ -31,10 +31,10 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
             Role.CONTROL.name()
     );
 
-    private final EmployeeRepository repository;
+    private final EmployeeAuditingRepository repository;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(EmployeeRepository repository) {
+    public CustomUserDetailsServiceImpl(EmployeeAuditingRepository repository) {
         this.repository = repository;
     }
 

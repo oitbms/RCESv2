@@ -1,13 +1,12 @@
 package com.example.rces.repository;
 
 import com.example.rces.models.Employee;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+public interface EmployeeAuditingRepository extends BaseAuditingRepository<Employee, Long> {
 
     List<Employee> findAllByRole(String role);
 
