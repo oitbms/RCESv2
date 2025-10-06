@@ -3,7 +3,7 @@ package com.example.rces.service.impl;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
 import com.example.rces.mapper.SPEMapper;
-import com.example.rces.repository.SpeAuditingRepository;
+import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.SpeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,12 +21,12 @@ import java.util.Objects;
 @Transactional(transactionManager = "primaryTransactionManager")
 public class SpeServiceImpl implements SpeService {
 
-    private final SpeAuditingRepository repository;
+    private final SpeRepository repository;
     private final SPEMapper mapper;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public SpeServiceImpl(SpeAuditingRepository repository, SPEMapper mapper, ObjectMapper objectMapper) {
+    public SpeServiceImpl(SpeRepository repository, SPEMapper mapper, ObjectMapper objectMapper) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;

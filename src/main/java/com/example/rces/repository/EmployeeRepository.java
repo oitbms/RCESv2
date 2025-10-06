@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface EmployeeAuditingRepository extends BaseAuditingRepository<Employee, Long> {
+public interface EmployeeRepository extends BaseAuditingRepository<Employee, Long> {
 
     List<Employee> findAllByRole(String role);
 

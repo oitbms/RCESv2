@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SpeAuditingRepository extends BaseAuditingRepository<SPE, Integer> {
+public interface SpeRepository extends BaseAuditingRepository<SPE, Integer> {
 
     @Override
     @EntityGraph(attributePaths = "employee")

@@ -1,7 +1,7 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.models.Inconsistency;
-import com.example.rces.repository.InconsistenciesAuditingRepository;
+import com.example.rces.repository.InconsistenciesRepository;
 import com.example.rces.service.InconsistenciesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,10 +11,10 @@ import java.util.List;
 @Service
 public class InconsistenciesServiceImpl implements InconsistenciesService {
 
-    private final InconsistenciesAuditingRepository repo;
+    private final InconsistenciesRepository repo;
 
     @Autowired
-    InconsistenciesServiceImpl(InconsistenciesAuditingRepository repo) {
+    InconsistenciesServiceImpl(InconsistenciesRepository repo) {
         this.repo = repo;
     }
 
