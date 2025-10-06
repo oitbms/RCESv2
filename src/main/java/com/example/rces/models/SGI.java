@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "plan_sgi")
+@Table(name = "plan_sgi", catalog = "rces")
 @NamedEntityGraph(
         name = "SGI.withAssociations",
         attributeNodes = {

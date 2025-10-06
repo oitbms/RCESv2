@@ -5,14 +5,16 @@ import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "plan_spe")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Table(name = "plan_spe", catalog = "rces")
+@AuditTable(value = "plan_spe_history", catalog = "rces_history")
 public class SPE extends BaseAuditingEntity {
 
     @Id

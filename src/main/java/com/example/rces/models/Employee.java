@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,8 +18,9 @@ import java.util.Collections;
 import java.util.Objects;
 
 @Entity
-@Table(name = "employees")
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Audited
+@Table(name = "employees", catalog = "rces")
+@AuditTable(value = "employees_history", catalog = "rces_history")
 public class Employee extends BaseAuditingEntity implements UserDetails {
 
     @Id

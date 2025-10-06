@@ -2,6 +2,7 @@ package com.example.rces.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -12,8 +13,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "inconsistencies")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Table(name = "inconsistencies", catalog = "rces")
+@AuditTable(value = "inconsistencies_history", catalog = "rces_history")
 public class Inconsistency extends BaseAuditingEntity {
 
     @Id

@@ -4,14 +4,16 @@ package com.example.rces.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.util.UUID;
 
 @Entity
-@Table(name = "customerorder")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Table(name = "customerorder", catalog = "rces")
+@AuditTable(value = "customerorder_history", catalog = "rces_history")
 public class CustomerOrder extends BaseAuditingEntity {
 
     @Id

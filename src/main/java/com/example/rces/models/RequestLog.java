@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "request_log")
+@Table(name = "request_log", catalog = "rces")
 public class RequestLog {
 
     @Id

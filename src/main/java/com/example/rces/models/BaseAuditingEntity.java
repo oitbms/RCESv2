@@ -1,6 +1,7 @@
 package com.example.rces.models;
 
 import jakarta.persistence.*;
+import org.hibernate.envers.NotAudited;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -15,20 +16,24 @@ public class BaseAuditingEntity {
 
     @CreatedDate
     @Column(name = "created_date", updatable = false)
+    @NotAudited
     private Instant createdDate;
 
     @LastModifiedDate
     @Column(name = "updated_date")
+    @NotAudited
     private Instant updatedDate;
 
     @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", updatable = false, nullable = false)
+    @NotAudited
     private Employee createdBy;
 
     @LastModifiedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
+    @NotAudited
     private Employee updatedBy;
 
     public Instant getCreatedDate() {

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -13,8 +14,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "documents")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Table(name = "documents", catalog = "rces")
+@AuditTable(value = "documents_history", catalog = "rces_history")
 public class Document extends BaseAuditingEntity {
 
     @Id

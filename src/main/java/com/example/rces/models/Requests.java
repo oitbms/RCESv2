@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
+@Table(name = "requests", catalog = "rces")
 public class Requests implements Cloneable {
 
     //TODO сделать нормальный аудит

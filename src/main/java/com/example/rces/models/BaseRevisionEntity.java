@@ -1,12 +1,14 @@
 package com.example.rces.models;
 
+import com.example.rces.configuration.EnversRevisionListener;
 import jakarta.persistence.*;
+import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
 
 @Entity
-@org.hibernate.envers.RevisionEntity
-@Table(name = "revinfo", schema = "rces_history")
+@RevisionEntity(EnversRevisionListener.class)
+@Table(name = "revinfo", catalog = "rces_history")
 public class BaseRevisionEntity {
 
     @Id

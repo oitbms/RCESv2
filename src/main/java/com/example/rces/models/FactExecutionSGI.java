@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "fact_execution_sgi")
+@Table(name = "fact_execution_sgi", catalog = "rces")
 public class FactExecutionSGI {
 
     @Id

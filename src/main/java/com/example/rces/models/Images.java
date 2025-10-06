@@ -7,7 +7,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 @Entity
-@Table(name = "images")
+@Table(name = "images", catalog = "rces")
 public class Images {
 
     @Id
