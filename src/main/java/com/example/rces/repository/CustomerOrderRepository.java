@@ -8,7 +8,6 @@ import java.util.UUID;
 @Repository
 public interface CustomerOrderRepository extends BaseAuditingRepository<CustomerOrder, UUID> {
 
-
     CustomerOrder findByName(String customerOrderName);
 
 }

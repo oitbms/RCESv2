@@ -11,27 +11,20 @@ import java.util.List;
 @Service
 public class InconsistenciesServiceImpl implements InconsistenciesService {
 
-    private final InconsistenciesRepository repo;
+    private final InconsistenciesRepository repository;
 
     @Autowired
     InconsistenciesServiceImpl(InconsistenciesRepository repo) {
-        this.repo = repo;
+        this.repository = repo;
     }
 
     @Override
     public List<Inconsistency> findAllInconsistencies() {
-        return repo.findAll();
+        return repository.findAll();
     }
 
     @Override
     public Inconsistency createInconsistency(String name, String controlType) {
-        Inconsistency inconsistent = repo.findByName(name);
-        if (inconsistent != null) {
-            throw new RuntimeException("Несоответствие с названием (" + name + ") уже существует!");
-        }
-        Inconsistency inconsistency = new Inconsistency();
-        inconsistency.setName(name);
-        inconsistency.setControlType(controlType);
-        return repo.save(inconsistency);
+        return repository.save(new Inconsistency(name, controlType));
     }
 }

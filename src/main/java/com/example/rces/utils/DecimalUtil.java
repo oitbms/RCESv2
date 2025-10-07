@@ -4,6 +4,8 @@ import com.example.rces.models.Requests;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +23,7 @@ public class DecimalUtil {
         int[] dailyCounts = new int[daysInMonth];
 
         for (Requests req : requests) {
-            int day = req.getCreateDate().getDayOfMonth();
+            int day = LocalDateTime.from(req.getCreatedDate()).getDayOfMonth();
             dailyCounts[day - 1]++;
         }
         return dailyCounts;
@@ -39,7 +41,7 @@ public class DecimalUtil {
 
             for (Requests req : requests) {
                 if (req.getDateWork() != null && req.getTypeRequest().equals(type)) {
-                    Duration duration = Duration.between(req.getCreateDate(), req.getDateWork());
+                    Duration duration = Duration.between(req.getCreatedDate(), req.getDateWork());
                     time += duration.toMinutes();
                     requestsCount++;
                 }
@@ -90,20 +92,23 @@ public class DecimalUtil {
 
     public static List<Requests> filterRequestsByCurrentMonth(List<Requests> requests, LocalDate now) {
         return requests.stream()
-                .filter(req -> req.getCreateDate().getMonth() == now.getMonth() &&
-                        req.getCreateDate().getYear() == now.getYear())
+                .filter(req -> {
+                    LocalDate createdDate = req.getCreatedDate().atZone(ZoneId.systemDefault()).toLocalDate();
+                    return createdDate.getMonth() == now.getMonth() &&
+                            createdDate.getYear() == now.getYear();
+                })
                 .toList();
     }
 
     public static Map<String, Integer> countRequest(List<Requests> filteredRequests) {
         Map<String, Integer> qtuRequests = new HashMap<>();
-        List<Requests> requsets;
+        List<Requests> requests;
         for (String type : Arrays.stream(Requests.Type.values()).map(Enum::name).toList()) {
             Requests.Type reqType = Requests.Type.valueOf(type);
-            requsets = filteredRequests.stream()
-                    .filter(requests -> requests.getTypeRequest() == reqType)
+            requests = filteredRequests.stream()
+                    .filter(req -> req.getTypeRequest() == reqType)
                     .toList();
-            qtuRequests.put(type, requsets.size());
+            qtuRequests.put(type, requests.size());
         }
         return qtuRequests;
     }

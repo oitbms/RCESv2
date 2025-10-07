@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.Optional;
 
@@ -15,7 +17,8 @@ public interface BaseAuditingRepository<T extends BaseAuditingEntity, ID> extend
 
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Override
-    Optional<T> findById(ID id);
+    @NonNull
+    Optional<T> findById(@Nullable ID id);
 
     @Lock(LockModeType.OPTIMISTIC)
     @Query("select e from #{#entityName} e where e.id = :id")

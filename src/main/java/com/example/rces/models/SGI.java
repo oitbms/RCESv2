@@ -5,6 +5,10 @@ import com.example.rces.models.enums.Color;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,7 +16,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Table(name = "plan_sgi", catalog = "rces")
+@AuditTable(value = "plan_sgi_history", catalog = "rces_history")
 @NamedEntityGraph(
         name = "SGI.withAssociations",
         attributeNodes = {
@@ -22,9 +28,7 @@ import java.util.UUID;
         }
 )
 @BatchSize(size = 20)
-public class SGI implements Cloneable {
-
-    //TODO сделать нормальный аудит
+public class SGI extends BaseAuditingEntity implements Cloneable {
 
     public enum Department {
         mechanic("ОГМ"), builder("ОРС"), protection("ОТиПК"), energy("ОГЭ");
@@ -44,10 +48,6 @@ public class SGI implements Cloneable {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
-
-    @Column(name = "created_at")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDate createDate;
 
     @Column(name = "number")
     private int requestNumber;
@@ -110,13 +110,18 @@ public class SGI implements Cloneable {
     @OneToMany(mappedBy = "sgim", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @DisplayName("Прикрепленные фото")
     @BatchSize(size = 20)
+    @NotAudited
     private List<Images> images = new ArrayList<>();
 
     @Column(name = "agreed")
     @DisplayName("Согласовано")
     private Boolean agreed;
 
+    //TODO че со старыми логами делать
+
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Deprecated(forRemoval = true)
+    @NotAudited
     private List<SgiLog> log = new ArrayList<>();
 
     public UUID getId() {
@@ -125,14 +130,6 @@ public class SGI implements Cloneable {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public LocalDate getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDate createDate) {
-        this.createDate = createDate;
     }
 
     public int getRequestNumber() {
@@ -267,6 +264,7 @@ public class SGI implements Cloneable {
         return log;
     }
 
+    @Deprecated(forRemoval = true)
     public void setLog(List<SgiLog> log) {
         this.log = log;
     }

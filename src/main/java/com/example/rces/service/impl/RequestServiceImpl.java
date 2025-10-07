@@ -38,18 +38,16 @@ public class RequestServiceImpl implements RequestsService {
     private final CustomerOrderService customerOrderService;
     private final ImageService imageService;
     private final EmployeeService employeeService;
-    private final RequestLogService requestLogService;
     private final InconsistenciesService inconsistenciesService;
 
     @Autowired
-    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper, TelegramService telegramService, CustomerOrderService customerOrderService, ImageService imageService, EmployeeService employeeService, RequestLogService requestLogService, InconsistenciesService inconsistenciesService) {
+    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper, TelegramService telegramService, CustomerOrderService customerOrderService, ImageService imageService, EmployeeService employeeService, InconsistenciesService inconsistenciesService) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.telegramService = telegramService;
         this.customerOrderService = customerOrderService;
         this.imageService = imageService;
         this.employeeService = employeeService;
-        this.requestLogService = requestLogService;
         this.inconsistenciesService = inconsistenciesService;
     }
 
@@ -96,7 +94,6 @@ public class RequestServiceImpl implements RequestsService {
 
         request.setTypeRequest(Requests.Type.valueOf(type));
         request.setCreatedBy(createdEmployee);
-        request.setCreateDate(LocalDateTime.now());
         request.setRequestNumber(repository.findNextRequestNumber());
         request.setEmployee(employee);
         request.setCustomerOrder(customerOrder);
@@ -125,14 +122,7 @@ public class RequestServiceImpl implements RequestsService {
     @Override
     public void save(UUID id, String description, String status, Integer qty, Set<Inconsistency> inconsistencyData) {
         Requests request = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
-        Requests oldRequest;
         Employee updaterEmployee = employeeService.getCurrentUser();
-
-        try {
-            oldRequest = (Requests) request.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
 
         if (status == null) {
             if (request.getEmployee().equals(updaterEmployee)) {
@@ -174,11 +164,8 @@ public class RequestServiceImpl implements RequestsService {
             request.setStatus(Status.New);
         }
 
-        request.setUpdateBy(updaterEmployee);
-        request.setUpdateDate(LocalDateTime.now());
         request.setDateWork(LocalDateTime.now());
         request.setVersion(request.getVersion() + 1);
-        request.getLog().addAll(requestLogService.createLog(oldRequest, request, updaterEmployee));
         repository.save(request);
     }
 
@@ -247,11 +234,8 @@ public class RequestServiceImpl implements RequestsService {
                 }
             }
         });
-        request.setUpdateBy(updaterEmployee);
-        request.setUpdateDate(LocalDateTime.now());
         request.setDateWork(LocalDateTime.now());
         request.setVersion(request.getVersion() + 1);
-        request.getLog().addAll(requestLogService.createLog(oldRequest, request, updaterEmployee));
         repository.save(request);
         if (!request.getEmployee().equals(oldRequest.getEmployee())) {
             if (!updaterEmployee.getId().equals(request.getEmployee().getId())) {
@@ -293,21 +277,19 @@ public class RequestServiceImpl implements RequestsService {
         return requests.getTypeRequest().name();
     }
 
-    public Requests addRequestRejected(Requests request, int qty,  String description, Set<Inconsistency> inconsistencyData) {
+    public Requests addRequestRejected(Requests request, int qty, String description, Set<Inconsistency> inconsistencyData) {
         Requests requestsRejected = new Requests();
         requestsRejected.setCreatedBy(request.getCreatedBy());
         requestsRejected.setRequestNumber(repository.findNextRequestNumber());
         requestsRejected.setEmployee(request.getEmployee());
         requestsRejected.setMlmNode(request.getMlmNode());
         requestsRejected.setReason_wr(request.getReason_wr());
-        requestsRejected.setCreateDate(LocalDateTime.now());
         requestsRejected.setStatus(Status.Rejected);
         requestsRejected.setQty(request.getQty() - qty);
         requestsRejected.setTitle(request.getTitle());
         requestsRejected.setItem(request.getItem());
         requestsRejected.setTypeRequest(request.getTypeRequest());
         requestsRejected.setCustomerOrder(request.getCustomerOrder());
-        requestsRejected.setUpdateBy(request.getEmployee());
         requestsRejected.setControl(request.getControl());
         requestsRejected.setInconsistencies(inconsistencyData);
         requestsRejected.setDescription(description);

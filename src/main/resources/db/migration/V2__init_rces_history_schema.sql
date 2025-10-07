@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS rces_history.inconsistencies_history
 CREATE TABLE IF NOT EXISTS rces_history.documents_history
 (
     id      BINARY(16) NOT NULL,
-    rev     BIGINT      NOT NULL,
+    rev     BIGINT     NOT NULL,
     revtype TINYINT,
     name    VARCHAR(150),
 
@@ -79,5 +79,72 @@ CREATE TABLE IF NOT EXISTS rces_history.plan_spe_history
     color              VARCHAR(50),
 
     PRIMARY KEY (number, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+);
+
+CREATE TABLE IF NOT EXISTS rces_history.requests_history
+(
+    id                BINARY(16),
+    rev               BIGINT      NOT NULL,
+    type_request      VARCHAR(50) NOT NULL,
+    work_date         DATETIME,
+    request_number    INT,
+    employee_id       BIGINT,
+    customer_order_id BINARY(16),
+    reason            VARCHAR(50),
+    qty               INT,
+    mlm_node          VARCHAR(50),
+    item              VARCHAR(50),
+    status_id         VARCHAR(50),
+    comment           TEXT,
+    reason_wr         VARCHAR(255),
+    description       TEXT,
+    closed_date       DATETIME,
+    closed_employee   BIGINT,
+    chat_id           BIGINT,
+    message_id        INT,
+    score             VARCHAR(50),
+    control           VARCHAR(255),
+    comment_agreed    TEXT,
+    title             VARCHAR(255),
+    qty_rejected      INT     DEFAULT 0,
+    frozen            BOOLEAN DEFAULT FALSE,
+
+    PRIMARY KEY (id, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+);
+
+CREATE TABLE IF NOT EXISTS rces_history.plan_sgi_history
+(
+    id            BINARY(16),
+    rev           BIGINT NOT NULL,
+    number        INT,
+    workshop      VARCHAR(255),
+    event         VARCHAR(255),
+    actions       VARCHAR(499),
+    department    VARCHAR(50),
+    employee_id   BIGINT,
+    parent_sgi_id VARCHAR(36),
+    desired_date  DATE,
+    plan_date     DATE,
+    executions_id VARCHAR(36),
+    color         VARCHAR(50),
+    note          VARCHAR(1000),
+    comment       VARCHAR(1000),
+    agreed        BOOLEAN,
+
+    PRIMARY KEY (id, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+);
+
+CREATE TABLE IF NOT EXISTS rces_history.fact_execution_sgi_history
+(
+    id             BINARY(16),
+    rev            BIGINT NOT NULL,
+    sgi_id         VARCHAR(36) UNIQUE,
+    execution_date DATE,
+    report         VARCHAR(1000),
+
+    PRIMARY KEY (id, rev),
     FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
 );

@@ -13,6 +13,7 @@ public class SpeDTO {
     private String type;
     private String outNumber;
     private String accuracyClass;
+    private String subDivision;
     private String limitMeasurement;
     private EmployeeDTO employee;
     private String mark;
@@ -151,5 +152,13 @@ public class SpeDTO {
 
     public void setMark(String mark) {
         this.mark = mark;
+    }
+
+    public String getSubDivision() {
+        return subDivision;
+    }
+
+    public void setSubDivision(String subDivision) {
+        this.subDivision = subDivision;
     }
 }

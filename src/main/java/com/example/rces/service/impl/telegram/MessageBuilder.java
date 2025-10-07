@@ -116,7 +116,7 @@ public class MessageBuilder {
         message.setText(
                 String.format(
                         "%s переадресовал заявку %d в вашу ответственность \nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
-                        request.getUpdateBy().getName(),
+                        request.getUpdatedBy().getName(),
                         request.getRequestNumber(),
                         request.getEmployee().getName(),
                         request.getMlmNode() != null ? "\nЦех: " + request.getMlmNode().getName() : "",

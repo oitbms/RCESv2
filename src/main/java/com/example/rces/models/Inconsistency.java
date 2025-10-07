@@ -16,14 +16,15 @@ import java.util.stream.Collectors;
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Table(name = "inconsistencies", catalog = "rces")
 @AuditTable(value = "inconsistencies_history", catalog = "rces_history")
-public class Inconsistency extends BaseAuditingEntity {
+public class
+Inconsistency extends BaseAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
 
     @NotBlank
@@ -32,6 +33,14 @@ public class Inconsistency extends BaseAuditingEntity {
 
     @ManyToMany(mappedBy = "inconsistencies", fetch = FetchType.LAZY)
     private Set<Requests> requests = new HashSet<>();
+
+    public Inconsistency() {
+    }
+
+    public Inconsistency( String name, String controlType) {
+        this.name = name;
+        this.controlType = controlType;
+    }
 
     public static Set<Inconsistency> fromField(Object field, Set<Inconsistency> allInconsistencies) {
         try {

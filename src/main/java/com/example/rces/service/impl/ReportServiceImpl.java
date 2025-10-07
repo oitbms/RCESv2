@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -104,7 +105,7 @@ public class ReportServiceImpl implements ReportService {
                 row.createCell(0).setCellValue(reject.getRequestNumber());
                 row.createCell(1).setCellValue(reject.getTitle() != null ? reject.getTitle() : "");
                 row.createCell(2).setCellValue(reject.getCustomerOrder().getName());
-                row.createCell(3).setCellValue(reject.getUpdateDate() != null ? reject.getUpdateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "");
+                row.createCell(3).setCellValue(reject.getUpdatedDate() != null ? LocalDateTime.from(reject.getUpdatedDate()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "");
             }
 
             for (int i = 0; i < 4; i++) {

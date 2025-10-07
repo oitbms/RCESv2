@@ -41,7 +41,6 @@ public class SgiServiceImpl implements SgiService {
     private final EmployeeService employeeService;
     private final ImageService imageService;
     private final FactExecutionSgiService factExecutionSgiService;
-    private final SgiLogService sgiLogService;
     private final TelegramService telegramService;
 
     private final String controlChatId;
@@ -49,13 +48,12 @@ public class SgiServiceImpl implements SgiService {
 
     @Autowired
     public SgiServiceImpl(SgiRepository repository, EmployeeService employeeService, ImageService imageService,
-                          FactExecutionSgiService factExecutionSgiService, SgiLogService sgiLogService, TelegramService telegramService,
+                          FactExecutionSgiService factExecutionSgiService, TelegramService telegramService,
                           @Value("${telegram.chat.control.id}") String controlChatId, @Value("${telegram.chat.test.id}") String testChatId) {
         this.repository = repository;
         this.employeeService = employeeService;
         this.imageService = imageService;
         this.factExecutionSgiService = factExecutionSgiService;
-        this.sgiLogService = sgiLogService;
         this.telegramService = telegramService;
         this.controlChatId = controlChatId;
         this.testChatId = testChatId;
@@ -76,7 +74,6 @@ public class SgiServiceImpl implements SgiService {
         sgi.setDepartment(SGI.Department.valueOf(department));
         sgi.setNote(note);
         sgi.setDesiredDate(desiredDate);
-        sgi.setCreateDate(LocalDate.now());
         sgi.setEmployee(employeeService.loadUserByUsername(employee));
         sgi.setAgreed(false);
         if (!parentId.isEmpty()) {
@@ -92,7 +89,7 @@ public class SgiServiceImpl implements SgiService {
         }
         sgi.setColor(colorCalculate(sgi, LocalDate.now()));
         repository.save(sgi);
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CREATE, this.testChatId));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CREATE, this.controlChatId));
         return new SGIPayload(sgi);
     }
 
@@ -119,7 +116,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public void delete(SGI sgi) {
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.testChatId));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.controlChatId));
         repository.delete(sgi);
     }
 
@@ -137,12 +134,10 @@ public class SgiServiceImpl implements SgiService {
     public SGI save(SGI sgi, Boolean agreed) throws ApplicationContextException, CloneNotSupportedException {
         if (employeeService.currentUserHaveControlRoles()) {
             if (sgi.getSubSGI().stream().allMatch(SGI::getAgreed)) {
-                SGI oldSgi = (SGI) sgi.clone();
                 sgi.setAgreed(agreed);
                 sgi.setColor(colorCalculate(sgi, LocalDate.now()));
-                sgi.getLog().addAll(sgiLogService.createLog(oldSgi, sgi, employeeService.getCurrentUser()));
                 repository.save(sgi);
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.controlChatId));
                 return sgi;
             }
             throw new ApplicationContextException("Все подзадачи должны быть согласованы");
@@ -182,12 +177,11 @@ public class SgiServiceImpl implements SgiService {
             } else {
                 sgi.getImages().clear();
             }
-            sgi.getLog().addAll(sgiLogService.createLog(oldSgi, sgi, employeeService.getCurrentUser()));
             repository.save(sgi);
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.controlChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
             }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
@@ -207,9 +201,9 @@ public class SgiServiceImpl implements SgiService {
             sgi.setExecution(factExecutionSGI);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.controlChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
             }
             repository.save(sgi);
         }
@@ -223,7 +217,7 @@ public class SgiServiceImpl implements SgiService {
         List<SGI> sgiList = repository.findAll();
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
         if (!requestsNumbers.isEmpty()) {
-            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.testChatId));
+            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.controlChatId));
         }
     }
 

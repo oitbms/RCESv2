@@ -83,7 +83,7 @@ public class RequestController {
         Employee user = employeeService.getCurrentUser();
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
-        model.addAttribute("date", formatedDate(requests.getCreateDate()));
+        model.addAttribute("date", formatedDate(requests.getCreatedDate()));
         model.addAttribute("viewForm", true);
         model.addAttribute("role", user.getRole());
         return "/requests";
@@ -98,10 +98,10 @@ public class RequestController {
         }
         List<Requests> requestsList = requestsService.findAllByTypeRequest(Requests.Type.valueOf(type));
         List<String> formattedDates = requestsList.stream()
-                .map(request -> formatedDate(request.getCreateDate()))
+                .map(request -> formatedDate(request.getCreatedDate()))
                 .collect(Collectors.toList());
         List<String> updateDate = requestsList.stream()
-                .map(req -> formatedDate(req.getUpdateDate())).toList();
+                .map(req -> formatedDate(req.getUpdatedDate())).toList();
         model.addAttribute("requestsList", requestsList);
         model.addAttribute("typeRequest", type);
         model.addAttribute("formattedBidList", formattedDates);

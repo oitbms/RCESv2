@@ -79,10 +79,10 @@ public class RegistrationsController {
                 .sorted(Comparator.comparing(Requests::getRequestNumber))
                 .toList();
         List<String> rejectedDate = rejectedBid.stream()
-                .map(req -> formatedDate(req.getUpdateDate()))
+                .map(req -> formatedDate(req.getUpdatedDate()))
                 .toList();
         List<String> requestsDate = requestsList.stream()
-                .map(req -> formatedDate(req.getCreateDate()))
+                .map(req -> formatedDate(req.getCreatedDate()))
                 .toList();
         model.addAttribute("user", user);
         model.addAttribute("requests", requestsList);

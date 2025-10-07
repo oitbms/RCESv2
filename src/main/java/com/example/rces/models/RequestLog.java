@@ -2,6 +2,7 @@ package com.example.rces.models;
 
 import com.example.rces.configuration.HashMapConverter;
 import jakarta.persistence.*;
+import org.hibernate.envers.NotAudited;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -66,10 +67,12 @@ public class RequestLog {
         return metadata;
     }
 
+
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
     }
 
+    @Deprecated(forRemoval = true)
     public void addToMetadata(Map<String, String> newMetadata) {
         newMetadata.forEach((key, newValue) -> {
             if (metadata.containsKey(key)) {

@@ -2,7 +2,9 @@ package com.example.rces.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDate;
@@ -11,8 +13,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Table(name = "fact_execution_sgi", catalog = "rces")
-public class FactExecutionSGI {
+@AuditTable(value = "fact_execution_sgi_history", catalog = "rces_history")
+public class FactExecutionSGI extends BaseAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,6 +35,7 @@ public class FactExecutionSGI {
     private String report;
 
     @OneToMany(mappedBy = "sgi", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @NotAudited
     private List<Images> images = new ArrayList<>();
 
     public UUID getId() {

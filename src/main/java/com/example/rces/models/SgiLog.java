@@ -70,6 +70,7 @@ public class SgiLog {
         this.metadata = metadata;
     }
 
+    @Deprecated(forRemoval = true)
     public void addToMetadata(Map<String, String> newMetadata) {
         newMetadata.forEach((key, newValue) -> {
             if (metadata.containsKey(key)) {

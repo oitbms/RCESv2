@@ -1,17 +1,17 @@
 package com.example.rces.controller.api;
 
 import com.example.rces.controller.payload.ImagesPayload;
-import com.example.rces.controller.payload.LogPayload;
 import com.example.rces.models.Employee;
-import com.example.rces.models.Requests;
 import com.example.rces.models.Inconsistency;
-import com.example.rces.service.*;
+import com.example.rces.models.Requests;
+import com.example.rces.service.EmployeeService;
+import com.example.rces.service.ImageService;
+import com.example.rces.service.InconsistenciesService;
+import com.example.rces.service.RequestsService;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -21,25 +21,23 @@ public class ApiRequestController {
 
     private final EmployeeService employeeService;
     private final RequestsService requestsService;
-    private final RequestLogService requestLogService;
     private final ImageService imageService;
     private final InconsistenciesService inconsistenciesService;
 
     @Autowired
-    public ApiRequestController(EmployeeService employeeService, RequestsService requestsService, RequestLogService requestLogService, ImageService imageService, InconsistenciesService inconsistenciesService) {
+    public ApiRequestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService) {
         this.employeeService = employeeService;
         this.requestsService = requestsService;
-        this.requestLogService = requestLogService;
         this.imageService = imageService;
         this.inconsistenciesService = inconsistenciesService;
     }
 
     @PostMapping("/in-work")
     public ResponseEntity<?> inWork(@RequestParam UUID param,
-                       @RequestParam(required = false) String description,
-                       @RequestParam(required = false) String status,
-                       @RequestParam(required = false) Integer qtyCompleted,
-                       @RequestParam(required = false) String inconsistencyData
+                                    @RequestParam(required = false) String description,
+                                    @RequestParam(required = false) String status,
+                                    @RequestParam(required = false) Integer qtyCompleted,
+                                    @RequestParam(required = false) String inconsistencyData
     ) {
         Requests requests = requestsService.findById(param);
         Set<Inconsistency> inconsistencies = Collections.emptySet();
@@ -57,11 +55,11 @@ public class ApiRequestController {
         }
         try {
             requestsService.save(param, description, status, qtyCompleted, inconsistencies);
-            Map<String,String> successMap = new HashMap<>();
-            successMap.put("message", String.format("Заявка: %s успешно принята в работу!",requests.getRequestNumber()));
+            Map<String, String> successMap = new HashMap<>();
+            successMap.put("message", String.format("Заявка: %s успешно принята в работу!", requests.getRequestNumber()));
             return ResponseEntity.ok(successMap);
         } catch (ForbiddenException forbiddenException) {
-            Map<String,String> errorMap = new HashMap<>();
+            Map<String, String> errorMap = new HashMap<>();
             errorMap.put("error", forbiddenException.getMessage());
             return ResponseEntity.badRequest().body(errorMap);
         }
@@ -110,9 +108,4 @@ public class ApiRequestController {
         return ResponseEntity.ok(messageResponse);
     }
 
-    @GetMapping("/logs")
-    public ResponseEntity<List<LogPayload>> getLogs(@RequestParam UUID id) {
-        List<LogPayload> logs = requestLogService.getAllByRequestId(id);
-        return ResponseEntity.ok(logs);
-    }
 }

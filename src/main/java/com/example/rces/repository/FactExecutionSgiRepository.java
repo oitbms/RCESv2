@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface FactExecutionSgiRepository extends JpaRepository<FactExecutionSGI, UUID> {
+public interface FactExecutionSgiRepository extends BaseAuditingRepository<FactExecutionSGI, UUID> {
 
 
 }

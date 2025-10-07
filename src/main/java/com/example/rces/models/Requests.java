@@ -1,20 +1,26 @@
 package com.example.rces.models;
 
 import com.example.rces.models.annotation.DisplayName;
-
 import com.example.rces.models.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Table(name = "requests", catalog = "rces")
-public class Requests implements Cloneable {
-
-    //TODO сделать нормальный аудит
+@AuditTable(value = "requests_history", catalog = "rces_history")
+public class Requests extends BaseAuditingEntity implements Cloneable {
 
     public enum Type {
         constructor, otk, technologist
@@ -25,13 +31,6 @@ public class Requests implements Cloneable {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Version
-    @Column(
-            nullable = false,
-            columnDefinition = "integer default '0'"
-    )
-    private int version;
-
     @Column(name = "type_request")
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -41,22 +40,6 @@ public class Requests implements Cloneable {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @DisplayName("Дата начала работы")
     private LocalDateTime dateWork;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
-    private Employee createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by")
-    private Employee updateBy;
-
-    @Column(name = "created_at")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createDate;
-
-    @Column(name = "update_at")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime updateDate;
 
     @Column(name = "request_number")
     private Integer requestNumber;
@@ -124,6 +107,7 @@ public class Requests implements Cloneable {
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     @DisplayName("Прикрепленные фото")
+    @NotAudited
     private List<Images> images = new ArrayList<>();
 
     @Column(name = "closed_date")
@@ -142,15 +126,13 @@ public class Requests implements Cloneable {
 
     @Column(name = "message_id")
     @DisplayName("Идентификатор сообщения")
+    @NotAudited
     private Integer messageId;
 
     @Column(name = "score")
     @Enumerated(EnumType.STRING)
     @DisplayName("Оценка работы ответственного")
     private Appraisal score;
-
-    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RequestLog> log = new ArrayList<>();
 
     @Column(name = "control")
     @DisplayName("Тип контроля")
@@ -171,6 +153,13 @@ public class Requests implements Cloneable {
     @Transient
     @DisplayName("Количество выполненного")
     private int qtyCompleted;
+
+    //TODO че со старыми логами делать
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Deprecated(forRemoval = true)
+    @NotAudited
+    private List<RequestLog> log = new ArrayList<>();
 
     private boolean frozen;
 
@@ -246,13 +235,6 @@ public class Requests implements Cloneable {
         this.id = id;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public Type getTypeRequest() {
         return typeRequest;
@@ -268,41 +250,9 @@ public class Requests implements Cloneable {
 
     //Если старая версия не в работе и новая версия в работе
     public void setDateWork(LocalDateTime dateWork) {
-        if (version <= 1 && status.equals(Status.InWork)) {
+        if (getVersion() <= 1 && status.equals(Status.InWork)) {
             this.dateWork = dateWork;
         }
-    }
-
-    public Employee getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Employee createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Employee getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(Employee updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-
-    public LocalDateTime getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(LocalDateTime updateDate) {
-        this.updateDate = updateDate;
     }
 
     public Integer getRequestNumber() {
@@ -441,10 +391,12 @@ public class Requests implements Cloneable {
         this.score = score;
     }
 
+    @Deprecated(forRemoval = true)
     public List<RequestLog> getLog() {
         return log;
     }
 
+    @Deprecated(forRemoval = true)
     public void setLog(List<RequestLog> log) {
         this.log = log;
     }

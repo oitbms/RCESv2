@@ -2,6 +2,7 @@ package com.example.rces.repository;
 
 import com.example.rces.models.SPE;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,6 +12,7 @@ public interface SpeRepository extends BaseAuditingRepository<SPE, Integer> {
 
     @Override
     @EntityGraph(attributePaths = "employee")
+    @NonNull
     List<SPE> findAll();
 
 }

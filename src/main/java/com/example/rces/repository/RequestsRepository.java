@@ -1,10 +1,12 @@
 package com.example.rces.repository;
 
 import com.example.rces.models.Requests;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface RequestsRepository extends JpaRepository<Requests, UUID> {
+public interface RequestsRepository extends BaseAuditingRepository<Requests, UUID> {
 
     @Override
     @EntityGraph("employee, createdBy")
@@ -27,7 +29,8 @@ public interface RequestsRepository extends JpaRepository<Requests, UUID> {
     List<Requests> findAllByTypeRequest(Requests.Type type);
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @EntityGraph(attributePaths = {"employee"})
     @NonNull
-    Optional<Requests> findById(UUID id);
+    Optional<Requests> findById(@Nullable UUID id);
 }
