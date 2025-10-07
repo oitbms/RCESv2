@@ -11,18 +11,22 @@ import org.mapstruct.MappingTarget;
         uses = {
                 EmployeeMapper.class
         })
-public interface SPEMapper {
+public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
 
+    @Override
     @Mapping(target = "number", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "color", ignore = true)
-    SPE to(SpeCreateDTO dto);
+    SPE toEntityFromCreateDTO(SpeCreateDTO dto);
 
+    @Override
     @Mapping(target = "number", ignore = true)
-    SPE to(SpeDTO dto);
+    SPE toEntity(SpeDTO dto);
 
-    SpeDTO from(SPE entity);
+    @Override
+    SpeDTO toDTO(SPE entity);
 
+    @Override
     @Mapping(target = "number", ignore = true)
     void update(SpeDTO dto, @MappingTarget SPE entity);
 }

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public class SpeDTO {
 
     private Integer number;
+    private Long version;
     private String name;
     private String type;
     private String outNumber;
@@ -160,5 +161,13 @@ public class SpeDTO {
 
     public void setSubDivision(String subDivision) {
         this.subDivision = subDivision;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

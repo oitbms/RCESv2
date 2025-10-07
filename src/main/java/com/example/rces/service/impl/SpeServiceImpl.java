@@ -34,15 +34,15 @@ public class SpeServiceImpl implements SpeService {
 
     @Override
     public SpeDTO createSPE(SpeCreateDTO dto) {
-        var newSPE = mapper.to(dto);
+        var newSPE = mapper.toEntityFromCreateDTO(dto);
         var savedSpe = repository.save(newSPE);
-        return mapper.from(savedSpe);
+        return mapper.toDTO(savedSpe);
     }
 
     @Override
     public List<SpeDTO> getAllSPE() {
         var allSPE = repository.findAll();
-        return allSPE.stream().map(mapper::from).toList();
+        return allSPE.stream().map(mapper::toDTO).toList();
     }
 
     @Override
@@ -55,12 +55,12 @@ public class SpeServiceImpl implements SpeService {
         }
         objectMapper.updateValue(speEntity, changes);
         repository.save(speEntity);
-        return mapper.from(speEntity);
+        return mapper.toDTO(speEntity);
     }
 
     @Override
     public void deleteSpe(SpeDTO dto) {
-        var spe = mapper.to(dto);
+        var spe = mapper.toEntity(dto);
         repository.delete(spe);
     }
 

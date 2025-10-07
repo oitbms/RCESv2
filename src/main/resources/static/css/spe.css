@@ -282,7 +282,7 @@ h1:after {
     }
 
     &.selected {
-        background-color: rgba(59, 130, 246, 0.05);
+        background-color: rgba(59, 130, 246, 0.16);
     }
 
     & .table-cell {
@@ -296,8 +296,12 @@ h1:after {
         & textarea {
             all: unset;
             border-radius: 4px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
 
-            & .change-textarea {
+            &.change-textarea {
                 border: 1px solid var(--danger);
             }
         }

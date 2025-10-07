@@ -20,17 +20,17 @@
             <p class="subtitle">Актуальная информация о состоянии и поверке оборудования</p>
         </div>
         <div class="toolbar">
-            <div class="tool edit">
-                <button id="edit-button" title="Редактировать">
+            <div class="tool edit" id="edit-button">
+                <button title="Редактировать">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
             </div>
-            <div class="tool save">
+            <div class="tool save" id="save-button">
                 <button title="Сохранить">
                     <i class="fas fa-floppy-disk"></i>
                 </button>
             </div>
-            <div class="tool create">
+            <div class="tool create" id="create-button">
                 <button title="Создать">
                     <i class="fas fa-plus"></i>
                 </button>

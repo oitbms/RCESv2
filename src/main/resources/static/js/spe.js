@@ -1,7 +1,7 @@
 let selectedRow = new Set();
 let editMode = false;
 const localCache = new Map();
-let saveMap = new Map();
+let saveMassive = {};
 
 //Сразу после загрузки страницы
 $(document).on('DOMContentLoaded', async function () {
@@ -19,6 +19,7 @@ $(document).on('dblclick', '.table-row', async function () {
         }
     } else {
         selectedRow.delete(currentRowId);
+        await disableEditMode(currentRow);
         currentRow.removeClass('selected');
     }
 });
@@ -27,18 +28,30 @@ $(document).on('click', '#edit-button', async function () {
     if (!editMode) {
         editMode = true;
         await enableEditMode();
-    } else {
+        return;
+    }
+    if (!saveMassive.size === 0) {
+        return alert("Сохраните изменения");
+    }
+    if (editMode && saveMassive.size === 0) {
         editMode = false;
         await disableEditMode();
     }
 
 });
+//Клик на сохранение
+$(document).on('click', '#save-button', async function () {
+    if (Object.keys(saveMassive).length > 0) {
+        await saveData(saveMassive, "update");
+    }
+});
 //Обработчик изменения в textArea
 $(document).on('input', 'textarea', async function () {
     const currentTextArea = $(this);
+    const currentId = currentTextArea.closest('.table-row').attr('id');
     const fieldName = currentTextArea.attr('data-name');
     const fieldValue = currentTextArea.val();
-    saveMap.set(fieldName, fieldValue);
+    saveMassive[currentId] = { [fieldName]: fieldValue };
     currentTextArea.addClass('change-textarea');
 });
 
@@ -75,12 +88,8 @@ async function createRow(spe, update) {
                     </div>
                     <div class="table-cell" style="width: var(--characteristics);">
                         <div class="characteristics">
-                            <div>
-                                <p data-name="accuracyClass">${spe.accuracyClass}</p>
-                            </div>
-                            <div>
-                                <p data-name="limitMeasurement">${spe.limitMeasurement}</p>
-                            </div>
+                            <p data-name="accuracyClass">${spe.accuracyClass}</p>
+                            <p data-name="limitMeasurement">${spe.limitMeasurement}</p>
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
@@ -122,41 +131,111 @@ async function createRow(spe, update) {
     }
 }
 
+async function deleteRow(rowId) {
+    $(`.table-row[id="${rowId}"]`).remove();
+}
+
 async function enableEditMode(row) {
     if (row) {
-        const thisRow = row.attr('id');
-        thisRow.find('p').each(function() {
+        $(row).find('p').each(function () {
             const $p = $(this);
             const text = $p.text();
             const dataName = $p.attr('data-name');
-            const textarea = $(`<textarea data-name="${dataName}" rows="3">`).val(text);
+            const textarea = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
             $p.replaceWith(textarea);
         });
         return;
     }
     for (rowId of selectedRow) {
         const row = $(`.table-row[id="${rowId}"]`);
-        row.find('p').each(function() {
+        row.find('p').each(function () {
             const $p = $(this);
             const text = $p.text();
             const dataName = $p.attr('data-name');
-            const textarea = $(`<textarea data-name="${dataName}" rows="3">`).val(text);
+            const textarea = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
             $p.replaceWith(textarea);
         });
     }
 }
-async function disableEditMode() {
-    for (rowId of selectedRow) {
-        const row = $(`.table-row[id="${rowId}"]`);
-        row.find('textarea').each(function() {
+
+async function disableEditMode(row) {
+    if (row) {
+        $(row).find('textarea').each(function () {
             const $textarea = $(this);
-            const text = $textarea.text();
+            const text = $textarea.val();
             const dataName = $textarea.attr('data-name');
-            const p = $(`<p data-name="${dataName}">`).val(text);
+            const p = $(`<p data-name="${dataName}">`).text(text);
             $textarea.replaceWith(p);
         });
-
+        return;
     }
+    for (rowId of selectedRow) {
+        const row = $(`.table-row[id="${rowId}"]`);
+        row.find('textarea').each(function () {
+            const $textarea = $(this);
+            const text = $textarea.val();
+            const dataName = $textarea.attr('data-name');
+            const p = $(`<p data-name="${dataName}">`).text(text);
+            $textarea.replaceWith(p);
+        });
+    }
+}
+
+async function saveData(spe, type) {
+    async function createSpe(spe) {
+        const newSpe = await $.ajax({
+            url: '/api/spe/create-spe',
+            type: 'GET',
+            data: JSON.stringify(spe),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        localCache.set(newSpe.number, newSpe);
+        await createRow(newSpe, null);
+    }
+    async function updateSpe(spe) {
+        const updatePromises = Object.entries(spe).map(async ([number, speData]) => {
+            const version = localCache.get(number).version;
+            const updateSpe = await $.ajax({
+                url: `/api/spe/update/${number}?version=${version}`,
+                type: 'PATCH',
+                contentType: 'application/json',
+                data: JSON.stringify(speData)
+            });
+
+            localCache.set(number, updateSpe);
+            await createRow(updateSpe, true);
+            return updateSpe;
+        });
+
+        return await Promise.all(updatePromises);
+    }
+    async function deleteSpe(spe) {
+        return $.ajax({
+            url: '/spe/delete',
+            type: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify(spe),
+            success: async function () {
+                localCache.delete(spe.number);
+                await deleteRow(spe.number);
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при удалении SPE:', error);
+                throw error;
+            }
+        });
+    }
+
+    if (type === 'create') {
+        await createSpe(spe);
+    }
+    else if (type === 'update') {
+        await updateSpe(spe);
+    }
+    else if (type === 'delete') {
+        await deleteSpe(spe);
+    } else console.error("Неподдерживаемый тип запроса")
 }
 
 function formatDate(dateString) {
