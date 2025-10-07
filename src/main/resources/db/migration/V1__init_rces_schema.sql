@@ -105,10 +105,10 @@ CREATE TABLE IF NOT EXISTS rces.plan_sgi
     actions       VARCHAR(499),
     department    VARCHAR(50),
     employee_id   BIGINT,
-    parent_sgi_id VARCHAR(36),
+    parent_sgi_id BINARY(16),
     desired_date  DATE,
     plan_date     DATE,
-    executions_id VARCHAR(36),
+    executions_id BINARY(16),
     color         VARCHAR(50),
     note          VARCHAR(1000),
     comment       VARCHAR(1000),
@@ -121,7 +121,6 @@ CREATE TABLE IF NOT EXISTS rces.plan_sgi
 
     FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
     FOREIGN KEY (parent_sgi_id) REFERENCES rces.plan_sgi (id),
-    FOREIGN KEY (executions_id) REFERENCES rces.fact_execution_sgi (id),
     FOREIGN KEY (created_by) REFERENCES rces.employees (id),
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
@@ -129,7 +128,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_sgi
 CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
 (
     id             BINARY(16) PRIMARY KEY,
-    sgi_id         VARCHAR(36) UNIQUE,
+    sgi_id         BINARY(16) UNIQUE,
     execution_date DATE,
     report         VARCHAR(1000),
     version        BIGINT    NOT NULL,
@@ -142,6 +141,10 @@ CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
     FOREIGN KEY (created_by) REFERENCES rces.employees (id),
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
+
+ALTER TABLE rces.plan_sgi
+    ADD CONSTRAINT fk_plan_sgi_executions
+        FOREIGN KEY (executions_id) REFERENCES rces.fact_execution_sgi (id);
 
 CREATE TABLE IF NOT EXISTS rces.plan_spe
 (
@@ -158,7 +161,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     date_verification  DATE,
     certificate_number VARCHAR(255),
     periodicity        INT          NOT NULL,
-    document_id        BIGINT,
+    document_id        BINARY(16),
     status             VARCHAR(50)           DEFAULT 'NONE',
     color              VARCHAR(50)           DEFAULT 'NONE',
     version            BIGINT       NOT NULL,
@@ -180,10 +183,10 @@ CREATE TABLE IF NOT EXISTS rces.images
     id          BINARY(16) PRIMARY KEY,
     name        VARCHAR(255),
     data        LONGBLOB,
-    request_id  VARCHAR(36),
-    sgi_id      VARCHAR(36),
-    sgim_id     VARCHAR(36),
-    document_id VARCHAR(36),
+    request_id  BINARY(16),
+    sgi_id      BINARY(16),
+    sgim_id     BINARY(16),
+    document_id BINARY(16),
 
     FOREIGN KEY (request_id) REFERENCES rces.requests (id),
     FOREIGN KEY (sgi_id) REFERENCES rces.fact_execution_sgi (id),
