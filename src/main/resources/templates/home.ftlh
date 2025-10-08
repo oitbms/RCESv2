@@ -4,156 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Выбор заявки</title>
-    <style>
-        :root {
-            --primary: #3a86ff;
-            --primary-dark: #2667cc;
-            --text: #2b2d42;
-            --bg: #f8f9fa;
-            --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        .menu-item {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            padding: 1rem;
-            isolation: isolate;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .menu-link {
-            position: relative;
-            z-index: 10;
-            text-decoration: none;
-            color: var(--text);
-            font-size: clamp(1.2rem, 4vw, 1.6rem);
-            font-weight: 600;
-            padding: 1.5rem;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .fill-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            transform: scaleY(0);
-            transform-origin: bottom;
-            transition: transform 1s cubic-bezier(0.87, 0, 0.13, 1);
-            z-index: -1;
-            opacity: 0.9;
-        }
-
-        .menu-item.active {
-            animation: micro-shake 0.1s infinite alternate;
-        }
-
-        .menu-item.active .fill-effect {
-            transform: scaleY(1);
-        }
-
-        @keyframes micro-shake {
-            0% { transform: translateX(-0.5px); }
-            100% { transform: translateX(0.5px); }
-        }
-
-        .menu-item:hover {
-            transform: translateY(-3px);
-        }
-
-        @media (max-width: 768px) {
-            .menu-link {
-                font-size: 1.3rem;
-                padding: 1rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
 <div class="menu">
-    <div class="menu-item" data-href="/create?type=technologist">
-        <div class="fill-effect"></div>
-        <a class="menu-link">Создать заявку на вызов технолога</a>
+    <div class="menu-item">
+        <div class="glow-effect"></div>
+        <a href="/create?type=technologist">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Создать заявку на вызов технолога
+        </a>
     </div>
-    <div class="menu-item" data-href="/create?type=constructor">
-        <div class="fill-effect"></div>
-        <a class="menu-link">Создать заявку на вызов конструктора</a>
+    <div class="menu-item">
+        <div class="glow-effect"></div>
+        <a href="/create?type=constructor">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Создать заявку на вызов конструктора
+        </a>
     </div>
-    <div class="menu-item" data-href="/create?type=otk">
-        <div class="fill-effect"></div>
-        <a class="menu-link">Создать заявку на вызов ОТК</a>
+    <div class="menu-item">
+        <div class="glow-effect"></div>
+        <a href="/create?type=otk">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Создать заявку на вызов ОТК
+        </a>
     </div>
 </div>
-
-<script>
-    document.querySelectorAll('.menu-item').forEach(item => {
-        let holdTimer;
-        const holdDuration = 1000;
-
-        const startHold = () => {
-            item.classList.add('active');
-            holdTimer = setTimeout(() => {
-                window.location.href = item.getAttribute('data-href');
-            }, holdDuration);
-        };
-
-        const cancelHold = () => {
-            clearTimeout(holdTimer);
-            item.classList.remove('active');
-        };
-
-        // Для мыши
-        item.addEventListener('mousedown', startHold);
-        item.addEventListener('mouseup', cancelHold);
-        item.addEventListener('mouseleave', cancelHold);
-
-        // Для сенсорных устройств
-        item.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startHold();
-        });
-
-        item.addEventListener('touchend', cancelHold);
-        item.addEventListener('touchcancel', cancelHold);
-    });
-</script>
 </body>
 </html>

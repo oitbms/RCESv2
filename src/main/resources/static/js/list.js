@@ -173,13 +173,22 @@ $(document).ready(function () {
 });
 
 $(function() {
+    $('#table tbody tr').each(function() {
+        const $qtyCell = $(this).find('td').eq(12);
+        const value = $qtyCell.text().trim();
+        const qty = parseInt(value) || 0;
+
+        if (qty > 0) {
+            $qtyCell.html('<span style="background-color: #ee0000; padding: 5px 10px; border-radius: 3px; display: inline-block; width: 100%; text-align: center;">' + value + '</span>');
+        }
+    });
+
     $('#table').bootstrapTable({
         locale: 'ru-RU',
         iconsPrefix: 'bi',
         icons: {
-
-        },
-        exportTypes: ['json','excel'],
+            exportTypes: ['json', 'excel']
+        }
     });
 });
 

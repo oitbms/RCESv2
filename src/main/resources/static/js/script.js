@@ -388,25 +388,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: formData
-        }).then(response => {
-            if (response.ok) {
-                return response.json().then(data => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Успех!',
-                        text: 'Данные успешно сохранены!',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+        }).then(async response => {
+            const text = await response.text();
 
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+            if (response.ok) {
+                let message = 'Данные успешно сохранены!';
+                try {
+                    const data = JSON.parse(text);
+                    message = data.message || data;
+                } catch {
+                    message = text;
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Успех!',
+                    text: message,
+                    timer: 2000,
+                    showConfirmButton: false
                 });
+
+                setTimeout(() => location.reload(), 2000);
             } else {
-                return response.text().then(errorText => {
-                    throw new Error(errorText);
-                });
+                throw new Error(text);
             }
         }).catch(error => {
             Swal.fire({
@@ -642,11 +646,13 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
 
         fetch(form.action, {
             method: 'POST',
-            body: formData,
+            body: JSON.stringify(data),
             headers: {
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         }).then(response => {
@@ -662,14 +668,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         timer: 2000,
                         showConfirmButton: false
                     });
-
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
                 });
             } else {
-                return response.text().then(errorText => {
-                    throw new Error(errorText);
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Произошла ошибка');
                 });
             }
         }).catch(error => {

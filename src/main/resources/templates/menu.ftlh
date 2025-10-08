@@ -58,16 +58,32 @@
                 </#if>
                 <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
                     <button id="graf" class="btn btn-primary mb-4">Показать график</button>
+                    <a class="btn btn-primary mb-4" href="/logs">Логирование ошибок</a>
                 </#if>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container mb-4">
-    <div class="row">
+<div class="container mb-4 d-flex justify-content-between">
+    <div>
+        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
+            <div class="md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Список заявок для ОГТ</h5>
+                        <p class="card-text">
+                            Количество заявок:${qtuRequestTechnologist}<br>
+                        </p>
+                        <a href="requestslist/technologist" class="btn btn-primary">Просмотр заявок</a>
+                    </div>
+                </div>
+            </div>
+        </#if>
+    </div>
+    <div>
         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
-            <div class="col-md-4">
+            <div class="md-4">
                 <div class="card text-center">
                     <div class="card-body">
                         <h5 class="card-title">Список заявок для ОТК</h5>

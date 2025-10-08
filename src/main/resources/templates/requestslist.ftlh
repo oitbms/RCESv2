@@ -28,7 +28,8 @@
     <span class="custom-title ml-3">
   ${titleText}
   <a class="btn btn-info ml-2" href="/menu" aria-label="Home">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill"
+         viewBox="0 0 16 16">
   <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/>
   <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z"/>
     </svg>
@@ -46,7 +47,7 @@
        data-show-toggle="true"
        data-locale="ru-RU"
        data-buttons-class="info"
-       class="table" >
+       class="table">
     <thead>
     <tr>
         <th data-field="requestNumber" data-sortable="true">№</th>
@@ -61,7 +62,8 @@
         <th data-field="updatedDate" data-sortable="true">Дата изменения</th>
         <th data-field="updateUser" data-sortable="true">Изменил</th>
         <#if typeRequest == 'otk'>
-        <th data-field="typeControl" data-sortable="true">Тип контроля</th>
+            <th data-field="typeControl" data-sortable="true">Тип контроля</th>
+            <th data-field="qtyRejected" data-sortable="true">Кол-во брака</th>
         </#if>
         <th data-field="log" data-searchable="false">Функции</th>
     </tr>
@@ -76,28 +78,29 @@
         <#elseif req.getStatus().getName() == "Отменен" || req.getStatus().getName() == "Забракована">
             <tr class="table-danger" data-request-number="${req.requestNumber}">
         </#if>
-            <td>${req.getRequestNumber()}</td>
-            <td>${req.getCreatedBy().getName()}</td>
-            <td>${req.getEmployee().getName()}</td>
-            <td>${(req.getCustomerOrder().getName())!"Нет"}</td>
-            <td>${req.getMlmNode().getName()}</td>
-            <#if typeRequest == 'otk'>
-                <td>${(req.getReason_wr())!"-"}</td>
-            <#else>
-                <td>${(req.getReason().getName())!"-"}</td>
-            </#if>
-            <td>${(req.getItem().getName())!"-"}</td>
-            <td>${req.getStatus().getName()}</td>
-            <td>${formattedBidList[reqIndex]!"-"}</td>
-            <td>${updateDateList[reqIndex]!"-"}</td>
-            <td>${(req.getUpdateBy().getName())!"-"}</td>
-            <#if typeRequest == 'otk'>
-                <td>${(req.getControl())!"Нет"}</td>
-            </#if>
-            <td>
-                <i class="history-icon bi bi-clock-history text-primary fs-4" data-id="${req.id}"></i>
-                <a class="btn btn-info ml-3" href="/view/${req.getRequestNumber()}">Редактировать</a>
-            </td>
+        <td>${req.getRequestNumber()}</td>
+        <td>${req.getCreatedBy().getName()}</td>
+        <td>${req.getEmployee().getName()}</td>
+        <td>${(req.getCustomerOrder().getName())!"Нет"}</td>
+        <td>${req.getMlmNode().getName()}</td>
+        <#if typeRequest == 'otk'>
+            <td>${(req.getReason_wr())!"-"}</td>
+        <#else>
+            <td>${(req.getReason().getName())!"-"}</td>
+        </#if>
+        <td>${(req.getItem().getName())!"-"}</td>
+        <td>${req.getStatus().getName()}</td>
+        <td>${formattedBidList[reqIndex]!"-"}</td>
+        <td>${updateDateList[reqIndex]!"-"}</td>
+        <td>${(req.getUpdateBy().getName())!"-"}</td>
+        <#if typeRequest == 'otk'>
+            <td>${(req.getControl())!"Нет"}</td>
+            <td>${(req.getQtyRejected()!"0")}</td>
+        </#if>
+        <td>
+            <i class="history-icon bi bi-clock-history text-primary fs-4" data-id="${req.id}"></i>
+            <a class="btn btn-info ml-3" href="/view/${req.getRequestNumber()}">Редактировать</a>
+        </td>
         </tr>
     </#list>
     </tbody>
@@ -108,7 +111,8 @@
         <div class="modal-content">
             <div class="modal-header bg-light">
                 <h5 class="modal-title fs-5 fw-semibold">История изменений</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeId" aria-label="Закрыть"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeId"
+                        aria-label="Закрыть"></button>
             </div>
             <div class="modal-body p-0">
                 <div class="container-fluid">

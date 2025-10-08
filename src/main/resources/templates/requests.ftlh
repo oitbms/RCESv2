@@ -652,7 +652,7 @@
                     </div>
                     <div class="mt-2 text-center">
                         <label for="addInconsistencies">Тип контроля
-                            <input type="text" class="form-control text-center" name="typeControl" id="inconsistenciesControlTypeId" value="ВИК">
+                            <input type="text" class="form-control text-center" name="controlType" id="inconsistenciesControlTypeId" value="ВИК">
                         </label>
                     </div>
                     <div class="mt-3 text-center">
