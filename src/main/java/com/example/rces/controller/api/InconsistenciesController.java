@@ -1,5 +1,7 @@
 package com.example.rces.controller.api;
 
+import com.example.rces.dto.InconsistencyCreateDto;
+import com.example.rces.dto.InconsistencyDto;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.service.InconsistenciesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +25,9 @@ public class InconsistenciesController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestParam String name,
-                                    @RequestParam String typeControl) {
+    public ResponseEntity<?> create(@RequestBody InconsistencyCreateDto dto) {
         try {
-            Inconsistency inconsistency = inconsistenciesService.createInconsistency(name, typeControl);
+            InconsistencyDto inconsistency = inconsistenciesService.createInconsistency(dto);
             return ResponseEntity.ok(inconsistency);
         } catch (RuntimeException e) {
             Map<String, String> errorResponse = new HashMap<>();

@@ -1,6 +1,8 @@
 package com.example.rces.controller;
 
 import com.example.rces.configuration.DeviceDetector;
+import com.example.rces.dto.CreateRequestDto;
+import com.example.rces.dto.RequestDto;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
@@ -11,11 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,27 +53,15 @@ public class RequestController {
     }
 
     @PostMapping("/create")
-    public String createRequest(@RequestParam String type,
-                                @RequestParam String employeeJson,
-                                @RequestParam String mlmNodeJson,
-                                @RequestParam String titleJson,
-                                @RequestParam(value = "itemNameJson") String itemJson,
-                                @RequestParam(required = false) Integer qty,
-                                @RequestParam(required = false) String control,
-                                @RequestParam(required = false) String customerOrderString,
-                                @RequestParam(required = false) String customerOrderJson,
-                                @RequestParam(required = false) String reasonsJson,
-                                @RequestParam(required = false) String comment,
-                                @RequestParam(required = false) MultipartFile[] additionalFiles,
-                                Model model) throws JsonProcessingException {
-        model.addAttribute("create", true);
+    public String createRequest(
+            @ModelAttribute CreateRequestDto createRequestDto,
+            Model model) throws JsonProcessingException {
         Employee createdEmployee = employeeService.getCurrentUser();
-        Requests request = requestsService.createRequest(createdEmployee, employeeJson, type, mlmNodeJson, itemJson, reasonsJson, qty, control,
-                customerOrderString, customerOrderJson, comment, additionalFiles, titleJson);
-        model.addAttribute("requestNumber", request.getRequestNumber());
+        RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto);
+        model.addAttribute("create", true);
+        model.addAttribute("requestNumber", requestDto.getRequestNumber());
         return "success";
     }
-
 
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {

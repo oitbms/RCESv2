@@ -1,5 +1,8 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.InconsistencyCreateDto;
+import com.example.rces.dto.InconsistencyDto;
+import com.example.rces.mapper.InconsistenciesMapper;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.repository.InconsistenciesRepository;
 import com.example.rces.service.InconsistenciesService;
@@ -12,10 +15,12 @@ import java.util.List;
 public class InconsistenciesServiceImpl implements InconsistenciesService {
 
     private final InconsistenciesRepository repository;
+    private final InconsistenciesMapper mapper;
 
     @Autowired
-    InconsistenciesServiceImpl(InconsistenciesRepository repo) {
+    InconsistenciesServiceImpl(InconsistenciesRepository repo, InconsistenciesMapper mapper) {
         this.repository = repo;
+        this.mapper = mapper;
     }
 
     @Override
@@ -24,7 +29,8 @@ public class InconsistenciesServiceImpl implements InconsistenciesService {
     }
 
     @Override
-    public Inconsistency createInconsistency(String name, String controlType) {
-        return repository.save(new Inconsistency(name, controlType));
+    public InconsistencyDto createInconsistency(InconsistencyCreateDto dto) {
+        Inconsistency inconsistency = mapper.toInconsistency(dto);
+        return mapper.toInconsistenciesDto(inconsistency);
     }
 }

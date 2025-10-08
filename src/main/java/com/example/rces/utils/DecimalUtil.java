@@ -23,7 +23,7 @@ public class DecimalUtil {
         int[] dailyCounts = new int[daysInMonth];
 
         for (Requests req : requests) {
-            int day = LocalDateTime.from(req.getCreatedDate()).getDayOfMonth();
+            int day = req.getCreatedDate().atZone(ZoneId.systemDefault()).toLocalDate().getDayOfMonth();
             dailyCounts[day - 1]++;
         }
         return dailyCounts;

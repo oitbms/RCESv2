@@ -1,5 +1,7 @@
 package com.example.rces.service;
 
+import com.example.rces.dto.CreateRequestDto;
+import com.example.rces.dto.RequestDto;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.Inconsistency;
@@ -13,9 +15,7 @@ import java.util.UUID;
 
 public interface RequestsService {
 
-    Requests createRequest(Employee createdEmployee, String employeeJson, String type,
-                           String mlmNodeJson, String itemJson, String reasonsJson, Integer qty, String control,
-                           String customerOrderName, String customerOrderJson, String comment, MultipartFile[] additionalFiles, String titleJson) throws JsonProcessingException;
+    RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto) throws JsonProcessingException;
 
     void save(Requests requests);
 

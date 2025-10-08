@@ -1,5 +1,8 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.CreateRequestDto;
+import com.example.rces.dto.RequestDto;
+import com.example.rces.mapper.RequestMapper;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
@@ -17,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.lang.reflect.Field;
@@ -39,9 +41,13 @@ public class RequestServiceImpl implements RequestsService {
     private final ImageService imageService;
     private final EmployeeService employeeService;
     private final InconsistenciesService inconsistenciesService;
+    private final RequestMapper requestMapper;
 
     @Autowired
-    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper, TelegramService telegramService, CustomerOrderService customerOrderService, ImageService imageService, EmployeeService employeeService, InconsistenciesService inconsistenciesService) {
+    public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper,
+                              TelegramService telegramService, CustomerOrderService customerOrderService,
+                              ImageService imageService, EmployeeService employeeService,
+                              InconsistenciesService inconsistenciesService, RequestMapper requestMapper) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.telegramService = telegramService;
@@ -49,69 +55,36 @@ public class RequestServiceImpl implements RequestsService {
         this.imageService = imageService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
+        this.requestMapper = requestMapper;
     }
 
-    @Transactional
     @Override
-    public Requests createRequest(Employee createdEmployee,
-                                  String employeeJson,
-                                  String type,
-                                  String mlmNodeJson,
-                                  String itemJson,
-                                  String reasonsJson,
-                                  Integer qty,
-                                  String control,
-                                  String customerOrderName,
-                                  String customerOrderJson,
-                                  String comment,
-                                  MultipartFile[] additionalFiles,
-                                  String titleJson) throws JsonProcessingException {
-        Employee employee = objectMapper.readValue(employeeJson, Employee.class);
-        if (employee.getChatId() == null) {
-            throw new RuntimeException("Ошибка: chatId сотрудника равен null. Невозможно создать запрос и отправить сообщение пользователю.");
-        }
-        CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(createdEmployee, customerOrderName, customerOrderJson);
-
+    public RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto) throws JsonProcessingException {
+        Employee employee = objectMapper.readValue(createRequestDto.getEmployeeJson(), Employee.class);
+        employee = employeeService.loadUserByUsername(employee.getUsername());
+        CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(createdEmployee,
+                createRequestDto.getCustomerOrderString(), createRequestDto.getCustomerOrderJson());
         GeneralReason reason = null;
         String reasonText = null;
-        if (Objects.equals(type, "otk")) {
-            reasonText = String.valueOf(reasonsJson);
+        if (Objects.equals(createRequestDto.getType(), "otk")) {
+            reasonText = String.valueOf(createRequestDto.getReasonsJson());
         } else {
-            if (!reasonsJson.isBlank()) {
-                reason = objectMapper.readValue(reasonsJson, GeneralReason.class);
+            if (!createRequestDto.getReasonsJson().isBlank()) {
+                reason = objectMapper.readValue(createRequestDto.getReasonsJson(), GeneralReason.class);
             }
         }
         Item item = null;
-        if (itemJson != null && !itemJson.isBlank()) {
-            item = objectMapper.readValue(itemJson, Item.class);
+        if (createRequestDto.getItemNameJson() != null && !createRequestDto.getItemNameJson().isBlank()) {
+            item = objectMapper.readValue(createRequestDto.getItemNameJson(), Item.class);
         }
         MlmNode mlmNode = null;
-        if (!mlmNodeJson.isBlank()) {
-            mlmNode = MlmNode.valueOf(mlmNodeJson);
+        if (!createRequestDto.getMlmNodeJson().isBlank()) {
+            mlmNode = MlmNode.valueOf(createRequestDto.getMlmNodeJson());
         }
-
-        Requests request = new Requests();
-
-        request.setTypeRequest(Requests.Type.valueOf(type));
-        request.setCreatedBy(createdEmployee);
-        request.setRequestNumber(repository.findNextRequestNumber());
-        request.setEmployee(employee);
-        request.setCustomerOrder(customerOrder);
-        request.setReason(reason);
-        request.setItem(item);
-        request.setQty(qty);
-        request.setControl(control);
-        request.setMlmNode(mlmNode);
-        request.setComment(comment != null ? comment : "");
-        request.setStatus(Status.New);
-        request.setReason_wr(reasonText);
-        request.setTitle(titleJson);
-        if (additionalFiles != null) {
-            request.setImages(imageService.createImages(additionalFiles, request, false));
-        }
-        repository.save(request);
-        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, employee, MessageType.CREATE));
-        return request;
+        createRequestDto.setRequestNumber(repository.findNextRequestNumber());
+        Requests requests = requestMapper.createFullRequest(createRequestDto, objectMapper, item, reason, mlmNode
+                , employee, customerOrder, createdEmployee);
+        return requestMapper.toDTO(repository.save(requests));
     }
 
     @Override
