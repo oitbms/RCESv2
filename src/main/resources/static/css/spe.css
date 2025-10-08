@@ -390,7 +390,7 @@ h1:after {
 }
 
 
-dialog#employeeDialog {
+dialog {
     border: none;
     width: min(70vw, 700px);
     height: min(80vh, 700px);
@@ -403,7 +403,7 @@ dialog#employeeDialog {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-dialog#employeeDialog::backdrop {
+dialog::backdrop {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
 }
@@ -490,8 +490,8 @@ dialog#employeeDialog::backdrop {
     width: 25%;
 }
 
-.col-150 {
-    width: 150px;
+.col-250 {
+    width: 250px;
 }
 
 .dialog-content-rows {

@@ -11,7 +11,7 @@ import java.util.List;
 public interface SpeRepository extends BaseAuditingRepository<SPE, Integer> {
 
     @Override
-    @EntityGraph(attributePaths = "employee")
+    @EntityGraph(attributePaths = {"employee", "subDivision"})
     @NonNull
     List<SPE> findAll();
 

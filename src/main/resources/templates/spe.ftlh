@@ -128,9 +128,8 @@
         </div>
         <div class="dialog-container-content">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column col-25">Имя</div>
-                <div class="dialog-content-header-column col-150">Подразделение</div>
-                <div class="dialog-content-header-column col-150">Функция</div>
+                <div class="dialog-content-header-column col-250">Имя</div>
+                <div class="dialog-content-header-column col-250">Подразделение</div>
             </div>
             <div class="dialog-content-rows">
             </div>
@@ -140,6 +139,31 @@
                 Отмена
             </button>
             <button class="dialog-btn primary" id="changeEmployee">
+                Выбрать
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="subDivisionDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно выбора подразделения</div>
+            <div class="choice-field">
+                <input type="text" placeholder="Введите подразделение">
+            </div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-250">Наименование</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" onclick="document.getElementById('subDivisionDialog').close()">
+                Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeSubDivision">
                 Выбрать
             </button>
         </div>

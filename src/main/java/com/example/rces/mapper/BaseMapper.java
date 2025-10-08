@@ -18,10 +18,6 @@ public interface BaseMapper<T, D, C> {
     @Mapping(target = "updatedBy", ignore = true)
     T toEntityFromCreateDTO(C createDto);
 
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "updatedDate", ignore = true)
-    @Mapping(target = "created", ignore = true)
-    @Mapping(target = "updated", ignore = true)
     D toDTO(T entity);
 
     @Mapping(target = "version", ignore = true)

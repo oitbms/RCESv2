@@ -1,6 +1,7 @@
 window.cache = {
     endpoints: {
-        employee: '/api/employees'
+        employee: '/api/employees',
+        subDivision: '/api/sub-divisions'
     },
 
     get: async function (key) {

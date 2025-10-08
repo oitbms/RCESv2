@@ -10,6 +10,7 @@ public class SpeCreateDTO {
     private String accuracyClass;
     private String limitMeasurement;
     private EmployeeDTO employee;
+    private SubDivisionDTO subDivision;
     private String mark;
     private LocalDate datePreparation;
     private LocalDate dateVerification;
@@ -64,6 +65,22 @@ public class SpeCreateDTO {
         this.employee = employee;
     }
 
+    public SubDivisionDTO getSubDivision() {
+        return subDivision;
+    }
+
+    public void setSubDivision(SubDivisionDTO subDivision) {
+        this.subDivision = subDivision;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
+    }
+
     public LocalDate getDatePreparation() {
         return datePreparation;
     }
@@ -94,13 +111,5 @@ public class SpeCreateDTO {
 
     public void setPeriodicity(Integer periodicity) {
         this.periodicity = periodicity;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
     }
 }

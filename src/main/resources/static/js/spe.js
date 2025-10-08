@@ -46,27 +46,129 @@ $(document).on('click', '#save-button', async function () {
         saveMassive.clear();
     }
 });
-//Обработчик изменения в textArea
-$(document).on('input', 'textarea', async function () {
+//Обработчик изменения в textArea и input
+$(document).on('input', '[data-name]', async function () {
     const currentTextArea = $(this);
     const currentId = currentTextArea.closest('.table-row').attr('id');
     const fieldName = currentTextArea.attr('data-name');
     const fieldValue = currentTextArea.val();
-    saveMassive[currentId] = {[fieldName]: fieldValue};
+    saveMassive[currentId] = {
+        ...saveMassive[currentId],
+        [fieldName]: fieldValue
+    };
     currentTextArea.addClass('change-textarea');
 });
 //Обработчик клика по .area-modal
 $(document).on('click', '.area-modal', async function () {
     const currentArea = $(this);
-    const currentId = currentArea.closest('.table-row').attr('id');
     const fieldName = currentArea.attr('data-name');
-    const fieldValue = currentArea.val();
+    const currentId = currentArea.closest('.table-row').attr('id');
+    let selected;
 
     if (fieldName === 'subDivision') {
+        const dialog = $('#subDivisionDialog');
+        const rowContainer = dialog.find('.dialog-content-rows');
+        const searchInput = dialog.find('.choice-field input');
+
+        function renderSubDivision(subDivision) {
+            rowContainer.empty();
+            for (const e of subDivision) {
+                rowContainer.append(`
+                <div class="dialog-content-rows-row" data-id="${e.id}">
+                    <div class="content-row-column col-250">${e.name}</div>
+                </div>`
+                );
+            }
+        }
+
+        const subDivisions = await cache.get('subDivision');
+        renderSubDivision(subDivisions);
+
+        searchInput.off('input').on('input', function () {
+            const searchText = $(this).val().toLowerCase().trim();
+            const filteredSubDivision = subDivisions.filter(e => e.name.toLowerCase().includes(searchText));
+            renderSubDivision(filteredSubDivision);
+        });
+
+        dialog[0].showModal();
+
+        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
+            const subDivisionId = $(this).data('id');
+
+            selected = subDivisions.find(e => e.id === subDivisionId);
+
+            $('.dialog-content-rows-row').removeClass('selected');
+            $(this).addClass('selected');
+        });
+        $('#changeSubDivision').off('click').on('click', async function () {
+            if (!selected) {
+                alert('Выберите подразделение из списка');
+                return;
+            }
+            currentArea.val(selected.name);
+
+            saveMassive[currentId] = {
+                ...saveMassive[currentId],
+                [fieldName]: selected
+            };
+
+            currentArea.addClass('change-textarea');
+
+            dialog[0].close();
+        });
 
     } else if (fieldName === 'employee') {
         const dialog = $('#employeeDialog');
+        const rowContainer = dialog.find('.dialog-content-rows');
+        const searchInput = dialog.find('.choice-field input');
+
+        function renderEmployee(employees) {
+            rowContainer.empty();
+            for (const e of employees) {
+                rowContainer.append(`
+                <div class="dialog-content-rows-row" data-id="${e.id}">
+                    <div class="content-row-column col-250">${e.name}</div>
+                    <div class="content-row-column col-250">${e.mlmNode}</div>
+                </div>`
+                );
+            }
+        }
+
+        const employees = await cache.get('employee');
+        renderEmployee(employees);
+
+        searchInput.off('input').on('input', function () {
+            const searchText = $(this).val().toLowerCase().trim();
+            const filteredEmployee = employees.filter(e => e.name.toLowerCase().includes(searchText));
+            renderEmployee(filteredEmployee);
+        });
+
         dialog[0].showModal();
+
+        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
+            const employeeId = $(this).data('id');
+
+            selected = employees.find(e => e.id === employeeId);
+
+            $('.dialog-content-rows-row').removeClass('selected');
+            $(this).addClass('selected');
+        });
+        $('#changeEmployee').off('click').on('click', async function () {
+            if (!selected) {
+                alert('Выберите сотрудника из списка');
+                return;
+            }
+            currentArea.val(selected.name);
+
+            saveMassive[currentId] = {
+                ...saveMassive[currentId],
+                [fieldName]: selected
+            };
+
+            currentArea.addClass('change-textarea');
+
+            dialog[0].close();
+        });
     }
 
     currentArea.addClass('change-area');
@@ -110,7 +212,7 @@ async function createRow(spe, update) {
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
-                        <p data-name="subDivision">${spe.subDivision}</p>
+                        <p data-name="subDivision">${spe.subDivision.name}</p>
                     </div>
                     <div class="table-cell" style="width: var(--responsible);">
                         <div class="responsible">
@@ -171,7 +273,7 @@ async function enableEditMode(row) {
                 element = $(`<input type="date" data-name="${dataName}">`).val(value);
             } else element = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
 
-            if (dataName === 'employee') {
+            if (dataName === 'employee' || dataName === 'subDivision') {
                 element.addClass('area-modal').attr('readonly', 'readonly');
             }
 

@@ -2,6 +2,7 @@ package com.example.rces.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.envers.NotAudited;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,24 +25,28 @@ public class BaseAuditingEntity {
     @Column(name = "created_date", updatable = false)
     @NotAudited
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @OptimisticLock(excluded = true)
     private Instant createdDate;
 
     @LastModifiedDate
     @Column(name = "updated_date")
     @NotAudited
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @OptimisticLock(excluded = true)
     private Instant updatedDate;
 
     @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", updatable = false, nullable = false)
     @NotAudited
+    @OptimisticLock(excluded = true)
     private Employee createdBy;
 
     @LastModifiedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     @NotAudited
+    @OptimisticLock(excluded = true)
     private Employee updatedBy;
 
     public Long getVersion() {

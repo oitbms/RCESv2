@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS rces_history.plan_spe_history
     out_number         VARCHAR(255),
     accuracy_class     VARCHAR(255),
     limit_measurement  VARCHAR(255),
-    subdivision        VARCHAR(255),
+    sub_division_id        BIGINT,
     employee_id        BIGINT,
     mark               VARCHAR(255),
     date_preparation   DATE,

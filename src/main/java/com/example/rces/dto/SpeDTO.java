@@ -13,7 +13,7 @@ public class SpeDTO {
     private String type;
     private String outNumber;
     private String accuracyClass;
-    private String subDivision;
+    private SubDivisionDTO subDivision;
     private String limitMeasurement;
     private EmployeeDTO employee;
     private String mark;
@@ -30,6 +30,14 @@ public class SpeDTO {
 
     public void setNumber(Integer number) {
         this.number = number;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public String getName() {
@@ -64,6 +72,14 @@ public class SpeDTO {
         this.accuracyClass = accuracyClass;
     }
 
+    public SubDivisionDTO getSubDivision() {
+        return subDivision;
+    }
+
+    public void setSubDivision(SubDivisionDTO subDivision) {
+        this.subDivision = subDivision;
+    }
+
     public String getLimitMeasurement() {
         return limitMeasurement;
     }
@@ -78,6 +94,14 @@ public class SpeDTO {
 
     public void setEmployee(EmployeeDTO employee) {
         this.employee = employee;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
     }
 
     public LocalDate getDatePreparation() {
@@ -116,8 +140,8 @@ public class SpeDTO {
         return status;
     }
 
-    public void setStatus(StatusSPE status) {
-        this.status = status.getDescription();
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Color getColor() {
@@ -126,29 +150,5 @@ public class SpeDTO {
 
     public void setColor(Color color) {
         this.color = color;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
-    }
-
-    public String getSubDivision() {
-        return subDivision;
-    }
-
-    public void setSubDivision(String subDivision) {
-        this.subDivision = subDivision;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
     }
 }

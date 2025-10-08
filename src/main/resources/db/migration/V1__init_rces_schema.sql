@@ -16,6 +16,23 @@ CREATE TABLE IF NOT EXISTS rces.employees
     INDEX idx_name (name)
 );
 
+CREATE TABLE IF NOT EXISTS rces.subdivision
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code         VARCHAR(100) NOT NULL UNIQUE,
+    name         VARCHAR(100) NOT NULL UNIQUE,
+    version      BIGINT       NOT NULL DEFAULT 0,
+    created_date TIMESTAMP    NULL,
+    updated_date TIMESTAMP    NULL,
+    created_by   BIGINT       NOT NULL DEFAULT 1,
+    updated_by   BIGINT       NULL,
+
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
+
+    INDEX idx_name (name)
+);
+
 CREATE TABLE IF NOT EXISTS rces.customerorder
 (
     id           BINARY(16) PRIMARY KEY,
@@ -156,7 +173,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     out_number         VARCHAR(255) NOT NULL,
     accuracy_class     VARCHAR(255),
     limit_measurement  VARCHAR(255),
-    subdivision        VARCHAR(255) NOT NULL,
+    sub_division_id    BIGINT       NOT NULL,
     employee_id        BIGINT,
     mark               VARCHAR(255),
     date_preparation   DATE,
@@ -172,6 +189,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     created_by         BIGINT       NOT NULL DEFAULT 1,
     updated_by         BIGINT       NULL,
 
+    FOREIGN KEY (sub_division_id) REFERENCES rces.subdivision (id),
     FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
     FOREIGN KEY (document_id) REFERENCES rces.documents (id),
     FOREIGN KEY (created_by) REFERENCES rces.employees (id),
@@ -201,23 +219,6 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(255) NOT NULL UNIQUE,
     control_type VARCHAR(255) NOT NULL,
-    created_date TIMESTAMP    NULL,
-    updated_date TIMESTAMP    NULL,
-    created_by   BIGINT       NOT NULL DEFAULT 1,
-    updated_by   BIGINT       NULL,
-
-    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
-    FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
-
-    INDEX idx_name (name)
-);
-
-CREATE TABLE IF NOT EXISTS rces.subdivision
-(
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    code         VARCHAR(100) NOT NULL UNIQUE,
-    name         VARCHAR(100) NOT NULL UNIQUE,
-    version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP    NULL,
     updated_date TIMESTAMP    NULL,
     created_by   BIGINT       NOT NULL DEFAULT 1,

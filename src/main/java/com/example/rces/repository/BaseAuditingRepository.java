@@ -2,6 +2,7 @@ package com.example.rces.repository;
 
 import com.example.rces.models.BaseAuditingEntity;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -18,14 +19,17 @@ public interface BaseAuditingRepository<T extends BaseAuditingEntity, ID> extend
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Override
     @NonNull
+    @EntityGraph(attributePaths = {"createdBy", "updatedBy"})
     Optional<T> findById(@Nullable ID id);
 
     @Lock(LockModeType.OPTIMISTIC)
     @Query("select e from #{#entityName} e where e.id = :id")
+    @EntityGraph(attributePaths = {"createdBy", "updatedBy"})
     Optional<T> findByIdOptimistic(@Param("id") ID id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from #{#entityName} e where e.id = :id")
+    @EntityGraph(attributePaths = {"createdBy", "updatedBy"})
     Optional<T> findByIdForUpdate(@Param("id") ID id);
 
 }

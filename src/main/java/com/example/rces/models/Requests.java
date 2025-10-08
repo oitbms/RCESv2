@@ -75,6 +75,7 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
             inverseJoinColumns = @JoinColumn(name = "incosistency_id")
     )
     @DisplayName("Причины несоответствий")
+    @NotAudited
     private Set<Inconsistency> inconsistencies;
 
     @Column(name = "mlm_node")

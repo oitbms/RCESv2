@@ -1,6 +1,7 @@
 package com.example.rces.controller.api;
 
 import com.example.rces.controller.payload.*;
+import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
@@ -9,6 +10,7 @@ import com.example.rces.models.enums.Status;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.InconsistenciesService;
+import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,12 +26,14 @@ public class ApiController {
     private final InconsistenciesService inconsistenciesService;
     private final CustomerOrderService customerOrderService;
     private final EmployeeService employeeService;
+    private final SubDivisionService subDivisionService;
 
     @Autowired
-    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService) {
+    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
+        this.subDivisionService = subDivisionService;
     }
 
     @GetMapping("/employees")
@@ -93,5 +97,11 @@ public class ApiController {
         return statuses.stream()
                 .map(status -> new StatusPayload(status.getId(), status.getName()))
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/sub-divisions")
+    public List<SubDivisionDTO> getSubDivisions() {
+        var s = 12;
+        return subDivisionService.getAll();
     }
 }

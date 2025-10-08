@@ -139,7 +139,7 @@ $('.change-order-button').click(async function () {
     const allCustomerOrder = customerOrders.all;
     let selectedCustomerOrder = null; // Храним весь объект заказа
     const rowContainer = $('.dialog-content-rows');
-    const searchInput = $('.choice-order input');
+    const searchInput = $('.choice-field input');
 
     function renderOrders(orders) {
         rowContainer.empty();

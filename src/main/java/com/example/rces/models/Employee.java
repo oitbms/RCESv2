@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +21,7 @@ import java.util.Objects;
 @Audited
 @Table(name = "employees", catalog = "rces")
 @AuditTable(value = "employees_history", catalog = "rces_history")
+@DynamicUpdate
 public class Employee extends BaseAuditingEntity implements UserDetails {
 
     @Id

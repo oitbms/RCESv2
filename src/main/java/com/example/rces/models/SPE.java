@@ -3,10 +3,7 @@ package com.example.rces.models;
 import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
@@ -47,10 +44,9 @@ public class SPE extends BaseAuditingEntity {
     @Column(name = "limit_measurement")
     private String limitMeasurement;
 
-    @Column(name = "subdivision")
-    @NotBlank(message = "Подразделение не может быть пустым")
-    @Size(min = 3, message = "Подразделение должно содержать минимум 3 символа")
-    private String subDivision;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull(message = "Подразделение не может быть пустым")
+    private SubDivision subDivision;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee employee;
@@ -131,11 +127,11 @@ public class SPE extends BaseAuditingEntity {
         this.limitMeasurement = limitMeasurement;
     }
 
-    public String getSubDivision() {
+    public  SubDivision getSubDivision() {
         return subDivision;
     }
 
-    public void setSubDivision(String subDivision) {
+    public void setSubDivision(SubDivision subDivision) {
         this.subDivision = subDivision;
     }
 

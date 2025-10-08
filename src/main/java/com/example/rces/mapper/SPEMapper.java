@@ -9,7 +9,8 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring",
         uses = {
-                EmployeeMapper.class
+                EmployeeMapper.class,
+                SubDivisionMapper.class
         })
 public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
 
