@@ -3,7 +3,6 @@ package com.example.rces.dto;
 import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 public class SpeDTO {
@@ -24,8 +23,6 @@ public class SpeDTO {
     private Integer periodicity;
     private String status;
     private Color color;
-    private Instant created;
-    private Instant updated;
 
     public Integer getNumber() {
         return number;
@@ -129,22 +126,6 @@ public class SpeDTO {
 
     public void setColor(Color color) {
         this.color = color;
-    }
-
-    public Instant getCreated() {
-        return created;
-    }
-
-    public void setCreated(Instant created) {
-        this.created = created;
-    }
-
-    public Instant getUpdated() {
-        return updated;
-    }
-
-    public void setUpdated(Instant updated) {
-        this.updated = updated;
     }
 
     public String getMark() {

@@ -18,7 +18,7 @@ public class BaseAuditingEntity {
     @Version
     @Column(name = "version", nullable = false)
     @NotAudited
-    private Long version;
+    private Long version = 0L;
 
     @CreatedDate
     @Column(name = "created_date", updatable = false)

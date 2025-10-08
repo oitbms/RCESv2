@@ -206,7 +206,7 @@
     <div class="dialog-container">
         <div class="dialog-container-header">
             <div class="dialog-name">Окно выбора заказа клиента</div>
-            <div class="choice-order">
+            <div class="choice-field">
                 <input type="text" placeholder="Введите номер заказа клиента">
             </div>
         </div>

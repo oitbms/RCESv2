@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS rces.employees
     role         VARCHAR(50)  NOT NULL,
     is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
     chat_id      BIGINT       NOT NULL,
-    version      BIGINT       NOT NULL,
+    version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP,
     updated_date TIMESTAMP    NULL,
     created_by   BIGINT       NOT NULL DEFAULT 1,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS rces.customerorder
 (
     id           BINARY(16) PRIMARY KEY,
     str_code     VARCHAR(100) NOT NULL,
-    version      BIGINT       NOT NULL,
+    version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP    NULL,
     updated_date TIMESTAMP    NULL,
     created_by   BIGINT       NOT NULL DEFAULT 1,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS rces.documents
 (
     id           BINARY(16) PRIMARY KEY,
     name         VARCHAR(150) NOT NULL UNIQUE,
-    version      BIGINT       NOT NULL,
+    version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP    NULL,
     updated_date TIMESTAMP    NULL,
     created_by   BIGINT       NOT NULL DEFAULT 1,
@@ -45,13 +45,8 @@ CREATE TABLE IF NOT EXISTS rces.documents
 CREATE TABLE IF NOT EXISTS rces.requests
 (
     id                BINARY(16) PRIMARY KEY,
-    version           INT         NOT NULL,
     type_request      VARCHAR(50) NOT NULL,
     work_date         DATETIME,
-    created_by        BIGINT,
-    updated_by        BIGINT,
-    created_at        DATETIME,
-    update_at         DATETIME,
     request_number    INT,
     employee_id       BIGINT,
     customer_order_id BINARY(16),
@@ -71,8 +66,13 @@ CREATE TABLE IF NOT EXISTS rces.requests
     control           VARCHAR(255),
     comment_agreed    TEXT,
     title             VARCHAR(255),
-    qty_rejected      INT     DEFAULT 0,
-    frozen            BOOLEAN DEFAULT FALSE,
+    qty_rejected      INT                  DEFAULT 0,
+    frozen            BOOLEAN              DEFAULT FALSE,
+    version           BIGINT      NOT NULL DEFAULT 0,
+    created_date      TIMESTAMP   NULL,
+    updated_date      TIMESTAMP   NULL,
+    created_by        BIGINT      NOT NULL DEFAULT 1,
+    updated_by        BIGINT      NULL,
 
     FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
     FOREIGN KEY (closed_employee) REFERENCES rces.employees (id),
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(255) NOT NULL UNIQUE,
     control_type VARCHAR(255) NOT NULL,
-    version      BIGINT       NOT NULL,
+    version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP    NULL,
     updated_date TIMESTAMP    NULL,
     created_by   BIGINT       NOT NULL DEFAULT 1,
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_sgi
     note          VARCHAR(1000),
     comment       VARCHAR(1000),
     agreed        BOOLEAN,
-    version       BIGINT    NOT NULL,
+    version       BIGINT    NOT NULL DEFAULT 0,
     created_date  TIMESTAMP NULL,
     updated_date  TIMESTAMP NULL,
     created_by    BIGINT    NOT NULL DEFAULT 1,
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
     sgi_id         BINARY(16) UNIQUE,
     execution_date DATE,
     report         VARCHAR(1000),
-    version        BIGINT    NOT NULL,
+    version        BIGINT    NOT NULL DEFAULT 0,
     created_date   TIMESTAMP NULL,
     updated_date   TIMESTAMP NULL,
     created_by     BIGINT    NOT NULL DEFAULT 1,
@@ -142,6 +142,8 @@ CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
 
+ALTER TABLE rces.plan_sgi
+    DROP FOREIGN KEY fk_plan_sgi_executions;
 ALTER TABLE rces.plan_sgi
     ADD CONSTRAINT fk_plan_sgi_executions
         FOREIGN KEY (executions_id) REFERENCES rces.fact_execution_sgi (id);
@@ -164,7 +166,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     document_id        BINARY(16),
     status             VARCHAR(50)           DEFAULT 'NONE',
     color              VARCHAR(50)           DEFAULT 'NONE',
-    version            BIGINT       NOT NULL,
+    version            BIGINT       NOT NULL DEFAULT 0,
     created_date       TIMESTAMP    NULL,
     updated_date       TIMESTAMP    NULL,
     created_by         BIGINT       NOT NULL DEFAULT 1,
@@ -192,4 +194,37 @@ CREATE TABLE IF NOT EXISTS rces.images
     FOREIGN KEY (sgi_id) REFERENCES rces.fact_execution_sgi (id),
     FOREIGN KEY (sgim_id) REFERENCES rces.plan_sgi (id),
     FOREIGN KEY (document_id) REFERENCES rces.documents (id)
+);
+
+CREATE TABLE IF NOT EXISTS rces.inconsistencies
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name         VARCHAR(255) NOT NULL UNIQUE,
+    control_type VARCHAR(255) NOT NULL,
+    created_date TIMESTAMP    NULL,
+    updated_date TIMESTAMP    NULL,
+    created_by   BIGINT       NOT NULL DEFAULT 1,
+    updated_by   BIGINT       NULL,
+
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
+
+    INDEX idx_name (name)
+);
+
+CREATE TABLE IF NOT EXISTS rces.subdivision
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code         VARCHAR(100) NOT NULL UNIQUE,
+    name         VARCHAR(100) NOT NULL UNIQUE,
+    version      BIGINT       NOT NULL DEFAULT 0,
+    created_date TIMESTAMP    NULL,
+    updated_date TIMESTAMP    NULL,
+    created_by   BIGINT       NOT NULL DEFAULT 1,
+    updated_by   BIGINT       NULL,
+
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
+
+    INDEX idx_name (name)
 );

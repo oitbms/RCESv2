@@ -43,6 +43,7 @@ $(document).on('click', '#edit-button', async function () {
 $(document).on('click', '#save-button', async function () {
     if (Object.keys(saveMassive).length > 0) {
         await saveData(saveMassive, "update");
+        saveMassive.clear();
     }
 });
 //Обработчик изменения в textArea
@@ -51,8 +52,24 @@ $(document).on('input', 'textarea', async function () {
     const currentId = currentTextArea.closest('.table-row').attr('id');
     const fieldName = currentTextArea.attr('data-name');
     const fieldValue = currentTextArea.val();
-    saveMassive[currentId] = { [fieldName]: fieldValue };
+    saveMassive[currentId] = {[fieldName]: fieldValue};
     currentTextArea.addClass('change-textarea');
+});
+//Обработчик клика по .area-modal
+$(document).on('click', '.area-modal', async function () {
+    const currentArea = $(this);
+    const currentId = currentArea.closest('.table-row').attr('id');
+    const fieldName = currentArea.attr('data-name');
+    const fieldValue = currentArea.val();
+
+    if (fieldName === 'subDivision') {
+
+    } else if (fieldName === 'employee') {
+        const dialog = $('#employeeDialog');
+        dialog[0].showModal();
+    }
+
+    currentArea.addClass('change-area');
 });
 
 async function displayPage() {
@@ -136,24 +153,48 @@ async function deleteRow(rowId) {
 }
 
 async function enableEditMode(row) {
+    let element;
+    const dateTime = ['datePreparation', 'dateVerification'];
+    const select = ['mark'];
     if (row) {
-        $(row).find('p').each(function () {
+        $(row).find('p').each(async function () {
             const $p = $(this);
             const text = $p.text();
             const dataName = $p.attr('data-name');
-            const textarea = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
-            $p.replaceWith(textarea);
+            if (select.includes(dataName)) {
+                element = $(`<select data-name="${dataName}"></select>`);
+                element.append($(`<option selected>${text}</option>`));
+                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`));
+            } else if (dateTime.includes(dataName)) {
+                const rowId = Number($(row).attr('id'));
+                const value = localCache.get(rowId)[dataName];
+                element = $(`<input type="date" data-name="${dataName}">`).val(value);
+            } else element = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
+
+            if (dataName === 'employee') {
+                element.addClass('area-modal').attr('readonly', 'readonly');
+            }
+
+            $p.replaceWith(element);
         });
         return;
     }
-    for (rowId of selectedRow) {
+    for (const rowId of selectedRow) {
         const row = $(`.table-row[id="${rowId}"]`);
         row.find('p').each(function () {
             const $p = $(this);
             const text = $p.text();
             const dataName = $p.attr('data-name');
-            const textarea = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
-            $p.replaceWith(textarea);
+            if (select.includes(dataName)) {
+                element = $(`<select data-name="${dataName}"></select>`);
+                element.append($(`<option selected>${text}</option>`));
+                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`));
+            } else if (dateTime.includes(dataName)) {
+                const value = localCache.get(Number(rowId))[dataName];
+                element = $(`<input type="date" data-name="${dataName}">`).val(value);
+            } else element = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
+
+            $p.replaceWith(element);
         });
     }
 }
@@ -193,9 +234,10 @@ async function saveData(spe, type) {
         localCache.set(newSpe.number, newSpe);
         await createRow(newSpe, null);
     }
+
     async function updateSpe(spe) {
         const updatePromises = Object.entries(spe).map(async ([number, speData]) => {
-            const version = localCache.get(number).version;
+            const version = localCache.get(Number(number)).version;
             const updateSpe = await $.ajax({
                 url: `/api/spe/update/${number}?version=${version}`,
                 type: 'PATCH',
@@ -210,6 +252,7 @@ async function saveData(spe, type) {
 
         return await Promise.all(updatePromises);
     }
+
     async function deleteSpe(spe) {
         return $.ajax({
             url: '/spe/delete',
@@ -220,7 +263,7 @@ async function saveData(spe, type) {
                 localCache.delete(spe.number);
                 await deleteRow(spe.number);
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error('Ошибка при удалении SPE:', error);
                 throw error;
             }
@@ -229,11 +272,9 @@ async function saveData(spe, type) {
 
     if (type === 'create') {
         await createSpe(spe);
-    }
-    else if (type === 'update') {
+    } else if (type === 'update') {
         await updateSpe(spe);
-    }
-    else if (type === 'delete') {
+    } else if (type === 'delete') {
         await deleteSpe(spe);
     } else console.error("Неподдерживаемый тип запроса")
 }

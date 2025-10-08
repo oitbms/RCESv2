@@ -5,7 +5,6 @@ import org.mapstruct.MappingTarget;
 
 public interface BaseMapper<T, D, C> {
 
-    @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
     @Mapping(target = "createdBy", ignore = true)

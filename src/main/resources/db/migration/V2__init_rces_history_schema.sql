@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS rces_history.requests_history
 (
     id                BINARY(16),
     rev               BIGINT      NOT NULL,
+    revtype           TINYINT,
     type_request      VARCHAR(50) NOT NULL,
     work_date         DATETIME,
     request_number    INT,
@@ -118,16 +119,17 @@ CREATE TABLE IF NOT EXISTS rces_history.plan_sgi_history
 (
     id            BINARY(16),
     rev           BIGINT NOT NULL,
+    revtype       TINYINT,
     number        INT,
     workshop      VARCHAR(255),
     event         VARCHAR(255),
     actions       VARCHAR(499),
     department    VARCHAR(50),
     employee_id   BIGINT,
-    parent_sgi_id VARCHAR(36),
+    parent_sgi_id BINARY(16),
     desired_date  DATE,
     plan_date     DATE,
-    executions_id VARCHAR(36),
+    executions_id BINARY(16),
     color         VARCHAR(50),
     note          VARCHAR(1000),
     comment       VARCHAR(1000),
@@ -141,10 +143,35 @@ CREATE TABLE IF NOT EXISTS rces_history.fact_execution_sgi_history
 (
     id             BINARY(16),
     rev            BIGINT NOT NULL,
-    sgi_id         VARCHAR(36) UNIQUE,
+    revtype        TINYINT,
+    sgi_id         BINARY(16),
     execution_date DATE,
     report         VARCHAR(1000),
 
     PRIMARY KEY (id, rev),
     FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
 );
+
+CREATE TABLE IF NOT EXISTS rces_history.inconsistencies_history
+(
+    id           BIGINT       NOT NULL,
+    rev          BIGINT       NOT NULL,
+    revtype      TINYINT,
+    name         VARCHAR(255) NOT NULL,
+    control_type VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (id, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+);
+
+CREATE TABLE IF NOT EXISTS rces_history.subdivision_history
+(
+    id      BIGINT NOT NULL,
+    rev     BIGINT NOT NULL,
+    revtype TINYINT,
+    code    VARCHAR(100),
+    name    VARCHAR(100),
+
+    PRIMARY KEY (id, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+)

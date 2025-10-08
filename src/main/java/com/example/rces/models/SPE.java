@@ -3,6 +3,8 @@ package com.example.rces.models;
 import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.DynamicUpdate;
@@ -66,8 +68,8 @@ public class SPE extends BaseAuditingEntity {
     private String certificateNumber;
 
     @Column(name = "periodicity")
-    @NotBlank(message = "Периодичность поверки не может быть пустой")
-    @Size(min = 1, message = "Периодичность поверки должно содержать минимум 1 символ")
+    @Min(value = 1, message = "Периодичность поверки должна быть не менее 1 символа")
+    @Max(value = 100, message = "Периодичность поверки должна быть не более 2 символов")
     private Integer periodicity;
 
     @ManyToOne(fetch = FetchType.LAZY)

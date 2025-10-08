@@ -26,8 +26,7 @@ $(document).on('click', '#createSGI', async function (e) {
         ['EVENT', 'CONTROL'].includes(employee.role)
     );
     filteredEmployees.forEach(employee => {
-        field.append($('<option>', {text: employee.name})
-        );
+        field.append($('<option>', {text: employee.name}));
     });
     //Клик вне диалога
     dialog.off('click').on('click', (e) => {

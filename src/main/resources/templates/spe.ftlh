@@ -117,6 +117,34 @@
         </div>
     </div>
 </div>
+
+<dialog id="employeeDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно выбора сотрудника</div>
+            <div class="choice-field">
+                <input type="text" placeholder="Введите фамилию сотрудника">
+            </div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-25">Имя</div>
+                <div class="dialog-content-header-column col-150">Подразделение</div>
+                <div class="dialog-content-header-column col-150">Функция</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" onclick="document.getElementById('employeeDialog').close()">
+                Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeEmployee">
+                Выбрать
+            </button>
+        </div>
+    </div>
+</dialog>
 </body>
 
 </html>

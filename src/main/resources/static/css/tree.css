@@ -772,11 +772,11 @@ dialog#customerOrderDialog::backdrop {
     color: #424242;
 }
 
-.choice-order {
+.choice-field {
     position: relative;
 }
 
-.choice-order input {
+.choice-field input {
     width: 100%;
     padding: 12px 15px 12px 45px;
     border-radius: 6px;
@@ -787,13 +787,13 @@ dialog#customerOrderDialog::backdrop {
     color: #333;
 }
 
-.choice-order input:focus {
+.choice-field input:focus {
     outline: none;
     border-color: #bdbdbd;
     box-shadow: 0 0 0 3px rgba(189, 189, 189, 0.3);
 }
 
-.choice-order::before {
+.choice-field::before {
     content: "";
     position: absolute;
     left: 15px;

@@ -5,11 +5,12 @@ import com.example.rces.dto.SpeDTO;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.SpeService;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,14 +47,17 @@ public class SpeServiceImpl implements SpeService {
     }
 
     @Override
-    @SneakyThrows
     public SpeDTO updateSPE(Integer number, Long version, Map<String, Object> changes) {
         var speEntity = repository.findById(number).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Spe с id %s не найдено", number)));
-        if (Objects.equals(speEntity.getVersion(), version)) {
+        if (!Objects.equals(speEntity.getVersion(), version)) {
             throw new OptimisticLockException("SPE с id " + number + " устарел");
         }
-        objectMapper.updateValue(speEntity, changes);
+        try {
+            objectMapper.updateValue(speEntity, changes);
+        } catch (JsonMappingException e) {
+            throw new ApplicationContextException("Ошибка при маппинг JSON", e);
+        }
         repository.save(speEntity);
         return mapper.toDTO(speEntity);
     }
