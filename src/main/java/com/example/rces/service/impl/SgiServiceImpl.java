@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.rces.utils.FilesUtil.saveImages;
+import static com.example.rces.utils.FilesUtil.addImages;
 import static com.example.rces.utils.ServiceUtil.buildExpiredRequestsString;
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
@@ -172,7 +172,7 @@ public class SgiServiceImpl implements SgiService {
             sgi.setNote(note);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (imagesSGI != null) {
-                List<Images> newImages = saveImages(imagesSGI, sgi);
+                List<Images> newImages = addImages(imagesSGI, sgi);
                 sgi.getImages().clear();
                 sgi.getImages().addAll(newImages);
             } else {
@@ -193,7 +193,7 @@ public class SgiServiceImpl implements SgiService {
             factExecutionSGI.setExecutionDate(executionDate);
             factExecutionSGI.setReport(report);
             if (imagesFactSGI != null) {
-                List<Images> newImages = FilesUtil.saveImages(imagesFactSGI, factExecutionSGI);
+                List<Images> newImages = FilesUtil.addImages(imagesFactSGI, factExecutionSGI);
                 factExecutionSGI.getImages().clear();
                 factExecutionSGI.getImages().addAll(newImages);
             } else {

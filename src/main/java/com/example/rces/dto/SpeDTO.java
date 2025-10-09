@@ -4,6 +4,7 @@ import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.StatusSPE;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class SpeDTO {
 
@@ -21,6 +22,7 @@ public class SpeDTO {
     private LocalDate dateVerification;
     private String certificateNumber;
     private Integer periodicity;
+    private UUID documentId;
     private String status;
     private Color color;
 
@@ -134,6 +136,14 @@ public class SpeDTO {
 
     public void setPeriodicity(Integer periodicity) {
         this.periodicity = periodicity;
+    }
+
+    public UUID getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(UUID documentId) {
+        this.documentId = documentId;
     }
 
     public String getStatus() {

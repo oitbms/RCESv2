@@ -10,8 +10,7 @@ public class DocumentCreateDTO {
 
     private List<MultipartFile> files;
 
-    private List<MultipartFile> images;
-
+    private MultipartFile[] images;
 
     public String getName() {
         return name;
@@ -29,12 +28,11 @@ public class DocumentCreateDTO {
         this.files = files;
     }
 
-    public List<MultipartFile> getImages() {
+    public MultipartFile[] getImages() {
         return images;
     }
 
-    public void setImages(List<MultipartFile> images) {
+    public void setImages(MultipartFile[] images) {
         this.images = images;
     }
-
 }

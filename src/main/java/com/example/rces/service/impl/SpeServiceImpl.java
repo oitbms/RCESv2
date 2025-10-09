@@ -1,13 +1,14 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
-import com.example.rces.mapper.DocumentMapper;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
 import com.example.rces.repository.SpeRepository;
+import com.example.rces.service.DocumentService;
 import com.example.rces.service.SpeService;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,15 +28,15 @@ import java.util.Objects;
 public class SpeServiceImpl implements SpeService {
 
     private final SpeRepository repository;
+    private final DocumentService documentService;
     private final SPEMapper mapper;
-    private final DocumentMapper documentMapper;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public SpeServiceImpl(SpeRepository repository, SPEMapper mapper, DocumentMapper documentMapper, ObjectMapper objectMapper) {
+    public SpeServiceImpl(SpeRepository repository, DocumentService documentService, SPEMapper mapper, ObjectMapper objectMapper) {
         this.repository = repository;
+        this.documentService = documentService;
         this.mapper = mapper;
-        this.documentMapper = documentMapper;
         this.objectMapper = objectMapper;
     }
 
@@ -75,10 +76,13 @@ public class SpeServiceImpl implements SpeService {
     }
 
     @Override
-    public DocumentDTO getSpeDocument(Integer number) {
-        SPE spe = repository.findByIdWithDocument(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
-        Document document = spe.getDocument();
-        return documentMapper.toDTO(document);
+    public DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto) {
+        SPE spe = repository.findById(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
+        Document document = documentService.createDocument(dto);
+        document.setName(String.format("Инструмент %s сертификат %s",spe.getName(), spe.getCertificateNumber()));
+        spe.setDocument(document);
+        repository.save(spe);
+        return documentService.toDTO(document);
     }
 
 }

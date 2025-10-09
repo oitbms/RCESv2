@@ -1,6 +1,5 @@
 package com.example.rces.controller.api;
 
-import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
 import com.example.rces.dto.SpeResponseDTO;
@@ -26,8 +25,7 @@ public class ApiSPEController {
     public ResponseEntity<SpeResponseDTO> getPage() {
         var allSpeList = service.getAllSPE();
         var responseDTO = new SpeResponseDTO(allSpeList);
-        return ResponseEntity
-                .ok(responseDTO);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/create-spe")
@@ -41,11 +39,6 @@ public class ApiSPEController {
                                          @RequestBody Map<String, Object> changes) {
         var updatedSPE = service.updateSPE(number, version, changes);
         return ResponseEntity.ok(updatedSPE);
-    }
-
-    @GetMapping("/get-document/{number}")
-    public DocumentDTO getSpeDocument(@PathVariable Integer number) {
-        return service.getSpeDocument(number);
     }
 
 }

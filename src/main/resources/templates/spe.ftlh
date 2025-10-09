@@ -176,15 +176,20 @@
         </div>
         <div class="dialog-container-content">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column col-250">Наименование</div>
-                <div class="dialog-content-header-column col-250">Файлы</div>
+                <div class="dialog-content-header-column col-250">Наименование файла</div>
+                <div class="dialog-content-header-column col-250">Тип</div>
+                <div class="dialog-content-header-column col-250">Файл</div>
             </div>
             <div class="dialog-content-rows">
+
             </div>
         </div>
         <div class="dialog-container-footer">
             <button class="dialog-btn" onclick="document.getElementById('documentDialog').close()">
                 Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeSubDivision">
+                Сохранить
             </button>
         </div>
     </div>

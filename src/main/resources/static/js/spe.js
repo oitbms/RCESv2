@@ -178,26 +178,74 @@ $(document).on('click', '.document', async function () {
     const dialog = $('#documentDialog');
     const currentRow = $(this).closest('.table-row');
     const currentSpeId = $(currentRow).attr('id');
+    const spe = localCache.get(Number(currentSpeId));
     const rowContainer = dialog.find('.dialog-content-rows');
-
-    const document = await $.get('/api/spe/get-document/' + currentSpeId);
+    let document;
 
     rowContainer.empty();
-    if (document) {
+    if (spe.documentId) {
+        document = await $.get('/api/document/get-document/' + spe.documentId);
+        for (const file of document) {
+            rowContainer.append(`
+                  <div class="dialog-content-rows-row" id="${file.id}">
+                    <div class="content-row-column col-250">${file.baseFileName}</div>
+                    <div class="content-row-column col-250">${file.type}</div>
+                    <div class="content-row-column col-250"><i class="download fas fa-download"></i></i></div>
+                </div>`);
+        }
         rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${e.id}">
-                    <div class="content-row-column col-250">${e.name}</div>
-                </div>`
-        );
-
+                  <div class="dialog-content-rows-row">
+                    <div class="content-row-column col-250"></div>
+                    <div class="content-row-column col-250"></div>
+                    <div class="content-row-column col-250">
+                        <i class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                        <input type="file" id="fileInput" style="display: none;"/>
+                    </div>
+                  </div>`);
     } else {
         rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${e.id}">
-                    <div class="content-row-column col-250">${e.name}</div>
-                </div>`
-        );
+                  <div class="dialog-content-rows-row">
+                    <div class="content-row-column col-250"></div>
+                    <div class="content-row-column col-250"></div>
+                   <div class="content-row-column col-250">
+                        <i class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                        <input type="file" id="fileInput" style="display: none;"/>
+                    </div>
+                  </div>`);
     }
 
+    //Создание документа или добавления файла в него
+    $(document).on('change', '#fileInput', function() {
+        const formData = new FormData();
+
+        $.each(this.files, function(i, file) {
+            formData.append('files', file);
+        });
+
+        $.ajax({
+            url: spe.documentId
+                ? `/api/document/add-file-to-document/${spe.documentId}`
+                : `/spe/create-document/${currentSpeId}`,
+            type: spe.documentId ? 'PATCH' : 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                console.log('Файлы загружены', response);
+            },
+            error: function(xhr) {
+                console.error('Ошибка загрузки', xhr);
+            }
+        });
+
+        $(this).val('');
+    });
+
+    $(document).on('click', '.download', async function () {
+        const fileId = $(this).closest('.dialog-content-rows-row').attr('id');
+        const file = document.files.find(file => file.id === fileId);
+        await downloadFile(file.file, file.baseFileName);
+    });
 
     dialog[0].showModal();
 });
@@ -407,6 +455,38 @@ async function saveData(spe, type) {
     } else if (type === 'delete') {
         await deleteSpe(spe);
     } else console.error("Неподдерживаемый тип запроса")
+}
+
+async function downloadFile(byteArray, fileName) {
+    const getMimeType = (filename) => {
+        const extension = filename.split('.').pop().toLowerCase();
+        const mimeTypes = {
+            'pdf': 'application/pdf',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xml': 'application/xml',
+            'txt': 'text/plain',
+            'json': 'application/json'
+        };
+        return mimeTypes[extension] || 'application/octet-stream';
+    };
+
+    const mimeType = getMimeType(fileName);
+    const blob = new Blob([byteArray], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
 }
 
 function formatDate(dateString) {

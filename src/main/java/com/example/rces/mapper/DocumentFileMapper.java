@@ -6,6 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface DocumentFileMapper {
+public interface DocumentFileMapper  {
+
+    DocumentFileDTO toDTO(DocumentFile entity);
 
 }

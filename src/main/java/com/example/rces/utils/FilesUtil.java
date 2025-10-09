@@ -1,7 +1,6 @@
 package com.example.rces.utils;
 
 import com.example.rces.dto.DocumentCreateDTO;
-import com.example.rces.dto.DocumentDTO;
 import com.example.rces.models.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +17,7 @@ public class FilesUtil {
             "PDF", "DOC", "XLS", "XLSX", "DOCX", "XML", "TXT", "JSON"
     );
 
-    public static List<Images> saveImages(MultipartFile[] files, Requests requests) {
+    public static List<Images> addImages(MultipartFile[] files, Requests requests) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -36,7 +35,7 @@ public class FilesUtil {
         return images;
     }
 
-    public static List<Images> saveImages(MultipartFile[] files, FactExecutionSGI sgi) {
+    public static List<Images> addImages(MultipartFile[] files, FactExecutionSGI sgi) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -54,7 +53,7 @@ public class FilesUtil {
         return images;
     }
 
-    public static List<Images> saveImages(MultipartFile[] files, SGI sgi) {
+    public static List<Images> addImages(MultipartFile[] files, SGI sgi) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -66,6 +65,24 @@ public class FilesUtil {
                     throw new RuntimeException(e);
                 }
                 imageEntity.setSgim(sgi);
+                images.add(imageEntity);
+            }
+        }
+        return images;
+    }
+
+    public static List<Images> addImages(MultipartFile[] files, Document document) {
+        List<Images> images = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                Images imageEntity = new Images();
+                imageEntity.setName(file.getOriginalFilename());
+                try {
+                    imageEntity.setData(file.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                imageEntity.setDocument(document);
                 images.add(imageEntity);
             }
         }
@@ -144,26 +161,26 @@ public class FilesUtil {
         if (documentDTO.getName() == null || documentDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Наименование документа не может быть пустым");
         }
-        if (isValidFileType(documentDTO.getName())) {
-            if (documentDTO.getFiles() != null) {
-                for (MultipartFile file : documentDTO.getFiles()) {
-                    if (file.isEmpty()) {
-                        throw new IllegalArgumentException("Файл не может быть пустым");
-                    }
+        if (documentDTO.getFiles() != null) {
+            for (MultipartFile file : documentDTO.getFiles()) {
+                if (file.isEmpty()) {
+                    throw new IllegalArgumentException("Файл не может быть пустым");
+                }
+                if (file.getOriginalFilename() != null && !isValidFileType(file.getOriginalFilename())) {
+                    throw new IllegalArgumentException("Недопустимое расширение файла");
                 }
             }
-        } else {
-            throw new IllegalArgumentException("Недопустимое расширение файла");
         }
     }
 
+
     public static boolean isValidFileType(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toUpperCase();
         return ALLOWED_EXTENSIONS.contains(extension);
     }
 
     public static DocumentFile.FileType determineFileType(String fileName) {
-        if (fileName==null) {
+        if (fileName == null) {
             throw new IllegalArgumentException("Имя файла не может быть пустым");
         }
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
@@ -179,5 +196,4 @@ public class FilesUtil {
             default -> null;
         };
     }
-
 }
