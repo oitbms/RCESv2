@@ -1,5 +1,6 @@
 package com.example.rces.service;
 
+import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
 
@@ -15,4 +16,6 @@ public interface SpeService {
     SpeDTO updateSPE(Integer number, Long version, Map<String, Object> changes);
 
     void deleteSpe(SpeDTO dto);
+
+    DocumentDTO getSpeDocument(Integer number);
 }

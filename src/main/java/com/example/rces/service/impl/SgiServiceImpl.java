@@ -11,6 +11,7 @@ import com.example.rces.service.*;
 import com.example.rces.service.impl.telegram.MessageType;
 import com.example.rces.service.impl.telegram.event.TelegramRegularEvent;
 import com.example.rces.service.impl.telegram.event.TelegramSgiEvent;
+import com.example.rces.utils.FilesUtil;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.rces.utils.FilesUtil.saveFiles;
+import static com.example.rces.utils.FilesUtil.saveImages;
 import static com.example.rces.utils.ServiceUtil.buildExpiredRequestsString;
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
@@ -171,7 +172,7 @@ public class SgiServiceImpl implements SgiService {
             sgi.setNote(note);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (imagesSGI != null) {
-                List<Images> newImages = saveFiles(imagesSGI, sgi);
+                List<Images> newImages = saveImages(imagesSGI, sgi);
                 sgi.getImages().clear();
                 sgi.getImages().addAll(newImages);
             } else {
@@ -192,7 +193,7 @@ public class SgiServiceImpl implements SgiService {
             factExecutionSGI.setExecutionDate(executionDate);
             factExecutionSGI.setReport(report);
             if (imagesFactSGI != null) {
-                List<Images> newImages = saveFiles(imagesFactSGI, factExecutionSGI);
+                List<Images> newImages = FilesUtil.saveImages(imagesFactSGI, factExecutionSGI);
                 factExecutionSGI.getImages().clear();
                 factExecutionSGI.getImages().addAll(newImages);
             } else {

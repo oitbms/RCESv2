@@ -1,9 +1,8 @@
 package com.example.rces.utils;
 
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
-import com.example.rces.models.SGI;
+import com.example.rces.dto.DocumentCreateDTO;
+import com.example.rces.dto.DocumentDTO;
+import com.example.rces.models.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,10 +10,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class FilesUtil {
 
-    public static List<Images> saveFiles(MultipartFile[] files, Requests requests) {
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+            "PDF", "DOC", "XLS", "XLSX", "DOCX", "XML", "TXT", "JSON"
+    );
+
+    public static List<Images> saveImages(MultipartFile[] files, Requests requests) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -32,7 +36,7 @@ public class FilesUtil {
         return images;
     }
 
-    public static List<Images> saveFiles(MultipartFile[] files, FactExecutionSGI sgi) {
+    public static List<Images> saveImages(MultipartFile[] files, FactExecutionSGI sgi) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -50,7 +54,7 @@ public class FilesUtil {
         return images;
     }
 
-    public static List<Images> saveFiles(MultipartFile[] files, SGI sgi) {
+    public static List<Images> saveImages(MultipartFile[] files, SGI sgi) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -117,6 +121,63 @@ public class FilesUtil {
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при получении байт: " + file.getOriginalFilename(), e);
         }
+    }
+
+    public static List<DocumentFile> addFilesToDocument(Document document, List<MultipartFile> files) throws IOException {
+        List<DocumentFile> documentFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            DocumentFile documentFile = new DocumentFile();
+
+            DocumentFile.FileType fileType = determineFileType(file.getOriginalFilename());
+
+            documentFile.setBaseFileName(file.getOriginalFilename());
+            documentFile.setType(fileType);
+            documentFile.setDocument(document);
+            documentFile.setContent(file.getBytes());
+
+            documentFiles.add(documentFile);
+        }
+        return documentFiles;
+    }
+
+    public static void validateDocument(DocumentCreateDTO documentDTO) {
+        if (documentDTO.getName() == null || documentDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Наименование документа не может быть пустым");
+        }
+        if (isValidFileType(documentDTO.getName())) {
+            if (documentDTO.getFiles() != null) {
+                for (MultipartFile file : documentDTO.getFiles()) {
+                    if (file.isEmpty()) {
+                        throw new IllegalArgumentException("Файл не может быть пустым");
+                    }
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Недопустимое расширение файла");
+        }
+    }
+
+    public static boolean isValidFileType(String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        return ALLOWED_EXTENSIONS.contains(extension);
+    }
+
+    public static DocumentFile.FileType determineFileType(String fileName) {
+        if (fileName==null) {
+            throw new IllegalArgumentException("Имя файла не может быть пустым");
+        }
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        return switch (extension) {
+            case "pdf" -> DocumentFile.FileType.PDF;
+            case "doc" -> DocumentFile.FileType.DOC;
+            case "docx" -> DocumentFile.FileType.DOCX;
+            case "xls" -> DocumentFile.FileType.XLS;
+            case "xlsx" -> DocumentFile.FileType.XLSX;
+            case "xml" -> DocumentFile.FileType.XML;
+            case "txt" -> DocumentFile.FileType.TXT;
+            case "json" -> DocumentFile.FileType.JSON;
+            default -> null;
+        };
     }
 
 }

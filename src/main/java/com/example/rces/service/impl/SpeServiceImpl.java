@@ -1,8 +1,12 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
+import com.example.rces.mapper.DocumentMapper;
 import com.example.rces.mapper.SPEMapper;
+import com.example.rces.models.Document;
+import com.example.rces.models.SPE;
 import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.SpeService;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -24,12 +28,14 @@ public class SpeServiceImpl implements SpeService {
 
     private final SpeRepository repository;
     private final SPEMapper mapper;
+    private final DocumentMapper documentMapper;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public SpeServiceImpl(SpeRepository repository, SPEMapper mapper, ObjectMapper objectMapper) {
+    public SpeServiceImpl(SpeRepository repository, SPEMapper mapper, DocumentMapper documentMapper, ObjectMapper objectMapper) {
         this.repository = repository;
         this.mapper = mapper;
+        this.documentMapper = documentMapper;
         this.objectMapper = objectMapper;
     }
 
@@ -48,7 +54,7 @@ public class SpeServiceImpl implements SpeService {
 
     @Override
     public SpeDTO updateSPE(Integer number, Long version, Map<String, Object> changes) {
-        var speEntity = repository.findById(number).orElseThrow(
+        SPE speEntity = repository.findById(number).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Spe с id %s не найдено", number)));
         if (!Objects.equals(speEntity.getVersion(), version)) {
             throw new OptimisticLockException("SPE с id " + number + " устарел");
@@ -56,7 +62,7 @@ public class SpeServiceImpl implements SpeService {
         try {
             objectMapper.updateValue(speEntity, changes);
         } catch (JsonMappingException e) {
-            throw new ApplicationContextException("Ошибка при маппинг JSON", e);
+            throw new ApplicationContextException("Ошибка при обновлении SPE", e);
         }
         repository.save(speEntity);
         return mapper.toDTO(speEntity);
@@ -64,8 +70,15 @@ public class SpeServiceImpl implements SpeService {
 
     @Override
     public void deleteSpe(SpeDTO dto) {
-        var spe = mapper.toEntity(dto);
+        SPE spe = mapper.toEntity(dto);
         repository.delete(spe);
+    }
+
+    @Override
+    public DocumentDTO getSpeDocument(Integer number) {
+        SPE spe = repository.findByIdWithDocument(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
+        Document document = spe.getDocument();
+        return documentMapper.toDTO(document);
     }
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Table(name = "documents", catalog = "rces")
 @AuditTable(value = "documents_history", catalog = "rces_history")
+@DynamicUpdate
 public class Document extends BaseAuditingEntity {
 
     @Id
@@ -27,6 +29,11 @@ public class Document extends BaseAuditingEntity {
     @NotBlank(message = "Наименование документа не может быть пустым")
     @Size(min = 1, max = 150, message = "Наименование документа должно содержать от 1 до 150 символов")
     private String name;
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
+    @NotAudited
+    private List<DocumentFile> files = new ArrayList<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 20)
@@ -47,6 +54,14 @@ public class Document extends BaseAuditingEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<DocumentFile> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<DocumentFile> files) {
+        this.files = files;
     }
 
     public List<Images> getImages() {

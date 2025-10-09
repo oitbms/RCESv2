@@ -173,6 +173,34 @@ $(document).on('click', '.area-modal', async function () {
 
     currentArea.addClass('change-area');
 });
+//Обработчик клика по прикрепленному документу
+$(document).on('click', '.document', async function () {
+    const dialog = $('#documentDialog');
+    const currentRow = $(this).closest('.table-row');
+    const currentSpeId = $(currentRow).attr('id');
+    const rowContainer = dialog.find('.dialog-content-rows');
+
+    const document = await $.get('/api/spe/get-document/' + currentSpeId);
+
+    rowContainer.empty();
+    if (document) {
+        rowContainer.append(`
+                <div class="dialog-content-rows-row" data-id="${e.id}">
+                    <div class="content-row-column col-250">${e.name}</div>
+                </div>`
+        );
+
+    } else {
+        rowContainer.append(`
+                <div class="dialog-content-rows-row" data-id="${e.id}">
+                    <div class="content-row-column col-250">${e.name}</div>
+                </div>`
+        );
+    }
+
+
+    dialog[0].showModal();
+});
 
 async function displayPage() {
     const data = await getData();
@@ -235,7 +263,7 @@ async function createRow(spe, update) {
                         <p data-name="periodicity">${spe.periodicity}</p> месяцев
                     </div>
                     <div class="table-cell" style="width: var(--file);">
-                        файл
+                        <i class="document fa-solid fa-file"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
                         <span class="status-indicator status-good">

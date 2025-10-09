@@ -51,13 +51,27 @@ CREATE TABLE IF NOT EXISTS rces.documents
     id           BINARY(16) PRIMARY KEY,
     name         VARCHAR(150) NOT NULL UNIQUE,
     version      BIGINT       NOT NULL DEFAULT 0,
-    created_date TIMESTAMP    NULL,
-    updated_date TIMESTAMP    NULL,
+    created_date TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 
     INDEX idx_name (name)
 );
+
+CREATE TABLE IF NOT EXISTS rces.document_files
+(
+    id             BINARY(16) PRIMARY KEY,
+    base_file_name VARCHAR(250)                                                     NOT NULL,
+    type           ENUM ('PDF', 'DOC', 'XLS', 'XLSX', 'DOCX', 'XML', 'TXT', 'JSON') NOT NULL,
+    content        LONGBLOB                                                         NOT NULL,
+    document_id    BINARY(16)                                                       NOT NULL
+);
+
+ALTER TABLE rces.document_files
+    ADD CONSTRAINT fk_document_files_document
+        FOREIGN KEY (document_id) REFERENCES rces.documents (id)
+            ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE IF NOT EXISTS rces.requests
 (
@@ -86,8 +100,8 @@ CREATE TABLE IF NOT EXISTS rces.requests
     qty_rejected      INT                  DEFAULT 0,
     frozen            BOOLEAN              DEFAULT FALSE,
     version           BIGINT      NOT NULL DEFAULT 0,
-    created_date      TIMESTAMP   NULL,
-    updated_date      TIMESTAMP   NULL,
+    created_date      TIMESTAMP            DEFAULT CURRENT_TIMESTAMP,
+    updated_date      TIMESTAMP   NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by        BIGINT      NOT NULL DEFAULT 1,
     updated_by        BIGINT      NULL,
 
@@ -104,8 +118,8 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
     name         VARCHAR(255) NOT NULL UNIQUE,
     control_type VARCHAR(255) NOT NULL,
     version      BIGINT       NOT NULL DEFAULT 0,
-    created_date TIMESTAMP    NULL,
-    updated_date TIMESTAMP    NULL,
+    created_date TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 
@@ -131,8 +145,8 @@ CREATE TABLE IF NOT EXISTS rces.plan_sgi
     comment       VARCHAR(1000),
     agreed        BOOLEAN,
     version       BIGINT    NOT NULL DEFAULT 0,
-    created_date  TIMESTAMP NULL,
-    updated_date  TIMESTAMP NULL,
+    created_date  TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,
+    updated_date  TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by    BIGINT    NOT NULL DEFAULT 1,
     updated_by    BIGINT    NULL,
 
@@ -149,8 +163,8 @@ CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
     execution_date DATE,
     report         VARCHAR(1000),
     version        BIGINT    NOT NULL DEFAULT 0,
-    created_date   TIMESTAMP NULL,
-    updated_date   TIMESTAMP NULL,
+    created_date   TIMESTAMP          DEFAULT CURRENT_TIMESTAMP,
+    updated_date   TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by     BIGINT    NOT NULL DEFAULT 1,
     updated_by     BIGINT    NULL,
 
@@ -184,8 +198,8 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     status             VARCHAR(50)           DEFAULT 'NONE',
     color              VARCHAR(50)           DEFAULT 'NONE',
     version            BIGINT       NOT NULL DEFAULT 0,
-    created_date       TIMESTAMP    NULL,
-    updated_date       TIMESTAMP    NULL,
+    created_date       TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_date       TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by         BIGINT       NOT NULL DEFAULT 1,
     updated_by         BIGINT       NULL,
 
@@ -219,8 +233,9 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(255) NOT NULL UNIQUE,
     control_type VARCHAR(255) NOT NULL,
-    created_date TIMESTAMP    NULL,
-    updated_date TIMESTAMP    NULL,
+    version      BIGINT       NOT NULL DEFAULT 0,
+    created_date TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP,
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 

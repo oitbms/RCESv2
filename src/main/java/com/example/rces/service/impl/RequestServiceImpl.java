@@ -27,7 +27,8 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.example.rces.utils.FilesUtil.handleImageCollection;
+import static com.example.rces.utils.
+        FilesUtil.handleImageCollection;
 import static com.example.rces.utils.FilesUtil.isJson;
 
 @Service

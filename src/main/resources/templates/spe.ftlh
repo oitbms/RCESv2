@@ -106,7 +106,7 @@
                 <div class="table-header-cell" style="width: var(--verificationDate);">Дата поверки</div>
                 <div class="table-header-cell" style="width: var(--certificate);">Свидетельство</div>
                 <div class="table-header-cell" style="width: var(--periodicity);">Периодичность</div>
-                <div class="table-header-cell" style="width: var(--file);">Чертеж</div>
+                <div class="table-header-cell" style="width: var(--file);">Документ</div>
                 <div class="table-header-cell" style="width: var(--status);">Статус</div>
             </div>
 
@@ -165,6 +165,26 @@
             </button>
             <button class="dialog-btn primary" id="changeSubDivision">
                 Выбрать
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="documentDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно работы с документом</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-250">Наименование</div>
+                <div class="dialog-content-header-column col-250">Файлы</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" onclick="document.getElementById('documentDialog').close()">
+                Отмена
             </button>
         </div>
     </div>
