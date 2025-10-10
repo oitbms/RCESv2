@@ -2,13 +2,23 @@ let selectedRow = new Set();
 let editMode = false;
 const localCache = new Map();
 let saveMassive = {};
+//Блок параллельного выполнения
+const lock = fn => async function () {
+    if (this.loading) return;
+    this.loading = true;
+    try {
+        await fn.apply(this, arguments);
+    } finally {
+        this.loading = false;
+    }
+};
 
 //Сразу после загрузки страницы
 $(document).on('DOMContentLoaded', async function () {
     await displayPage();
 });
 //Двойное нажатие ЛКМ на строку
-$(document).on('dblclick', '.table-row', async function () {
+$(document).on('dblclick', '.table-row', lock(async function () {
     const currentRow = $(this);
     const currentRowId = currentRow.attr('id');
     if (!selectedRow.has(currentRowId)) {
@@ -22,9 +32,9 @@ $(document).on('dblclick', '.table-row', async function () {
         await disableEditMode(currentRow);
         currentRow.removeClass('selected');
     }
-});
+}));
 //Клик на редактирование
-$(document).on('click', '#edit-button', async function () {
+$(document).on('click', '#edit-button', lock(async function () {
     if (!editMode) {
         editMode = true;
         await enableEditMode();
@@ -38,14 +48,14 @@ $(document).on('click', '#edit-button', async function () {
         await disableEditMode();
     }
 
-});
+}));
 //Клик на сохранение
-$(document).on('click', '#save-button', async function () {
+$(document).on('click', '#save-button', lock(async function () {
     if (Object.keys(saveMassive).length > 0) {
         await saveData(saveMassive, "update");
         saveMassive.clear();
     }
-});
+}));
 //Обработчик изменения в textArea и input
 $(document).on('input', '[data-name]', async function () {
     const currentTextArea = $(this);
@@ -174,51 +184,51 @@ $(document).on('click', '.area-modal', async function () {
     currentArea.addClass('change-area');
 });
 //Обработчик клика по прикрепленному документу
-$(document).on('click', '.document', async function () {
+$(document).on('click', '.document', lock(async function () {
     const dialog = $('#documentDialog');
     const currentRow = $(this).closest('.table-row');
     const currentSpeId = $(currentRow).attr('id');
     const spe = localCache.get(Number(currentSpeId));
     const rowContainer = dialog.find('.dialog-content-rows');
-    let document;
 
     rowContainer.empty();
     if (spe.documentId) {
-        document = await $.get('/api/document/get-document/' + spe.documentId);
-        for (const file of document) {
+        const document = await $.get('/api/document/get-document/' + spe.documentId);
+        localCache.set('document', document);
+        for (const file of document.files) {
             rowContainer.append(`
                   <div class="dialog-content-rows-row" id="${file.id}">
-                    <div class="content-row-column col-250">${file.baseFileName}</div>
-                    <div class="content-row-column col-250">${file.type}</div>
-                    <div class="content-row-column col-250"><i class="download fas fa-download"></i></i></div>
+                    <div class="content-row-column col-450">${file.baseFileName}</div>
+                    <div class="content-row-column col-100">${file.type}</div>
+                    <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></i></div>
                 </div>`);
         }
         rowContainer.append(`
                   <div class="dialog-content-rows-row">
-                    <div class="content-row-column col-250"></div>
-                    <div class="content-row-column col-250"></div>
-                    <div class="content-row-column col-250">
-                        <i class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <div class="content-row-column col-450"></div>
+                    <div class="content-row-column col-100"></div>
+                    <div class="content-row-column col-100">
+                        <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                         <input type="file" id="fileInput" style="display: none;"/>
                     </div>
                   </div>`);
     } else {
         rowContainer.append(`
                   <div class="dialog-content-rows-row">
-                    <div class="content-row-column col-250"></div>
-                    <div class="content-row-column col-250"></div>
-                   <div class="content-row-column col-250">
-                        <i class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <div class="content-row-column col-450"></div>
+                    <div class="content-row-column col-100"></div>
+                   <div class="content-row-column col-100">
+                        <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                         <input type="file" id="fileInput" style="display: none;"/>
                     </div>
                   </div>`);
     }
 
     //Создание документа или добавления файла в него
-    $(document).on('change', '#fileInput', function() {
+    $(document).on('change', '#fileInput', function () {
         const formData = new FormData();
 
-        $.each(this.files, function(i, file) {
+        $.each(this.files, function (i, file) {
             formData.append('files', file);
         });
 
@@ -230,10 +240,10 @@ $(document).on('click', '.document', async function () {
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) {
+            success: function (response) {
                 console.log('Файлы загружены', response);
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error('Ошибка загрузки', xhr);
             }
         });
@@ -241,14 +251,15 @@ $(document).on('click', '.document', async function () {
         $(this).val('');
     });
 
-    $(document).on('click', '.download', async function () {
-        const fileId = $(this).closest('.dialog-content-rows-row').attr('id');
-        const file = document.files.find(file => file.id === fileId);
-        await downloadFile(file.file, file.baseFileName);
-    });
-
     dialog[0].showModal();
-});
+}));
+//Обработчик клика по иконке загрузки файла
+$(document).on('click', '.download', lock(async function () {
+    const fileId = $(this).closest('.dialog-content-rows-row').attr('id');
+    const document = localCache.get('document');
+    const file = document.files.find(file => file.id === fileId);
+    await downloadFile(file.content, file.baseFileName);
+}));
 
 async function displayPage() {
     const data = await getData();
@@ -458,35 +469,28 @@ async function saveData(spe, type) {
 }
 
 async function downloadFile(byteArray, fileName) {
-    const getMimeType = (filename) => {
-        const extension = filename.split('.').pop().toLowerCase();
-        const mimeTypes = {
-            'pdf': 'application/pdf',
-            'doc': 'application/msword',
-            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xls': 'application/vnd.ms-excel',
-            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'xml': 'application/xml',
-            'txt': 'text/plain',
-            'json': 'application/json'
-        };
-        return mimeTypes[extension] || 'application/octet-stream';
-    };
+    try {
+        const binaryString = atob(byteArray);
+        const uint8Array = new Uint8Array(binaryString.length);
 
-    const mimeType = getMimeType(fileName);
-    const blob = new Blob([byteArray], { type: mimeType });
-    const url = window.URL.createObjectURL(blob);
+        for (let i = 0; i < binaryString.length; i++) {
+            uint8Array[i] = binaryString.charCodeAt(i);
+        }
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.style.display = 'none';
+        const blob = new Blob([uint8Array]);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+    } catch (error) {
+        console.error('Download error:', error);
+        alert('Ошибка скачивания: ' + error.message);
+    }
 }
 
 function formatDate(dateString) {

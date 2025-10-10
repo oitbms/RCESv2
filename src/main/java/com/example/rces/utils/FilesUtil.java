@@ -4,6 +4,7 @@ import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.models.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -136,11 +137,11 @@ public class FilesUtil {
         try {
             return file.getBytes();
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при получении байт: " + file.getOriginalFilename(), e);
+            throw new ApplicationContextException("Ошибка при получении массива байтов: " + file.getOriginalFilename(), e);
         }
     }
 
-    public static List<DocumentFile> addFilesToDocument(Document document, List<MultipartFile> files) throws IOException {
+    public static List<DocumentFile> addFilesToDocument(Document document, List<MultipartFile> files) {
         List<DocumentFile> documentFiles = new ArrayList<>();
         for (MultipartFile file : files) {
             DocumentFile documentFile = new DocumentFile();
@@ -150,7 +151,7 @@ public class FilesUtil {
             documentFile.setBaseFileName(file.getOriginalFilename());
             documentFile.setType(fileType);
             documentFile.setDocument(document);
-            documentFile.setContent(file.getBytes());
+            documentFile.setContent(getBytes(file));
 
             documentFiles.add(documentFile);
         }

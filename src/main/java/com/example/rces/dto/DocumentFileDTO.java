@@ -10,7 +10,7 @@ public class DocumentFileDTO {
 
     private String type;
 
-    private byte[] file;
+    private byte[] content;
 
     public UUID getId() {
         return id;
@@ -36,11 +36,11 @@ public class DocumentFileDTO {
         this.type = type;
     }
 
-    public byte[] getFile() {
-        return file;
+    public byte[] getContent() {
+        return content;
     }
 
-    public void setFile(byte[] file) {
-        this.file = file;
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 }

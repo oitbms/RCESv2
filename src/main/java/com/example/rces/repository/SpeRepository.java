@@ -21,7 +21,7 @@ public interface SpeRepository extends BaseAuditingRepository<SPE, Integer> {
     @NonNull
     List<SPE> findAll();
 
-    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    @Lock(LockModeType.OPTIMISTIC )
     @Query("SELECT s FROM SPE s LEFT JOIN FETCH s.document WHERE s.number = :number")
     Optional<SPE> findByIdWithDocument(@Param("number") Integer number);
 

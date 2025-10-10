@@ -176,9 +176,9 @@
         </div>
         <div class="dialog-container-content">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column col-250">Наименование файла</div>
-                <div class="dialog-content-header-column col-250">Тип</div>
-                <div class="dialog-content-header-column col-250">Файл</div>
+                <div class="dialog-content-header-column col-450">Наименование файла</div>
+                <div class="dialog-content-header-column col-100">Тип</div>
+                <div style="text-align: end;" class="dialog-content-header-column col-100">Файл</div>
             </div>
             <div class="dialog-content-rows">
 

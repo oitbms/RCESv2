@@ -16,16 +16,16 @@ import java.util.Optional;
 @NoRepositoryBean
 public interface BaseAuditingRepository<T extends BaseAuditingEntity, ID> extends JpaRepository<T, ID> {
 
-    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    @Lock(LockModeType.OPTIMISTIC)
     @Override
     @NonNull
     @EntityGraph(attributePaths = {"createdBy", "updatedBy"})
     Optional<T> findById(@Nullable ID id);
 
-    @Lock(LockModeType.OPTIMISTIC)
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Query("select e from #{#entityName} e where e.id = :id")
     @EntityGraph(attributePaths = {"createdBy", "updatedBy"})
-    Optional<T> findByIdOptimistic(@Param("id") ID id);
+    Optional<T> findByIdForceIncrement(@Param("id") ID id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from #{#entityName} e where e.id = :id")

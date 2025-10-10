@@ -9,12 +9,10 @@ import com.example.rces.repository.DocumentRepository;
 import com.example.rces.service.DocumentService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,15 +36,10 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public Document createDocument(DocumentCreateDTO dto) {
         validateDocument(dto);
-
         Document document = new Document();
         document.setName(dto.getName());
-        try {
-            document.setFiles(addFilesToDocument(document, dto.getFiles()));
-            document.setImages(addImages(dto.getImages(), document));
-        } catch (IOException e) {
-            throw new ApplicationContextException("Ошибка при добавления файла в документ");
-        }
+        document.setFiles(addFilesToDocument(document, dto.getFiles()));
+        document.setImages(addImages(dto.getImages(), document));
         return repository.save(document);
     }
 
@@ -66,11 +59,8 @@ public class DocumentServiceImpl implements DocumentService {
     public DocumentDTO addFileToDocument(UUID id, List<MultipartFile> files) {
         Document document = repository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", id)));
-        try {
-            document.getFiles().addAll(addFilesToDocument(document, files));
-        } catch (IOException e) {
-            throw new ApplicationContextException("Ошибка при добавления файлов в документ");
-        }
+        document.getFiles().addAll(addFilesToDocument(document, files));
+        repository.save(document);
         return mapper.toDTO(document);
     }
 
