@@ -1,8 +1,6 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
-import com.example.rces.dto.SpeCreateDTO;
-import com.example.rces.dto.SpeDTO;
-import com.example.rces.dto.SpeResponseDTO;
+import com.example.rces.dto.*;
 import com.example.rces.service.SpeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +10,19 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/spe")
-public class ApiSPEController {
+public class SPERestController {
 
     private final SpeService service;
 
     @Autowired
-    public ApiSPEController(SpeService service) {
+    public SPERestController(SpeService service) {
         this.service = service;
+    }
+
+    @PostMapping("/create-spe")
+    public ResponseEntity<SpeDTO> createSPE(@RequestBody SpeCreateDTO dto) {
+        var newSpe = service.createSPE(dto);
+        return ResponseEntity.ok(newSpe);
     }
 
     @GetMapping("/get-page-spe")
@@ -28,17 +32,23 @@ public class ApiSPEController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @GetMapping("/create-spe")
-    public ResponseEntity<SpeDTO> createSPE(@RequestBody SpeCreateDTO dto) {
-        return ResponseEntity.ok(service.createSPE(dto));
-    }
-
     @PatchMapping("/update/{number}")
     public ResponseEntity<SpeDTO> update(@PathVariable Integer number,
                                          @RequestParam Long version,
                                          @RequestBody Map<String, Object> changes) {
         var updatedSPE = service.updateSPE(number, version, changes);
         return ResponseEntity.ok(updatedSPE);
+    }
+
+    @PostMapping("/create-document/{number}")
+    public ResponseEntity<DocumentDTO> createDocument(@PathVariable Integer number, @ModelAttribute DocumentCreateDTO dto) {
+        return ResponseEntity.ok(service.createSpeDocument(number, dto));
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> delete(@RequestBody SpeDTO speDTO) {
+        service.deleteSpe(speDTO);
+        return ResponseEntity.ok().build();
     }
 
 }

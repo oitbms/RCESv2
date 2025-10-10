@@ -74,17 +74,19 @@ public class FilesUtil {
 
     public static List<Images> addImages(MultipartFile[] files, Document document) {
         List<Images> images = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                Images imageEntity = new Images();
-                imageEntity.setName(file.getOriginalFilename());
-                try {
-                    imageEntity.setData(file.getBytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        if (files!=null) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    Images imageEntity = new Images();
+                    imageEntity.setName(file.getOriginalFilename());
+                    try {
+                        imageEntity.setData(file.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    imageEntity.setDocument(document);
+                    images.add(imageEntity);
                 }
-                imageEntity.setDocument(document);
-                images.add(imageEntity);
             }
         }
         return images;

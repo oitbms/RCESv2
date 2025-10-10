@@ -1,6 +1,6 @@
-package com.example.rces.controller;
+package com.example.rces.controller.mvc;
 
-import com.example.rces.controller.payload.EmployeePayload;
+import com.example.rces.payload.EmployeePayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
@@ -118,11 +118,7 @@ public class RegistrationsController {
         return "redirect:/admin";
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        employeeService.deleteById(id);
-        return ResponseEntity.ok().build();
-    }
+
 
     @PostMapping("/update")
     public String updateUser(@RequestParam Long id,

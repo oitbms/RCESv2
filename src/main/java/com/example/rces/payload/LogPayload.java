@@ -1,4 +1,4 @@
-package com.example.rces.controller.payload;
+package com.example.rces.payload;
 
 import java.time.LocalDateTime;
 import java.util.Map;

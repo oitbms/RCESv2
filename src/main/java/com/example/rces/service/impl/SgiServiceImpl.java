@@ -1,6 +1,6 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.controller.payload.SGIPayload;
+import com.example.rces.payload.SGIPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;

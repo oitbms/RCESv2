@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS rces.document_files
     document_id    BINARY(16)                                                       NOT NULL
 );
 
+ALTER TABLE rces.document_files DROP FOREIGN KEY fk_document_files_document;
 ALTER TABLE rces.document_files
     ADD CONSTRAINT fk_document_files_document
         FOREIGN KEY (document_id) REFERENCES rces.documents (id)
@@ -188,7 +189,7 @@ CREATE TABLE IF NOT EXISTS rces.plan_spe
     accuracy_class     VARCHAR(255),
     limit_measurement  VARCHAR(255),
     sub_division_id    BIGINT       NOT NULL,
-    employee_id        BIGINT,
+    employee_id        BIGINT       NOT NULL,
     mark               VARCHAR(255),
     date_preparation   DATE,
     date_verification  DATE,

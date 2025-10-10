@@ -1,4 +1,4 @@
-package com.example.rces.controller;
+package com.example.rces.exception;
 
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;

@@ -1,4 +1,4 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
 import com.example.rces.dto.DocumentDTO;
 import com.example.rces.service.DocumentService;
@@ -12,12 +12,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/document")
-public class ApiDocumentController {
+public class DocumentRestController {
 
     private final DocumentService documentService;
 
     @Autowired
-    public ApiDocumentController(DocumentService documentService) {
+    public DocumentRestController(DocumentService documentService) {
         this.documentService = documentService;
     }
 

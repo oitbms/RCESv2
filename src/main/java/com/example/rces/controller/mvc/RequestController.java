@@ -1,4 +1,4 @@
-package com.example.rces.controller;
+package com.example.rces.controller.mvc;
 
 import com.example.rces.configuration.DeviceDetector;
 import com.example.rces.dto.CreateRequestDto;
@@ -53,9 +53,7 @@ public class RequestController {
     }
 
     @PostMapping("/create")
-    public String createRequest(
-            @ModelAttribute CreateRequestDto createRequestDto,
-            Model model) throws JsonProcessingException {
+    public String createRequest(@ModelAttribute CreateRequestDto createRequestDto, Model model) throws JsonProcessingException {
         Employee createdEmployee = employeeService.getCurrentUser();
         RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto);
         model.addAttribute("create", true);

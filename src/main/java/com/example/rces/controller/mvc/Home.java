@@ -1,5 +1,4 @@
-//Контроллер главного меню
-package com.example.rces.controller;
+package com.example.rces.controller.mvc;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,4 +22,5 @@ public class Home {
     public String errorMobile() {
         return "mobiledevice";
     }
+
 }

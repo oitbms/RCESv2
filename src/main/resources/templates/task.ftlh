@@ -271,7 +271,7 @@
 <#--                console.log("ID:", selectedJobStepId);-->
 
 <#--                // Отправка POST-запроса с выбранным ID-->
-<#--                fetch('/shift-task/create-document', {-->
+<#--                fetch('/api/shift-task/create-document', {-->
 <#--                // fetch('/shift-task/stepbox', {-->
 <#--                    method: 'POST',-->
 <#--                    headers: {-->

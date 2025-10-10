@@ -1,4 +1,4 @@
-package com.example.rces.controller.payload;
+package com.example.rces.payload;
 
 import com.example.rces.models.CustomerOrder;
 

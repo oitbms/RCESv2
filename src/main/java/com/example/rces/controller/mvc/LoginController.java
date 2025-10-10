@@ -1,10 +1,9 @@
-package com.example.rces.controller;
+package com.example.rces.controller.mvc;
 
 import com.example.rces.configuration.CustomAuthenticationProvider;
 import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,7 +35,7 @@ public class LoginController {
         try {
             UserDetails user = employeeService.loadUserByUsername(username);
             var authRequest = new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
-            Authentication authentication = customAuthenticationProvider.authenticate(authRequest);
+            var authentication = customAuthenticationProvider.authenticate(authRequest);
             if (authentication.isAuthenticated()) {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 return "registration";

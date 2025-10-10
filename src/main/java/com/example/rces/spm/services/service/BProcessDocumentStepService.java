@@ -20,14 +20,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class BProcessDocStep {
+public class BProcessDocumentStepService {
 
     private final SPMService service;
     private final TokenService tokenService;
     private HttpEntity<String> entity;
 
     @Autowired
-    public BProcessDocStep(SPMService service, TokenService tokenService) {
+    public BProcessDocumentStepService(SPMService service, TokenService tokenService) {
         this.service = service;
         this.tokenService = tokenService;
     }

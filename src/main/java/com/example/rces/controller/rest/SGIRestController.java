@@ -1,8 +1,8 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
-import com.example.rces.controller.payload.ImagesPayload;
-import com.example.rces.controller.payload.SGIPayload;
 import com.example.rces.models.SGI;
+import com.example.rces.payload.ImagesPayload;
+import com.example.rces.payload.SGIPayload;
 import com.example.rces.service.ImageService;
 import com.example.rces.service.SgiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +17,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static com.example.rces.utils.ServiceUtil.colorCalculate;
+
 @RestController
 @RequestMapping("/api/sgi")
-public class ApiSGIController {
+public class SGIRestController {
 
     private final SgiService sgiService;
     private final ImageService imageService;
 
     @Autowired
-    public ApiSGIController(SgiService sgiService, ImageService imageService) {
+    public SGIRestController(SgiService sgiService, ImageService imageService) {
         this.sgiService = sgiService;
         this.imageService = imageService;
     }
@@ -65,8 +67,29 @@ public class ApiSGIController {
         return ResponseEntity.ok(updateSGI);
     }
 
+    @PostMapping("/agree")
+    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
+        SGI sgi = sgiService.findById(id).orElseThrow(() -> new ApplicationContextException("Передан null в id SGI на согласование"));
+        try {
+            sgiService.save(sgi, agreed);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/calculate-color")
+    public ResponseEntity<Void> reCalculateColor() {
+        LocalDate today = LocalDate.now();
+        List<SGI> sgiList = sgiService.findAll();
+        for (SGI sgi : sgiList) {
+            sgi.setColor(colorCalculate(sgi, today));
+        }
+        sgiService.saveAll(sgiList);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/get-page-sgi")
-    @ResponseBody
     public ResponseEntity<Page<SGIPayload>> getPageSGI(@RequestParam int page, @RequestParam int size) {
         Page<SGIPayload> pageSgiPayload = sgiService.getPage(page, size);
         return ResponseEntity.ok()
@@ -76,22 +99,21 @@ public class ApiSGIController {
     }
 
     @GetMapping("/get-images-sgi")
-    @ResponseBody
     public ResponseEntity<List<ImagesPayload>> getImagesForSgiId(@RequestParam UUID id) {
         List<ImagesPayload> imagesPayload = imageService.getImagesForSgiId(id);
         return ResponseEntity.ok().body(imagesPayload);
     }
 
     @GetMapping("/get-images-fact-sgi")
-    @ResponseBody
     public ResponseEntity<List<ImagesPayload>> getImagesForFactSgiId(@RequestParam UUID id) {
         List<ImagesPayload> imagesPayload = imageService.getImagesForFactSgiId(id);
         return ResponseEntity.ok().body(imagesPayload);
     }
 
-    @GetMapping("/test")
-    public Object testMethod() {
-        return sgiService.getPage(0, 16);
+    @DeleteMapping("/delete")
+    public void deleteSGI(@RequestBody List<UUID> ids) {
+        ids.forEach(id -> sgiService.delete(sgiService.findById(id).orElseThrow(
+                () -> new ApplicationContextException("Передан null в списке на удаление SGI"))));
     }
 
 }

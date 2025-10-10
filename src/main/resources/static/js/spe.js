@@ -43,7 +43,7 @@ $(document).on('click', '#edit-button', lock(async function () {
     if (!saveMassive.size === 0) {
         return alert("Сохраните изменения");
     }
-    if (editMode && saveMassive.size === 0) {
+    if (editMode && Object.keys(saveMassive).length === 0) {
         editMode = false;
         await disableEditMode();
     }
@@ -70,9 +70,9 @@ $(document).on('input', '[data-name]', async function () {
 });
 //Обработчик клика по .area-modal
 $(document).on('click', '.area-modal', async function () {
-    const currentArea = $(this);
-    const fieldName = currentArea.attr('data-name');
-    const currentId = currentArea.closest('.table-row').attr('id');
+    const modalDiv = $(this);
+    const fieldName = modalDiv.attr('data-name');
+    const currentId = modalDiv.closest('.table-row').attr('id');
     let selected;
 
     if (fieldName === 'subDivision') {
@@ -115,14 +115,19 @@ $(document).on('click', '.area-modal', async function () {
                 alert('Выберите подразделение из списка');
                 return;
             }
-            currentArea.val(selected.name);
+            modalDiv.text(selected.name);
 
-            saveMassive[currentId] = {
-                ...saveMassive[currentId],
-                [fieldName]: selected
-            };
+            if (currentId) {
+                saveMassive[currentId] = {
+                    ...saveMassive[currentId],
+                    [fieldName]: selected
+                };
+            } else {
+                saveMassive[fieldName] = selected;
+            }
 
-            currentArea.addClass('change-textarea');
+
+            modalDiv.addClass('change-textarea');
 
             dialog[0].close();
         });
@@ -168,20 +173,24 @@ $(document).on('click', '.area-modal', async function () {
                 alert('Выберите сотрудника из списка');
                 return;
             }
-            currentArea.val(selected.name);
+            modalDiv.text(selected.name);
 
-            saveMassive[currentId] = {
-                ...saveMassive[currentId],
-                [fieldName]: selected
-            };
+            if (currentId) {
+                saveMassive[currentId] = {
+                    ...saveMassive[currentId],
+                    [fieldName]: selected
+                };
+            } else {
+                saveMassive[fieldName] = selected;
+            }
 
-            currentArea.addClass('change-textarea');
+            modalDiv.addClass('change-textarea');
 
             dialog[0].close();
         });
     }
 
-    currentArea.addClass('change-area');
+    modalDiv.addClass('change-area');
 });
 //Обработчик клика по прикрепленному документу
 $(document).on('click', '.document', lock(async function () {
@@ -235,7 +244,7 @@ $(document).on('click', '.document', lock(async function () {
         $.ajax({
             url: spe.documentId
                 ? `/api/document/add-file-to-document/${spe.documentId}`
-                : `/spe/create-document/${currentSpeId}`,
+                : `/api/spe/create-document/${currentSpeId}`,
             type: spe.documentId ? 'PATCH' : 'POST',
             data: formData,
             processData: false,
@@ -259,6 +268,59 @@ $(document).on('click', '.download', lock(async function () {
     const document = localCache.get('document');
     const file = document.files.find(file => file.id === fileId);
     await downloadFile(file.content, file.baseFileName);
+}));
+//Обработчик клика создать запись
+$(document).on('click', '#create-button', lock(async function () {
+    const dialog = $('#create-dialog');
+
+    dialog[0].showModal();
+}));
+//Создание записи
+$(document).on('click', '#createBtn', lock(async function (e) {
+    e.preventDefault();
+
+    const button = $(this);
+    const form = button.closest('form').get(0);
+    const dialog = $('#create-dialog');
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    button.disabled = true;
+
+    const formData = {
+        name: $('input[name="name"]').val(),
+        type: $('textarea[name="type"]').val(),
+        outNumber: $('textarea[name="outNumber"]').val(),
+        accuracyClass: $('textarea[name="accuracyClass"]').val(),
+        limitMeasurement: $('textarea[name="limitMeasurement"]').val(),
+        subDivision: saveMassive['subDivision'],
+        employee: saveMassive['employee'],
+        periodicity: $('textarea[name="periodicity"]').val(),
+        datePreparation: $('input[name="datePreparation"]').val(),
+        dateVerification: $('input[name="dateVerification"]').val(),
+        certificateNumber: $('textarea[name="certificateNumber"]').val()
+    };
+
+    try {
+        const newSPE = await $.ajax({
+            url: '/api/spe/create-spe',
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        saveMassive = {};
+        localCache.set(newSPE.id, newSPE);
+        dialog[0].close();
+        await createRow(newSPE, false);
+        saveBtn.disabled = false;
+    } catch (error) {
+        saveMassive = {};
+        console.error('Ошибка при создании SPE:', error);
+        button.disabled = false;
+    }
 }));
 
 async function displayPage() {
@@ -285,41 +347,65 @@ async function createRow(spe, update) {
                 <div class="table-row" id="${spe.number}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
-                            <p data-name="name">${spe.name}</p>
+                            <div data-name="name" contenteditable="false">
+                                ${spe.name}
+                            </div>
                             <div class="equipments">
-                                <div class="equipment-type"><p data-name="type">${spe.type}</p></div>
-                                <div class="equipment-number"><p data-name="outNumber">${spe.outNumber}</p></div>
+                                <div class="equipment-type">
+                                    <div contenteditable="false" data-name="type">
+                                        ${spe.type}
+                                    </div>
+                                </div>
+                                <div class="equipment-number">
+                                    <div contenteditable="false" data-name="outNumber">
+                                        ${spe.outNumber}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--characteristics);">
                         <div class="characteristics">
-                            <p data-name="accuracyClass">${spe.accuracyClass}</p>
-                            <p data-name="limitMeasurement">${spe.limitMeasurement}</p>
+                            <div contenteditable="false" data-name="accuracyClass">
+                                ${spe.accuracyClass}
+                            </div>
+                            <div contenteditable="false" data-name="limitMeasurement">
+                                ${spe.limitMeasurement}
+                            </div>
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
                         <p data-name="subDivision">${spe.subDivision.name}</p>
                     </div>
                     <div class="table-cell" style="width: var(--responsible);">
-                        <div class="responsible">
-                            <p data-name="employee">${spe.employee.name}</p>
+                        <div contenteditable="false"  class="responsible" data-name="employee">
+                            ${spe.employee.name}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
-                        <p data-name="mark">${spe.mark}</p>
+                        <div contenteditable="false" data-name="mark">
+                            ${spe.mark}
+                        </div>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
-                        <p data-name="datePreparation">${formatDate(spe.datePreparation)}</p>
+                        <div contenteditable="false" data-name="datePreparation">
+                            ${formatDate(spe.datePreparation)}
+                        </div>
                     </div>
                     <div class="table-cell" style="width: var(--verificationDate);">
-                        <p data-name="dateVerification">${formatDate(spe.dateVerification)}</p>
+                        <div contenteditable="false" data-name="dateVerification">
+                            ${formatDate(spe.dateVerification)}
+                        </div>
                     </div>
                     <div class="table-cell" style="width: var(--certificate);">
-                        <p data-name="certificateNumber">${spe.certificateNumber}</p>
+                        <div contenteditable="false" data-name="certificateNumber">
+                            ${spe.certificateNumber}
+                        </div>
                     </div>
                     <div class="table-cell" style="width: var(--periodicity);">
-                        <p data-name="periodicity">${spe.periodicity}</p> месяцев
+                        <div contenteditable="false" data-name="periodicity">
+                            ${spe.periodicity}
+                        </div> месяцев
                     </div>
                     <div class="table-cell" style="width: var(--file);">
                         <i class="document fa-solid fa-file"></i>
@@ -346,10 +432,10 @@ async function enableEditMode(row) {
     const dateTime = ['datePreparation', 'dateVerification'];
     const select = ['mark'];
     if (row) {
-        $(row).find('p').each(async function () {
-            const $p = $(this);
-            const text = $p.text();
-            const dataName = $p.attr('data-name');
+        $(row).find('div[contenteditable="false"]').each(function () {
+            const $div = $(this);
+            const text = $div.text().trim();
+            const dataName = $div.attr('data-name');
             if (select.includes(dataName)) {
                 element = $(`<select data-name="${dataName}"></select>`);
                 element.append($(`<option selected>${text}</option>`));
@@ -358,55 +444,69 @@ async function enableEditMode(row) {
                 const rowId = Number($(row).attr('id'));
                 const value = localCache.get(rowId)[dataName];
                 element = $(`<input type="date" data-name="${dataName}">`).val(value);
-            } else element = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
-
-            if (dataName === 'employee' || dataName === 'subDivision') {
-                element.addClass('area-modal').attr('readonly', 'readonly');
+            } else {
+                element = $(this);
+                element.attr('contenteditable', 'true');
             }
 
-            $p.replaceWith(element);
+            if (dataName === 'employee' || dataName === 'subDivision') {
+                element.addClass('area-modal').attr('contenteditable', 'false');
+            }
+
+            $div.replaceWith(element);
         });
         return;
     }
     for (const rowId of selectedRow) {
         const row = $(`.table-row[id="${rowId}"]`);
-        row.find('p').each(function () {
-            const $p = $(this);
-            const text = $p.text();
-            const dataName = $p.attr('data-name');
+        row.find('div[contenteditable="false"]').each(function () {
+            const $div = $(this);
+            const text = $div.text().trim();
+            const dataName = $div.attr('data-name');
             if (select.includes(dataName)) {
                 element = $(`<select data-name="${dataName}"></select>`);
                 element.append($(`<option selected>${text}</option>`));
                 element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`));
             } else if (dateTime.includes(dataName)) {
-                const value = localCache.get(Number(rowId))[dataName];
+                const rowId = Number($(row).attr('id'));
+                const value = localCache.get(rowId)[dataName];
                 element = $(`<input type="date" data-name="${dataName}">`).val(value);
-            } else element = $(`<textarea data-name="${dataName}" rows="2">`).val(text);
+            } else {
+                element = $(this);
+                element.attr('contenteditable', 'true');
+            }
 
-            $p.replaceWith(element);
+            if (dataName === 'employee' || dataName === 'subDivision') {
+                element.addClass('area-modal').attr('contenteditable', 'false');
+            }
+
+            $div.replaceWith(element);
         });
     }
 }
 
 async function disableEditMode(row) {
+    const dateTime = ['datePreparation', 'dateVerification'];
     if (row) {
-        $(row).find('textarea').each(function () {
-            const $textarea = $(this);
-            const text = $textarea.val();
-            const dataName = $textarea.attr('data-name');
-            const p = $(`<p data-name="${dataName}">`).text(text);
-            $textarea.replaceWith(p);
+        $(row).find('div[contenteditable="true"], [data-name]').each(function () {
+            const $field = $(this);
+            const dataName = $field.attr("data-name");
+            const value = !dateTime.includes(dataName)
+                ? $field.is('select') ? $field.find('option:selected').text() : $field.text()
+                : formatDate($field.val());
+            $field.replaceWith(`<div data-name="${dataName}" contentEditable="false">${value}</div>`)
         });
         return;
     }
     for (rowId of selectedRow) {
         const row = $(`.table-row[id="${rowId}"]`);
-        row.find('textarea').each(function () {
-            const $textarea = $(this);
-            const text = $textarea.val();
-            const dataName = $textarea.attr('data-name');
-            const p = $(`<p data-name="${dataName}">`).text(text);
-            $textarea.replaceWith(p);
+        row.find('div[contenteditable="true"], [data-name]').each(function () {
+            const $field = $(this);
+            const dataName = $field.attr("data-name");
+            const value = !dateTime.includes(dataName)
+                ? $field.is('select') ? $field.find('option:selected').text() : $field.text()
+                : formatDate($field.val());
+            $field.replaceWith(`<div data-name="${dataName}" contentEditable="false">${value}</div>`)
         });
     }
 }
@@ -444,7 +544,7 @@ async function saveData(spe, type) {
 
     async function deleteSpe(spe) {
         return $.ajax({
-            url: '/spe/delete',
+            url: '/api/spe/delete',
             type: 'DELETE',
             contentType: 'application/json',
             data: JSON.stringify(spe),

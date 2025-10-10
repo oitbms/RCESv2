@@ -596,3 +596,117 @@ dialog::backdrop {
 .dialog-content-rows::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
+
+#create-dialog {
+    width: 50%;
+
+    & .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    & .modal-header {
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        & .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+
+            &:hover {
+                color: red;
+                transition: color, 0.5s;
+            }
+        }
+    }
+
+    & .modal-body {
+        padding: 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        max-height: 60vh;
+        overflow-y: auto;
+
+        & .form-group {
+            margin-bottom: 16px;
+
+            & .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                font-size: 0.875rem;
+            }
+
+            & .form-control {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                font-size: 0.875rem;
+                text-overflow: ellipsis;
+            }
+
+            & textarea.form-control {
+                min-height: 80px;
+                resize: vertical;
+            }
+
+            .file-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 4px;
+                padding: 4px;
+                cursor: pointer;
+                z-index: 100;
+                height: 100px;
+                overflow: auto;
+
+                &:hover {
+                    border-color: #0d6efd;
+                    transition: border-color, 0.5s;
+                }
+
+                & .file-list {
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    gap: 8px;
+
+                    & .file-item {
+                        max-width: 40px;
+                        max-height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        & img {
+                            width: 46px;
+                            height: 48px;
+                            object-fit: contain;
+                        }
+
+                    }
+                }
+            }
+
+        }
+    }
+
+    & .modal-footer {
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+}

@@ -1,6 +1,6 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
-import com.example.rces.controller.payload.ImagesPayload;
+import com.example.rces.payload.ImagesPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
@@ -17,7 +17,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/request")
-public class ApiRequestController {
+public class RequestRestController {
 
     private final EmployeeService employeeService;
     private final RequestsService requestsService;
@@ -25,7 +25,7 @@ public class ApiRequestController {
     private final InconsistenciesService inconsistenciesService;
 
     @Autowired
-    public ApiRequestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService) {
+    public RequestRestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService) {
         this.employeeService = employeeService;
         this.requestsService = requestsService;
         this.imageService = imageService;

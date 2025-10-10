@@ -49,6 +49,7 @@ public class SPE extends BaseAuditingEntity {
     private SubDivision subDivision;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull(message = "Сотрудник не может быть пустым")
     private Employee employee;
 
     @Column(name = "mark")

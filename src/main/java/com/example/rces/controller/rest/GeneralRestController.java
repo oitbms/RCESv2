@@ -1,12 +1,12 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
-import com.example.rces.controller.payload.*;
 import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
+import com.example.rces.payload.*;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.InconsistenciesService;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-public class ApiController {
+public class GeneralRestController {
 
     private final InconsistenciesService inconsistenciesService;
     private final CustomerOrderService customerOrderService;
@@ -29,7 +29,7 @@ public class ApiController {
     private final SubDivisionService subDivisionService;
 
     @Autowired
-    public ApiController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService) {
+    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
@@ -101,7 +101,6 @@ public class ApiController {
 
     @GetMapping("/sub-divisions")
     public List<SubDivisionDTO> getSubDivisions() {
-        var s = 12;
         return subDivisionService.getAll();
     }
 }

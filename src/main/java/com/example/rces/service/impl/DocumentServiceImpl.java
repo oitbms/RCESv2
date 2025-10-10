@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static com.example.rces.utils.DateUtil.formatedDate;
 import static com.example.rces.utils.FilesUtil.*;
 
 @Service
@@ -37,7 +40,8 @@ public class DocumentServiceImpl implements DocumentService {
     public Document createDocument(DocumentCreateDTO dto) {
         validateDocument(dto);
         Document document = new Document();
-        document.setName(dto.getName());
+        document.setName(Optional.ofNullable(dto.getName())
+                .orElse(String.format("Документ от %s", formatedDate(LocalDateTime.now()))));
         document.setFiles(addFilesToDocument(document, dto.getFiles()));
         document.setImages(addImages(dto.getImages(), document));
         return repository.save(document);

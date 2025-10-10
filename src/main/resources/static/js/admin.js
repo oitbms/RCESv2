@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
-            fetch(`/delete/` + id, {
+            fetch(`api/registration/delete/` + id, {
                 method: 'DELETE'
             }).then(response => {
                 if (response.ok) {

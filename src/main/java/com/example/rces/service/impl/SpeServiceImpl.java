@@ -42,8 +42,8 @@ public class SpeServiceImpl implements SpeService {
 
     @Override
     public SpeDTO createSPE(SpeCreateDTO dto) {
-        var newSPE = mapper.toEntityFromCreateDTO(dto);
-        var savedSpe = repository.save(newSPE);
+        SPE newSPE = mapper.toEntityFromCreateDTO(dto);
+        SPE savedSpe = repository.save(newSPE);
         return mapper.toDTO(savedSpe);
     }
 
@@ -78,8 +78,8 @@ public class SpeServiceImpl implements SpeService {
     @Override
     public DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto) {
         SPE spe = repository.findById(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
+        dto.setName(String.format("Инструмент %s сертификат %s",spe.getName(), spe.getCertificateNumber()));
         Document document = documentService.createDocument(dto);
-        document.setName(String.format("Инструмент %s сертификат %s",spe.getName(), spe.getCertificateNumber()));
         spe.setDocument(document);
         repository.save(spe);
         return documentService.toDTO(document);

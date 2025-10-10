@@ -1,6 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.controller.payload.SGIPayload;
+import com.example.rces.payload.SGIPayload;
 import com.example.rces.models.SGI;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.data.domain.Page;

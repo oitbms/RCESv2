@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Реестр средств измерений</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/spe.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/js/cache.js" defer></script>
@@ -35,6 +37,7 @@
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
+        </div>
     </header>
 
     <div class="controls">
@@ -193,6 +196,76 @@
             </button>
         </div>
     </div>
+</dialog>
+<dialog id="create-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Создание оборудования</h2>
+    </div>
+
+    <form id="speForm" enctype="multipart/form-data">
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Наименование</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Тип</label>
+                <textarea class="form-control" name="type" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Заводской номер</label>
+                <textarea class="form-control" name="outNumber" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Класс точности</label>
+                <textarea class="form-control" name="accuracyClass" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Предел измерения</label>
+                <textarea class="form-control" name="limitMeasurement" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Подразделение</label>
+                <textarea class="area-modal form-control" data-name="subDivision" name="subDivision" readonly required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Сотрудник</label>
+                <textarea class="area-modal form-control" data-name="employee" name="employee" readonly  required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Периодичность поверки</label>
+                <textarea class="form-control" name="periodicity" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Дата подготовки</label>
+                <input type="date" class="form-control" name="datePreparation">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Дата поверки</label>
+                <input type="date" class="form-control" name="dateVerification">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Сертификат</label>
+                <textarea class="form-control" name="certificateNumber"></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="cancelButton">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
+        </div>
+    </form>
+
 </dialog>
 </body>
 

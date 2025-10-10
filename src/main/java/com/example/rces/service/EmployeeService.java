@@ -1,6 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.controller.payload.EmployeePayload;
+import com.example.rces.payload.EmployeePayload;
 import com.example.rces.models.Employee;
 
 import java.util.List;

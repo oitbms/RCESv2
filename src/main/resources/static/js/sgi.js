@@ -408,7 +408,7 @@ $(document).on('click', '#toggleAgreement', async function (event) {
     if (isChecked && currentSGI.subSGI && !currentSGI.subSGI?.every(sub => sub.agree)) return alert("Все подзадачи должны быть согласованы!");
     if (!isChecked && currentSGI?.parent && currentSGI.parent.agree) return alert("Нельзя отменить согласование подзадачи, если родительская задача согласована!");
     await $.ajax({
-        url: '/sgi/agree',
+        url: '/api/sgi/agree',
         method: 'POST',
         data: formData,
         contentType: false,
@@ -601,7 +601,7 @@ $(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) 
         }
 
         $.ajax({
-            url: '/sgi/delete',
+            url: '/api/sgi/delete',
             type: 'DELETE',
             contentType: 'application/json',
             data: JSON.stringify(rowIds),
@@ -625,7 +625,7 @@ $(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) 
 
     $('#printRowBtn').off('click').on('click', () => {
         if (selectedRows.length > 0) {
-            window.open(`/report/print/sgi?ids=${selectedRows.join(',')}`);
+            window.open(`/api/report/print/sgi?ids=${selectedRows.join(',')}`);
         }
         $('#customContextMenu').hide();
     });
@@ -634,7 +634,7 @@ $(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) 
 $('.print-menu-item').on('click', function () {
     const department = $(this).data('department');
     $('<a>', {
-        href: `/report/print/sgi?department=${department}`,
+        href: `/api/report/print/sgi?department=${department}`,
         download: ''
     }).appendTo('body')[0].click().remove();
 });
