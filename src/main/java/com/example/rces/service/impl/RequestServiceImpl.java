@@ -83,8 +83,16 @@ public class RequestServiceImpl implements RequestsService {
             mlmNode = MlmNode.valueOf(createRequestDto.getMlmNodeJson());
         }
         createRequestDto.setRequestNumber(repository.findNextRequestNumber());
-        Requests requests = requestMapper.createFullRequest(createRequestDto, objectMapper, item, reason, mlmNode
-                , employee, customerOrder, createdEmployee);
+        Requests requests = requestMapper.createFullRequest(
+                createRequestDto,
+                objectMapper,
+                item,
+                reason,
+                mlmNode,
+                employee,
+                customerOrder,
+                createdEmployee
+        );
         return requestMapper.toDTO(repository.save(requests));
     }
 
@@ -196,7 +204,8 @@ public class RequestServiceImpl implements RequestsService {
                         }
                         handleImageCollection(request, (List<?>) value);
                         return;
-                    } else if (key.equals("inconsistencies")) {
+                    }
+                    else if (key.equals("inconsistencies")) {
                         value = Inconsistency.fromField(value, new HashSet<>(inconsistenciesService.findAllInconsistencies()));
                     }
 
@@ -251,7 +260,7 @@ public class RequestServiceImpl implements RequestsService {
         return requests.getTypeRequest().name();
     }
 
-    public Requests addRequestRejected(Requests request, int qty, String description, Set<Inconsistency> inconsistencyData) {
+    private Requests addRequestRejected(Requests request, int qty, String description, Set<Inconsistency> inconsistencyData) {
         Requests requestsRejected = new Requests();
         requestsRejected.setCreatedBy(request.getCreatedBy());
         requestsRejected.setRequestNumber(repository.findNextRequestNumber());

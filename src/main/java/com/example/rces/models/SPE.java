@@ -46,10 +46,12 @@ public class SPE extends BaseAuditingEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = "Подразделение не может быть пустым")
+    @JoinColumn(name = "sub_division_id", nullable = false)
     private SubDivision subDivision;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = "Сотрудник не может быть пустым")
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
     @Column(name = "mark")
@@ -70,6 +72,7 @@ public class SPE extends BaseAuditingEntity {
     private Integer periodicity;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false)
     private Document document;
 
     @Column(name = "status")

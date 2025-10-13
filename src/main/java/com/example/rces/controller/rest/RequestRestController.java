@@ -1,13 +1,11 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.RequestHistoryDTO;
 import com.example.rces.payload.ImagesPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
-import com.example.rces.service.EmployeeService;
-import com.example.rces.service.ImageService;
-import com.example.rces.service.InconsistenciesService;
-import com.example.rces.service.RequestsService;
+import com.example.rces.service.*;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +21,17 @@ public class RequestRestController {
     private final RequestsService requestsService;
     private final ImageService imageService;
     private final InconsistenciesService inconsistenciesService;
+    private final RequestHistoryService requestHistoryService;
+    private final RequestLogService requestLogService;
 
     @Autowired
-    public RequestRestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService) {
+    public RequestRestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService, RequestHistoryService requestHistoryService, RequestLogService requestLogService) {
         this.employeeService = employeeService;
         this.requestsService = requestsService;
         this.imageService = imageService;
         this.inconsistenciesService = inconsistenciesService;
+        this.requestHistoryService = requestHistoryService;
+        this.requestLogService = requestLogService;
     }
 
     @PostMapping("/in-work")
@@ -106,6 +108,19 @@ public class RequestRestController {
         Map<String, String> messageResponse = new HashMap<>();
         messageResponse.put("message", "Фото успешно удалено!");
         return ResponseEntity.ok(messageResponse);
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<List<?>> getHistory(@PathVariable UUID id) {
+        try {
+            List<RequestHistoryDTO> history = requestHistoryService.getDetailedRequestHistory(id);
+            if (history.isEmpty()) {
+                return ResponseEntity.ok(requestLogService.getAllByRequestId(id));
+            }
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }

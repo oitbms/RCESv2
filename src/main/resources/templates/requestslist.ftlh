@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Список заявок</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/list.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -107,27 +108,30 @@
 </table>
 
 <div class="modal fade" id="viewRequestLogs" tabindex="-1" aria-labelledby="viewRequestLogsLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fs-5 fw-semibold">История изменений</h5>
+    <div class="modal-dialog modal-dialog-scrollable modal-xl h-auto" style="max-height: 95vh;">
+        <div class="modal-content rounded-4 h-100">
+            <div class="modal-header bg-light rounded-top-4">
+                <h5 class="modal-title fs-5 fw-semibold w-100 text-center">История изменений</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeId"
                         aria-label="Закрыть"></button>
             </div>
-            <div class="modal-body p-0">
-                <div class="container-fluid">
-                    <div class="row gx-4 py-3 bg-light fw-semibold small border-bottom">
-                        <div class="col-3">Дата изменения</div>
-                        <div class="col-3">Пользователь</div>
-                        <div class="col-6">Изменения</div>
+            <div class="modal-body p-0 d-flex flex-column">
+                <div class="container-fluid flex-shrink-0">
+                    <div class="row gx-3 py-2 bg-light fw-semibold small border-bottom">
+                        <div class="col-2 text-center">Дата</div>
+                        <div class="col-1 text-center">Действие</div>
+                        <div class="col-2 text-center">Пользователь</div>
+                        <div class="col-1 text-center">Версия</div>
+                        <div class="col-6 text-center">Изменения</div>
                     </div>
-                    <div id="logsBody" class="divide-y" style="--bs-border-opacity: 0.1;">
-                    </div>
+                </div>
+                <div id="logsBody" class="flex-grow-1 overflow-auto" style="max-height: 70vh;">
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

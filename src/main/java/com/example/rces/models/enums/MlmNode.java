@@ -14,6 +14,7 @@ public enum MlmNode {
     workShop5("Цех №6"),
     workShop6("Цех №7"),
     workShop7("Цех №8"),
+    workShop8("Участок комплектации"),
     mechanic("ОГМ"),
     builder("ОРС"),
     protection("ОТиПК"),

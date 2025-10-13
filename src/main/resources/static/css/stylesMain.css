@@ -178,3 +178,70 @@ tr:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
 }
+.inconsistencies-card {
+    transition: all 0.3s ease;
+    border: 1px solid #17a2b8;
+}
+
+.inconsistencies-card .card-header {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.inconsistencies-card .card-header:hover {
+    background-color: #138496 !important;
+}
+
+.inconsistency-item {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.inconsistency-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.description-section .collapse {
+    transition: all 0.3s ease;
+}
+
+.inconsistencies-toggle .bi-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+.inconsistencies-toggle.collapsed .bi-chevron-down {
+    transform: rotate(-90deg);
+}
+
+.description-toggle .bi-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.description-toggle.collapsed .bi-chevron-down {
+    transform: rotate(-90deg);
+}
+
+/* Анимация появления карточек */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.inconsistency-item {
+    animation: slideInUp 0.5s ease forwards;
+}
+
+/* Задержки для последовательного появления */
+.inconsistency-item:nth-child(1) { animation-delay: 0.1s; }
+.inconsistency-item:nth-child(2) { animation-delay: 0.2s; }
+.inconsistency-item:nth-child(3) { animation-delay: 0.3s; }
+.inconsistency-item:nth-child(4) { animation-delay: 0.4s; }
+.inconsistency-item:nth-child(5) { animation-delay: 0.5s; }

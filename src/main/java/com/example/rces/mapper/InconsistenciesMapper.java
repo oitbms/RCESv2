@@ -6,10 +6,10 @@ import com.example.rces.models.Inconsistency;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface InconsistenciesMapper extends BaseMapper<Inconsistency, InconsistencyDto, InconsistencyCreateDto> {
+public interface InconsistenciesMapper extends BaseMapper<Inconsistency, InconsistencyDto, InconsistencyCreateDto>{
 
-    Inconsistency toInconsistency(InconsistencyCreateDto inconsistencyCreateDto);
+    InconsistencyDto toDTO(Inconsistency entity);
 
-    InconsistencyDto toInconsistenciesDto(Inconsistency inconsistency);
+    Inconsistency toEntityFromCreateDTO(InconsistencyCreateDto entity);
 
 }

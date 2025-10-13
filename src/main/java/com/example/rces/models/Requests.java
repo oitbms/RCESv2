@@ -61,13 +61,6 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     @DisplayName("Кол-во деталей к контролю")
     private Integer qty;
 
-//    @ElementCollection(fetch = FetchType.LAZY)
-//    @CollectionTable(name = "bid_inconsistencies", joinColumns = @JoinColumn(name = "bid_id"))
-//    @Column(name = "inconsistency")
-//    @Enumerated(EnumType.STRING)
-//    @DisplayName("Причины несоответствий")
-//    private Set<Inconsistency> inconsistency;
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "request_incosistencies",
@@ -75,7 +68,6 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
             inverseJoinColumns = @JoinColumn(name = "incosistency_id")
     )
     @DisplayName("Причины несоответствий")
-    @NotAudited
     private Set<Inconsistency> inconsistencies;
 
     @Column(name = "mlm_node")
