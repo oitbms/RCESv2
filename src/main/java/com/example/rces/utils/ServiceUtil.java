@@ -2,9 +2,11 @@ package com.example.rces.utils;
 
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
+import com.example.rces.models.SPE;
 import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Color;
 import com.example.rces.models.enums.Status;
+import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.Entity;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationContextException;
@@ -12,6 +14,7 @@ import org.springframework.context.ApplicationContextException;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,20 @@ public class ServiceUtil {
             return Color.YELLOW;
         } else if (sgi.getPlanDate() != null && sgi.getExecution() != null) {
             return Color.GREEN;
+        } else {
+            return Color.NONE;
+        }
+    }
+
+    public static Color colorCalculate(SPE spe) {
+        if (spe.getStatus().equals(StatusSPE.WRITE_OFF)) {
+            return Color.GREY;
+        } else if (spe.getStatus().equals(StatusSPE.AT_INSPECTION)) {
+            return Color.BLUE;
+        } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
+            return Color.YELLOW;
+        } else if (Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1) {
+            return Color.RED;
         } else {
             return Color.NONE;
         }

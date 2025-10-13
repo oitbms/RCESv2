@@ -7,6 +7,7 @@ import com.example.rces.dto.SpeDTO;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
+import com.example.rces.models.enums.StatusSPE;
 import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.DocumentService;
 import com.example.rces.service.SpeService;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -65,6 +68,11 @@ public class SpeServiceImpl implements SpeService {
         } catch (JsonMappingException e) {
             throw new ApplicationContextException("Ошибка при обновлении SPE", e);
         }
+        switch (speEntity.getMark()) {
+            case "списан" -> speEntity.setStatus(StatusSPE.WRITE_OFF);
+            case "на поверке" -> speEntity.setStatus(StatusSPE.AT_INSPECTION);
+        }
+        speEntity.setColor(colorCalculate(speEntity));
         repository.save(speEntity);
         return mapper.toDTO(speEntity);
     }
@@ -76,9 +84,14 @@ public class SpeServiceImpl implements SpeService {
     }
 
     @Override
+    public List<SPE> findAllByIdList(List<Integer> ids) {
+        return repository.findAllById(ids);
+    }
+
+    @Override
     public DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto) {
         SPE spe = repository.findById(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
-        dto.setName(String.format("Инструмент %s сертификат %s",spe.getName(), spe.getCertificateNumber()));
+        dto.setName(String.format("Инструмент %s сертификат %s", spe.getName(), spe.getCertificateNumber()));
         Document document = documentService.createDocument(dto);
         spe.setDocument(document);
         repository.save(spe);

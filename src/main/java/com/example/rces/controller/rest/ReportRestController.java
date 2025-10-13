@@ -63,4 +63,10 @@ public class ReportRestController {
         return new ResponseEntity<>(report, headers, HttpStatus.OK);
     }
 
+//    @GetMapping("/print/spe")
+//    public ResponseEntity<Resource> printSPE(@RequestParam List<Integer> ids) {
+//        List<SPE> speList = service.getSpeList(idList);
+//        ByteArrayResource resource = service.getExcelFile(speList);
+//    }
+
 }

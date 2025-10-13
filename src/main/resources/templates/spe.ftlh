@@ -37,6 +37,11 @@
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
+            <div class="tool print" id="print-button">
+                <button title="Печать">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
         </div>
     </header>
 

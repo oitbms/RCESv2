@@ -3,11 +3,9 @@ package com.example.rces.service.impl;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
+import com.example.rces.models.SPE;
 import com.example.rces.models.enums.Status;
-import com.example.rces.service.EmployeeService;
-import com.example.rces.service.ReportService;
-import com.example.rces.service.RequestsService;
-import com.example.rces.service.SgiService;
+import com.example.rces.service.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -33,16 +31,16 @@ import static com.example.rces.utils.WordExporter.generateManyWordFile;
 public class ReportServiceImpl implements ReportService {
 
     private final SgiService sgiService;
-
     private final RequestsService requestsService;
-
     private final EmployeeService employeeService;
+    private final SpeService speService;
 
     @Autowired
-    public ReportServiceImpl(SgiService sgiService, RequestsService requestsService, EmployeeService employeeService) {
+    public ReportServiceImpl(SgiService sgiService, RequestsService requestsService, EmployeeService employeeService, SpeService speService) {
         this.sgiService = sgiService;
         this.requestsService = requestsService;
         this.employeeService = employeeService;
+        this.speService = speService;
     }
 
     @Override
@@ -55,6 +53,11 @@ public class ReportServiceImpl implements ReportService {
         } else {
             return sgiService.findAllByIds(ids);
         }
+    }
+
+    @Override
+    public List<SPE> getSpeList(List<Integer> idList) {
+        return speService.findAllByIdList(idList).stream().sorted(Comparator.comparing(SPE::getNumber)).toList();
     }
 
     @Override

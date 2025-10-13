@@ -52,6 +52,12 @@ $(document).on('click', '#edit-button', lock(async function () {
     }
 
 }));
+//Клик на печать
+$(document).on('click', '#print-button', lock(async function () {
+    if (selectedRow.size > 0) {
+        window.open(`/api/report/print/spe?ids=${selectedRow.join(',')}`);
+    }
+}));
 //Клик на сохранение
 $(document).on('click', '#save-button', lock(async function () {
     if (Object.keys(saveMassive).length > 0) {
