@@ -1,8 +1,8 @@
-package com.example.rces.service.impl.telegram.event;
+package com.example.rces.utils.telegram.event;
 
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.service.impl.telegram.MessageType;
+import com.example.rces.utils.telegram.MessageType;
 
 public class TelegramRequestEvent extends TelegramEvent {
 

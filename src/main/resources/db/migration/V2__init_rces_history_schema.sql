@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS rces_history.plan_spe_history
     out_number         VARCHAR(255),
     accuracy_class     VARCHAR(255),
     limit_measurement  VARCHAR(255),
-    sub_division_id        BIGINT,
+    sub_division_id    BIGINT,
     employee_id        BIGINT,
     mark               VARCHAR(255),
     date_preparation   DATE,
@@ -174,4 +174,15 @@ CREATE TABLE IF NOT EXISTS rces_history.subdivision_history
 
     PRIMARY KEY (id, rev),
     FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
-)
+);
+
+CREATE TABLE IF NOT EXISTS rces_history.request_incosistencies_history
+(
+    id              BIGINT NOT NULL AUTO_INCREMENT,
+    rev             BIGINT NOT NULL,
+    revtype         TINYINT,
+    request_id      BINARY(16),
+    incosistency_id BIGINT,
+    PRIMARY KEY (id, REV),
+    FOREIGN KEY (REV) REFERENCES rces_history.revinfo (REV)
+);

@@ -1,8 +1,7 @@
-package com.example.rces.controller.api;
+package com.example.rces.controller.rest;
 
 import com.example.rces.dto.InconsistencyCreateDto;
 import com.example.rces.dto.InconsistencyDto;
-import com.example.rces.models.Inconsistency;
 import com.example.rces.service.InconsistenciesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/inconsistencies")
+@RequestMapping("/api/inconsistencies")
 @Validated
-public class InconsistenciesController {
+public class InconsistenciesRestController {
 
     InconsistenciesService inconsistenciesService;
 
     @Autowired
-    public InconsistenciesController(InconsistenciesService inconsistenciesService) {
+    public InconsistenciesRestController(InconsistenciesService inconsistenciesService) {
         this.inconsistenciesService = inconsistenciesService;
     }
 

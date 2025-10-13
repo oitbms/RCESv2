@@ -1,4 +1,4 @@
-package com.example.rces.service.impl.telegram;
+package com.example.rces.utils.telegram;
 
 class ThreadIdResolver {
     public static Integer resolve(String department) {

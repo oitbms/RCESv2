@@ -1,6 +1,6 @@
-package com.example.rces.service.impl.telegram.event;
+package com.example.rces.utils.telegram.event;
 
-import com.example.rces.service.impl.telegram.MessageType;
+import com.example.rces.utils.telegram.MessageType;
 
 public class TelegramRegularEvent extends TelegramEvent {
     private final String message;
