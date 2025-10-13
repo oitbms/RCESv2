@@ -25,12 +25,13 @@ public class InconsistenciesServiceImpl implements InconsistenciesService {
 
     @Override
     public List<Inconsistency> findAllInconsistencies() {
-        return repository.findAll();
+        List<Inconsistency> inconsistencies = repository.findAll();
+        return inconsistencies;
     }
 
     @Override
     public InconsistencyDto createInconsistency(InconsistencyCreateDto dto) {
-        Inconsistency inconsistency = mapper.toInconsistency(dto);
-        return mapper.toInconsistenciesDto(inconsistency);
+        Inconsistency inconsistency = mapper.toEntityFromCreateDTO(dto);
+        return mapper.toDTO(repository.save(inconsistency));
     }
 }

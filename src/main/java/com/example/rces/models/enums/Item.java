@@ -29,7 +29,9 @@ public enum Item {
     Item22("Листовой прокат"),
     Item23("Секция"),
     Item24("Теплообменный аппарат"),
-    Item25("Карта раскроя");
+    Item25("Карта раскроя"),
+    Item26("Ящик ЗИП"),
+    Item27("ШПУ");
 
     private final String name;
 

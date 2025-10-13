@@ -3,7 +3,7 @@ package com.example.rces.dto;
 public class InconsistencyCreateDto {
 
     private String name;
-    private String typeControl;
+    private String controlType;
 
     public String getName() {
         return name;
@@ -13,11 +13,11 @@ public class InconsistencyCreateDto {
         this.name = name;
     }
 
-    public String getTypeControl() {
-        return typeControl;
+    public String getControlType() {
+        return controlType;
     }
 
-    public void setTypeControl(String typeControl) {
-        this.typeControl = typeControl;
+    public void setControlType(String controlType) {
+        this.controlType = controlType;
     }
 }

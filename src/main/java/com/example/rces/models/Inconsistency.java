@@ -13,11 +13,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Entity
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@Audited
 @Table(name = "inconsistencies", catalog = "rces")
 @AuditTable(value = "inconsistencies_history", catalog = "rces_history")
-public class
-Inconsistency extends BaseAuditingEntity {
+public class Inconsistency extends BaseAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +30,10 @@ Inconsistency extends BaseAuditingEntity {
     @Column(name = "control_type")
     private String controlType;
 
-    @ManyToMany(mappedBy = "inconsistencies", fetch = FetchType.LAZY)
-    private Set<Requests> requests = new HashSet<>();
-
     public Inconsistency() {
     }
 
-    public Inconsistency( String name, String controlType) {
+    public Inconsistency(String name, String controlType) {
         this.name = name;
         this.controlType = controlType;
     }
@@ -94,11 +90,4 @@ Inconsistency extends BaseAuditingEntity {
         this.controlType = controlType;
     }
 
-    public Set<Requests> getRequests() {
-        return requests;
-    }
-
-    public void setRequests(Set<Requests> requests) {
-        this.requests = requests;
-    }
 }
