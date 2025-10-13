@@ -2,6 +2,9 @@ let selectedRow = new Set();
 let editMode = false;
 const localCache = new Map();
 let saveMassive = {};
+let currentStatus = 'NONE';
+let currentSubDivision = '';
+let searchText = '';
 //Блок параллельного выполнения
 const lock = fn => async function () {
     if (this.loading) return;
@@ -58,15 +61,17 @@ $(document).on('click', '#save-button', lock(async function () {
 }));
 //Обработчик изменения в textArea и input
 $(document).on('input', '[data-name]', async function () {
-    const currentTextArea = $(this);
-    const currentId = currentTextArea.closest('.table-row').attr('id');
-    const fieldName = currentTextArea.attr('data-name');
-    const fieldValue = currentTextArea.val();
+    const currentElement = $(this);
+    const currentId = currentElement.closest('.table-row').attr('id');
+    const fieldName = currentElement.attr('data-name');
+    const fieldValue = currentElement.is('div')
+        ? currentElement.text().trim()
+        : currentElement.val();
     saveMassive[currentId] = {
         ...saveMassive[currentId],
         [fieldName]: fieldValue
     };
-    currentTextArea.addClass('change-textarea');
+    currentElement.addClass('change-textarea');
 });
 //Обработчик клика по .area-modal
 $(document).on('click', '.area-modal', async function () {
@@ -251,6 +256,7 @@ $(document).on('click', '.document', lock(async function () {
             contentType: false,
             success: function (response) {
                 console.log('Файлы загружены', response);
+                alert('Документ добавлен');
             },
             error: function (xhr) {
                 console.error('Ошибка загрузки', xhr);
@@ -321,7 +327,69 @@ $(document).on('click', '#createBtn', lock(async function (e) {
         console.error('Ошибка при создании SPE:', error);
         button.disabled = false;
     }
+    applyFilters();
 }));
+//Фильтры
+$(document).on('click', '.filter-status', lock(async function () {
+    currentStatus = $(this).data('status');
+    $('.filter-btn').removeClass('active');
+    $(this).addClass('active');
+    applyFilters();
+}));
+$(document).on('click', '.subdivision-button', lock(async function () {
+    const button = $(this);
+    const dialog = $('#subDivisionDialog');
+    const rowContainer = dialog.find('.dialog-content-rows');
+    let selectedName = '';
+    const cancelBtn = dialog.find('.close');
+    const dialogName = dialog.find('.dialog-name');
+
+    const subDivisions = await cache.get('subDivision');
+
+    function render(list) {
+        rowContainer.empty();
+        list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
+    }
+
+    cancelBtn.text('Сбросить фильтры');
+    dialogName.text('Фильтр по подразделению');
+    render(subDivisions);
+
+    dialog.find('.choice-field input').on('input', function () {
+        const search = $(this).val().toLowerCase();
+        render(subDivisions.filter(e => e.name.toLowerCase().includes(search)));
+    });
+
+    rowContainer.on('click', '.dialog-content-rows-row', function () {
+        selectedName = $(this).find('.content-row-column').text().trim();
+    });
+
+    $('#changeSubDivision').on('click', () => {
+        currentSubDivision = selectedName;
+        applyFilters();
+        button.css('border-color', 'red');
+        dialog[0].close();
+    });
+
+    $('.close').on('click', () => {
+        currentSubDivision = '';
+        button.css('border-color', '#e2e8f0');
+        applyFilters();
+    });
+
+    dialog.on('close', function() {
+        cancelBtn.text('Отмена');
+        dialogName.text('Окно выбора подразделения');
+    });
+
+    dialog[0].showModal();
+}));
+$(document).on('input', '#searchInput', lock(async function () {
+    searchText = $(this).val().toLowerCase().trim();
+    applyFilters();
+}));
+searchInput.off('input').on('input', function () {
+});
 
 async function displayPage() {
     const data = await getData();
@@ -343,6 +411,20 @@ async function getData() {
 }
 
 async function createRow(spe, update) {
+    const status = (() => {
+        switch (spe.status) {
+            case 'NONE':
+                return 'Нет';
+            case 'WRITE_OFF':
+                return 'Списан';
+            case 'VERIFICATION_REQUIRED':
+                return 'Требуется поверка';
+            case 'EXPIRED':
+                return 'Срок поверки истек';
+            case 'AT_INSPECTION':
+                return 'На поверке';
+        }
+    })();
     const row = `
                 <div class="table-row" id="${spe.number}">
                     <div class="table-cell" style="width: var(--equipment);">
@@ -375,10 +457,12 @@ async function createRow(spe, update) {
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
-                        <p data-name="subDivision">${spe.subDivision.name}</p>
+                        <div contenteditable="false" data-name="subDivision">
+                            ${spe.subDivision.name}
+                        </div>
                     </div>
                     <div class="table-cell" style="width: var(--responsible);">
-                        <div contenteditable="false"  class="responsible" data-name="employee">
+                        <div contenteditable="false" class="responsible" data-name="employee">
                             ${spe.employee.name}
                         </div>
                     </div>
@@ -412,7 +496,7 @@ async function createRow(spe, update) {
                     </div>
                     <div class="table-cell" style="width: var(--status);">
                         <span class="status-indicator status-good">
-                           ${spe.status}
+                           ${status}
                         </span>
                     </div>
                 </div>`;
@@ -483,6 +567,16 @@ async function enableEditMode(row) {
             $div.replaceWith(element);
         });
     }
+}
+
+function applyFilters() {
+    $('.table-row').each(function() {
+        const row = $(this);
+        const statusMatch = currentStatus === 'NONE' || row.find('.status-indicator').text().trim() === currentStatus;
+        const subDivisionMatch = !currentSubDivision || row.find('[data-name="subDivision"]').text().trim() === currentSubDivision;
+        const textMatch = searchText==='' || row.find('div[contenteditable="false"]').text().toLowerCase().includes(searchText.toLowerCase());
+        row.toggle(statusMatch && subDivisionMatch && textMatch);
+    });
 }
 
 async function disableEditMode(row) {
@@ -561,10 +655,13 @@ async function saveData(spe, type) {
 
     if (type === 'create') {
         await createSpe(spe);
+        applyFilters();
     } else if (type === 'update') {
         await updateSpe(spe);
+        applyFilters();
     } else if (type === 'delete') {
         await deleteSpe(spe);
+        applyFilters();
     } else console.error("Неподдерживаемый тип запроса")
 }
 

@@ -47,7 +47,6 @@ body {
 header {
     & .title {
         text-align: center;
-        margin-bottom: 30px;
     }
 
     & .toolbar {
@@ -96,17 +95,17 @@ h1 {
     color: var(--text-primary);
     position: relative;
     display: inline-block;
-}
 
-h1:after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 10%;
-    width: 80%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-light));
-    border-radius: 2px;
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 10%;
+        width: 80%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-light));
+        border-radius: 2px;
+    }
 }
 
 .controls {
@@ -124,30 +123,30 @@ h1:after {
     flex: 1;
     max-width: 400px;
     position: relative;
-}
 
-.search-box input {
-    width: 100%;
-    padding: 12px 15px 12px 45px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 16px;
-    transition: all 0.3s;
-}
+    & input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 16px;
+        transition: all 0.3s;
 
-.search-box input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
+        &:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    }
 
-.search-box i {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
+    & i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
 }
 
 .filters {
@@ -167,18 +166,13 @@ h1:after {
     gap: 6px;
     font-weight: 500;
     transition: all 0.3s ease;
-}
 
-.filter-btn:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.filter-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
+    &:hover,
+    &.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
 }
 
 .data-container {
@@ -226,19 +220,19 @@ h1:after {
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     transition: all 0.2s;
-}
 
-.department-item:hover {
-    color: var(--accent);
-}
+    &:hover {
+        color: var(--accent);
+    }
 
-.department-item.active {
-    color: var(--accent);
-    font-weight: 600;
-    background: rgba(59, 130, 246, 0.1);
-    margin: 0 -10px;
-    padding: 10px;
-    border-radius: 6px;
+    &:active {
+        color: var(--accent);
+        font-weight: 600;
+        background: rgba(59, 130, 246, 0.1);
+        margin: 0 -10px;
+        padding: 10px;
+        border-radius: 6px;
+    }
 }
 
 .table-container {
@@ -310,18 +304,6 @@ h1:after {
             }
         }
     }
-}
-
-.auto-resize {
-    min-height: 40px;
-    max-height: 120px;
-    resize: none;
-    overflow-y: auto;
-    width: 100%;
-    border: none;
-    background: transparent;
-    font: inherit;
-    line-height: 1.4;
 }
 
 .equipment {
@@ -543,7 +525,7 @@ dialog::backdrop {
 
 .dialog-container-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding: 15px 25px;
     background: #f4f4f4;
     border-top: 1px solid #e0e0e0;

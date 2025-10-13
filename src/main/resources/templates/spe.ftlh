@@ -46,19 +46,22 @@
             <input type="text" id="searchInput" placeholder="Поиск оборудования...">
         </div>
         <div class="filters">
-            <button class="filter-btn active">
+            <button class="subdivision-button filter-btn">
+                <i class="fas fa-sitemap"></i>Подразделения
+            </button>
+            <button class="filter-btn active filter-status" data-status="NONE">
                 <i class="fas fa-list"></i>Все
             </button>
-            <button class="filter-btn">
+            <button class="filter-btn filter-status" data-status="WRITE_OFF">
                 <i class="fas fa-check-circle"></i>Списаны
             </button>
-            <button class="filter-btn">
+            <button class="filter-btn filter-status" data-status="VERIFICATION_REQUIRED">
                 <i class="fas fa-exclamation-triangle"></i>Требуется поверка
             </button>
-            <button class="filter-btn">
+            <button class="filter-btn filter-status" data-status="EXPIRED">
                 <i class="fas fa-exclamation-triangle"></i>Истек срок поверки
             </button>
-            <button class="filter-btn">
+            <button class="filter-btn filter-status" data-status="AT_INSPECTION">
                 <i class="fas fa-exclamation-triangle"></i>На поверке
             </button>
         </div>
@@ -89,13 +92,6 @@
                 </div>
             </div>
 
-            <div class="department-list">
-                <div class="department-item active">Все подразделения</div>
-                <div class="department-item">Склад (ОФ)</div>
-                <div class="department-item">Цех №3</div>
-                <div class="department-item">Электрик</div>
-                <div class="department-item">Участок изготовления</div>
-            </div>
         </div>
 
         <div class="table-container">
@@ -163,7 +159,7 @@
             </div>
         </div>
         <div class="dialog-container-footer">
-            <button class="dialog-btn" onclick="document.getElementById('subDivisionDialog').close()">
+            <button class="dialog-btn close" onclick="document.getElementById('subDivisionDialog').close()">
                 Отмена
             </button>
             <button class="dialog-btn primary" id="changeSubDivision">
