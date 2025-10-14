@@ -81,6 +81,19 @@ public class Images {
         setData(Base64.getDecoder().decode(base64Data));
     }
 
+    public UUID getMainlinkId() {
+        if (request != null) {
+            return request.getId();
+        } else if (sgi != null) {
+            return sgi.getId();
+        } else if (sgim != null) {
+            return sgim.getId();
+        } else if (document != null) {
+            return document.getId();
+        }
+        return null;
+    }
+
     public UUID getId() {
         return id;
     }

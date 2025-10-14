@@ -6,8 +6,10 @@ import com.example.rces.models.SPE;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {
                 EmployeeMapper.class,
                 SubDivisionMapper.class
@@ -15,14 +17,9 @@ import org.mapstruct.MappingTarget;
 public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
 
     @Override
-    @Mapping(target = "number", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "color", ignore = true)
     SPE toEntityFromCreateDTO(SpeCreateDTO dto);
 
     @Override
-    @Mapping(target = "number", ignore = true)
-    @Mapping(target = "document", ignore = true)
     SPE toEntity(SpeDTO dto);
 
     @Override
@@ -30,6 +27,5 @@ public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
     SpeDTO toDTO(SPE entity);
 
     @Override
-    @Mapping(target = "number", ignore = true)
     void update(SpeDTO dto, @MappingTarget SPE entity);
 }

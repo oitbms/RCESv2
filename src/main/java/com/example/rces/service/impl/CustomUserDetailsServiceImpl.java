@@ -1,6 +1,7 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.payload.EmployeePayload;
+import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
@@ -32,10 +33,12 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     );
 
     private final EmployeeRepository repository;
+    private final EmployeeMapper mapper;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(EmployeeRepository repository) {
+    public CustomUserDetailsServiceImpl(EmployeeRepository repository, EmployeeMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -76,13 +79,13 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     }
 
     @Override
-    public List<EmployeePayload> findAll() {
-        return repository.findAll().stream().map(EmployeePayload::new).toList();
+    public List<EmployeeDTO> findAll() {
+        return repository.findAll().stream().map(mapper::toDTO).toList();
     }
 
     @Override
-    public List<EmployeePayload> findAllByRole(String role) {
-        return repository.findAllByRole(role).stream().map(EmployeePayload::new).toList();
+    public List<EmployeeDTO> findAllByRole(String role) {
+        return repository.findAllByRole(role).stream().map(mapper::toDTO).toList();
     }
 
     public Employee getCurrentUser() {

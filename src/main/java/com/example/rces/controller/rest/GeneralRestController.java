@@ -1,5 +1,8 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.CustomerOrderDTO;
+import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.dto.InconsistencyDto;
 import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
@@ -37,7 +40,7 @@ public class GeneralRestController {
     }
 
     @GetMapping("/employees")
-    public List<EmployeePayload> getEmployees(@RequestParam(required = false) Object param) {
+    public List<EmployeeDTO> getEmployees(@RequestParam(required = false) Object param) {
         if (param != null) {
             return employeeService.findAllByRole((String) param);
         } else {
@@ -52,7 +55,7 @@ public class GeneralRestController {
     }
 
     @GetMapping("/customer-orders")
-    public List<CustomerOrderPayload> getCustomerOrders() {
+    public List<CustomerOrderDTO> getCustomerOrders() {
         return customerOrderService.findAllPayload();
     }
 
@@ -65,38 +68,31 @@ public class GeneralRestController {
     }
 
     @GetMapping("/inconsistency")
-    public List<InconsistencyPayload> getInconsistency(@RequestParam String param) {
-        return inconsistenciesService.findAllInconsistencies().stream()
-                .filter(req -> req.getControlType().equals(param))
-                .map(inconsistency -> new InconsistencyPayload(inconsistency.getName()))
-                .collect(Collectors.toList());
+    public List<InconsistencyDto> getInconsistency(@RequestParam String param) {
+        return inconsistenciesService.findAllByType(param);
     }
 
     @GetMapping("/item")
-    public List<ItemPayload> getItems() {
+    public List<Item> getItems() {
         return Arrays.stream(Item.values())
-                .map(item -> new ItemPayload(item.getName()))
                 .collect(Collectors.toList());
     }
 
+    //TODO заменить на subDivision
     @GetMapping("/mlm-node")
-    public List<MlmNodePayload> getMlmNode() {
+    public List<MlmNode> getMlmNode() {
         return Arrays.stream(MlmNode.values())
-                .map(mlmNode -> new MlmNodePayload(mlmNode.getName()))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/status")
-    public List<StatusPayload> getStatus(@RequestParam String param) {
-        List<Status> statuses = switch (param) {
+    public List<Status> getStatus(@RequestParam String param) {
+        return switch (param) {
             case "ADMIN" -> Arrays.asList(Status.values());
             case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
             case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel);
             default -> Collections.emptyList();
         };
-        return statuses.stream()
-                .map(status -> new StatusPayload(status.getId(), status.getName()))
-                .collect(Collectors.toList());
     }
 
     @GetMapping("/sub-divisions")

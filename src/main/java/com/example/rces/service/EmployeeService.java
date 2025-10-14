@@ -1,6 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.payload.EmployeePayload;
+import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.models.Employee;
 
 import java.util.List;
@@ -21,9 +21,9 @@ public interface EmployeeService {
 
     Employee getCurrentUser();
 
-    List<EmployeePayload> findAllByRole(String role);
+    List<EmployeeDTO> findAllByRole(String role);
 
     void setSecurityContext(Employee employee);
 
-    List<EmployeePayload> findAll();
+    List<EmployeeDTO> findAll();
 }

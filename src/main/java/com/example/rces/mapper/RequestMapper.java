@@ -12,7 +12,7 @@ import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRequestDto> {
 
     @Mapping(target = "typeRequest", source = "type")

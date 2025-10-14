@@ -1,6 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.payload.ImagesPayload;
+import com.example.rces.dto.ImagesDTO;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;
 import com.example.rces.models.Requests;
@@ -22,11 +22,11 @@ public interface ImageService {
 
     List<Images> createImages(MultipartFile[] additionalFiles, FactExecutionSGI factExecutionSGI, Boolean save);
 
-    List<ImagesPayload> getImagesByRequestId(UUID param);
+    List<ImagesDTO> getImagesByRequestId(UUID param);
 
-    List<ImagesPayload> getImagesForSgiId(UUID sgiId);
+    List<ImagesDTO> getImagesForSgiId(UUID sgiId);
 
-    List<ImagesPayload> getImagesForFactSgiId(UUID factsSgiId);
+    List<ImagesDTO> getImagesForFactSgiId(UUID factsSgiId);
 
     List<Images> findAllByIds(List<UUID> imageIds);
 

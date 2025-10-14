@@ -1,6 +1,6 @@
 package com.example.rces.controller.mvc;
 
-import com.example.rces.payload.EmployeePayload;
+import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.MlmNode;
@@ -9,12 +9,13 @@ import com.example.rces.models.enums.Status;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -23,7 +24,7 @@ import java.util.Map;
 
 import static com.example.rces.utils.DateUtil.formatedDate;
 import static com.example.rces.utils.DecimalUtil.*;
-import static com.example.rces.utils.ServiceUtil.*;
+import static com.example.rces.utils.ServiceUtil.getCreateRequestsMaster;
 
 @Controller
 public class RegistrationsController {
@@ -41,7 +42,7 @@ public class RegistrationsController {
     public String admin(@AuthenticationPrincipal Employee currentUser, Model model) {
         List<Role> roles = List.of(Role.values());
         List<MlmNode> mlmNodes = List.of(MlmNode.values());
-        List<EmployeePayload> employees = employeeService.findAll();
+        List<EmployeeDTO> employees = employeeService.findAll();
         model.addAttribute("users", employees);
         model.addAttribute("user", currentUser);
         model.addAttribute("mlmNodes", mlmNodes);
@@ -117,7 +118,6 @@ public class RegistrationsController {
         employeeService.save(username, mlmNode, role, password, chatId);
         return "redirect:/admin";
     }
-
 
 
     @PostMapping("/update")

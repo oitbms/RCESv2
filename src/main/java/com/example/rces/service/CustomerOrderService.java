@@ -1,6 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.payload.CustomerOrderPayload;
+import com.example.rces.dto.CustomerOrderDTO;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 
@@ -12,5 +12,5 @@ public interface CustomerOrderService {
 
     List<CustomerOrder> findAll();
 
-    List<CustomerOrderPayload> findAllPayload();
+    List<CustomerOrderDTO> findAllPayload();
 }

@@ -1,6 +1,7 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.payload.ImagesPayload;
+import com.example.rces.dto.ImagesDTO;
+import com.example.rces.mapper.ImagesMapper;
 import com.example.rces.models.FactExecutionSGI;
 import com.example.rces.models.Images;
 import com.example.rces.models.Requests;
@@ -25,6 +26,7 @@ import static com.example.rces.utils.FilesUtil.getBytes;
 public class ImageServiceImpl implements ImageService {
 
     private final ImageRepository repository;
+    private final ImagesMapper mapper;
 
     @Override
     public void save(Images newImage) {
@@ -37,8 +39,9 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Autowired
-    public ImageServiceImpl(ImageRepository repository) {
+    public ImageServiceImpl(ImageRepository repository, ImagesMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -57,27 +60,21 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public List<ImagesPayload> getImagesByRequestId(UUID requestId) {
+    public List<ImagesDTO> getImagesByRequestId(UUID requestId) {
         List<Images> images = repository.findAllByRequestId(requestId);
-        return images.stream()
-                .map(image -> new ImagesPayload(image.getId(), image.getName(), image.getBase64Data(), image.getRequest().getId()))
-                .collect(Collectors.toList());
+        return mapper.toDTOList(images);
     }
 
     @Override
-    public List<ImagesPayload> getImagesForSgiId(UUID sgiId) {
+    public List<ImagesDTO> getImagesForSgiId(UUID sgiId) {
         List<Images> images = repository.findAllBySgimId(sgiId);
-        return images.stream()
-                .map(image -> new ImagesPayload(image.getId(), image.getName(), image.getBase64Data(), image.getSgim().getId()))
-                .collect(Collectors.toList());
+        return mapper.toDTOList(images);
     }
 
     @Override
-    public List<ImagesPayload> getImagesForFactSgiId(UUID factSgiId) {
+    public List<ImagesDTO> getImagesForFactSgiId(UUID factSgiId) {
         List<Images> images = repository.findAllBySgiId(factSgiId);
-        return images.stream()
-                .map(image -> new ImagesPayload(image.getId(), image.getName(), image.getBase64Data(), image.getSgi().getId()))
-                .collect(Collectors.toList());
+        return mapper.toDTOList(images);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.ImagesDTO;
 import com.example.rces.models.SGI;
-import com.example.rces.payload.ImagesPayload;
 import com.example.rces.payload.SGIPayload;
 import com.example.rces.service.ImageService;
 import com.example.rces.service.SgiService;
@@ -99,14 +99,14 @@ public class SGIRestController {
     }
 
     @GetMapping("/get-images-sgi")
-    public ResponseEntity<List<ImagesPayload>> getImagesForSgiId(@RequestParam UUID id) {
-        List<ImagesPayload> imagesPayload = imageService.getImagesForSgiId(id);
+    public ResponseEntity<List<ImagesDTO>> getImagesForSgiId(@RequestParam UUID id) {
+        List<ImagesDTO> imagesPayload = imageService.getImagesForSgiId(id);
         return ResponseEntity.ok().body(imagesPayload);
     }
 
     @GetMapping("/get-images-fact-sgi")
-    public ResponseEntity<List<ImagesPayload>> getImagesForFactSgiId(@RequestParam UUID id) {
-        List<ImagesPayload> imagesPayload = imageService.getImagesForFactSgiId(id);
+    public ResponseEntity<List<ImagesDTO>> getImagesForFactSgiId(@RequestParam UUID id) {
+        List<ImagesDTO> imagesPayload = imageService.getImagesForFactSgiId(id);
         return ResponseEntity.ok().body(imagesPayload);
     }
 

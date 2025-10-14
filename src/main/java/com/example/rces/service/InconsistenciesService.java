@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface InconsistenciesService {
 
-   List<Inconsistency> findAllInconsistencies();
+   List<Inconsistency> findAll();
+
+   List<InconsistencyDto> findAllByType(String type);
 
    InconsistencyDto createInconsistency(InconsistencyCreateDto dto);
 

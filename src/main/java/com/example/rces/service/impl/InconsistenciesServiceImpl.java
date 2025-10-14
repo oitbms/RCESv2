@@ -24,9 +24,14 @@ public class InconsistenciesServiceImpl implements InconsistenciesService {
     }
 
     @Override
-    public List<Inconsistency> findAllInconsistencies() {
-        List<Inconsistency> inconsistencies = repository.findAll();
-        return inconsistencies;
+    public List<Inconsistency> findAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<InconsistencyDto> findAllByType(String type) {
+        List<Inconsistency> inconsistencies = repository.findAllByControlType(type);
+        return mapper.toDTOList(inconsistencies);
     }
 
     @Override

@@ -206,7 +206,7 @@ public class RequestServiceImpl implements RequestsService {
                         return;
                     }
                     else if (key.equals("inconsistencies")) {
-                        value = Inconsistency.fromField(value, new HashSet<>(inconsistenciesService.findAllInconsistencies()));
+                        value = Inconsistency.fromField(value, new HashSet<>(inconsistenciesService.findAll()));
                     }
 
                     method.invoke(request, value);

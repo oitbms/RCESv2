@@ -1,7 +1,7 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.ImagesDTO;
 import com.example.rces.dto.RequestHistoryDTO;
-import com.example.rces.payload.ImagesPayload;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
@@ -45,7 +45,7 @@ public class RequestRestController {
         Set<Inconsistency> inconsistencies = Collections.emptySet();
         if (inconsistencyData != null && !inconsistencyData.isEmpty()) {
             try {
-                inconsistencies = Inconsistency.fromField(inconsistencyData, new HashSet<>(inconsistenciesService.findAllInconsistencies()));
+                inconsistencies = Inconsistency.fromField(inconsistencyData, new HashSet<>(inconsistenciesService.findAll()));
             } catch (Exception e) {
                 throw new RuntimeException("Ошибка парсинга inconsistencyData", e);
             }
@@ -89,7 +89,7 @@ public class RequestRestController {
     }
 
     @GetMapping("/images")
-    public List<ImagesPayload> getImages(@RequestParam UUID param) {
+    public List<ImagesDTO> getImages(@RequestParam UUID param) {
         return imageService.getImagesByRequestId(param);
     }
 

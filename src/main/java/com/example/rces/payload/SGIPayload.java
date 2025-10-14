@@ -1,5 +1,6 @@
 package com.example.rces.payload;
 
+import com.example.rces.dto.ImagesDTO;
 import com.example.rces.models.SGI;
 
 import java.time.LocalDate;
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public record SGIPayload(UUID id, String number, String color, String workcenter, String event, String actions, String department, String departmentName,
                          String employee, LocalDate desiredDate, LocalDate planDate, String note,
-                         String comment, List<ImagesPayload> imagesSGI, Boolean agree,
+                         String comment, List<ImagesDTO> imagesSGI, Boolean agree,
                          List<SubSGIPayload> subSGI, FactExecutionPayload factExecutionSGI, SubSGIPayload parent) {
 
     public SGIPayload(SGI sgi) {

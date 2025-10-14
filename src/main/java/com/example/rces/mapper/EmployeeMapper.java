@@ -6,18 +6,17 @@ import com.example.rces.models.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EmployeeMapper extends BaseMapper<Employee, EmployeeDTO, EmployeeCreateDTO> {
 
     @Override
-    @Mapping(target = "password", ignore = true)
     Employee toEntity(EmployeeDTO dto);
 
     @Override
     EmployeeDTO toDTO(Employee entity);
 
     @Override
-    @Mapping(target = "password", ignore = true)
     void update(EmployeeDTO dto, @MappingTarget Employee entity);
 }

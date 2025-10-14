@@ -5,8 +5,10 @@ import com.example.rces.dto.DocumentDTO;
 import com.example.rces.models.Document;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {
                 DocumentFileMapper.class
         })
