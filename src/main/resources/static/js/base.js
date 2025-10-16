@@ -7,6 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var NotificationType;
+(function (NotificationType) {
+    NotificationType["SUCCESS"] = "success";
+    NotificationType["ERROR"] = "error";
+    NotificationType["WARNING"] = "warning";
+    NotificationType["INFO"] = "info";
+})(NotificationType || (NotificationType = {}));
 // @ts-ignore
 class Base {
     constructor(itemsPerPage = Infinity, ...initCallbacks) {
@@ -150,13 +157,6 @@ class Base {
         });
     }
 }
-var NotificationType;
-(function (NotificationType) {
-    NotificationType["SUCCESS"] = "success";
-    NotificationType["ERROR"] = "error";
-    NotificationType["WARNING"] = "warning";
-    NotificationType["INFO"] = "info";
-})(NotificationType || (NotificationType = {}));
 window.cache = {
     endpoints: { employee: '/api/employees', subDivision: '/api/sub-divisions' },
     get(key) {

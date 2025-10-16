@@ -2,6 +2,19 @@ interface FileDTO {
     name: string;
     data: string;
 }
+enum NotificationType {
+    SUCCESS = 'success',
+    ERROR = 'error',
+    WARNING = 'warning',
+    INFO = 'info'
+}
+interface cache {
+    endpoints: { employee: string; subDivision: string; [key: string]: string };
+
+    get<T = any>(key: string): Promise<T>;
+
+    set(key: string, data: any): this;
+}
 // @ts-ignore
 abstract class Base {
     private locks = new Map<string, boolean>();
@@ -174,20 +187,6 @@ abstract class Base {
 
 }
 
-enum NotificationType {
-    SUCCESS = 'success',
-    ERROR = 'error',
-    WARNING = 'warning',
-    INFO = 'info'
-}
-
-interface cache {
-    endpoints: { employee: string; subDivision: string; [key: string]: string };
-
-    get<T = any>(key: string): Promise<T>;
-
-    set(key: string, data: any): this;
-}
 
 // @ts-ignore
 declare global {
