@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/spe.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/js/cache.js" defer></script>
-    <script src="/js/spe.js" defer></script>
+    <script src="/js/base.js"></script>
+    <script src="/js/newSpe.js"></script>
 </head>
 
 <body>
@@ -32,7 +33,7 @@
                     <i class="fas fa-floppy-disk"></i>
                 </button>
             </div>
-            <div class="tool create" id="create-button">
+            <div class="tool create" id="create-button" onclick="document.getElementById('create-dialog').showModal()">
                 <button title="Создать">
                     <i class="fas fa-plus"></i>
                 </button>
@@ -262,7 +263,7 @@
 
         </div>
         <div class="modal-footer">
-            <button class="btn btn-primary" id="cancelButton">Отмена</button>
+            <button class="btn btn-primary" id="cancelButton" onclick="document.getElementById('create-dialog').close()">Отмена</button>
             <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
         </div>
     </form>

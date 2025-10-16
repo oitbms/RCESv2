@@ -1,6 +1,5 @@
 package com.example.rces.dto;
 
-import java.util.List;
 import java.util.UUID;
 
 public class FactExecutionSGIDTO {
@@ -8,7 +7,6 @@ public class FactExecutionSGIDTO {
     private UUID id;
     private String executionDate;
     private String report;
-    private List<ImagesDTO> imagesFactSGI;
 
     public UUID getId() {
         return id;
@@ -32,13 +30,5 @@ public class FactExecutionSGIDTO {
 
     public void setReport(String report) {
         this.report = report;
-    }
-
-    public List<ImagesDTO> getImagesFactSGI() {
-        return imagesFactSGI;
-    }
-
-    public void setImagesFactSGI(List<ImagesDTO> imagesFactSGI) {
-        this.imagesFactSGI = imagesFactSGI;
     }
 }

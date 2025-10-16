@@ -1,7 +1,8 @@
 package com.example.rces.dto;
 
+import com.example.rces.models.SGI;
+
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 public class SubSgiDTO {
@@ -14,13 +15,12 @@ public class SubSgiDTO {
     private String actions;
     private String department;
     private String departmentName;
-    private String employee;
+    private EmployeeDTO employee;
     private LocalDate desiredDate;
-    private java.time.LocalDate planDate;
+    private LocalDate planDate;
     private String note;
     private String comment;
     private Boolean agree;
-    private List<ImagesDTO> imagesSGI;
     private FactExecutionSGIDTO factExecutionSGI;
     private SubSgiDTO parent;
 
@@ -88,11 +88,11 @@ public class SubSgiDTO {
         this.departmentName = departmentName;
     }
 
-    public String getEmployee() {
+    public EmployeeDTO getEmployee() {
         return employee;
     }
 
-    public void setEmployee(String employee) {
+    public void setEmployee(EmployeeDTO employee) {
         this.employee = employee;
     }
 
@@ -134,14 +134,6 @@ public class SubSgiDTO {
 
     public void setAgree(Boolean agree) {
         this.agree = agree;
-    }
-
-    public List<ImagesDTO> getImagesSGI() {
-        return imagesSGI;
-    }
-
-    public void setImagesSGI(List<ImagesDTO> imagesSGI) {
-        this.imagesSGI = imagesSGI;
     }
 
     public FactExecutionSGIDTO getFactExecutionSGI() {

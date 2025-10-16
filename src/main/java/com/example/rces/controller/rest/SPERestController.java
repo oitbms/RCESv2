@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,10 +27,10 @@ public class SPERestController {
     }
 
     @GetMapping("/get-page-spe")
-    public ResponseEntity<SpeResponseDTO> getPage() {
+    public ResponseEntity<List<SpeDTO>> getPage() {
         var allSpeList = service.getAllSPE();
         var responseDTO = new SpeResponseDTO(allSpeList);
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(allSpeList);
     }
 
     @PatchMapping("/update/{number}")
@@ -45,9 +46,9 @@ public class SPERestController {
         return ResponseEntity.ok(service.createSpeDocument(number, dto));
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> delete(@RequestBody SpeDTO speDTO) {
-        service.deleteSpe(speDTO);
+    @DeleteMapping("/delete/{number}")
+    public ResponseEntity<Void> delete(@PathVariable Integer number) {
+        service.deleteSpe(number);
         return ResponseEntity.ok().build();
     }
 

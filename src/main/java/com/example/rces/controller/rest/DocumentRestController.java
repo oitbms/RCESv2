@@ -1,6 +1,8 @@
 package com.example.rces.controller.rest;
 
 import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.FileDTO;
+import com.example.rces.models.DocumentFile;
 import com.example.rces.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,9 @@ public class DocumentRestController {
         return ResponseEntity.ok().build();
     }
 
-
-
+    @GetMapping("/download-document-file/{id}")
+    public ResponseEntity<FileDTO> downloadFile(@PathVariable UUID id) {
+        FileDTO file = documentService.downloadFile(id);
+        return ResponseEntity.ok(file);
+    }
 }

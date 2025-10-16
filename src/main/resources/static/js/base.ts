@@ -1,3 +1,8 @@
+interface FileDTO {
+    name: string;
+    data: string;
+}
+// @ts-ignore
 abstract class Base {
     private locks = new Map<string, boolean>();
     private handlers: { event: string, selector: string, handler: Function }[] = [];
@@ -6,7 +11,6 @@ abstract class Base {
     private readonly itemsPerPage: number
     public currentPage: number = 1;
     public saveMassive: object = {};
-    public filter = new Map<string, string>();
 
     protected constructor(itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
         this.itemsPerPage = itemsPerPage;
@@ -27,7 +31,7 @@ abstract class Base {
     }
 
     //Блокировка параллельного выполнения
-    private lock = (fn: Function) => async (...args: any[]) => {
+    private lock = (fn: Function) => async (...args: any[]): Promise<void> => {
         const key = fn.name;
         if (this.locks.get(key)) return;
 
@@ -47,7 +51,7 @@ abstract class Base {
         });
     };
 
-    //Всегда должен возвращать jquery объект
+    //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
 
     public readonly updateRow = (item: any, rowIndex: string | number): void => {
@@ -65,19 +69,20 @@ abstract class Base {
     };
 
     public readonly deleteRow = (rowIndex: string | number): void => {
-        const $row = $(`[data-index="${rowIndex}"]`);
+        const $row = $(`#${rowIndex}`);
         $row.fadeOut(300, () => {
             $row.remove();
             this.localCache.delete(rowIndex);
         });
     }
 
-    public readonly displayPage = this.lock(async (url: string, type: string, param?: object): Promise<void> => {
+    public readonly displayPage = this.lock(async (url: string, type: string, param?: object, ...callbacks: Function[]): Promise<void> => {
         const data: any[] = await this.requestToApi(url, type, param);
         for (const item of data) {
             this.localCache.set(item.id, item);
             this.createRow(item);
         }
+        callbacks.forEach(callback => callback(data));
     });
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {
@@ -93,12 +98,14 @@ abstract class Base {
         return results;
     }
 
-    public readonly requestToApi = async (url: string, type: string, param?: object): Promise<any> => {
+    public readonly requestToApi = async (url: string, type: string, param?: object | FormData): Promise<any> => {
+        const isFormData = param instanceof FormData;
         return await $.ajax({
             url: url,
             method: type,
-            contentType: 'application/json',
-            data: param ? JSON.stringify(param) : undefined
+            contentType: isFormData ? false : 'application/json',
+            processData: !isFormData,
+            data: param
         });
     }
 
@@ -107,16 +114,37 @@ abstract class Base {
     };
 
     public readonly downloadFile = async (url: string, params?: object): Promise<void> => {
-        const response = await this.requestToApi(url, 'GET', params);
-        const blob = new Blob([response]);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = url.split('/').pop() || 'file';
-        a.click();
-    };
+        try {
+            const file = await this.requestToApi(url, 'GET', params) as FileDTO;
+            const binaryString = atob(file.data);
+            const uint8Array = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                uint8Array[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([uint8Array]);
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+        } catch (error) {
+            this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR).catch(console.error);
+        }
+    }
+
+    public readonly createEntity = (url: string, dto: any): any => {
+        return this.requestToApi(url, 'POST', dto);
+    }
+
+    public readonly deleteEntity = (url: string): Promise<void> => {
+        return this.requestToApi(url, 'DELETE');
+    }
 
     //Создание уведомления в левом верхнем углу
-    public readonly createNotification = this.lock((message: string, type: NotificationType, params?: any) => {
+    public readonly createNotification = this.lock((message: string, type: NotificationType, params?: any): void => {
         const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
 
         const $note = $(`<div class="notification ${type}">
@@ -126,6 +154,17 @@ abstract class Base {
         setTimeout(() => $note.addClass('show'), 10);
         setTimeout(() => $note.remove(), 10000);
     });
+
+    //Контекстное меню
+    public readonly createContextMenu = (items: { label: string, action: () => void }[], x: number, y: number): void => {
+        $('#context-menu').remove();
+
+        const menu = $('<div id="context-menu"></div>');
+        items.forEach(item => menu.append(`<div>${item.label}</div>`).on('click', item.action));
+
+        $('body').append(menu.css({ left: x + 'px', top: y + 'px' }));
+        $(document).one('click', () => menu.remove());
+    }
 
     public readonly formatDate = (dateString: string): string => {
         if (!dateString) return "";
@@ -150,6 +189,7 @@ interface cache {
     set(key: string, data: any): this;
 }
 
+// @ts-ignore
 declare global {
     interface Window {
         cache: cache;
@@ -165,10 +205,10 @@ declare const $: any;
         if (cached) return JSON.parse(cached);
 
         const endpoint = this.endpoints[key];
-        if (!endpoint) throw new Error(`No cache endpoint: ${key}`);
+        if (!endpoint) throw new Error(`Такого api нет: ${key}`);
 
         const response = await fetch(endpoint);
-        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        if (!response.ok) throw new Error(`Возникла ошибка сервера: ${response.status}`);
 
         const data: T = await response.json();
         this.set(key, data);

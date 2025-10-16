@@ -1,8 +1,9 @@
 package com.example.rces.controller.rest;
 
 import com.example.rces.dto.ImagesDTO;
+import com.example.rces.dto.SgiCreateDTO;
+import com.example.rces.dto.SgiDTO;
 import com.example.rces.models.SGI;
-import com.example.rces.payload.SGIPayload;
 import com.example.rces.service.ImageService;
 import com.example.rces.service.SgiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,21 +34,13 @@ public class SGIRestController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<SGIPayload> createSGI(@RequestParam String workcenter,
-                                                @RequestParam String event,
-                                                @RequestParam String actions,
-                                                @RequestParam String department,
-                                                @RequestParam String employee,
-                                                @RequestParam(required = false) LocalDate desiredDate,
-                                                @RequestParam(required = false) String note,
-                                                @RequestParam(required = false) MultipartFile[] additionalFiles,
-                                                @RequestParam(required = false) String parentId) {
-        SGIPayload newSGi = sgiService.createSGI(workcenter, event, actions, department, desiredDate, note, employee, additionalFiles, parentId);
+    public ResponseEntity<SgiDTO> createSGI(@RequestBody SgiCreateDTO dto) {
+        SgiDTO newSGi = sgiService.createSGI(dto);
         return ResponseEntity.ok(newSGi);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<SGIPayload> updateSGI(@RequestParam UUID id,
+    public ResponseEntity<SgiDTO> updateSGI(@RequestParam UUID id,
                                                 @RequestParam(required = false) String workcenter,
                                                 @RequestParam(required = false) String event,
                                                 @RequestParam(required = false) String actions,
@@ -62,7 +55,7 @@ public class SGIRestController {
                                                 @RequestParam(required = false) MultipartFile[] imagesSGI,
                                                 @RequestParam(required = false) MultipartFile[] imagesFactSGI) throws CloneNotSupportedException {
         SGI sgi = sgiService.findById(id).orElseThrow(() -> new ApplicationContextException("Передан null в id SGI на сохранение изменений"));
-        SGIPayload updateSGI = sgiService.save(sgi, workcenter, event, actions, department, desiredDate, planDate,
+        SgiDTO updateSGI = sgiService.save(sgi, workcenter, event, actions, department, desiredDate, planDate,
                 employee, note, executionDate, factExecutionSGIBool, executionDate, report, imagesSGI, imagesFactSGI);
         return ResponseEntity.ok(updateSGI);
     }
@@ -90,8 +83,8 @@ public class SGIRestController {
     }
 
     @GetMapping("/get-page-sgi")
-    public ResponseEntity<Page<SGIPayload>> getPageSGI(@RequestParam int page, @RequestParam int size) {
-        Page<SGIPayload> pageSgiPayload = sgiService.getPage(page, size);
+    public ResponseEntity<Page<SgiDTO>> getPageSGI(@RequestParam int page, @RequestParam int size) {
+        Page<SgiDTO> pageSgiPayload = sgiService.getPage(page, size);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(pageSgiPayload.getTotalElements()))
                 .contentType(MediaType.APPLICATION_JSON)

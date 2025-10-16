@@ -21,10 +21,10 @@ public class SpeResponseDTO {
     public SpeResponseDTO (List<SpeDTO> speDTOList) {
         this.speDTOList = speDTOList;
         this.totalCount = speDTOList.size();
-        this.writeOff = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.WRITE_OFF)).count();
-        this.verificationRequired = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.VERIFICATION_REQUIRED)).count();
-        this.expired = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.EXPIRED)).count();
-        this.atInspection = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.AT_INSPECTION)).count();
+        this.writeOff = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.WRITE_OFF.name())).count();
+        this.verificationRequired = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.VERIFICATION_REQUIRED.name())).count();
+        this.expired = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.EXPIRED.name())).count();
+        this.atInspection = (int) speDTOList.stream().filter(s -> s.getStatus().equals(StatusSPE.AT_INSPECTION.name())).count();
     }
 
     public List<SpeDTO> getSpeDTOList() {

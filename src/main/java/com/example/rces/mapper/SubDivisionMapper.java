@@ -9,6 +9,4 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SubDivisionMapper extends BaseMapper<SubDivision, SubDivisionDTO, SubDivisionCreateDTO> {
 
-
-
 }

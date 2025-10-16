@@ -19,7 +19,7 @@ public interface SpeService {
 
     DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto);
 
-    void deleteSpe(SpeDTO dto);
+    void deleteSpe(Integer number);
 
     List<SPE> findAllByIdList(List<Integer> ids);
 }

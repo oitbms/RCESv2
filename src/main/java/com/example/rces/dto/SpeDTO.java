@@ -1,14 +1,13 @@
 package com.example.rces.dto;
 
 import com.example.rces.models.enums.Color;
-import com.example.rces.models.enums.StatusSPE;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 public class SpeDTO {
 
-    private Integer number;
+    private Integer id;
     private Long version;
     private String name;
     private String type;
@@ -26,12 +25,12 @@ public class SpeDTO {
     private String status;
     private Color color;
 
-    public Integer getNumber() {
-        return number;
+    public Integer getId() {
+        return id;
     }
 
-    public void setNumber(Integer number) {
-        this.number = number;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Long getVersion() {

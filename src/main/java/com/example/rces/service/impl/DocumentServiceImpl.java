@@ -2,8 +2,11 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.FileDTO;
 import com.example.rces.mapper.DocumentMapper;
+import com.example.rces.mapper.FileMapper;
 import com.example.rces.models.Document;
+import com.example.rces.models.DocumentFile;
 import com.example.rces.repository.DocumentFilesRepository;
 import com.example.rces.repository.DocumentRepository;
 import com.example.rces.service.DocumentService;
@@ -28,12 +31,14 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository repository;
     private final DocumentFilesRepository filesRepository;
     private final DocumentMapper mapper;
+    private final FileMapper fileMapper;
 
     @Autowired
-    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository, DocumentMapper mapper) {
+    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository, DocumentMapper mapper, FileMapper fileMapper) {
         this.repository = repository;
         this.filesRepository = filesRepository;
         this.mapper = mapper;
+        this.fileMapper = fileMapper;
     }
 
     @Override
@@ -76,6 +81,13 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public void deleteDocument(UUID id) {
         repository.deleteById(id);
+    }
+
+    @Override
+    public FileDTO downloadFile(UUID fileId) {
+        DocumentFile file = filesRepository.findById(fileId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Файл с id=%s не найден", fileId)));
+        return fileMapper.toDTO(file);
     }
 
 }

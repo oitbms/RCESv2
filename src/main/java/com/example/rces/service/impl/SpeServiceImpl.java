@@ -78,9 +78,8 @@ public class SpeServiceImpl implements SpeService {
     }
 
     @Override
-    public void deleteSpe(SpeDTO dto) {
-        SPE spe = mapper.toEntity(dto);
-        repository.delete(spe);
+    public void deleteSpe(Integer number) {
+        repository.deleteById(number);
     }
 
     @Override

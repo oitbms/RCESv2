@@ -1,7 +1,5 @@
 package com.example.rces.dto;
 
-import com.example.rces.payload.SubSGIPayload;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -16,16 +14,15 @@ public class SgiDTO {
     private String actions;
     private String department;
     private String departmentName;
-    private String employee;
+    private EmployeeDTO employee;
     private LocalDate desiredDate;
-    private java.time.LocalDate planDate;
+    private LocalDate planDate;
     private String note;
     private String comment;
-    private List<ImagesDTO> imagesSGI;
     private Boolean agree;
-    private List<SubSGIPayload> subSGI;
+    private List<SubSgiDTO> subSGI;
     private FactExecutionSGIDTO factExecution;
-    private SubSGIPayload parent;
+    private SubSgiDTO parent;
 
     public UUID getId() {
         return id;
@@ -91,11 +88,11 @@ public class SgiDTO {
         this.departmentName = departmentName;
     }
 
-    public String getEmployee() {
+    public EmployeeDTO getEmployee() {
         return employee;
     }
 
-    public void setEmployee(String employee) {
+    public void setEmployee(EmployeeDTO employee) {
         this.employee = employee;
     }
 
@@ -131,14 +128,6 @@ public class SgiDTO {
         this.comment = comment;
     }
 
-    public List<ImagesDTO> getImagesSGI() {
-        return imagesSGI;
-    }
-
-    public void setImagesSGI(List<ImagesDTO> imagesSGI) {
-        this.imagesSGI = imagesSGI;
-    }
-
     public Boolean getAgree() {
         return agree;
     }
@@ -147,11 +136,11 @@ public class SgiDTO {
         this.agree = agree;
     }
 
-    public List<SubSGIPayload> getSubSGI() {
+    public List<SubSgiDTO> getSubSGI() {
         return subSGI;
     }
 
-    public void setSubSGI(List<SubSGIPayload> subSGI) {
+    public void setSubSGI(List<SubSgiDTO> subSGI) {
         this.subSGI = subSGI;
     }
 
@@ -163,11 +152,11 @@ public class SgiDTO {
         this.factExecution = factExecution;
     }
 
-    public SubSGIPayload getParent() {
+    public SubSgiDTO getParent() {
         return parent;
     }
 
-    public void setParent(SubSGIPayload parent) {
+    public void setParent(SubSgiDTO parent) {
         this.parent = parent;
     }
 }

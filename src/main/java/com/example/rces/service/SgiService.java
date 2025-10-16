@@ -1,6 +1,7 @@
 package com.example.rces.service;
 
-import com.example.rces.payload.SGIPayload;
+import com.example.rces.dto.SgiCreateDTO;
+import com.example.rces.dto.SgiDTO;
 import com.example.rces.models.SGI;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.data.domain.Page;
@@ -13,11 +14,9 @@ import java.util.UUID;
 
 public interface SgiService {
 
-    SGIPayload createSGI(String workShop, String event, String actions, String department,
-                  LocalDate desiredDate, String note, String employee,
-                  MultipartFile[] additionalFiles, String parentId);
+    SgiDTO createSGI(SgiCreateDTO dto);
 
-    Page<SGIPayload> getPage(int page, int size);
+    Page<SgiDTO> getPage(int page, int size);
 
     Optional<SGI> findById(UUID id);
 
@@ -33,8 +32,8 @@ public interface SgiService {
 
     SGI save(SGI sgi, Boolean agreed) throws ApplicationContextException, CloneNotSupportedException;
 
-    SGIPayload save(SGI sgi, String workcenter, String event, String actions, String department, LocalDate desiredDate, LocalDate planDate,
-              String employee, String note, LocalDate executionDate, Boolean factExecutionSGIBool, LocalDate executionDate2, String report,
-              MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) throws CloneNotSupportedException;
+    SgiDTO save(SGI sgi, String workcenter, String event, String actions, String department, LocalDate desiredDate, LocalDate planDate,
+                String employee, String note, LocalDate executionDate, Boolean factExecutionSGIBool, LocalDate executionDate2, String report,
+                MultipartFile[] imagesSGI, MultipartFile[] imagesFactSGI) throws CloneNotSupportedException;
 
 }
