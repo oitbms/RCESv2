@@ -225,11 +225,15 @@ $(document).on('click', '.execution-btn', async function (e) {
     const currentSGI = localCache.get(currentId);
     const dialog = $('#execution-dialog');
 
-    for (const [key, value] of Object.entries(currentSGI.factExecutionSGI || {})) {
-        const field = dialog.find(`[data-field="${key}"]`);
-        if (!field.length) continue;
-        if (key === 'imagesFactSGI') continue;
-        field.val(value || '');
+    const executionDialog = document.getElementById('execution-dialog');
+    for (const [key, value] of Object.entries(currentSGI.factExecution || {})) {
+        const field = executionDialog.querySelector(`[data-field="${key}"]`);
+        if (!field || key === 'imagesFactSGI') continue;
+        if (key === 'executionDate') {
+            field.value = value ? value.split('.').reverse().join('-') : '';
+        } else {
+            field.value = value || '';
+        }
     }
 
     $(document).on('click', '#execution-dialog #saveBtn', async function () {
@@ -736,7 +740,7 @@ async function createRow(item, inner) {
                         <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
                         <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
                         <div class="row-item" data-field="department" style="width: var(--department);">${item.departmentName}</div>
-                        <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
+                        <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee.name}</div>
                         <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                         <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
                         <div class="row-item" data-field="planDate" style="width: var(--planDate);">
@@ -775,7 +779,7 @@ async function createRow(item, inner) {
                                     <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
                                     <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
                                     <div class="row-item" data-field="departament" style="width: var(--department);">${subItem.departmentName}</div>
-                                    <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
+                                    <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee.name}</div>
                                     <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
                                     <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
                                     <div class="row-item" data-field="planDate" style="width: var(--planDate);">
@@ -817,7 +821,7 @@ async function createRow(item, inner) {
                 <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
                 <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
                 <div class="row-item" data-field="departament" style="width: var(--department);">${item.departmentName}</div>
-                <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
+                <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee.name}</div>
                 <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
                 <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
                 <div class="row-item ${borderClass}" data-field="planDate" style="width: var(--planDate);">
@@ -872,23 +876,23 @@ async function renderImages(currentDialog, type, currentSGI, images) {
     const imageContainer = currentDialog.find('.file-list');
     imageContainer.empty();
     const validFileMap = new Map();
-    if (images === null) {
+    if (!images || images === null) {
         const url = `/api/sgi/get-images-${type === 'fact' ? 'fact-sgi' : 'sgi'}`;
         images = await $.ajax({
             url: url,
             type: 'GET',
-            data: { id:  type === 'fact' ? currentSGI.factExecutionSGI.id : currentSGI.id}
+            data: { id:  type === 'fact' ? currentSGI.factExecution.id : currentSGI.id}
         });
         const processedImages = Array.isArray(images) ? images : [];
         if (type === 'fact') {
-            currentSGI.factExecutionSGI.imagesFactSGI = processedImages
+            currentSGI.factExecution.imagesFactSGI = processedImages
         } else {
             currentSGI.imagesSGI = processedImages;
         }
     }
     for (const image of images || []) {
         imageContainer.append(`
-            <div class="file-item">
+            <div class="file-item" id="${image.id}">
                 <img src="${image.data}" alt="${image.name}">
             </div>`);
         localCache.set(image.name, null);

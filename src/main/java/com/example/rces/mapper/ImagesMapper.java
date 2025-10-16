@@ -44,13 +44,5 @@ public abstract class ImagesMapper implements BaseMapper<Images, ImagesDTO, Imag
         return Base64.getDecoder().decode(base64Data);
     }
 
-    @Named("byteArrayToString")
-    static String byteArrayToString(byte[] data) {
-        return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
-    }
 
-    @Override
-    public void update(ImagesDTO dto, Images entity) {
-        return;
-    }
 }

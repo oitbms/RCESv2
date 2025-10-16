@@ -42,4 +42,12 @@ public class DateUtil {
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
 
+    public static LocalDateTime parseLocalDateTime(String dateString) {
+        return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    }
+
+    public static LocalDate parseLocalDate(String dateString) {
+        return LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    }
+
 }

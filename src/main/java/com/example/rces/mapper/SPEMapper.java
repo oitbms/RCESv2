@@ -5,7 +5,6 @@ import com.example.rces.dto.SpeDTO;
 import com.example.rces.models.SPE;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
@@ -28,7 +27,4 @@ public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
     @Mapping(target = "documentId", source = "document.id")
     SpeDTO toDTO(SPE entity);
 
-    @Override
-    @Mapping(target = "number", source = "id")
-    void update(SpeDTO dto, @MappingTarget SPE entity);
 }

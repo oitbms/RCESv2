@@ -13,6 +13,7 @@ import com.example.rces.utils.FilesUtil;
 import com.example.rces.utils.telegram.MessageType;
 import com.example.rces.utils.telegram.event.TelegramRegularEvent;
 import com.example.rces.utils.telegram.event.TelegramSgiEvent;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,20 @@ public class SgiServiceImpl implements SgiService {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
         SGI newSGI = mapper.toEntityFromCreateDTO(dto);
+        if (!dto.getParentId().isEmpty()) {
+            SGI parentSGi = repository.findById(UUID.fromString(dto.getParentId()))
+                    .orElseThrow(() -> new EntityNotFoundException("Родительская задача не найдена"));
+            newSGI.setParentSGI(parentSGi);
+            newSGI.setRequestNumber(0);
+        } else {
+            newSGI.setRequestNumber(repository.findNextRequestNumber());
+        }
+        newSGI.setAgreed(false);
+        newSGI.setExecution(factExecutionSgiService.createFactExecutionSGI(newSGI));
+        newSGI.setColor(colorCalculate(newSGI, LocalDate.now()));
+        if (dto.getAdditionalFiles() != null) {
+            newSGI.setImages(imageService.createImages(dto.getAdditionalFiles(), newSGI, false));
+        }
         repository.save(newSGI);
         telegramService.sendMessageForSGI(new TelegramSgiEvent(this, newSGI, null, MessageType.CREATE, this.testChatId));
         return mapper.toDTO(newSGI);

@@ -7,13 +7,12 @@ import java.util.List;
 
 public interface BaseMapper<T, D, C> {
 
+
     T toEntity(D dto);
 
     T toEntityFromCreateDTO(C createDto);
 
     D toDTO(T entity);
-
-    void update(D dto, @MappingTarget T entity);
 
     default Page<D> toDTOPage(Page<T> entities) {
         return entities.map(this::toDTO);
