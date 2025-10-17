@@ -5,6 +5,7 @@ plugins {
     war
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.25"
 }
 
 group = "com.example"
@@ -56,6 +57,10 @@ dependencies {
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+
+    //Скрипты Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.22")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:1.9.22")
 }
 
 tasks.withType<JavaCompile> {
@@ -82,3 +87,14 @@ tasks.withType<War> {
     enabled = true
     archiveFileName.set("RCES.war")
 }
+
+file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
+    ?.sortedBy { it.name }
+    ?.forEach { script ->
+        try {
+            logger. lifecycle("Исполнение скрипта: ${script.name}")
+            apply(mapOf("from" to script))
+        } catch (e: Exception) {
+            logger.warn("Ошибка при исполнении скрипта ${script.name} : ${e.message}")
+        }
+    }
