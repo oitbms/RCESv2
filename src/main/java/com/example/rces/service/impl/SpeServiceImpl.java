@@ -17,9 +17,11 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,6 +97,20 @@ public class SpeServiceImpl implements SpeService {
         spe.setDocument(document);
         repository.save(spe);
         return documentService.toDTO(document);
+    }
+
+    @Scheduled(cron = "0 0 9 * * *")
+    @Transactional
+    public void notifyExpiredDeviations() {
+        List<SPE> sgiList = repository.findAll();
+        sgiList.stream().parallel().forEach(spe -> {
+            spe.setStatus(
+                    ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0 ? StatusSPE.VERIFICATION_REQUIRED
+                            : Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1 ? StatusSPE.EXPIRED
+                            : spe.getStatus());
+            spe.setColor(colorCalculate(spe));
+            repository.save(spe);
+        });
     }
 
 }

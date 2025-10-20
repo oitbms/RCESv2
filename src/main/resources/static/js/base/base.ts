@@ -8,14 +8,8 @@ enum NotificationType {
     WARNING = 'warning',
     INFO = 'info'
 }
-interface cache {
-    endpoints: { employee: string; subDivision: string; [key: string]: string };
 
-    get<T = any>(key: string): Promise<T>;
 
-    set(key: string, data: any): this;
-}
-// @ts-ignore
 abstract class Base {
     private locks = new Map<string, boolean>();
     private handlers: { event: string, selector: string, handler: Function }[] = [];
@@ -24,6 +18,9 @@ abstract class Base {
     private readonly itemsPerPage: number
     public currentPage: number = 1;
     public saveMassive: object = {};
+
+    protected cache: CacheBormash = new CacheBormashImpl();
+    protected dialog: Dialog = new DialogImpl();
 
     protected constructor(itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
         this.itemsPerPage = itemsPerPage;
@@ -89,8 +86,8 @@ abstract class Base {
         });
     }
 
-    public readonly displayPage = this.lock(async (url: string, type: string, param?: object, ...callbacks: Function[]): Promise<void> => {
-        const data: any[] = await this.requestToApi(url, type, param);
+    public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
+        const data: any[] = await this.requestToApi(url, 'GET', param);
         for (const item of data) {
             this.localCache.set(item.id, item);
             this.createRow(item);
@@ -144,7 +141,7 @@ abstract class Base {
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
         } catch (error) {
-            this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR).catch(console.error);
+            this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
         }
     }
 
@@ -157,15 +154,20 @@ abstract class Base {
     }
 
     //Создание уведомления в левом верхнем углу
-    public readonly createNotification = this.lock((message: string, type: NotificationType, params?: any): void => {
-        const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
+    public readonly createNotification = this.lock((message: string, type: NotificationType, params?: any, error?: Error): void => {
+        try {
+            const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
 
-        const $note = $(`<div class="notification ${type}">
+            const $note = $(`<div class="notification ${type}">
             <div class="msg">${text}</div>
         </div>`).appendTo('body');
+            if (error) console.error(error);
 
-        setTimeout(() => $note.addClass('show'), 10);
-        setTimeout(() => $note.remove(), 10000);
+            setTimeout(() => $note.addClass('show'), 10);
+            setTimeout(() => $note.remove(), 10000);
+        } catch (error) {
+            console.error(error);
+        }
     });
 
     //Контекстное меню
@@ -186,36 +188,3 @@ abstract class Base {
     }
 
 }
-
-
-// @ts-ignore
-declare global {
-    interface Window {
-        cache: cache;
-    }
-}
-// @ts-ignore
-declare const $: any;
-(window as any).cache = {
-    endpoints: {employee: '/api/employees', subDivision: '/api/sub-divisions'},
-
-    async get<T>(key: string): Promise<T> {
-        const cached = sessionStorage.getItem(key);
-        if (cached) return JSON.parse(cached);
-
-        const endpoint = this.endpoints[key];
-        if (!endpoint) throw new Error(`Такого api нет: ${key}`);
-
-        const response = await fetch(endpoint);
-        if (!response.ok) throw new Error(`Возникла ошибка сервера: ${response.status}`);
-
-        const data: T = await response.json();
-        this.set(key, data);
-        return data;
-    },
-
-    set(key: string, data: any): Cache {
-        sessionStorage.setItem(key, JSON.stringify(data));
-        return this;
-    }
-};

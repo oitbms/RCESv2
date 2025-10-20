@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/spe.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/js/base.js"></script>
+    <script src="/js/base/cache.js"></script>
+    <script src="/js/base/base.js"></script>
     <script src="/js/newSpe.js"></script>
 </head>
 

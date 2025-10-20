@@ -84,7 +84,7 @@ public class SgiServiceImpl implements SgiService {
             newSGI.setImages(imageService.createImages(dto.getAdditionalFiles(), newSGI, false));
         }
         repository.save(newSGI);
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, newSGI, null, MessageType.CREATE, this.testChatId));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, newSGI, null, MessageType.CREATE, this.controlChatId));
         return mapper.toDTO(newSGI);
     }
 
@@ -111,7 +111,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public void delete(SGI sgi) {
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.testChatId));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.controlChatId));
         repository.delete(sgi);
     }
 
@@ -132,7 +132,7 @@ public class SgiServiceImpl implements SgiService {
                 sgi.setAgreed(agreed);
                 sgi.setColor(colorCalculate(sgi, LocalDate.now()));
                 repository.save(sgi);
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.controlChatId));
                 return sgi;
             }
             throw new ApplicationContextException("Все подзадачи должны быть согласованы");
@@ -174,9 +174,9 @@ public class SgiServiceImpl implements SgiService {
             }
             repository.save(sgi);
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.controlChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
             }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
@@ -196,9 +196,9 @@ public class SgiServiceImpl implements SgiService {
             sgi.setExecution(factExecutionSGI);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.controlChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
             }
             repository.save(sgi);
         }
@@ -212,7 +212,7 @@ public class SgiServiceImpl implements SgiService {
         List<SGI> sgiList = repository.findAll();
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
         if (!requestsNumbers.isEmpty()) {
-            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.testChatId));
+            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.controlChatId));
         }
     }
 

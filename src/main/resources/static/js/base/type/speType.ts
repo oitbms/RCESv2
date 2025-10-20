@@ -1,0 +1,19 @@
+type SpeIn = {
+    id: number;
+    version: number;
+    name: string;
+    type: string;
+    outNumber: string;
+    accuracyClass: string;
+    limitMeasurement: string;
+    subDivision: SubDivision;
+    employee: Employee;
+    mark: string;
+    datePreparation: string;
+    dateVerification: string;
+    certificateNumber: string;
+    periodicity: number;
+    documentId: number;
+    status: string;
+    color: string;
+}

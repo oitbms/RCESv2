@@ -1,42 +1,11 @@
 // @ts-ignore
 declare const $: any;
 
-interface Spe {
-    id: number;
-    version: number;
-    name: string;
-    type: string;
-    outNumber: string;
-    accuracyClass: string;
-    limitMeasurement: string;
-    subDivision: {
-        id: number;
-        code: string;
-        name: string;
-    };
-    employee: {
-        id: number;
-        name: string;
-        mlmNode: { name: string };
-        role: string;
-        isActive: boolean;
-        chatId: number;
-    };
-    mark: string;
-    datePreparation: string;
-    dateVerification: string;
-    certificateNumber: string;
-    periodicity: number;
-    documentId: number;
-    status: string;
-    color: string;
-}
+class Spe extends Base {
 
-class NewSpe extends Base {
-
-    constructor(itemsPerPage = 16) {
+    constructor(itemsPerPage = Infinity) {
         super(itemsPerPage, () => {
-            this.displayPage('/api/spe/get-page-spe', 'GET', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
+            this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
@@ -55,7 +24,6 @@ class NewSpe extends Base {
             this.applyFilters();
         }, true);
         this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu, true);
-
     }
 
     currentStatus = 'NONE';
@@ -64,7 +32,7 @@ class NewSpe extends Base {
 
     editMode: boolean = false;
 
-    public override createRow(spe: Spe): any {
+    public override createRow(spe: SpeIn): any {
         const status = (() => {
             switch (spe.status) {
                 case 'NONE':
@@ -158,7 +126,7 @@ class NewSpe extends Base {
         return $(row);
     }
 
-    private fullData(data: Spe[]): void {
+    private fullData(data: SpeIn[]): void {
         $('#total-units').text(data.length);
         $('#written-off').text(data.filter(s => s.status === 'WRITE_OFF').length);
         $('#verification-required').text(data.filter(s => s.status === 'VERIFICATION_REQUIRED').length);
@@ -217,7 +185,7 @@ class NewSpe extends Base {
 
     private disableEditMode(row?: any): void {
         if (this.editMode && Object.keys(this.saveMassive).length > 0) {
-            this.createNotification("Сохраните изменения", NotificationType.WARNING).catch(console.error);
+            this.createNotification("Сохраните изменения", NotificationType.WARNING);
             return;
         }
         const dateTime = ['datePreparation', 'dateVerification'];
@@ -289,7 +257,7 @@ class NewSpe extends Base {
             const searchInput = dialog.find('.choice-field input');
             const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
 
-            const data = await (window as any).cache.get(fieldName);
+            const data: any = await this.cache.get(fieldName);
 
             const renderRows = (items: any[]) => {
                 rowContainer.empty();
@@ -322,7 +290,7 @@ class NewSpe extends Base {
 
             changeButton.off('click').on('click', () => {
                 if (!selected) {
-                    this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING).catch(console.error);
+                    this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
                     return;
                 }
 
@@ -349,7 +317,7 @@ class NewSpe extends Base {
         const dialog = $('#documentDialog');
         const currentRow = $(event.currentTarget).closest('.table-row');
         const currentSpeId = currentRow.attr('id');
-        const spe = this.localCache.get(Number(currentSpeId)) as Spe;
+        const spe = this.localCache.get(Number(currentSpeId)) as SpeIn;
         const rowContainer = dialog.find('.dialog-content-rows');
 
         rowContainer.empty();
@@ -388,7 +356,7 @@ class NewSpe extends Base {
     private addFileToDocument(event: Event, speId: string): void {
         const formData = new FormData();
         const currentInput = event.currentTarget as HTMLInputElement;
-        const spe = this.localCache.get(Number(speId)) as Spe;
+        const spe = this.localCache.get(Number(speId)) as SpeIn;
 
         if (currentInput.files) {
             Array.from(currentInput.files).forEach(file => {
@@ -403,7 +371,7 @@ class NewSpe extends Base {
         const requestType = spe.documentId ? 'PATCH' : 'POST';
 
         this.requestToApi(url, requestType, formData).then(() => {
-            this.createNotification("Файлы добавлены", NotificationType.SUCCESS).catch(console.error);
+            this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
         }).catch(console.error);
 
         currentInput.value = '';
@@ -443,7 +411,7 @@ class NewSpe extends Base {
         };
 
         try {
-            const newSPE: Spe = await this.createEntity('/api/spe/create-spe', formData);
+            const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe', formData);
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
             (dialog[0] as any).close();
@@ -451,7 +419,7 @@ class NewSpe extends Base {
             button.prop('disabled', false);
         } catch (error) {
             this.saveMassive = {};
-            this.createNotification('Ошибка при создании SPE', NotificationType.ERROR).catch(console.error);
+            this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
             button.prop('disabled', false);
         }
     }
@@ -482,9 +450,9 @@ class NewSpe extends Base {
         const dialogName = dialog.find('.dialog-name');
 
         try {
-            const subDivisions = await (window as any).cache.get('subDivision');
+            const subDivisions: SubDivision[] = await this.cache.get('subDivision');
 
-            function render(list: any[]) {
+            function render(list: SubDivision[]) {
                 rowContainer.empty();
                 list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
             }
@@ -523,7 +491,7 @@ class NewSpe extends Base {
 
             (dialog[0] as any).showModal();
         } catch (error) {
-            this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR).catch(console.error);
+            this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR);
         }
     }
 
@@ -539,9 +507,9 @@ class NewSpe extends Base {
                 action: () => {
                     this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
                         this.deleteRow(rowId);
-                        this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS).catch(console.error);
+                        this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS);
                     }).catch(() => {
-                        this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR).catch(console.error)
+                        this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR);
                     });
                 }
             }
@@ -551,5 +519,5 @@ class NewSpe extends Base {
 }
 
 $(document).ready(() => {
-    new NewSpe();
+    new Spe();
 });
