@@ -1,33 +1,20 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
 :root {
-    --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
     --bg-card: #f1f5f9;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --border: #e2e8f0;
-
     --equipment: 260px;
     --characteristics: 150px;
     --subdivision: 160px;
     --responsible: 135px;
-    --mark: 105px;
-    --preparationDate: 110px;
-    --verificationDate: 110px;
+    --mark: 120px;
+    --preparationDate: 125px;
+    --verificationDate: 125px;
     --certificate: 220px;
     --periodicity: 120px;
-    --status: 80px;
+    --status: 86px;
     --file: 80px;
 }
 
@@ -35,13 +22,14 @@ body {
     background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     color: var(--text-primary);
     line-height: 1.6;
-    padding: 20px;
+    padding-top: 20px;
     min-height: 100vh;
 }
 
 .container {
     max-width: 1800px;
     margin: 0 auto;
+    padding-right: 0!important;
 }
 
 header {
@@ -117,7 +105,7 @@ h1 {
     justify-content: space-between;
     margin-bottom: 25px;
     gap: 20px;
-    background: var(--bg-primary);
+    background: var(--default-color);
     padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -131,7 +119,7 @@ h1 {
     & input {
         width: 100%;
         padding: 12px 15px 12px 45px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         background: var(--bg-secondary);
         color: var(--text-primary);
@@ -160,7 +148,7 @@ h1 {
 
 .filter-btn {
     padding: 10px 15px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--bg-secondary);
     color: var(--text-secondary);
@@ -186,7 +174,7 @@ h1 {
 
 .sidebar {
     width: 250px;
-    background: var(--bg-primary);
+    background: var(--default-color);
     border-radius: 12px;
     padding: 20px;
     height: fit-content;
@@ -202,7 +190,7 @@ h1 {
     justify-content: space-between;
     margin-bottom: 15px;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .stat-label {
@@ -221,7 +209,7 @@ h1 {
 
 .department-item {
     padding: 10px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.2s;
 
@@ -241,7 +229,7 @@ h1 {
 
 .table-container {
     flex: 1;
-    background: var(--bg-primary);
+    background: var(--default-color);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -252,7 +240,7 @@ h1 {
     display: flex;
     flex-direction: row;
     background: var(--accent);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .table-header-cell {
@@ -272,7 +260,8 @@ h1 {
 .table-row {
     display: flex;
     flex-direction: row;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
     transition: background 0.3s;
 
     &:hover {
@@ -281,6 +270,7 @@ h1 {
 
     &.selected {
         background-color: rgba(59, 130, 246, 0.16);
+        border-left: red 1px solid;
     }
 
     & .table-cell {
@@ -300,12 +290,18 @@ h1 {
             -ms-user-select: none;
 
             &.change-textarea {
-                border: 1px solid var(--danger);
+                border: 1px solid var(--critical-color);
             }
 
             & .area-modal {
                 cursor: pointer;
             }
+        }
+
+        & input, select {
+            border: none;
+            background-color: inherit;
+
         }
     }
 }
@@ -353,20 +349,7 @@ h1 {
     font-weight: 500;
 }
 
-.status-good {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-}
 
-.status-warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
-}
-
-.date-urgent {
-    color: var(--danger);
-    font-weight: 600;
-}
 
 .responsible {
     display: flex;

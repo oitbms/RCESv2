@@ -15,5 +15,5 @@ type SpeIn = {
     periodicity: number;
     documentId: number;
     status: string;
-    color: string;
+    color: Color;
 }

@@ -8,7 +8,14 @@ enum NotificationType {
     WARNING = 'warning',
     INFO = 'info'
 }
-
+enum Color {
+    NONE = 'NONE',
+    RED = 'RED',
+    GREEN = 'GREEN',
+    YELLOW = "YELLOW",
+    GREY = 'GREY',
+    BLUE = 'BLUE'
+}
 
 abstract class Base {
     private locks = new Map<string, boolean>();
@@ -185,6 +192,16 @@ abstract class Base {
         if (!dateString) return "";
         const date = new Date(dateString);
         return date.toLocaleDateString('ru-RU');
+    }
+
+    public readonly calculateColor = (color: Color): string => {
+        switch (color) {
+            case Color.NONE: return 'var(--default-color, #f1f1f1)';
+            case Color.RED: return 'var(--critical-color, #ef4444)';
+            case Color.GREEN: return 'var(--success-color, #10b981)';
+            case Color.YELLOW: return 'var(--warning-color, #f59e0b)';
+            case Color.BLUE: return 'var(--info-color, #3b82f6)';
+        }
     }
 
 }

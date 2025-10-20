@@ -16,3 +16,4 @@ type SubDivision = {
     code: string;
     name: string;
 }
+

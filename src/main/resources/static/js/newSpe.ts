@@ -90,7 +90,7 @@ class Spe extends Base {
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
                         <div contenteditable="false" data-name="mark">
-                            ${spe.mark}
+                            ${spe.mark!=null ? spe.mark : ''}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
@@ -117,7 +117,7 @@ class Spe extends Base {
                         <i class="document fa-solid fa-file"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
-                        <span class="status-indicator status-good" data-status="${spe.status}">
+                        <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}">
                            ${status}
                         </span>
                     </div>
@@ -148,8 +148,11 @@ class Spe extends Base {
 
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
-                element.append($(`<option selected>${text}</option>`));
-                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`));
+                element.append($(`<option selected>${text!='' ? text : ''}</option>`));
+                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`))
+                if (text==='') {
+                    element.append($(`<option>на поверке</option>`))
+                }
             } else if (dateTime.indexOf(dataName) !== -1) {
                 const rowId = Number($(row).attr('id'));
                 const value = this.localCache.get(rowId)[dataName];
