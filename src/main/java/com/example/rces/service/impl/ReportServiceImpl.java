@@ -1,11 +1,15 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.report.SpeReportModel;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
+import com.example.rces.models.enums.FileType;
 import com.example.rces.models.enums.Status;
 import com.example.rces.service.*;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -18,12 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import static com.example.rces.utils.FilesUtil.exportReport;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
 
 @Service
@@ -43,6 +50,7 @@ public class ReportServiceImpl implements ReportService {
         this.speService = speService;
     }
 
+    //TODO переделать под JasperReports
     @Override
     public List<SGI> getSgiList(List<UUID> ids, String department) {
         if (department != null) {
@@ -55,11 +63,7 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
-    @Override
-    public List<SPE> getSpeList(List<Integer> idList) {
-        return speService.findAllByIdList(idList).stream().sorted(Comparator.comparing(SPE::getNumber)).toList();
-    }
-
+    //TODO переделать под JasperReports
     @Override
     public ByteArrayResource getExcelFile(List<SGI> sgiList) {
         try {
@@ -72,6 +76,7 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    //TODO переделать под JasperReports
     @Override
     public byte[] reportBid() throws IOException {
         Employee user = employeeService.getCurrentUser();
@@ -119,4 +124,26 @@ public class ReportServiceImpl implements ReportService {
             return outputStream.toByteArray();
         }
     }
+
+    @Override
+    public ByteArrayResource createSpeReport(List<Integer> numberList) {
+        List<SPE> speList = speService.findAllByIdList(numberList).stream().sorted(Comparator.comparing(SPE::getNumber)).toList();
+        SpeReportModel model = new SpeReportModel(speList);
+        return generateJrxmlReport("Spe", null, List.of(model), FileType.PDF);
+    }
+
+    private <T> ByteArrayResource generateJrxmlReport(String reportName,
+                                                      Map<String, Object> parameters,
+                                                      List<T> data,
+                                                      FileType type) {
+        try (InputStream reportStream = getClass().getResourceAsStream(String.format("/reports/%s.jrxml", reportName))) {
+            JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+            JRDataSource dataSource = new JRBeanCollectionDataSource(data);
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+            return new ByteArrayResource(exportReport(jasperPrint, type));
+        } catch (Exception e) {
+            throw new ApplicationContextException(String.format("Ошибка при генерации отчета %s", reportName), e);
+        }
+    }
+
 }

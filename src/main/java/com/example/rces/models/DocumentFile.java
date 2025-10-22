@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.models.enums.FileType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,10 +10,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "document_files", catalog = "rces")
 public class DocumentFile {
-
-    public enum FileType {
-        PDF, DOC, XLS, XLSX, DOCX, XML, TXT, JSON
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

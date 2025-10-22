@@ -36,11 +36,9 @@ public class ReportRestController {
         try {
             List<SGI> sgiList = service.getSgiList(ids, department);
             ByteArrayResource resource = service.getExcelFile(sgiList);
-
             String filename = (department != null ? "Не_выполненные_мероприятия_" : "Мероприятия_") + formatedDate(LocalDate.now()) + ".docx";
-            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
                     .replace("+", "%20");
-
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -63,10 +61,17 @@ public class ReportRestController {
         return new ResponseEntity<>(report, headers, HttpStatus.OK);
     }
 
-//    @GetMapping("/print/spe")
-//    public ResponseEntity<Resource> printSPE(@RequestParam List<Integer> ids) {
-//        List<SPE> speList = service.getSpeList(idList);
-//        ByteArrayResource resource = service.getExcelFile(speList);
-//    }
+    @GetMapping("/print/spe")
+    public ResponseEntity<Resource> printSPE(@RequestParam List<Integer> idList) {
+        ByteArrayResource resource = service.createSpeReport(idList);
+        String filename = "Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_" + formatedDate(LocalDate.now()) + ".docx";
+        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
 
 }

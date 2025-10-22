@@ -18,6 +18,12 @@ java {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://jaspersoft.jfrog.io/jaspersoft/jaspersoft-repo")
+    }
+    maven {
+        url = uri("https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/")
+    }
 }
 
 dependencies {
@@ -50,6 +56,10 @@ dependencies {
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
     implementation("com.jayway.jsonpath:json-path")
+
+    // JasperReports
+    implementation("net.sf.jasperreports:jasperreports:6.21.0")
+    implementation("net.sf.jasperreports:jasperreports-fonts:6.21.0")
 
     // Provided scope dependencies
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
