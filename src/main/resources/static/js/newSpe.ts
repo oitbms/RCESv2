@@ -9,7 +9,9 @@ class Spe extends Base {
         });
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
-        this.createHandler('click', '#print-button', () => this.print('/api/report/print/spe', this.selectedRows), true);
+        this.createHandler('click', '#print-button',
+            () => window.open(`/api/report/print/spe?${Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')}`),
+            true);
         this.createHandler('click', '#save-button', () => this.save('/api/spe/update/', this.saveMassive), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
@@ -90,7 +92,7 @@ class Spe extends Base {
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
                         <div contenteditable="false" data-name="mark">
-                            ${spe.mark!=null ? spe.mark : ''}
+                            ${spe.mark != null ? spe.mark : ''}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
@@ -148,9 +150,9 @@ class Spe extends Base {
 
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
-                element.append($(`<option selected>${text!='' ? text : ''}</option>`));
+                element.append($(`<option selected>${text != '' ? text : ''}</option>`));
                 element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`))
-                if (text==='') {
+                if (text === '') {
                     element.append($(`<option>на поверке</option>`))
                 }
             } else if (dateTime.indexOf(dataName) !== -1) {

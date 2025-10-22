@@ -1,6 +1,6 @@
 package com.example.rces.models;
 
-import com.example.rces.models.enums.FileType;
+import com.example.rces.models.enums.Format;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,7 +22,7 @@ public class DocumentFile {
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    private FileType type;
+    private Format type;
 
     @Lob
     @Column(name = "content", nullable = false, columnDefinition = "LONGBLOB")
@@ -49,11 +49,11 @@ public class DocumentFile {
         this.baseFileName = baseFileName;
     }
 
-    public FileType getType() {
+    public Format getType() {
         return type;
     }
 
-    public void setType(FileType type) {
+    public void setType(Format type) {
         this.type = type;
     }
 

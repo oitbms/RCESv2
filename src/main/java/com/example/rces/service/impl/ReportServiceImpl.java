@@ -5,11 +5,10 @@ import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
-import com.example.rces.models.enums.FileType;
+import com.example.rces.models.enums.Format;
 import com.example.rces.models.enums.Status;
 import com.example.rces.service.*;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import com.example.rces.utils.JasperReportExporter;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -22,28 +21,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static com.example.rces.utils.FilesUtil.exportReport;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
 public class ReportServiceImpl implements ReportService {
 
+    private final JasperReportExporter jasperReportExporter;
     private final SgiService sgiService;
     private final RequestsService requestsService;
     private final EmployeeService employeeService;
     private final SpeService speService;
 
     @Autowired
-    public ReportServiceImpl(SgiService sgiService, RequestsService requestsService, EmployeeService employeeService, SpeService speService) {
+    public ReportServiceImpl(JasperReportExporter jasperReportExporter, SgiService sgiService, RequestsService requestsService, EmployeeService employeeService, SpeService speService) {
+        this.jasperReportExporter = jasperReportExporter;
         this.sgiService = sgiService;
         this.requestsService = requestsService;
         this.employeeService = employeeService;
@@ -126,24 +124,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ByteArrayResource createSpeReport(List<Integer> numberList) {
+    public byte[] createSpeReport(List<Integer> numberList) {
         List<SPE> speList = speService.findAllByIdList(numberList).stream().sorted(Comparator.comparing(SPE::getNumber)).toList();
         SpeReportModel model = new SpeReportModel(speList);
-        return generateJrxmlReport("Spe", null, List.of(model), FileType.PDF);
-    }
-
-    private <T> ByteArrayResource generateJrxmlReport(String reportName,
-                                                      Map<String, Object> parameters,
-                                                      List<T> data,
-                                                      FileType type) {
-        try (InputStream reportStream = getClass().getResourceAsStream(String.format("/reports/%s.jrxml", reportName))) {
-            JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
-            JRDataSource dataSource = new JRBeanCollectionDataSource(data);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-            return new ByteArrayResource(exportReport(jasperPrint, type));
-        } catch (Exception e) {
-            throw new ApplicationContextException(String.format("Ошибка при генерации отчета %s", reportName), e);
-        }
+        return jasperReportExporter.generateJrxmlReport("Spe", null, List.of(model), Format.PDF);
     }
 
 }

@@ -2,23 +2,13 @@ package com.example.rces.utils;
 
 import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.models.*;
-import com.example.rces.models.enums.FileType;
+import com.example.rces.models.enums.Format;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -85,7 +75,7 @@ public class FilesUtil {
 
     public static List<Images> addImages(MultipartFile[] files, Document document) {
         List<Images> images = new ArrayList<>();
-        if (files!=null) {
+        if (files != null) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
                     Images imageEntity = new Images();
@@ -159,7 +149,7 @@ public class FilesUtil {
         for (MultipartFile file : files) {
             DocumentFile documentFile = new DocumentFile();
 
-            FileType fileType = determineFileType(file.getOriginalFilename());
+            Format fileType = determineFileType(file.getOriginalFilename());
 
             documentFile.setBaseFileName(file.getOriginalFilename());
             documentFile.setType(fileType);
@@ -193,42 +183,26 @@ public class FilesUtil {
         return ALLOWED_EXTENSIONS.contains(extension);
     }
 
-    public static FileType determineFileType(String fileName) {
+    public static Format determineFileType(String fileName) {
         if (fileName == null) {
             throw new IllegalArgumentException("Имя файла не может быть пустым");
         }
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
         return switch (extension) {
-            case "pdf" -> FileType.PDF;
-            case "doc" -> FileType.DOC;
-            case "docx" -> FileType.DOCX;
-            case "xls" -> FileType.XLS;
-            case "xlsx" -> FileType.XLSX;
-            case "xml" -> FileType.XML;
-            case "txt" -> FileType.TXT;
-            case "json" -> FileType.JSON;
+            case "pdf" -> Format.PDF;
+            case "doc" -> Format.DOC;
+            case "docx" -> Format.DOCX;
+            case "xls" -> Format.XLS;
+            case "xlsx" -> Format.XLSX;
+            case "xml" -> Format.XML;
+            case "txt" -> Format.TXT;
+            case "json" -> Format.JSON;
             default -> null;
         };
     }
 
-    public static byte[] exportReport(JasperPrint jasperPrint, FileType type) throws JRException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        switch (type) {
-            case PDF:
-                JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);
-                break;
-            case XLS, XLSX:
-                JRXlsxExporter exporter = new JRXlsxExporter();
-                exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-                exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-                exporter.exportReport();
-                break;
-            default:
-                throw new IllegalArgumentException("Неподдерживаемый формат: " + type);
-        }
-
-        return outputStream.toByteArray();
+    public static String safeFileName(String str) {
+        return str.trim().replace(" ", "_").replaceAll("[^0-9a-zA-Zа-яА-ЯёЁ_ -]", "");
     }
 
 }

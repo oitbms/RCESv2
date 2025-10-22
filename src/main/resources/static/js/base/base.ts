@@ -122,7 +122,7 @@ abstract class Base {
             method: type,
             contentType: isFormData ? false : 'application/json',
             processData: !isFormData,
-            data: param
+            data: isFormData ? param : JSON.stringify(param)
         });
     }
 

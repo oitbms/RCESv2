@@ -15,5 +15,5 @@ public interface ReportService {
 
     byte[] reportBid() throws IOException;
 
-    ByteArrayResource createSpeReport(List<Integer> numberList);
+    byte[] createSpeReport(List<Integer> numberList);
 }
