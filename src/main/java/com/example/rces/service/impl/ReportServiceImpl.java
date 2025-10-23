@@ -79,7 +79,7 @@ public class ReportServiceImpl implements ReportService {
     public byte[] reportBid() throws IOException {
         Employee user = employeeService.getCurrentUser();
         List<Requests> rejectedBid = requestsService.findAll().stream()
-                .filter(requests -> requests.getMlmNode().equals(user.getMlmNode()))
+                .filter(requests -> requests.getSubDivision().equals(user.getSubDivision()))
                 .filter(requests -> requests.getStatus().equals(Status.Rejected))
                 .toList();
 
@@ -88,7 +88,7 @@ public class ReportServiceImpl implements ReportService {
 
             Row titleRow = sheet.createRow(0);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue(user.getMlmNode().getName() + " отчет о забракованной продукции");
+            titleCell.setCellValue(user.getSubDivision().getName() + " отчет о забракованной продукции");
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
 
             CellStyle titleStyle = workbook.createCellStyle();

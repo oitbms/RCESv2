@@ -1,11 +1,15 @@
 package com.example.rces.controller.rest;
 
-import com.example.rces.dto.*;
+import com.example.rces.dto.DocumentCreateDTO;
+import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.SpeCreateDTO;
+import com.example.rces.dto.SpeDTO;
 import com.example.rces.service.SpeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +32,7 @@ public class SPERestController {
 
     @GetMapping("/get-page-spe")
     public ResponseEntity<List<SpeDTO>> getPage() {
-        var allSpeList = service.getAllSPE();
-        var responseDTO = new SpeResponseDTO(allSpeList);
+        var allSpeList = service.getAllSPE().stream().sorted(Comparator.comparing(SpeDTO::getId)).toList();
         return ResponseEntity.ok(allSpeList);
     }
 

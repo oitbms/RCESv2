@@ -424,6 +424,7 @@ class Spe extends Base {
             button.prop('disabled', false);
         } catch (error) {
             this.saveMassive = {};
+            form.reset();
             this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
             button.prop('disabled', false);
         }

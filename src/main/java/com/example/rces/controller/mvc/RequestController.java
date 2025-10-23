@@ -3,9 +3,10 @@ package com.example.rces.controller.mvc;
 import com.example.rces.configuration.DeviceDetector;
 import com.example.rces.dto.CreateRequestDto;
 import com.example.rces.dto.RequestDto;
+import com.example.rces.dto.SubDivisionDTO;
+import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.models.enums.MlmNode;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,12 +29,14 @@ public class RequestController {
     private final EmployeeService employeeService;
     private final DeviceDetector detector;
     private final RequestsService requestsService;
+    private final SubDivisionMapper subDivisionMapper;
 
     @Autowired
-    public RequestController(EmployeeService employeeService, DeviceDetector detector, RequestsService requestsService) {
+    public RequestController(EmployeeService employeeService, DeviceDetector detector, RequestsService requestsService, SubDivisionMapper subDivisionMapper) {
         this.employeeService = employeeService;
         this.detector = detector;
         this.requestsService = requestsService;
+        this.subDivisionMapper = subDivisionMapper;
     }
 
     @GetMapping("/create")
@@ -43,12 +46,12 @@ public class RequestController {
             return "error";
         }
         Employee currentUser = employeeService.getCurrentUser();
-        MlmNode node = currentUser.getMlmNode();
+        SubDivisionDTO subDivisionDTO = subDivisionMapper.toDTO(currentUser.getSubDivision());
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
         model.addAttribute(type, true);
         model.addAttribute("employeeName", currentUser.getName());
-        model.addAttribute("mlmNodeEmployee", node);
+        model.addAttribute("mlmNodeEmployee", subDivisionDTO);
         return "/requests";
     }
 

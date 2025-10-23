@@ -70,10 +70,10 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     @DisplayName("Причины несоответствий")
     private Set<Inconsistency> inconsistencies;
 
-    @Column(name = "mlm_node")
-    @Enumerated(EnumType.STRING)
-    @DisplayName("Цех")
-    private MlmNode mlmNode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subdivision_id", nullable = false)
+    @NotNull(message = "Подразделение не может быть пустым")
+    private SubDivision subDivision;
 
     @Column(name = "item")
     @Enumerated(EnumType.STRING)
@@ -296,12 +296,12 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
         this.inconsistencies = inconsistencies;
     }
 
-    public MlmNode getMlmNode() {
-        return mlmNode;
+    public SubDivision getSubDivision() {
+        return subDivision;
     }
 
-    public void setMlmNode(MlmNode mlmNode) {
-        this.mlmNode = mlmNode;
+    public void setSubDivision(SubDivision subDivision) {
+        this.subDivision = subDivision;
     }
 
     public Status getStatus() {

@@ -1,6 +1,5 @@
 package com.example.rces.models;
 
-import com.example.rces.models.enums.MlmNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -39,9 +38,10 @@ public class Employee extends BaseAuditingEntity implements UserDetails {
     @Size(min = 6, message = "Пароль должен содержать минимум 6 символов")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull(message = "Узел ПЛМ не может быть пустым")
-    private MlmNode mlmNode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subdivision_id", nullable = false)
+    @NotNull(message = "Подразделение не может быть пустым")
+    private SubDivision subDivision;
 
     @Column(nullable = false)
     @NotBlank(message = "Роль не может быть пустой")
@@ -115,12 +115,12 @@ public class Employee extends BaseAuditingEntity implements UserDetails {
         this.name = name;
     }
 
-    public MlmNode getMlmNode() {
-        return mlmNode;
+    public SubDivision getSubDivision() {
+        return subDivision;
     }
 
-    public void setMlmNode(MlmNode mlmNode) {
-        this.mlmNode = mlmNode;
+    public void setSubDivision(SubDivision subDivision) {
+        this.subDivision = subDivision;
     }
 
     public String getRole() {

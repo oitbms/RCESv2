@@ -5,14 +5,18 @@ import com.example.rces.dto.RequestDto;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
+import com.example.rces.models.SubDivision;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
-import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mapstruct.*;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = SubDivisionMapper.class)
 public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRequestDto> {
 
     @Mapping(target = "typeRequest", source = "type")
@@ -28,7 +32,7 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
                                        ObjectMapper objectMapper,
                                        Item item,
                                        GeneralReason reason,
-                                       MlmNode mlmNode,
+                                       SubDivision mlmNode,
                                        Employee employee,
                                        CustomerOrder customerOrder,
                                        Employee createdEmployee) {
@@ -40,13 +44,13 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
     default void setAdditionalFields(Requests requests,
                                      Item item,
                                      GeneralReason reason,
-                                     MlmNode mlmNode,
+                                     SubDivision mlmNode,
                                      Employee employee,
                                      CustomerOrder customerOrder,
                                      Employee createdEmployee) {
         requests.setItem(item);
         requests.setReason(reason);
-        requests.setMlmNode(mlmNode);
+        requests.setSubDivision(mlmNode);
         requests.setEmployee(employee);
         requests.setCustomerOrder(customerOrder);
         requests.setCreatedBy(createdEmployee);

@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS rces.document_files
     document_id    BINARY(16)                                                       NOT NULL
 );
 
-ALTER TABLE rces.document_files DROP FOREIGN KEY fk_document_files_document;
+
 ALTER TABLE rces.document_files
     ADD CONSTRAINT fk_document_files_document
         FOREIGN KEY (document_id) REFERENCES rces.documents (id)
@@ -174,8 +174,7 @@ CREATE TABLE IF NOT EXISTS rces.fact_execution_sgi
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
 
-ALTER TABLE rces.plan_sgi
-    DROP FOREIGN KEY fk_plan_sgi_executions;
+
 ALTER TABLE rces.plan_sgi
     ADD CONSTRAINT fk_plan_sgi_executions
         FOREIGN KEY (executions_id) REFERENCES rces.fact_execution_sgi (id);
@@ -244,4 +243,10 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
 
     INDEX idx_name (name)
+);
+
+CREATE TABLE IF NOT EXISTS rces.request_incosistencies
+(
+    request_id BINARY(16),
+    incosistency_id BIGINT
 );

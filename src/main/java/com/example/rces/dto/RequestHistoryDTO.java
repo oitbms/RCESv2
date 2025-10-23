@@ -2,9 +2,9 @@ package com.example.rces.dto;
 
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
+import com.example.rces.models.SubDivision;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
-import com.example.rces.models.enums.MlmNode;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -27,7 +27,7 @@ public class RequestHistoryDTO {
         private Integer requestNumber;
         private GeneralReason reason;
         private Integer qty;
-        private MlmNode mlmNode;
+        private SubDivision mlmNode;
         private Item item;
         private String status;
         private String comment;
@@ -91,11 +91,11 @@ public class RequestHistoryDTO {
             this.qty = qty;
         }
 
-        public MlmNode getMlmNode() {
+        public SubDivision getMlmNode() {
             return mlmNode;
         }
 
-        public void setMlmNode(MlmNode mlmNode) {
+        public void setMlmNode(SubDivision mlmNode) {
             this.mlmNode = mlmNode;
         }
 
@@ -186,7 +186,7 @@ public class RequestHistoryDTO {
             data.setRequestNumber(request.getRequestNumber());
             data.setReason(request.getReason());
             data.setQty(request.getQty());
-            data.setMlmNode(request.getMlmNode());
+            data.setMlmNode(request.getSubDivision());
             data.setItem(request.getItem());
             data.setStatus(request.getStatus().getName());
             data.setComment(request.getComment());

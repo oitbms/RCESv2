@@ -6,7 +6,6 @@ import com.example.rces.mapper.RequestMapper;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
-import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
@@ -27,8 +26,7 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.example.rces.utils.
-        FilesUtil.handleImageCollection;
+import static com.example.rces.utils.FilesUtil.handleImageCollection;
 import static com.example.rces.utils.FilesUtil.isJson;
 
 @Service
@@ -43,12 +41,13 @@ public class RequestServiceImpl implements RequestsService {
     private final EmployeeService employeeService;
     private final InconsistenciesService inconsistenciesService;
     private final RequestMapper requestMapper;
+    private final SubDivisionService subDivisionService;
 
     @Autowired
     public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper,
                               TelegramService telegramService, CustomerOrderService customerOrderService,
                               ImageService imageService, EmployeeService employeeService,
-                              InconsistenciesService inconsistenciesService, RequestMapper requestMapper) {
+                              InconsistenciesService inconsistenciesService, RequestMapper requestMapper, SubDivisionService subDivisionServicel) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.telegramService = telegramService;
@@ -57,6 +56,7 @@ public class RequestServiceImpl implements RequestsService {
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
         this.requestMapper = requestMapper;
+        this.subDivisionService = subDivisionServicel;
     }
 
     @Override
@@ -78,9 +78,9 @@ public class RequestServiceImpl implements RequestsService {
         if (createRequestDto.getItemNameJson() != null && !createRequestDto.getItemNameJson().isBlank()) {
             item = objectMapper.readValue(createRequestDto.getItemNameJson(), Item.class);
         }
-        MlmNode mlmNode = null;
+        SubDivision mlmNode = null;
         if (!createRequestDto.getMlmNodeJson().isBlank()) {
-            mlmNode = MlmNode.valueOf(createRequestDto.getMlmNodeJson());
+            mlmNode = subDivisionService.getByName(createRequestDto.getMlmNodeJson());
         }
         createRequestDto.setRequestNumber(repository.findNextRequestNumber());
         Requests requests = requestMapper.createFullRequest(
@@ -204,8 +204,7 @@ public class RequestServiceImpl implements RequestsService {
                         }
                         handleImageCollection(request, (List<?>) value);
                         return;
-                    }
-                    else if (key.equals("inconsistencies")) {
+                    } else if (key.equals("inconsistencies")) {
                         value = Inconsistency.fromField(value, new HashSet<>(inconsistenciesService.findAll()));
                     }
 
@@ -265,7 +264,7 @@ public class RequestServiceImpl implements RequestsService {
         requestsRejected.setCreatedBy(request.getCreatedBy());
         requestsRejected.setRequestNumber(repository.findNextRequestNumber());
         requestsRejected.setEmployee(request.getEmployee());
-        requestsRejected.setMlmNode(request.getMlmNode());
+        requestsRejected.setSubDivision(request.getSubDivision());
         requestsRejected.setReason_wr(request.getReason_wr());
         requestsRejected.setStatus(Status.Rejected);
         requestsRejected.setQty(request.getQty() - qty);

@@ -40,7 +40,12 @@ public class SubDivisionServiceImpl implements SubDivisionService {
     }
 
     @Override
-    public SubDivisionDTO getByName(String name) {
+    public SubDivision getByName(String name) {
+        return cache.computeIfAbsent(name, repository::findByName);
+    }
+
+    @Override
+    public SubDivisionDTO getDTOByName(String name) {
         var subDivision = cache.computeIfAbsent(name, repository::findByName);
         return mapper.toDTO(subDivision);
     }

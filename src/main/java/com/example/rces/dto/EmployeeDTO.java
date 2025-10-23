@@ -1,12 +1,10 @@
 package com.example.rces.dto;
 
-import com.example.rces.models.enums.MlmNode;
-
 public class EmployeeDTO {
 
     private Long id;
     private String name;
-    private MlmNode mlmNode;
+    private SubDivisionDTO mlmNode;
     private String role;
     private boolean isActive;
     private Long chatId;
@@ -14,7 +12,7 @@ public class EmployeeDTO {
     public EmployeeDTO() {
     }
 
-    public EmployeeDTO(Long id, String name, MlmNode mlmNode, String role, boolean isActive, Long chatId) {
+    public EmployeeDTO(Long id, String name, SubDivisionDTO mlmNode, String role, boolean isActive, Long chatId) {
         this.id = id;
         this.name = name;
         this.mlmNode = mlmNode;
@@ -39,11 +37,11 @@ public class EmployeeDTO {
         this.name = name;
     }
 
-    public MlmNode getMlmNode() {
+    public SubDivisionDTO getMlmNode() {
         return mlmNode;
     }
 
-    public void setMlmNode(MlmNode mlmNode) {
+    public void setMlmNode(SubDivisionDTO mlmNode) {
         this.mlmNode = mlmNode;
     }
 

@@ -1,13 +1,14 @@
 package com.example.rces.controller.mvc;
 
 import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestsService;
+import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -31,17 +32,19 @@ public class RegistrationsController {
 
     private final EmployeeService employeeService;
     private final RequestsService requestsService;
+    private final SubDivisionService subDivisionService;
 
     @Autowired
-    public RegistrationsController(EmployeeService employeeService, RequestsService requestsService) {
+    public RegistrationsController(EmployeeService employeeService, RequestsService requestsService, SubDivisionService subDivisionService) {
         this.employeeService = employeeService;
         this.requestsService = requestsService;
+        this.subDivisionService = subDivisionService;
     }
 
     @GetMapping("/admin")
     public String admin(@AuthenticationPrincipal Employee currentUser, Model model) {
         List<Role> roles = List.of(Role.values());
-        List<MlmNode> mlmNodes = List.of(MlmNode.values());
+        List<SubDivisionDTO> mlmNodes = subDivisionService.getAll();
         List<EmployeeDTO> employees = employeeService.findAll();
         model.addAttribute("users", employees);
         model.addAttribute("user", currentUser);
@@ -75,7 +78,7 @@ public class RegistrationsController {
                 requests, LocalDate.now());
         List<Integer> dailyCountsList = countDailyRequestsList(requestsFilterDate);
         List<Requests> rejectedBid = requests.stream()
-                .filter(req -> req.getMlmNode().equals(user.getMlmNode()))
+                .filter(req -> req.getSubDivision().equals(user.getSubDivision()))
                 .filter(req -> req.getStatus().equals(Status.Rejected))
                 .sorted(Comparator.comparing(Requests::getRequestNumber))
                 .toList();
@@ -104,7 +107,7 @@ public class RegistrationsController {
     @GetMapping("/registration")
     public String registration(Model model) {
         model.addAttribute("userRole", Role.values());
-        model.addAttribute("mlmNode", MlmNode.values());
+        model.addAttribute("mlmNode", subDivisionService.getAll());
         return "registration";
     }
 

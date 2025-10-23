@@ -7,9 +7,8 @@ import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
-import com.example.rces.models.enums.MlmNode;
 import com.example.rces.models.enums.Status;
-import com.example.rces.payload.*;
+import com.example.rces.payload.ReasonPayload;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.InconsistenciesService;
@@ -75,13 +74,6 @@ public class GeneralRestController {
     @GetMapping("/item")
     public List<Item> getItems() {
         return Arrays.stream(Item.values())
-                .collect(Collectors.toList());
-    }
-
-    //TODO заменить на subDivision
-    @GetMapping("/mlm-node")
-    public List<MlmNode> getMlmNode() {
-        return Arrays.stream(MlmNode.values())
                 .collect(Collectors.toList());
     }
 

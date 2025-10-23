@@ -3,10 +3,11 @@ package com.example.rces.service.impl;
 import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.models.Employee;
-import com.example.rces.models.enums.MlmNode;
+import com.example.rces.models.SubDivision;
 import com.example.rces.models.enums.Role;
 import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.service.EmployeeService;
+import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -34,18 +35,21 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
 
     private final EmployeeRepository repository;
     private final EmployeeMapper mapper;
+    private final SubDivisionService subDivisionService;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(EmployeeRepository repository, EmployeeMapper mapper) {
+    public CustomUserDetailsServiceImpl(EmployeeRepository repository, EmployeeMapper mapper, SubDivisionService subDivisionService) {
         this.repository = repository;
         this.mapper = mapper;
+        this.subDivisionService = subDivisionService;
     }
 
     @Override
     public void save(String username, String mlmNode, String role, String password, Long chatId) {
         Employee employee = new Employee();
+        SubDivision subDivision = subDivisionService.getByName(mlmNode);
         employee.setName(username);
-        employee.setMlmNode(MlmNode.valueOf(mlmNode));
+        employee.setSubDivision(subDivision);
         employee.setRole(role);
         employee.setPassword(password);
         employee.setChatId(chatId != -1 ? chatId : null);
@@ -55,8 +59,9 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     @Override
     public void update(Long id, String userName, String mlmNodeName, String roleName, Long chatId, Boolean active) {
         Employee employee = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Пользователь не найден"));
+        SubDivision subDivision = subDivisionService.getByName(mlmNodeName);
         employee.setName(userName);
-        employee.setMlmNode(MlmNode.valueOf(mlmNodeName));
+        employee.setSubDivision(subDivision);
         employee.setRole(roleName);
         employee.setChatId(chatId != -1 ? chatId : null);
         employee.setActive(active);
