@@ -93,10 +93,15 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         return repository.findAllByRole(role).stream().map(mapper::toDTO).toList();
     }
 
+    @Override
     public Employee getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object principal = authentication.getPrincipal();
         return (Employee) principal;
+    }
+
+    public EmployeeDTO getCurrentUserDTO() {
+        return mapper.toDTO(getCurrentUser());
     }
 
     @Override

@@ -21,6 +21,8 @@ public interface EmployeeService {
 
     Employee getCurrentUser();
 
+    EmployeeDTO getCurrentUserDTO();
+
     List<EmployeeDTO> findAllByRole(String role);
 
     void setSecurityContext(Employee employee);

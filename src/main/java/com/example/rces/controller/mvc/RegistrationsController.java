@@ -57,6 +57,7 @@ public class RegistrationsController {
     public String menu(Model model) {
         List<Requests> requests = requestsService.findAll();
         Employee user = employeeService.getCurrentUser();
+        EmployeeDTO userDTO = employeeService.getCurrentUserDTO();
         List<Requests> requestsList;
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {
             requestsList = requests.stream()
@@ -88,7 +89,7 @@ public class RegistrationsController {
         List<String> requestsDate = requestsList.stream()
                 .map(req -> formatedDate(req.getCreatedDate()))
                 .toList();
-        model.addAttribute("user", user);
+        model.addAttribute("user", userDTO);
         model.addAttribute("requests", requestsList);
         model.addAttribute("requestsMaster", createMasterRequest);
         model.addAttribute("dailyCounts", dailyCountsList);

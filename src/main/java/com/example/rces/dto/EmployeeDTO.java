@@ -4,21 +4,12 @@ public class EmployeeDTO {
 
     private Long id;
     private String name;
-    private SubDivisionDTO mlmNode;
+    private SubDivisionDTO subDivision;
     private String role;
     private boolean isActive;
     private Long chatId;
 
     public EmployeeDTO() {
-    }
-
-    public EmployeeDTO(Long id, String name, SubDivisionDTO mlmNode, String role, boolean isActive, Long chatId) {
-        this.id = id;
-        this.name = name;
-        this.mlmNode = mlmNode;
-        this.role = role;
-        this.isActive = isActive;
-        this.chatId = chatId;
     }
 
     public Long getId() {
@@ -37,12 +28,12 @@ public class EmployeeDTO {
         this.name = name;
     }
 
-    public SubDivisionDTO getMlmNode() {
-        return mlmNode;
+    public SubDivisionDTO getSubDivision() {
+        return subDivision;
     }
 
-    public void setMlmNode(SubDivisionDTO mlmNode) {
-        this.mlmNode = mlmNode;
+    public void setSubDivision(SubDivisionDTO subDivision) {
+        this.subDivision = subDivision;
     }
 
     public String getRole() {

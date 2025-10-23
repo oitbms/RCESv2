@@ -19,7 +19,6 @@ UPDATE employees e
 SET e.subdivision_id = s.id
 WHERE e.mlm_node IS NOT NULL;
 ALTER TABLE rces.employees DROP COLUMN mlm_node;
-ALTER TABLE rces.employees MODIFY subdivision_id BIGINT NOT NULL;
 ALTER TABLE rces.employees
     ADD CONSTRAINT fk_employee_subdivision
         FOREIGN KEY (subdivision_id) REFERENCES rces.subdivision(id);

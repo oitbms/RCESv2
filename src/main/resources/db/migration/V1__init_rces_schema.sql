@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS rces.employees
     name         VARCHAR(100) NOT NULL UNIQUE,
     password     VARCHAR(255) NOT NULL,
     mlm_node     VARCHAR(50)  NOT NULL,
-    role         VARCHAR(50)  NOT NULL,
+    role         VARCHAR(255) NOT NULL,
     is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
     chat_id      BIGINT       NOT NULL,
     version      BIGINT       NOT NULL DEFAULT 0,
@@ -13,14 +13,16 @@ CREATE TABLE IF NOT EXISTS rces.employees
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 
-    INDEX idx_name (name)
+    INDEX idx_name (name),
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
 
 CREATE TABLE IF NOT EXISTS rces.subdivision
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    code         VARCHAR(100) NOT NULL UNIQUE,
-    name         VARCHAR(100) NOT NULL UNIQUE,
+    code         VARCHAR(255) NOT NULL UNIQUE,
+    name         VARCHAR(255) NOT NULL UNIQUE,
     version      BIGINT       NOT NULL DEFAULT 0,
     created_date TIMESTAMP    NULL,
     updated_date TIMESTAMP    NULL,
@@ -43,7 +45,9 @@ CREATE TABLE IF NOT EXISTS rces.customerorder
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 
-    INDEX idx_name (str_code)
+    INDEX idx_name (str_code),
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
 
 CREATE TABLE IF NOT EXISTS rces.documents
@@ -56,7 +60,9 @@ CREATE TABLE IF NOT EXISTS rces.documents
     created_by   BIGINT       NOT NULL DEFAULT 1,
     updated_by   BIGINT       NULL,
 
-    INDEX idx_name (name)
+    INDEX idx_name (name),
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
 );
 
 CREATE TABLE IF NOT EXISTS rces.document_files
@@ -87,7 +93,7 @@ CREATE TABLE IF NOT EXISTS rces.requests
     mlm_node          VARCHAR(50),
     item              VARCHAR(50),
     status_id         VARCHAR(50),
-    comment           TEXT,
+    comment           VARCHAR(255),
     reason_wr         VARCHAR(255),
     description       TEXT,
     closed_date       DATETIME,
@@ -96,7 +102,7 @@ CREATE TABLE IF NOT EXISTS rces.requests
     message_id        INT,
     score             VARCHAR(50),
     control           VARCHAR(255),
-    comment_agreed    TEXT,
+    comment_agreed    VARCHAR(255),
     title             VARCHAR(255),
     qty_rejected      INT                  DEFAULT 0,
     frozen            BOOLEAN              DEFAULT FALSE,
@@ -247,6 +253,34 @@ CREATE TABLE IF NOT EXISTS rces.inconsistencies
 
 CREATE TABLE IF NOT EXISTS rces.request_incosistencies
 (
+    request_id      BINARY(16),
+    incosistency_id BIGINT,
+
+    FOREIGN KEY (request_id) REFERENCES rces.requests (id),
+    FOREIGN KEY (incosistency_id) REFERENCES rces.inconsistencies (id)
+);
+
+#Устарело, но мастеру подземелий надо
+CREATE TABLE IF NOT EXISTS rces.request_log
+(
+    id         BINARY(16) NOT NULL PRIMARY KEY,
+    date       DATETIME(6),
+    metadata   JSON,
     request_id BINARY(16),
-    incosistency_id BIGINT
+    user_id    BIGINT,
+
+    FOREIGN KEY (user_id) REFERENCES rces.employees (id),
+    FOREIGN KEY (request_id) REFERENCES rces.requests (id)
+);
+
+CREATE TABLE IF NOT EXISTS rces.sgi_log
+(
+    id         BINARY(16) NOT NULL PRIMARY KEY,
+    date       DATETIME(6),
+    metadata   JSON,
+    sgi_id BINARY(16),
+    user_id    BIGINT,
+
+    FOREIGN KEY (user_id) REFERENCES rces.employees (id),
+    FOREIGN KEY (sgi_id) REFERENCES rces.plan_sgi (id)
 );

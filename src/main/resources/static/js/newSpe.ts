@@ -10,8 +10,7 @@ class Spe extends Base {
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
         this.createHandler('click', '#print-button',
-            () => window.open(`/api/report/print/spe?${Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')}`),
-            true);
+            () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
         this.createHandler('click', '#save-button', () => this.save('/api/spe/update/', this.saveMassive), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);

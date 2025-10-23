@@ -126,7 +126,8 @@ abstract class Base {
         });
     }
 
-    public readonly print = async (url: string, params: any): Promise<void> => {
+    public readonly print = (url: string, params: any): void => {
+        if (!params)  return this.createNotification("Выберите строки для печати", NotificationType.INFO);
         window.open(url + (Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''));
     };
 
@@ -161,7 +162,7 @@ abstract class Base {
     }
 
     //Создание уведомления в левом верхнем углу
-    public readonly createNotification = this.lock((message: string, type: NotificationType, params?: any, error?: Error): void => {
+    public readonly createNotification = (message: string, type: NotificationType, params?: any, error?: Error): void => {
         try {
             const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
 
@@ -175,7 +176,7 @@ abstract class Base {
         } catch (error) {
             console.error(error);
         }
-    });
+    };
 
     //Контекстное меню
     public readonly createContextMenu = (items: { label: string, action: () => void }[], x: number, y: number): void => {
