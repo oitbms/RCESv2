@@ -173,7 +173,7 @@ h1 {
 }
 
 .sidebar {
-    width: 250px;
+    width: 200px;
     background: var(--default-color);
     border-radius: 12px;
     padding: 20px;
@@ -241,15 +241,15 @@ h1 {
     flex-direction: row;
     background: var(--accent);
     border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: white;
+    text-align: center;
 }
 
 .table-header-cell {
     padding: 15px 0;
-    background: var(--accent);
-    font-weight: 600;
     font-size: 14px;
-    text-align: center;
-    color: white;
+    border-right: 1px solid var(--border-color);
 }
 
 .table-body {
@@ -341,7 +341,6 @@ h1 {
 }
 
 .status-indicator {
-    display: inline-flex;
     align-items: center;
     padding: 6px 12px;
     border-radius: 20px;
@@ -349,15 +348,12 @@ h1 {
     font-weight: 500;
 }
 
-
-
 .responsible {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
-
 
 dialog {
     border: none;

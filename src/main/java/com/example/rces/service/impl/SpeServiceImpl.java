@@ -4,7 +4,6 @@ import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SpeCreateDTO;
 import com.example.rces.dto.SpeDTO;
-import com.example.rces.dto.report.SpeReportModel;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

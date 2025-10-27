@@ -270,7 +270,7 @@
 
 <div class="collapse" id="tableCollapse">
     <div class="card">
-        <h5 class="card-title text-center mt-3">Забракованная продукция: ${user.getMlmNode().getName()}</h5>
+        <h5 class="card-title text-center mt-3">Забракованная продукция: ${user.getSubDivision().getName()}</h5>
         <div class="table-responsive">
             <table class="table table-striped table-bordered mt-3 mb-3 d-none d-md-table">
                 <thead>
@@ -326,7 +326,7 @@
                 </#list>
             </div>
         </div>
-        <a href="/report/print/bid" class="btn btn-primary">Печать отчета: ${user.getMlmNode().getName()}</a>
+        <a href="/report/print/bid" class="btn btn-primary">Печать отчета: ${user.getSubDivision().getName()}</a>
     </div>
 </div>
 
