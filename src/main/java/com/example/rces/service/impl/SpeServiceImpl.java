@@ -104,13 +104,25 @@ public class SpeServiceImpl implements SpeService {
     public void notifyExpiredDeviations() {
         List<SPE> sgiList = repository.findAll();
         sgiList.stream().parallel().forEach(spe -> {
-            spe.setStatus(
-                    ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0 ? StatusSPE.VERIFICATION_REQUIRED
-                            : Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1 ? StatusSPE.EXPIRED
-                            : spe.getStatus());
-            spe.setColor(colorCalculate(spe));
+            spe.setStatus(calculateStatus(spe));
             repository.save(spe);
         });
+    }
+
+    private StatusSPE calculateStatus(SPE spe) {
+        StatusSPE currentStatus = spe.getStatus();
+        if (currentStatus == StatusSPE.WRITE_OFF || currentStatus == StatusSPE.AT_INSPECTION) {
+            return currentStatus;
+        }
+        else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
+            return StatusSPE.VERIFICATION_REQUIRED;
+        }
+        else if (Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1){
+            return StatusSPE.EXPIRED;
+        }
+        else {
+            return currentStatus;
+        }
     }
 
 }
