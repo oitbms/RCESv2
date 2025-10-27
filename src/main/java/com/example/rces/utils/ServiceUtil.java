@@ -5,7 +5,6 @@ import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
 import com.example.rces.models.annotation.DisplayName;
 import com.example.rces.models.enums.Color;
-import com.example.rces.models.enums.Status;
 import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.Entity;
 import org.apache.commons.lang3.ObjectUtils;
@@ -37,8 +36,10 @@ public class ServiceUtil {
     }
 
     public static Color colorCalculate(SPE spe) {
-        if (spe.getStatus().equals(StatusSPE.WRITE_OFF)) {
-            return Color.GREY;
+        if (spe.getStatus().equals(StatusSPE.CORRECTED)) {
+            return Color.GREEN;
+        } else if (spe.getStatus().equals(StatusSPE.WRITE_OFF)) {
+            return Color.GREEN;
         } else if (spe.getStatus().equals(StatusSPE.AT_INSPECTION)) {
             return Color.BLUE;
         } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {

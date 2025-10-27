@@ -71,6 +71,7 @@ public class SpeServiceImpl implements SpeService {
             throw new ApplicationContextException("Ошибка при обновлении SPE", e);
         }
         switch (speEntity.getMark()) {
+            case "исправен" -> speEntity.setStatus(StatusSPE.CORRECTED);
             case "списан" -> speEntity.setStatus(StatusSPE.WRITE_OFF);
             case "на поверке" -> speEntity.setStatus(StatusSPE.AT_INSPECTION);
         }

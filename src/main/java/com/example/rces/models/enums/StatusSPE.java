@@ -3,6 +3,7 @@ package com.example.rces.models.enums;
 public enum StatusSPE {
 
     NONE("Новый"),
+    CORRECTED("Исправен"),
     WRITE_OFF("Списан"),
     VERIFICATION_REQUIRED("Требуется поверка"),
     EXPIRED("Истек срок поверки"),

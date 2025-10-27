@@ -103,9 +103,12 @@ abstract class Base {
     });
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {
-        const results = await Promise.all(items.map(item =>
-            this.requestToApi(`${url}/${item.id}`, 'PATCH', item)
-        ));
+        const results = await Promise.all(items.map(item => {
+            const id: number = item.id;
+            const version = item.version;
+            const changes = item.changes;
+            return this.requestToApi(`${url}/${id}${version != null ? `?version=${version}` : ''}`, 'PATCH', changes);
+        }));
 
         items.forEach(item => {
             this.localCache.set(item.id, item);

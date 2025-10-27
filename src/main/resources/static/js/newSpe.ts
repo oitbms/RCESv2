@@ -11,7 +11,17 @@ class Spe extends Base {
         this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
         this.createHandler('click', '#print-button',
             () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
-        this.createHandler('click', '#save-button', () => this.save('/api/spe/update/', this.saveMassive), true);
+        this.createHandler('click', '#save-button', () => {
+            const itemsArray = Object.keys(this.saveMassive).map(id => {
+                const cacheData = this.localCache.get(Number(id)) as SpeIn;
+                return {
+                    id: id,
+                    version: cacheData.version,
+                    changes: this.saveMassive[id]
+                };
+            });
+            this.save('/api/spe/update', ...itemsArray);
+        }, true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
@@ -46,6 +56,8 @@ class Spe extends Base {
                     return 'Срок поверки истек';
                 case 'AT_INSPECTION':
                     return 'На поверке';
+                case 'CORRECTED':
+                    return 'Исправен'
             }
         })();
         const row = `
@@ -149,10 +161,13 @@ class Spe extends Base {
 
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
-                element.append($(`<option selected>${text != '' ? text : ''}</option>`));
-                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`))
+                const statuses = ['исправен', 'списан', 'на поверке'];
+                statuses.forEach(status => {
+                    const isSelected = text !== '' && status === text;
+                    element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
+                });
                 if (text === '') {
-                    element.append($(`<option>на поверке</option>`))
+                    element.find('option:first').prop('selected', true);
                 }
             } else if (dateTime.indexOf(dataName) !== -1) {
                 const rowId = Number($(row).attr('id'));
