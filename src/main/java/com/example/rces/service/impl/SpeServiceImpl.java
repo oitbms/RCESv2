@@ -74,6 +74,7 @@ public class SpeServiceImpl implements SpeService {
             case "исправен" -> speEntity.setStatus(StatusSPE.CORRECTED);
             case "списан" -> speEntity.setStatus(StatusSPE.WRITE_OFF);
             case "на поверке" -> speEntity.setStatus(StatusSPE.AT_INSPECTION);
+            case "ремонт" -> speEntity.setStatus(StatusSPE.REPAIR);
         }
         speEntity.setColor(colorCalculate(speEntity));
         repository.save(speEntity);

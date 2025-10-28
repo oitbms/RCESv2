@@ -5,6 +5,7 @@ public enum StatusSPE {
     NONE("Новый"),
     CORRECTED("Исправен"),
     WRITE_OFF("Списан"),
+    REPAIR("Ремонт"),
     VERIFICATION_REQUIRED("Требуется поверка"),
     EXPIRED("Истек срок поверки"),
     AT_INSPECTION("На поверке");

@@ -42,6 +42,8 @@ public class ServiceUtil {
             return Color.GREEN;
         } else if (spe.getStatus().equals(StatusSPE.AT_INSPECTION)) {
             return Color.BLUE;
+        } else if (spe.getStatus().equals(StatusSPE.REPAIR)) {
+            return Color.GREY;
         } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
             return Color.YELLOW;
         } else if (Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1) {
