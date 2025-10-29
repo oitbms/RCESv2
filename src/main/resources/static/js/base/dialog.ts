@@ -18,14 +18,15 @@ class DialogImpl implements Dialog {
     open(dialogId: string, options: DialogOptions = {}): void {
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
         if (!dialogElement) {
-            console.error(`Dialog with id ${dialogId} not found`);
+            console.error(`Диалог с id ${dialogId} не найден`);
             return;
         }
         if (options.clearFields !== false) {
             this.clearDialog(dialogId);
         }
 
-        dialogElement.showModal();
+        dialogElement.show();
+        $('<div class="backdrop"></div>').appendTo('body');
         this.activeDialogs.add(dialogId);
 
         this.setupCloseHandlers(dialogId, options.onClose);
@@ -41,6 +42,7 @@ class DialogImpl implements Dialog {
             dialogElement.close();
             this.clearDialog(dialogId);
             this.activeDialogs.delete(dialogId);
+            $('.backdrop').remove();
         }
     }
 
@@ -52,7 +54,6 @@ class DialogImpl implements Dialog {
         inputs.forEach((input: Element) => {
             const htmlInput = input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
             if (htmlInput.type === 'file') {
-                // Для файловых инпутов создаем новый элемент
                 const newInput = htmlInput.cloneNode(false) as HTMLInputElement;
                 htmlInput.parentNode?.replaceChild(newInput, htmlInput);
             } else {

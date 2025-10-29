@@ -2,12 +2,14 @@ interface FileDTO {
     name: string;
     data: string;
 }
+
 enum NotificationType {
     SUCCESS = 'success',
     ERROR = 'error',
     WARNING = 'warning',
     INFO = 'info'
 }
+
 enum Color {
     NONE = 'NONE',
     RED = 'RED',
@@ -26,10 +28,13 @@ abstract class Base {
     public currentPage: number = 1;
     public saveMassive: object = {};
 
+    public readonly rowContainer: any;
+
     protected cache: CacheBormash = new CacheBormashImpl();
     protected dialog: Dialog = new DialogImpl();
 
-    protected constructor(itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
+    protected constructor(rowContainer: any, itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
+        this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
         this.init(...initCallbacks);
     }
@@ -73,10 +78,11 @@ abstract class Base {
 
     public readonly updateRow = (item: any, rowIndex: string | number): void => {
         const $oldRow = $(`[data-index="${rowIndex}"]`);
-        const $newRow = this.createRow(item);
-        $oldRow.fadeOut(300, () => {
+        const $newRow = this.createRow(item).hide();
+
+        $oldRow.fadeOut(350, () => {
             $oldRow.replaceWith($newRow);
-            $newRow.hide().fadeIn(300);
+            $newRow.fadeIn(350);
             this.localCache.set(item.id, item);
         });
     };
@@ -97,7 +103,8 @@ abstract class Base {
         const data: any[] = await this.requestToApi(url, 'GET', param);
         for (const item of data) {
             this.localCache.set(item.id, item);
-            this.createRow(item);
+            const row = this.createRow(item);
+            this.rowContainer.append(row);
         }
         callbacks.forEach(callback => callback(data));
     });
@@ -110,11 +117,12 @@ abstract class Base {
             return this.requestToApi(`${url}/${id}${version != null ? `?version=${version}` : ''}`, 'PATCH', changes);
         }));
 
-        items.forEach(item => {
-            this.localCache.set(item.id, item);
+        results.forEach(item => {
             this.updateRow(item, item.id);
+            delete this.saveMassive[item.id];
         });
 
+        this.createNotification('Оборудование успешно обновлено', NotificationType.SUCCESS);
         return results;
     }
 
@@ -130,7 +138,7 @@ abstract class Base {
     }
 
     public readonly print = (url: string, params: any): void => {
-        if (!params)  return this.createNotification("Выберите строки для печати", NotificationType.INFO);
+        if (!params) return this.createNotification("Выберите строки для печати", NotificationType.INFO);
         window.open(url + (Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''));
     };
 
@@ -161,7 +169,7 @@ abstract class Base {
     }
 
     public readonly deleteEntity = (url: string): Promise<void> => {
-        return this.requestToApi(url, 'DELETE');
+        return this.requestToApi(`${url}`, 'DELETE');
     }
 
     //Создание уведомления в левом верхнем углу
@@ -169,27 +177,98 @@ abstract class Base {
         try {
             const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
 
-            const $note = $(`<div class="notification ${type}">
-            <div class="msg">${text}</div>
-        </div>`).appendTo('body');
+            const $note = $(`
+            <div class="notification ${type}">
+                <div class="msg">${text}</div>
+            </div>`)
+                .appendTo('body');
             if (error) console.error(error);
 
             setTimeout(() => $note.addClass('show'), 10);
-            setTimeout(() => $note.remove(), 10000);
+            setTimeout(() => {
+                $note.removeClass('show').addClass('hiding');
+                setTimeout(() => $note.remove(), 350);
+            }, 3250);
         } catch (error) {
             console.error(error);
         }
     };
 
+    //Диалог с подтверждением действия
+    public readonly createConfirmationDialog = this.lock((message: string, params?: any): Promise<boolean> => {
+        return new Promise((resolve) => {
+            const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
+
+            let $dialog = $('#confirmDialog');
+            if ($dialog.length === 0) {
+                $dialog = $(`
+                    <dialog id="confirmDialog" class="confirm-dialog">
+                        <div class="confirm-content">
+                            <div class="confirm-message" id="confirmMessage">${text}</div>
+                            <div class="confirm-buttons">
+                                <button class="confirm-btn confirm-cancel" id="confirmCancel">Отмена</button>
+                                <button class="confirm-btn confirm-ok" id="confirmOk">Подтвердить</button>
+                            </div>
+                        </div>
+                    </dialog>
+                `);
+                $('body').append($dialog);
+            } else {
+                $('#confirmMessage').text(text);
+            }
+
+            const cleanup = () => {
+                $('#confirmCancel').off('click');
+                $('#confirmOk').off('click');
+                this.dialog.close('confirmDialog');
+            };
+
+            $('#confirmCancel').on('click', () => {
+                cleanup();
+                resolve(false);
+            });
+
+            $('#confirmOk').on('click', () => {
+                cleanup();
+                resolve(true);
+            });
+
+            this.dialog.open('confirmDialog', {
+                clearFields: false,
+                onClose: () => {
+                    cleanup();
+                    resolve(false);
+                }
+            });
+        });
+    });
+
     //Контекстное меню
-    public readonly createContextMenu = (items: { label: string, action: () => void }[], x: number, y: number): void => {
+    public readonly createContextMenu = (items: {
+        label: string,
+        action: () => void
+    }[], x: number, y: number): void => {
         $('#context-menu').remove();
 
         const menu = $('<div id="context-menu"></div>');
-        items.forEach(item => menu.append(`<div>${item.label}</div>`).on('click', item.action));
-
-        $('body').append(menu.css({ left: x + 'px', top: y + 'px' }));
-        $(document).one('click', () => menu.remove());
+        items.forEach(item => {
+            const $item = $(`<div>${item.label}</div>`);
+            $item.on('click', () => {
+                item.action();
+                menu.remove();
+            });
+            menu.append($item);
+        });
+        $('body').append(menu.css({
+            left: x + 'px',
+            top: y + 'px',
+            zIndex: 2147483647
+        }));
+        $(document).one('click', (e) => {
+            if (!$(e.target).closest('#context-menu').length) {
+                menu.remove();
+            }
+        });
     }
 
     public readonly formatDate = (dateString: string): string => {
@@ -200,11 +279,16 @@ abstract class Base {
 
     public readonly calculateColor = (color: Color): string => {
         switch (color) {
-            case Color.NONE: return 'var(--default-color, #f1f1f1)';
-            case Color.RED: return 'var(--critical-color, #ef4444)';
-            case Color.GREEN: return 'var(--success-color, #10b981)';
-            case Color.YELLOW: return 'var(--warning-color, #f59e0b)';
-            case Color.BLUE: return 'var(--info-color, #3b82f6)';
+            case Color.NONE:
+                return 'var(--default-color, #f1f1f1)';
+            case Color.RED:
+                return 'var(--critical-color, #ef4444)';
+            case Color.GREEN:
+                return 'var(--success-color, #10b981)';
+            case Color.YELLOW:
+                return 'var(--warning-color, #f59e0b)';
+            case Color.BLUE:
+                return 'var(--info-color, #3b82f6)';
         }
     }
 

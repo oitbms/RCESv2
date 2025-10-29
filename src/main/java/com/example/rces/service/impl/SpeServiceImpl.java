@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,7 @@ public class SpeServiceImpl implements SpeService {
         }
         speEntity.setColor(colorCalculate(speEntity));
         repository.save(speEntity);
+        speEntity.setVersion(speEntity.getVersion() + 1);
         return mapper.toDTO(speEntity);
     }
 
@@ -101,28 +103,28 @@ public class SpeServiceImpl implements SpeService {
         return documentService.toDTO(document);
     }
 
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 30 8 * * *")
     @Transactional
     public void notifyExpiredDeviations() {
         List<SPE> sgiList = repository.findAll();
         sgiList.stream().parallel().forEach(spe -> {
             spe.setStatus(calculateStatus(spe));
+            if (spe.getStatus() == StatusSPE.EXPIRED || spe.getStatus() == StatusSPE.VERIFICATION_REQUIRED) {
+                spe.setMark(null);
+            }
             repository.save(spe);
         });
     }
 
     private StatusSPE calculateStatus(SPE spe) {
         StatusSPE currentStatus = spe.getStatus();
-        if (currentStatus == StatusSPE.WRITE_OFF || currentStatus == StatusSPE.AT_INSPECTION) {
+        if (currentStatus == StatusSPE.WRITE_OFF || currentStatus == StatusSPE.AT_INSPECTION || currentStatus == StatusSPE.REPAIR) {
             return currentStatus;
-        }
-        else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
-            return StatusSPE.VERIFICATION_REQUIRED;
-        }
-        else if (Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1){
+        } else if (LocalDate.now().isAfter(spe.getDateVerification())) {
             return StatusSPE.EXPIRED;
-        }
-        else {
+        } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
+            return StatusSPE.VERIFICATION_REQUIRED;
+        } else {
             return currentStatus;
         }
     }

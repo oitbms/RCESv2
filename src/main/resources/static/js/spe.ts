@@ -4,24 +4,14 @@ declare const $: any;
 class Spe extends Base {
 
     constructor(itemsPerPage = Infinity) {
-        super(itemsPerPage, () => {
+        super($(`.table-body`), itemsPerPage, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
         this.createHandler('click', '#print-button',
             () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
-        this.createHandler('click', '#save-button', () => {
-            const itemsArray = Object.keys(this.saveMassive).map(id => {
-                const cacheData = this.localCache.get(Number(id)) as SpeIn;
-                return {
-                    id: id,
-                    version: cacheData.version,
-                    changes: this.saveMassive[id]
-                };
-            });
-            this.save('/api/spe/update', ...itemsArray);
-        }, true);
+        this.createHandler('click', '#save-button', () => this.saveSpe(), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
@@ -29,6 +19,7 @@ class Spe extends Base {
         this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
         this.createHandler('click', '#createBtn', this.createSpe, true);
         this.createHandler('click', '.filter-status', this.filterButtonHandler, true);
+        this.createHandler('click', '.employee-button', this.employeeHandler.bind(this), true);
         this.createHandler('click', '.subdivision-button', this.subDivisionHandler.bind(this), true);
         this.createHandler('input', '#searchInput', (event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
@@ -39,6 +30,7 @@ class Spe extends Base {
 
     currentStatus = 'NONE';
     currentSubDivision = '';
+    currentEmployee = '';
     searchText = '';
 
     editMode: boolean = false;
@@ -58,10 +50,12 @@ class Spe extends Base {
                     return 'На поверке';
                 case 'CORRECTED':
                     return 'Исправен'
+                case 'REPAIR':
+                    return 'На ремонте'
             }
         })();
         const row = `
-                <div class="table-row" id="${spe.id}">
+                <div class="table-row" id="${spe.id}" data-index="${spe.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
                             <div data-name="name" contenteditable="false">
@@ -135,8 +129,21 @@ class Spe extends Base {
                         </span>
                     </div>
                 </div>`;
-        $(`.table-body`).append(row);
         return $(row);
+    }
+
+    private saveSpe() {
+        const itemsArray = Object.keys(this.saveMassive).map(id => {
+            const cacheData = this.localCache.get(Number(id)) as SpeIn;
+            return {
+                id: id,
+                version: cacheData.version,
+                changes: this.saveMassive[id]
+            };
+        });
+        this.save('/api/spe/update', ...itemsArray).then(() => {
+            this.disableEditMode();
+        });
     }
 
     private fullData(data: SpeIn[]): void {
@@ -145,6 +152,7 @@ class Spe extends Base {
         $('#verification-required').text(data.filter(s => s.status === 'VERIFICATION_REQUIRED').length);
         $('#verification-period-has-expired').text(data.filter(s => s.status === 'EXPIRED').length);
         $('#at-inspection').text(data.filter(s => s.status === 'AT_INSPECTION').length);
+        $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
     }
 
     private enableEditMode(row?: any): void {
@@ -152,6 +160,7 @@ class Spe extends Base {
             this.disableEditMode(row);
             return;
         }
+
         const dateTime: string[] = ['datePreparation', 'dateVerification'];
 
         const processElement = ($div: any) => {
@@ -161,7 +170,7 @@ class Spe extends Base {
 
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
-                const statuses = ['исправен', 'списан', 'на поверке'];
+                const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
                 statuses.forEach(status => {
                     const isSelected = text !== '' && status === text;
                     element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
@@ -200,6 +209,7 @@ class Spe extends Base {
             });
         }
         this.editMode = true;
+        $('#edit-button').addClass('active');
     }
 
     private disableEditMode(row?: any): void {
@@ -234,6 +244,7 @@ class Spe extends Base {
             });
         }
         this.editMode = false;
+        $('#edit-button').removeClass('active');
     }
 
     private async dblClickOnRow(event: Event): Promise<void> {
@@ -368,8 +379,27 @@ class Spe extends Base {
         );
 
         $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
+        $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
+            const $row = $(event.currentTarget);
+            const fileId = $row.attr('id');
+            if (!fileId) {
+                return;
+            }
+            event.preventDefault();
+            const mouseEvent = event as MouseEvent;
+            this.createContextMenu([
+                {
+                    label: 'Удалить файл',
+                    action: () => {
+                        this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
+                            () => this.deleteRow(fileId));
+                    }
+                }
+            ], mouseEvent.clientX, mouseEvent.clientY);
+        });
 
-        (dialog[0] as any).showModal();
+
+        this.dialog.open('documentDialog');
     }
 
     private addFileToDocument(event: Event, speId: string): void {
@@ -389,7 +419,29 @@ class Spe extends Base {
 
         const requestType = spe.documentId ? 'PATCH' : 'POST';
 
-        this.requestToApi(url, requestType, formData).then(() => {
+        this.requestToApi(url, requestType, formData).then((document: DocumentBormash) => {
+            const dialog = $('#documentDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            rowContainer.empty();
+            for (const file of document.files) {
+                rowContainer.append(`
+                    <div class="dialog-content-rows-row" id="${file.id}">
+                        <div class="content-row-column col-450">${file.baseFileName}</div>
+                        <div class="content-row-column col-100">${file.type}</div>
+                        <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
+                    </div>`
+                );
+            }
+            rowContainer.append(`
+            <div class="dialog-content-rows-row">
+                <div class="content-row-column col-450"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`
+            );
             this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
         }).catch(console.error);
 
@@ -434,7 +486,8 @@ class Spe extends Base {
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
             (dialog[0] as any).close();
-            this.createRow(newSPE);
+            const newRow = this.createRow(newSPE);
+            $(`.table-body`).append(newRow);
             button.prop('disabled', false);
         } catch (error) {
             this.saveMassive = {};
@@ -449,8 +502,9 @@ class Spe extends Base {
             const row = $(element);
             const statusMatch: boolean = this.currentStatus === 'NONE' || row.find('[data-status]').attr('data-status') === this.currentStatus;
             const subDivisionMatch: boolean = !this.currentSubDivision || row.find('[data-name="subDivision"]').text().trim() === this.currentSubDivision;
+            const employeeMatch: boolean = !this.currentEmployee || row.find('[data-name="employee"]').text().trim() === this.currentEmployee;
             const textMatch: boolean = this.searchText === '' || row.text().toLowerCase().includes(this.searchText.toLowerCase());
-            row.toggle(statusMatch && subDivisionMatch && textMatch);
+            row.toggle(statusMatch && subDivisionMatch && employeeMatch && textMatch);
         });
     }
 
@@ -459,6 +513,60 @@ class Spe extends Base {
         $('.filter-btn').removeClass('active');
         $(event.target).addClass('active');
         this.applyFilters();
+    }
+
+    private async employeeHandler(event: Event) {
+        const button = $(event.target);
+        const dialog = $('#employeeDialog');
+        const rowContainer = dialog.find('.dialog-content-rows');
+        let selectedName = '';
+        const cancelBtn = dialog.find('.close');
+        const dialogName = dialog.find('.dialog-name');
+
+        try {
+            const employees: Employee[] = await this.cache.get('employee');
+
+            function render(list: Employee[]) {
+                rowContainer.empty();
+                list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
+            }
+
+            cancelBtn.text('Сбросить фильтры');
+            dialogName.text('Фильтр по подразделению');
+            render(employees);
+
+            dialog.find('.choice-field input').on('input', function () {
+                const search = $(this).val().toString().toLowerCase();
+                const filtered = employees.filter((e: any) => e.name.toLowerCase().includes(search));
+                render(filtered);
+            });
+
+            rowContainer.on('click', '.dialog-content-rows-row', function () {
+                selectedName = $(this).find('.content-row-column').text().trim();
+            });
+
+            $('#changeEmployee').on('click', () => {
+                this.currentEmployee = selectedName;
+                this.applyFilters();
+                button.css('border-color', 'red');
+                (dialog[0] as any).close();
+            });
+
+            $('.close').on('click', () => {
+                this.currentEmployee = '';
+                button.css('border-color', '#e2e8f0');
+                this.applyFilters();
+            });
+
+            dialog.on('close', function () {
+                cancelBtn.text('Отмена');
+                dialogName.text('Окно выбора сотрудника');
+            });
+
+            (dialog[0] as any).showModal();
+        } catch (error) {
+            this.createNotification('Ошибка при загрузке сотрудников', NotificationType.ERROR);
+        }
     }
 
     private async subDivisionHandler(event: Event) {
@@ -516,20 +624,30 @@ class Spe extends Base {
     }
 
     private showRowContextMenu = (event: Event) => {
+        if ($(event.target).is('div[contenteditable="true"]') || $(event.target).closest('div[contenteditable="true"]').length > 0) {
+            return;
+        }
         event.preventDefault();
+
         const mouseEvent = event as MouseEvent;
-        const row = $(event.currentTarget);
-        const rowId = row.attr('id');
+        const $row = $(event.currentTarget);
+        const rowName = $row.find('[data-name="outNumber"]').text().trim();
+        const rowId = $row.attr('id');
 
         this.createContextMenu([
             {
                 label: 'Удалить',
                 action: () => {
-                    this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
-                        this.deleteRow(rowId);
-                        this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS);
-                    }).catch(() => {
-                        this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR);
+                    this.createConfirmationDialog("Подтвердите удаление оборудования: {outNumber}", {outNumber: rowName}).then((confirmed) => {
+                        // @ts-ignore
+                        if (confirmed) {
+                            this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
+                                this.deleteRow(rowId);
+                                this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS);
+                            }).catch(() => {
+                                this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR);
+                            });
+                        }
                     });
                 }
             }

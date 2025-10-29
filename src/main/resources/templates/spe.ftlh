@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Реестр средств измерений</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/spe.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/js/base/dialog.js"></script>
     <script src="/js/base/cache.js"></script>
     <script src="/js/base/base.js"></script>
-    <script src="/js/newSpe.js"></script>
+    <script src="/js/spe.js"></script>
 </head>
 
 <body>
@@ -56,6 +56,9 @@
             <button class="subdivision-button filter-btn">
                 <i class="fas fa-sitemap"></i>Подразделения
             </button>
+            <button class="employee-button filter-btn">
+                <i class="fas fa-user"></i>Ответственный
+            </button>
             <button class="filter-btn active filter-status" data-status="NONE">
                 <i class="fas fa-list"></i>Все
             </button>
@@ -70,6 +73,9 @@
             </button>
             <button class="filter-btn filter-status" data-status="AT_INSPECTION">
                 <i class="fas fa-exclamation-triangle"></i>На поверке
+            </button>
+            <button class="filter-btn filter-status" data-status="AT_INSPECTION">
+                <i class="fas fa-exclamation-triangle"></i>На ремонте
             </button>
         </div>
     </div>
@@ -96,6 +102,10 @@
                 <div class="stat-item">
                     <div class="stat-label">На поверке</div>
                     <div class="stat-value" id="at-inspection"></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">На ремонте</div>
+                    <div class="stat-value" id="at-repair"></div>
                 </div>
             </div>
 
@@ -191,7 +201,7 @@
             </div>
         </div>
         <div class="dialog-container-footer">
-            <button class="dialog-btn" onclick="document.getElementById('documentDialog').close()">
+            <button class="dialog-btn" id="cancelButton">
                 Отмена
             </button>
             <button class="dialog-btn primary" id="changeSubDivision">

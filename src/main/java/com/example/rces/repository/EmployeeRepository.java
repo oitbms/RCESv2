@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface EmployeeRepository extends BaseAuditingRepository<Employee, Long> {
 
+    @EntityGraph(attributePaths = {"subDivision"})
     List<Employee> findAllByRole(String role);
 
     @EntityGraph(attributePaths = {"subDivision"})

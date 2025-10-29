@@ -33,9 +33,9 @@ public class DocumentRestController {
         return ResponseEntity.ok(documentService.addFileToDocument(id, files));
     }
 
-    @DeleteMapping("/delete-file-from-document")
-    public ResponseEntity<Void> deleteFileFromDocument(@RequestParam UUID fileId) {
-        documentService.deleteFileFromDocument(fileId);
+    @DeleteMapping("/delete-file-from-document/{id}")
+    public ResponseEntity<Void> deleteFileFromDocument(@PathVariable UUID id) {
+        documentService.deleteFileFromDocument(id);
         return ResponseEntity.ok().build();
     }
 

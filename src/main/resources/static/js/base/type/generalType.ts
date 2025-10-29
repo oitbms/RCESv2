@@ -17,3 +17,15 @@ type SubDivision = {
     name: string;
 }
 
+type DocumentBormash = {
+    id: string,
+    name: string,
+    files: DocumentFile[]
+}
+
+type DocumentFile = {
+    id: string,
+    baseFileName: string,
+    type: string
+}
+

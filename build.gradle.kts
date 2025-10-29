@@ -98,7 +98,7 @@ tasks.withType<War> {
     archiveFileName.set("RCES.war")
 }
 
-file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
+/*file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
     ?.sortedBy { it.name }
     ?.forEach { script ->
         try {
@@ -108,3 +108,4 @@ file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
             logger.warn("Ошибка при исполнении скрипта ${script.name} : ${e.message}")
         }
     }
+*/
