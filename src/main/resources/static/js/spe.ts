@@ -8,7 +8,11 @@ class Spe extends Base {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
+        this.createHandler('click', '#edit-button', () => {
+            if (!this.editMode) {
+                this.enableEditMode()
+            } else this.disableEditMode();
+        }, true);
         this.createHandler('click', '#print-button',
             () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
@@ -39,7 +43,7 @@ class Spe extends Base {
         const status = (() => {
             switch (spe.status) {
                 case 'NONE':
-                    return 'Нет';
+                    return 'Новый';
                 case 'WRITE_OFF':
                     return 'Списан';
                 case 'VERIFICATION_REQUIRED':
@@ -156,11 +160,6 @@ class Spe extends Base {
     }
 
     private enableEditMode(row?: any): void {
-        if (this.editMode && Object.keys(this.saveMassive).length === 0) {
-            this.disableEditMode(row);
-            return;
-        }
-
         const dateTime: string[] = ['datePreparation', 'dateVerification'];
 
         const processElement = ($div: any) => {
@@ -171,13 +170,13 @@ class Spe extends Base {
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
                 const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
+                if (text === '' || text === null) {
+                    element.append($(`<option selected value=""></option>`));
+                }
                 statuses.forEach(status => {
-                    const isSelected = text !== '' && status === text;
+                    const isSelected = text !== '' && text !== null && status === text;
                     element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
                 });
-                if (text === '') {
-                    element.find('option:first').prop('selected', true);
-                }
             } else if (dateTime.indexOf(dataName) !== -1) {
                 const rowId = Number($(row).attr('id'));
                 const value = this.localCache.get(rowId)[dataName];
@@ -213,7 +212,7 @@ class Spe extends Base {
     }
 
     private disableEditMode(row?: any): void {
-        if (this.editMode && Object.keys(this.saveMassive).length > 0) {
+        if (this.editMode && Object.keys(this.saveMassive).length > 0 && (row && row.find('.change-textarea').length > 0)) {
             this.createNotification("Сохраните изменения", NotificationType.WARNING);
             return;
         }
@@ -233,7 +232,6 @@ class Spe extends Base {
             $(row).find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
                 processElement($(this));
             });
-            this.editMode = false;
             return;
         }
 
@@ -295,7 +293,7 @@ class Spe extends Base {
                     rowContainer.append(`
                     <div class="dialog-content-rows-row" data-id="${item.id}">
                         <div class="content-row-column col-250">${item.name}</div>
-                        ${isEmployee ? `<div class="content-row-column col-250">${item.mlmNode?.name || ''}</div>` : ''}
+                        ${isEmployee ? `<div class="content-row-column col-250">${item.subDivision?.name || ''}</div>` : ''}
                     </div>`
                     );
                 });
@@ -528,7 +526,11 @@ class Spe extends Base {
 
             function render(list: Employee[]) {
                 rowContainer.empty();
-                list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
+                list.forEach(e => rowContainer.append(`
+                    <div class="dialog-content-rows-row">
+                        <div class="content-row-column  col-250">${e.name}</div>
+                        <div class="content-row-column  col-250">${e.subDivision.name}</div>
+                    </div>`));
             }
 
             cancelBtn.text('Сбросить фильтры');

@@ -71,12 +71,15 @@ public class SpeServiceImpl implements SpeService {
         } catch (JsonMappingException e) {
             throw new ApplicationContextException("Ошибка при обновлении SPE", e);
         }
-        switch (speEntity.getMark()) {
-            case "исправен" -> speEntity.setStatus(StatusSPE.CORRECTED);
-            case "списан" -> speEntity.setStatus(StatusSPE.WRITE_OFF);
-            case "на поверке" -> speEntity.setStatus(StatusSPE.AT_INSPECTION);
-            case "ремонт" -> speEntity.setStatus(StatusSPE.REPAIR);
+        if (speEntity.getMark()!=null) {
+            switch (speEntity.getMark()) {
+                case "исправен" -> speEntity.setStatus(StatusSPE.CORRECTED);
+                case "списан" -> speEntity.setStatus(StatusSPE.WRITE_OFF);
+                case "на поверке" -> speEntity.setStatus(StatusSPE.AT_INSPECTION);
+                case "ремонт" -> speEntity.setStatus(StatusSPE.REPAIR);
+            }
         }
+
         speEntity.setColor(colorCalculate(speEntity));
         repository.save(speEntity);
         speEntity.setVersion(speEntity.getVersion() + 1);
@@ -122,7 +125,8 @@ public class SpeServiceImpl implements SpeService {
             return currentStatus;
         } else if (LocalDate.now().isAfter(spe.getDateVerification())) {
             return StatusSPE.EXPIRED;
-        } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
+        } else if (ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 0 ||
+                ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 1) {
             return StatusSPE.VERIFICATION_REQUIRED;
         } else {
             return currentStatus;

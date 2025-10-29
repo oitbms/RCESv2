@@ -44,10 +44,11 @@ public class ServiceUtil {
             return Color.BLUE;
         } else if (spe.getStatus().equals(StatusSPE.REPAIR)) {
             return Color.GREY;
-        } else if (ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification()) == 0) {
-            return Color.YELLOW;
-        } else if (Math.abs(ChronoUnit.MONTHS.between(spe.getDatePreparation(), spe.getDateVerification())) < 1) {
+        } else if (LocalDate.now().isAfter(spe.getDateVerification())) {
             return Color.RED;
+        } else if (ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 0 ||
+                ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 1) {
+            return Color.YELLOW;
         } else {
             return Color.NONE;
         }

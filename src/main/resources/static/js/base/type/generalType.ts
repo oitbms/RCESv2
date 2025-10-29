@@ -1,14 +1,16 @@
 type Employee = {
     id: number;
     name: string;
-    mlmNode: MlmNode;
+    subDivision: subDivision;
     role: string;
     isActive: boolean;
     chatId: number;
 }
 
-type MlmNode = {
+type subDivision = {
+    id: number;
     name: string;
+    code: string;
 }
 
 type SubDivision = {
@@ -18,14 +20,14 @@ type SubDivision = {
 }
 
 type DocumentBormash = {
-    id: string,
-    name: string,
-    files: DocumentFile[]
+    id: string;
+    name: string;
+    files: DocumentFile[];
 }
 
 type DocumentFile = {
-    id: string,
-    baseFileName: string,
-    type: string
+    id: string;
+    baseFileName: string;
+    type: string;
 }
 
