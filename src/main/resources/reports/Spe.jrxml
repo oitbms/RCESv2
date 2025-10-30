@@ -131,7 +131,7 @@
 				<text><![CDATA[Средство измерения]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="28" width="220" height="30" uuid="2d301456-c33d-45d5-a823-39a2bf6da399">
+				<reportElement x="40" y="28" width="210" height="30" uuid="2d301456-c33d-45d5-a823-39a2bf6da399">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -147,7 +147,7 @@
 				<text><![CDATA[Наименование]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="260" y="28" width="71" height="30" uuid="7078cbfe-c2c4-4455-a126-3ac09f2d2cc0">
+				<reportElement x="250" y="28" width="76" height="30" uuid="7078cbfe-c2c4-4455-a126-3ac09f2d2cc0">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -163,7 +163,7 @@
 				<text><![CDATA[тип]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="331" y="28" width="99" height="30" uuid="1596cead-33ad-42ba-8c47-b5a244445e11">
+				<reportElement x="326" y="28" width="104" height="30" uuid="1596cead-33ad-42ba-8c47-b5a244445e11">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -231,13 +231,13 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="220" uuid="a75fa030-5e8d-454d-a63f-d9827525ca24">
+					<jr:column width="210" uuid="a75fa030-5e8d-454d-a63f-d9827525ca24">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 						<jr:detailCell height="25">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<textField isBlankWhenNull="true">
-								<reportElement x="0" y="0" width="220" height="25" uuid="6382a14f-8989-48ca-b5c1-738142d434b1">
+								<reportElement x="0" y="0" width="210" height="25" uuid="6382a14f-8989-48ca-b5c1-738142d434b1">
 									<property name="com.jaspersoft.studio.unit.firstLineIndent" value="px"/>
 								</reportElement>
 								<box>
@@ -254,12 +254,12 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="71" uuid="0d189ceb-20b2-499d-874f-63f57fcfbc5d">
+					<jr:column width="76" uuid="0d189ceb-20b2-499d-874f-63f57fcfbc5d">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:detailCell height="25">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<textField isBlankWhenNull="true">
-								<reportElement x="0" y="0" width="71" height="25" uuid="072e07ac-11ed-4293-ae95-14cd831e5ef0"/>
+								<reportElement x="0" y="0" width="76" height="25" uuid="072e07ac-11ed-4293-ae95-14cd831e5ef0"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -273,12 +273,12 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="99" uuid="2d23ad15-8eb2-4306-bfbc-093860557870">
+					<jr:column width="104" uuid="2d23ad15-8eb2-4306-bfbc-093860557870">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
 						<jr:detailCell height="25">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<textField isBlankWhenNull="true">
-								<reportElement x="0" y="0" width="99" height="25" uuid="5c38c5d0-c529-45dd-8c9f-1cb3d65aa243"/>
+								<reportElement x="0" y="0" width="104" height="25" uuid="5c38c5d0-c529-45dd-8c9f-1cb3d65aa243"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -286,7 +286,7 @@
 									<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="DejaVu Sans" size="9"/>
+									<font fontName="DejaVu Sans" size="8.5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
 							</textField>

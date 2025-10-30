@@ -22,7 +22,7 @@ public class SpeReportModel {
             Table table = new Table();
             table.setName(spe.getName());
             table.setType(spe.getType());
-            table.setNumber(String.valueOf(spe.getNumber()));
+            table.setNumber(String.valueOf(spe.getOutNumber()));
             table.setEmployee(spe.getEmployee().getName());
             this.lines.add(table);
         }

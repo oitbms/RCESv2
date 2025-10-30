@@ -255,7 +255,7 @@ class Spe extends Base {
             if (this.editMode) {
                 this.enableEditMode(currentRow);
             }
-        } else {
+        } else if (!this.editMode) {
             this.selectedRows.delete(currentRowId);
             this.disableEditMode(currentRow);
             currentRow.removeClass('selected');
@@ -528,8 +528,8 @@ class Spe extends Base {
                 rowContainer.empty();
                 list.forEach(e => rowContainer.append(`
                     <div class="dialog-content-rows-row">
-                        <div class="content-row-column  col-250">${e.name}</div>
-                        <div class="content-row-column  col-250">${e.subDivision.name}</div>
+                        <div class="content-row-column col-250 filter">${e.name}</div>
+                        <div class="content-row-column col-250">${e.subDivision.name}</div>
                     </div>`));
             }
 
@@ -544,7 +544,7 @@ class Spe extends Base {
             });
 
             rowContainer.on('click', '.dialog-content-rows-row', function () {
-                selectedName = $(this).find('.content-row-column').text().trim();
+                selectedName = $(this).find('.content-row-column.filter').text().trim();
             });
 
             $('#changeEmployee').on('click', () => {
@@ -584,7 +584,7 @@ class Spe extends Base {
 
             function render(list: SubDivision[]) {
                 rowContainer.empty();
-                list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
+                list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column filter">${e.name}</div></div>`));
             }
 
             cancelBtn.text('Сбросить фильтры');
@@ -598,7 +598,7 @@ class Spe extends Base {
             });
 
             rowContainer.on('click', '.dialog-content-rows-row', function () {
-                selectedName = $(this).find('.content-row-column').text().trim();
+                selectedName = $(this).find('.content-row-column.filter').text().trim();
             });
 
             $('#changeSubDivision').on('click', () => {

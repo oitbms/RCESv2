@@ -79,8 +79,14 @@ public class SpeServiceImpl implements SpeService {
                 case "ремонт" -> speEntity.setStatus(StatusSPE.REPAIR);
             }
         }
-
+//        if (speEntity.getDateVerification()!=null && speEntity.getDatePreparation()==null) {
+//            speEntity.setDatePreparation(speEntity.getDateVerification().minusMonths(1));
+//        }
+        speEntity.setStatus(calculateStatus(speEntity));
         speEntity.setColor(colorCalculate(speEntity));
+        if (speEntity.getStatus() == StatusSPE.EXPIRED || speEntity.getStatus() == StatusSPE.VERIFICATION_REQUIRED) {
+            speEntity.setMark(null);
+        }
         repository.save(speEntity);
         speEntity.setVersion(speEntity.getVersion() + 1);
         return mapper.toDTO(speEntity);
@@ -106,7 +112,7 @@ public class SpeServiceImpl implements SpeService {
         return documentService.toDTO(document);
     }
 
-    @Scheduled(cron = "0 30 8 * * *")
+    @Scheduled(cron = "0 0 9 * * *")
     @Transactional
     public void notifyExpiredDeviations() {
         List<SPE> sgiList = repository.findAll();
@@ -115,6 +121,7 @@ public class SpeServiceImpl implements SpeService {
             if (spe.getStatus() == StatusSPE.EXPIRED || spe.getStatus() == StatusSPE.VERIFICATION_REQUIRED) {
                 spe.setMark(null);
             }
+            spe.setColor(colorCalculate(spe));
             repository.save(spe);
         });
     }

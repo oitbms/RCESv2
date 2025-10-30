@@ -56,9 +56,9 @@
             <button class="subdivision-button filter-btn">
                 <i class="fas fa-sitemap"></i>Подразделения
             </button>
-            <button class="employee-button filter-btn">
-                <i class="fas fa-user"></i>Ответственный
-            </button>
+<#--            <button class="employee-button filter-btn">-->
+<#--                <i class="fas fa-user"></i>Ответственный-->
+<#--            </button>-->
             <button class="filter-btn active filter-status" data-status="NONE">
                 <i class="fas fa-list"></i>Все
             </button>
@@ -74,7 +74,7 @@
             <button class="filter-btn filter-status" data-status="AT_INSPECTION">
                 <i class="fas fa-exclamation-triangle"></i>На поверке
             </button>
-            <button class="filter-btn filter-status" data-status="AT_INSPECTION">
+            <button class="filter-btn filter-status" data-status="REPAIR">
                 <i class="fas fa-exclamation-triangle"></i>На ремонте
             </button>
         </div>
