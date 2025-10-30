@@ -7,13 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class NewSpe extends Base {
-    constructor(itemsPerPage = 16) {
-        super(itemsPerPage, () => {
-            this.displayPage('/api/spe/get-page-spe', 'GET', undefined, (data) => this.fullData(data)).catch(console.error);
+class Spe extends Base {
+    constructor(itemsPerPage = Infinity) {
+        super($(`.table-body`), itemsPerPage, () => {
+            this.displayPage('/api/spe/get-page-spe', undefined, (data) => this.fullData(data)).catch(console.error);
         });
         this.currentStatus = 'NONE';
         this.currentSubDivision = '';
+        this.currentEmployee = '';
         this.searchText = '';
         this.editMode = false;
         this.createSpe = (event) => __awaiter(this, void 0, void 0, function* () {
@@ -44,12 +45,14 @@ class NewSpe extends Base {
                 this.saveMassive = {};
                 this.localCache.set(newSPE.id, newSPE);
                 dialog[0].close();
-                this.createRow(newSPE);
+                const newRow = this.createRow(newSPE);
+                $(`.table-body`).append(newRow);
                 button.prop('disabled', false);
             }
             catch (error) {
                 this.saveMassive = {};
-                this.createNotification('Ошибка при создании SPE', NotificationType.ERROR).catch(console.error);
+                form.reset();
+                this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
                 button.prop('disabled', false);
             }
         });
@@ -58,8 +61,9 @@ class NewSpe extends Base {
                 const row = $(element);
                 const statusMatch = this.currentStatus === 'NONE' || row.find('[data-status]').attr('data-status') === this.currentStatus;
                 const subDivisionMatch = !this.currentSubDivision || row.find('[data-name="subDivision"]').text().trim() === this.currentSubDivision;
+                const employeeMatch = !this.currentEmployee || row.find('[data-name="employee"]').text().trim() === this.currentEmployee;
                 const textMatch = this.searchText === '' || row.text().toLowerCase().includes(this.searchText.toLowerCase());
-                row.toggle(statusMatch && subDivisionMatch && textMatch);
+                row.toggle(statusMatch && subDivisionMatch && employeeMatch && textMatch);
             });
         };
         this.filterButtonHandler = (event) => {
@@ -69,28 +73,43 @@ class NewSpe extends Base {
             this.applyFilters();
         };
         this.showRowContextMenu = (event) => {
+            if ($(event.target).is('div[contenteditable="true"]') || $(event.target).closest('div[contenteditable="true"]').length > 0) {
+                return;
+            }
             event.preventDefault();
             const mouseEvent = event;
-            const row = $(event.currentTarget);
-            const rowId = row.attr('id');
+            const $row = $(event.currentTarget);
+            const rowName = $row.find('[data-name="outNumber"]').text().trim();
+            const rowId = $row.attr('id');
             this.createContextMenu([
                 {
                     label: 'Удалить',
                     action: () => {
-                        this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
-                            this.deleteRow(rowId);
-                            this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS).catch(console.error);
-                        }).catch(() => {
-                            this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR).catch(console.error);
+                        this.createConfirmationDialog("Подтвердите удаление оборудования: {outNumber}", { outNumber: rowName }).then((confirmed) => {
+                            // @ts-ignore
+                            if (confirmed) {
+                                this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
+                                    this.deleteRow(rowId);
+                                    this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS);
+                                }).catch(() => {
+                                    this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR);
+                                });
+                            }
                         });
                     }
                 }
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => this.enableEditMode(), true);
-        this.createHandler('click', '#print-button', () => this.print('/api/report/print/spe', this.selectedRows), true);
-        this.createHandler('click', '#save-button', () => this.save('/api/spe/update/', this.saveMassive), true);
+        this.createHandler('click', '#edit-button', () => {
+            if (!this.editMode) {
+                this.enableEditMode();
+            }
+            else
+                this.disableEditMode();
+        }, true);
+        this.createHandler('click', '#print-button', () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
+        this.createHandler('click', '#save-button', () => this.saveSpe(), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
@@ -98,6 +117,7 @@ class NewSpe extends Base {
         this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
         this.createHandler('click', '#createBtn', this.createSpe, true);
         this.createHandler('click', '.filter-status', this.filterButtonHandler, true);
+        this.createHandler('click', '.employee-button', this.employeeHandler.bind(this), true);
         this.createHandler('click', '.subdivision-button', this.subDivisionHandler.bind(this), true);
         this.createHandler('input', '#searchInput', (event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
@@ -109,7 +129,7 @@ class NewSpe extends Base {
         const status = (() => {
             switch (spe.status) {
                 case 'NONE':
-                    return 'Нет';
+                    return 'Новый';
                 case 'WRITE_OFF':
                     return 'Списан';
                 case 'VERIFICATION_REQUIRED':
@@ -118,10 +138,14 @@ class NewSpe extends Base {
                     return 'Срок поверки истек';
                 case 'AT_INSPECTION':
                     return 'На поверке';
+                case 'CORRECTED':
+                    return 'Исправен';
+                case 'REPAIR':
+                    return 'На ремонте';
             }
         })();
         const row = `
-                <div class="table-row" id="${spe.id}">
+                <div class="table-row" id="${spe.id}" data-index="${spe.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
                             <div data-name="name" contenteditable="false">
@@ -163,7 +187,7 @@ class NewSpe extends Base {
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
                         <div contenteditable="false" data-name="mark">
-                            ${spe.mark}
+                            ${spe.mark != null ? spe.mark : ''}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
@@ -190,13 +214,28 @@ class NewSpe extends Base {
                         <i class="document fa-solid fa-file"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
-                        <span class="status-indicator status-good" data-status="${spe.status}">
+                        <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}">
                            ${status}
                         </span>
                     </div>
                 </div>`;
-        $(`.table-body`).append(row);
         return $(row);
+    }
+    saveSpe() {
+        if (Object.keys(this.saveMassive).length === 0) {
+            return;
+        }
+        const itemsArray = Object.keys(this.saveMassive).map(id => {
+            const cacheData = this.localCache.get(Number(id));
+            return {
+                id: id,
+                version: cacheData.version,
+                changes: this.saveMassive[id]
+            };
+        });
+        this.save('/api/spe/update', ...itemsArray).then(() => {
+            this.disableEditMode();
+        });
     }
     fullData(data) {
         $('#total-units').text(data.length);
@@ -204,12 +243,9 @@ class NewSpe extends Base {
         $('#verification-required').text(data.filter(s => s.status === 'VERIFICATION_REQUIRED').length);
         $('#verification-period-has-expired').text(data.filter(s => s.status === 'EXPIRED').length);
         $('#at-inspection').text(data.filter(s => s.status === 'AT_INSPECTION').length);
+        $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
     }
     enableEditMode(row) {
-        if (this.editMode && Object.keys(this.saveMassive).length === 0) {
-            this.disableEditMode(row);
-            return;
-        }
         const dateTime = ['datePreparation', 'dateVerification'];
         const processElement = ($div) => {
             const text = $div.text().trim();
@@ -217,8 +253,14 @@ class NewSpe extends Base {
             let element;
             if (dataName === 'mark') {
                 element = $(`<select data-name="${dataName}"></select>`);
-                element.append($(`<option selected>${text}</option>`));
-                element.append($(`<option>${text === 'списан' ? 'на поверке' : 'списан'}</option>`));
+                const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
+                if (text === '' || text === null) {
+                    element.append($(`<option selected value=""></option>`));
+                }
+                statuses.forEach(status => {
+                    const isSelected = text !== '' && text !== null && status === text;
+                    element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
+                });
             }
             else if (dateTime.indexOf(dataName) !== -1) {
                 const rowId = Number($(row).attr('id'));
@@ -248,10 +290,11 @@ class NewSpe extends Base {
             });
         }
         this.editMode = true;
+        $('#edit-button').addClass('active');
     }
     disableEditMode(row) {
-        if (this.editMode && Object.keys(this.saveMassive).length > 0) {
-            this.createNotification("Сохраните изменения", NotificationType.WARNING).catch(console.error);
+        if (this.editMode && Object.keys(this.saveMassive).length > 0 && (row && row.find('.change-textarea').length > 0)) {
+            this.createNotification("Сохраните изменения", NotificationType.WARNING);
             return;
         }
         const dateTime = ['datePreparation', 'dateVerification'];
@@ -270,7 +313,6 @@ class NewSpe extends Base {
             $(row).find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
                 processElement($(this));
             });
-            this.editMode = false;
             return;
         }
         for (const rowId of this.selectedRows) {
@@ -280,6 +322,7 @@ class NewSpe extends Base {
             });
         }
         this.editMode = false;
+        $('#edit-button').removeClass('active');
     }
     dblClickOnRow(event) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -292,7 +335,7 @@ class NewSpe extends Base {
                     this.enableEditMode(currentRow);
                 }
             }
-            else {
+            else if (!this.editMode) {
                 this.selectedRows.delete(currentRowId);
                 this.disableEditMode(currentRow);
                 currentRow.removeClass('selected');
@@ -305,7 +348,7 @@ class NewSpe extends Base {
         const name = $el.attr('data-name');
         const value = $el.is('div') ? $el.text().trim() : $el.val();
         this.saveMassive[id] = Object.assign(Object.assign({}, this.saveMassive[id]), { [name]: value });
-        $el.addClass('change-textarea');
+        $el.addClass('change');
     }
     workWithModal(event) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -319,7 +362,7 @@ class NewSpe extends Base {
                 const rowContainer = dialog.find('.dialog-content-rows');
                 const searchInput = dialog.find('.choice-field input');
                 const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
-                const data = yield window.cache.get(fieldName);
+                const data = yield this.cache.get(fieldName);
                 const renderRows = (items) => {
                     rowContainer.empty();
                     items.forEach(item => {
@@ -327,7 +370,7 @@ class NewSpe extends Base {
                         rowContainer.append(`
                     <div class="dialog-content-rows-row" data-id="${item.id}">
                         <div class="content-row-column col-250">${item.name}</div>
-                        ${isEmployee ? `<div class="content-row-column col-250">${((_a = item.mlmNode) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>` : ''}
+                        ${isEmployee ? `<div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>` : ''}
                     </div>`);
                     });
                 };
@@ -346,7 +389,7 @@ class NewSpe extends Base {
                 });
                 changeButton.off('click').on('click', () => {
                     if (!selected) {
-                        this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING).catch(console.error);
+                        this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
                         return;
                     }
                     modalDiv.text(selected.name);
@@ -393,7 +436,24 @@ class NewSpe extends Base {
             </div>
         </div>`);
             $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
-            dialog[0].showModal();
+            $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
+                const $row = $(event.currentTarget);
+                const fileId = $row.attr('id');
+                if (!fileId) {
+                    return;
+                }
+                event.preventDefault();
+                const mouseEvent = event;
+                this.createContextMenu([
+                    {
+                        label: 'Удалить файл',
+                        action: () => {
+                            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => this.deleteRow(fileId));
+                        }
+                    }
+                ], mouseEvent.clientX, mouseEvent.clientY);
+            });
+            this.dialog.open('documentDialog');
         });
     }
     addFileToDocument(event, speId) {
@@ -409,14 +469,85 @@ class NewSpe extends Base {
             ? `/api/document/add-file-to-document/${spe.documentId}`
             : `/api/spe/create-document/${spe.id}`;
         const requestType = spe.documentId ? 'PATCH' : 'POST';
-        this.requestToApi(url, requestType, formData).then(() => {
-            this.createNotification("Файлы добавлены", NotificationType.SUCCESS).catch(console.error);
+        this.requestToApi(url, requestType, formData).then((document) => {
+            const dialog = $('#documentDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            rowContainer.empty();
+            for (const file of document.files) {
+                rowContainer.append(`
+                    <div class="dialog-content-rows-row" id="${file.id}">
+                        <div class="content-row-column col-450">${file.baseFileName}</div>
+                        <div class="content-row-column col-100">${file.type}</div>
+                        <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
+                    </div>`);
+            }
+            rowContainer.append(`
+            <div class="dialog-content-rows-row">
+                <div class="content-row-column col-450"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`);
+            this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
         }).catch(console.error);
         currentInput.value = '';
     }
     handleDownloadFile(event) {
         const fileId = $(event.target).closest('.dialog-content-rows-row').attr('id');
         this.downloadFile(`/api/document/download-document-file/${fileId}`).catch(console.error);
+    }
+    employeeHandler(event) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const button = $(event.target);
+            const dialog = $('#employeeDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            let selectedName = '';
+            const cancelBtn = dialog.find('.close');
+            const dialogName = dialog.find('.dialog-name');
+            try {
+                const employees = yield this.cache.get('employee');
+                function render(list) {
+                    rowContainer.empty();
+                    list.forEach(e => rowContainer.append(`
+                    <div class="dialog-content-rows-row">
+                        <div class="content-row-column col-250 filter">${e.name}</div>
+                        <div class="content-row-column col-250">${e.subDivision.name}</div>
+                    </div>`));
+                }
+                cancelBtn.text('Сбросить фильтры');
+                dialogName.text('Фильтр по подразделению');
+                render(employees);
+                dialog.find('.choice-field input').on('input', function () {
+                    const search = $(this).val().toString().toLowerCase();
+                    const filtered = employees.filter((e) => e.name.toLowerCase().includes(search));
+                    render(filtered);
+                });
+                rowContainer.on('click', '.dialog-content-rows-row', function () {
+                    selectedName = $(this).find('.content-row-column.filter').text().trim();
+                });
+                $('#changeEmployee').on('click', () => {
+                    this.currentEmployee = selectedName;
+                    this.applyFilters();
+                    button.css('border-color', 'red');
+                    dialog[0].close();
+                });
+                $('.close').on('click', () => {
+                    this.currentEmployee = '';
+                    button.css('border-color', '#e2e8f0');
+                    this.applyFilters();
+                });
+                dialog.on('close', function () {
+                    cancelBtn.text('Отмена');
+                    dialogName.text('Окно выбора сотрудника');
+                });
+                dialog[0].showModal();
+            }
+            catch (error) {
+                this.createNotification('Ошибка при загрузке сотрудников', NotificationType.ERROR);
+            }
+        });
     }
     subDivisionHandler(event) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -427,10 +558,10 @@ class NewSpe extends Base {
             const cancelBtn = dialog.find('.close');
             const dialogName = dialog.find('.dialog-name');
             try {
-                const subDivisions = yield window.cache.get('subDivision');
+                const subDivisions = yield this.cache.get('subDivision');
                 function render(list) {
                     rowContainer.empty();
-                    list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column">${e.name}</div></div>`));
+                    list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column filter">${e.name}</div></div>`));
                 }
                 cancelBtn.text('Сбросить фильтры');
                 dialogName.text('Фильтр по подразделению');
@@ -441,7 +572,7 @@ class NewSpe extends Base {
                     render(filtered);
                 });
                 rowContainer.on('click', '.dialog-content-rows-row', function () {
-                    selectedName = $(this).find('.content-row-column').text().trim();
+                    selectedName = $(this).find('.content-row-column.filter').text().trim();
                 });
                 $('#changeSubDivision').on('click', () => {
                     this.currentSubDivision = selectedName;
@@ -461,11 +592,11 @@ class NewSpe extends Base {
                 dialog[0].showModal();
             }
             catch (error) {
-                this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR).catch(console.error);
+                this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR);
             }
         });
     }
 }
 $(document).ready(() => {
-    new NewSpe();
+    new Spe();
 });
