@@ -301,27 +301,15 @@ h1 {
             user-select: text;
         }
 
-        & textarea {
-            all: unset;
-            border-radius: 4px;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-
-            &.change-textarea {
-                border: 1px solid var(--critical-color);
-            }
-
-            & .area-modal {
-                cursor: pointer;
-            }
-        }
-
         & input, select {
             border: none;
             background-color: inherit;
 
+        }
+
+        & .change {
+            border: 1px solid var(--critical-color);
+            border-radius: 8px;
         }
     }
 }

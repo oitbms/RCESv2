@@ -137,6 +137,9 @@ class Spe extends Base {
     }
 
     private saveSpe() {
+        if (Object.keys(this.saveMassive).length === 0) {
+            return;
+        }
         const itemsArray = Object.keys(this.saveMassive).map(id => {
             const cacheData = this.localCache.get(Number(id)) as SpeIn;
             return {
@@ -269,7 +272,7 @@ class Spe extends Base {
         const value = $el.is('div') ? $el.text().trim() : $el.val();
 
         this.saveMassive[id] = {...this.saveMassive[id], [name]: value};
-        $el.addClass('change-textarea');
+        $el.addClass('change');
     }
 
     private async workWithModal(event: Event): Promise<void> {
