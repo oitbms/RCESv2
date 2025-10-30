@@ -4,9 +4,9 @@ declare const $: any;
 class Spe extends Base {
 
     constructor(itemsPerPage = Infinity) {
-        super($(`.table-body`), itemsPerPage,
-            () => this.displayPage('/api/spe/get-page-spe', (data: any[]) => this.fullData(data))
-        );
+        super($(`.table-body`), itemsPerPage, () => {
+            this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
+        });
         this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {

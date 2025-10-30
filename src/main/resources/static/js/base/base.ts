@@ -106,7 +106,7 @@ abstract class Base {
             const row = this.createRow(item);
             this.rowContainer.append(row);
         }
-        callbacks.forEach(callback => callback(data));
+        callbacks.forEach(callback => callback?.());
     });
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {

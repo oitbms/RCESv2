@@ -9,7 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 class Spe extends Base {
     constructor(itemsPerPage = Infinity) {
-        super($(`.table-body`), itemsPerPage, () => this.displayPage('/api/spe/get-page-spe', (data) => this.fullData(data)));
+        super($(`.table-body`), itemsPerPage, () => {
+            this.displayPage('/api/spe/get-page-spe', undefined, (data) => this.fullData(data)).catch(console.error);
+        });
         this.currentStatus = 'NONE';
         this.currentSubDivision = '';
         this.currentEmployee = '';
