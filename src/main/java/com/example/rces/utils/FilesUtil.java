@@ -161,6 +161,17 @@ public class FilesUtil {
         return documentFiles;
     }
 
+    public static DocumentFile addFileToDocument(Document document, byte[] content) {
+        DocumentFile documentFile = new DocumentFile();
+
+        documentFile.setBaseFileName(document.getName() + ".pdf");
+        documentFile.setType(Format.PDF);
+        documentFile.setDocument(document);
+        documentFile.setContent(content);
+
+        return documentFile;
+    }
+
     public static void validateDocument(DocumentCreateDTO documentDTO) {
         if (documentDTO.getName() == null || documentDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Наименование документа не может быть пустым");
@@ -199,10 +210,6 @@ public class FilesUtil {
             case "json" -> Format.JSON;
             default -> null;
         };
-    }
-
-    public static String safeFileName(String str) {
-        return str.trim().replace(" ", "_").replaceAll("[^0-9a-zA-Zа-яА-ЯёЁ_ -]", "");
     }
 
 }

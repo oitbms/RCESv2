@@ -1,6 +1,12 @@
 package com.example.rces.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.context.ApplicationContextException;
+
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import static com.example.rces.utils.DateUtil.parseLocalDate;
 
 public class SpeCreateDTO {
 
@@ -16,6 +22,32 @@ public class SpeCreateDTO {
     private LocalDate dateVerification;
     private String certificateNumber;
     private Integer periodicity;
+
+    public SpeCreateDTO() {
+    }
+
+    public SpeCreateDTO(JsonNode data,SpeFgisCreateDTO dto) {
+        try {
+            JsonNode singleMI = data.path("miInfo").path("singleMI");
+            JsonNode vriInfo = data.path("vriInfo");
+            JsonNode applicable = vriInfo.path("applicable");
+
+            setName(singleMI.path("mitypeTitle").asText());
+            setType(singleMI.path("mitypeType").asText());
+            setOutNumber(singleMI.path("mitypeNumber").asText());
+            setAccuracyClass(dto.getAccuracyClass());
+            setLimitMeasurement(dto.getLimitMeasurement());
+            setEmployee(dto.getEmployee());
+            setSubDivision(dto.getSubDivision());
+            setMark(null);
+            setDatePreparation(parseLocalDate(vriInfo.path("vrfDate").asText()).minusMonths(1));
+            setDateVerification(parseLocalDate(vriInfo.path("vrfDate").asText()));
+            setCertificateNumber(applicable.path("certNum").asText());
+            setPeriodicity((int) ChronoUnit.MONTHS.between(dateVerification, parseLocalDate(vriInfo.path("validDate").asText())) + 1);
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при создании Spe", e);
+        }
+    }
 
     public String getName() {
         return name;

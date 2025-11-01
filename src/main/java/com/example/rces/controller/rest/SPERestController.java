@@ -1,9 +1,6 @@
 package com.example.rces.controller.rest;
 
-import com.example.rces.dto.DocumentCreateDTO;
-import com.example.rces.dto.DocumentDTO;
-import com.example.rces.dto.SpeCreateDTO;
-import com.example.rces.dto.SpeDTO;
+import com.example.rces.dto.*;
 import com.example.rces.service.SpeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +19,12 @@ public class SPERestController {
     @Autowired
     public SPERestController(SpeService service) {
         this.service = service;
+    }
+
+    @PostMapping("/create-spe-fgis")
+    public ResponseEntity<SpeDTO> createSPE(@RequestBody SpeFgisCreateDTO dto) {
+        var newSpe = service.createSPE(dto);
+        return ResponseEntity.ok(newSpe);
     }
 
     @PostMapping("/create-spe")

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Реестр средств измерений</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
               integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/spe.css">
@@ -32,6 +32,11 @@
             <div class="tool save" id="save-button">
                 <button title="Сохранить">
                     <i class="fas fa-floppy-disk"></i>
+                </button>
+            </div>
+            <div class="tool create" id="create-button" onclick="document.getElementById('create-fgis-dialog').showModal()">
+                <button title="Создать">
+                    <i class="fas fa-square-plus text-success fs-4" style="text-shadow: 0 0 2px white;"></i>
                 </button>
             </div>
             <div class="tool create" id="create-button" onclick="document.getElementById('create-dialog').showModal()">
@@ -276,6 +281,57 @@
         <div class="modal-footer">
             <button class="btn btn-primary" id="cancelButton" onclick="document.getElementById('create-dialog').close()">Отмена</button>
             <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
+        </div>
+    </form>
+
+</dialog>
+<dialog id="create-fgis-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Создание оборудования</h2>
+    </div>
+
+    <form id="speForm" enctype="multipart/form-data">
+        <div class="modal-body">
+
+            <div class="form-group">
+                <label class="form-label">Обозначение типа СИ</label>
+                <textarea class="form-control" name="notation" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Заводской номер СИ</label>
+                <textarea class="form-control" name="outNumber" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Модификация СИ</label>
+                <textarea class="form-control" name="modification" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Класс точности</label>
+                <textarea class="form-control" name="accuracyClass" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Предел измерения</label>
+                <textarea class="form-control" name="limitMeasurement" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Подразделение</label>
+                <textarea class="area-modal form-control" data-name="subDivision" name="subDivision" readonly required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Сотрудник</label>
+                <textarea class="area-modal form-control" data-name="employee" name="employee" readonly  required></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="cancelButton" onclick="document.getElementById('create-fgis-dialog').close()">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="createFgisBtn">Создать</button>
         </div>
     </form>
 

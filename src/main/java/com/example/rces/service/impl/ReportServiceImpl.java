@@ -1,5 +1,6 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.report.SpeFgisReportModel;
 import com.example.rces.dto.report.SpeReportModel;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
@@ -7,8 +8,12 @@ import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
 import com.example.rces.models.enums.Format;
 import com.example.rces.models.enums.Status;
-import com.example.rces.service.*;
+import com.example.rces.service.EmployeeService;
+import com.example.rces.service.ReportService;
 import com.example.rces.utils.JasperReportExporter;
+import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -23,7 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,31 +37,34 @@ import static com.example.rces.utils.WordExporter.generateManyWordFile;
 @Transactional(transactionManager = "primaryTransactionManager")
 public class ReportServiceImpl implements ReportService {
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final JasperReportExporter jasperReportExporter;
-    private final SgiService sgiService;
-    private final RequestsService requestsService;
     private final EmployeeService employeeService;
-    private final SpeService speService;
 
     @Autowired
-    public ReportServiceImpl(JasperReportExporter jasperReportExporter, SgiService sgiService, RequestsService requestsService, EmployeeService employeeService, SpeService speService) {
+    public ReportServiceImpl(JasperReportExporter jasperReportExporter, EmployeeService employeeService) {
         this.jasperReportExporter = jasperReportExporter;
-        this.sgiService = sgiService;
-        this.requestsService = requestsService;
         this.employeeService = employeeService;
-        this.speService = speService;
     }
 
     //TODO переделать под JasperReports
     @Override
     public List<SGI> getSgiList(List<UUID> ids, String department) {
         if (department != null) {
-            return sgiService.findAll()
-                    .stream().filter(sgi -> sgi.getDepartment().getName().equals(department))
-                    .sorted(Comparator.comparing(SGI::getRequestNumber))
-                    .toList();
+            return entityManager.createQuery(
+                            "SELECT e FROM SGI e " +
+                                    "WHERE e.department = :department " +
+                                    "ORDER BY e.requestNumber ASC", SGI.class)
+                    .setParameter("department", department)
+                    .getResultList();
         } else {
-            return sgiService.findAllByIds(ids);
+            return entityManager.createQuery(
+                            "SELECT e FROM SGI e " +
+                                    "WHERE e.id IN (:ids)")
+                    .setParameter("ids", ids)
+                    .getResultList();
         }
     }
 
@@ -78,10 +85,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public byte[] reportBid() throws IOException {
         Employee user = employeeService.getCurrentUser();
-        List<Requests> rejectedBid = requestsService.findAll().stream()
-                .filter(requests -> requests.getSubDivision().equals(user.getSubDivision()))
-                .filter(requests -> requests.getStatus().equals(Status.Rejected))
-                .toList();
+        List<Requests> rejectedBid = entityManager.createQuery(
+                        "SELECT e FROM Requests e " +
+                                "WHERE e.subDivision = :subDivision AND e.status = :status", Requests.class)
+                .setParameter("subDivision", user.getSubDivision())
+                .setParameter("status", Status.Rejected)
+                .getResultList();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Rejected Bids");
@@ -125,9 +134,17 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public byte[] createSpeReport(List<Integer> numberList) {
-        List<SPE> speList = speService.findAllByIdList(numberList).stream().sorted(Comparator.comparing(SPE::getNumber)).toList();
+        List<SPE> speList = entityManager.createQuery(
+                        "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
+                .setParameter("ids", numberList).getResultList();
         SpeReportModel model = new SpeReportModel(speList);
         return jasperReportExporter.generateJrxmlReport("Spe", null, List.of(model), Format.PDF);
+    }
+
+    @Override
+    public byte[] createSpeFgisReport(JsonNode data) {
+        SpeFgisReportModel model = new SpeFgisReportModel(data);
+        return jasperReportExporter.generateJrxmlReport("SpeFgis", null, List.of(model), Format.PDF);
     }
 
 }

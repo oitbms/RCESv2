@@ -1,6 +1,8 @@
 package com.example.rces.service;
 
+import com.example.rces.dto.report.SpeFgisReportModel;
 import com.example.rces.models.SGI;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
@@ -16,4 +18,6 @@ public interface ReportService {
     byte[] reportBid() throws IOException;
 
     byte[] createSpeReport(List<Integer> numberList);
+
+    byte[] createSpeFgisReport(JsonNode data);
 }

@@ -14,6 +14,8 @@ public interface DocumentService {
 
     Document createDocument(DocumentCreateDTO dto);
 
+    Document createDocumentAndAddFile(DocumentCreateDTO dto, Object file);
+
     DocumentDTO toDTO(Document document);
 
     DocumentDTO getDocumentById(UUID id);

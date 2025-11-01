@@ -7,7 +7,7 @@ class Spe extends Base {
         super($(`.table-body`), itemsPerPage, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
-        this.createHandler('dblclick', '.table-row', this.dblClickOnRow.bind(this), true);
+        this.createHandler('click', '.circle', this.selecteRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
                 this.enableEditMode()
@@ -21,6 +21,7 @@ class Spe extends Base {
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
         this.createHandler('change', '#fileInput', this.addFileToDocument.bind(this), true);
         this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
+        this.createHandler('click', '#createFgisBtn', this.createFgisSpe, true)
         this.createHandler('click', '#createBtn', this.createSpe, true);
         this.createHandler('click', '.filter-status', this.filterButtonHandler, true);
         this.createHandler('click', '.employee-button', this.employeeHandler.bind(this), true);
@@ -62,6 +63,7 @@ class Spe extends Base {
                 <div class="table-row" id="${spe.id}" data-index="${spe.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
+                            <div class="circle"></div>
                             <div data-name="name" contenteditable="false">
                                 ${spe.name}
                             </div>
@@ -248,13 +250,32 @@ class Spe extends Base {
         $('#edit-button').removeClass('active');
     }
 
-    private async dblClickOnRow(event: Event): Promise<void> {
-        const currentRow = $(event.currentTarget);
+    // private async dblClickOnRow(event: Event): Promise<void> {
+    //     const currentRow = $(event.currentTarget);
+    //     const currentRowId: string = currentRow.attr('id');
+    //
+    //     if (!this.selectedRows.has(currentRowId)) {
+    //         this.selectedRows.add(currentRowId);
+    //         currentRow.addClass('selected');
+    //         if (this.editMode) {
+    //             this.enableEditMode(currentRow);
+    //         }
+    //     } else if (!this.editMode) {
+    //         this.selectedRows.delete(currentRowId);
+    //         this.disableEditMode(currentRow);
+    //         currentRow.removeClass('selected');
+    //     }
+    // }
+
+    private async selecteRow(event: Event): Promise<void> {
+        const circle = $(event.currentTarget);
+        const currentRow = circle.closest('.table-row');
         const currentRowId: string = currentRow.attr('id');
 
         if (!this.selectedRows.has(currentRowId)) {
             this.selectedRows.add(currentRowId);
             currentRow.addClass('selected');
+            circle.addClass('circle-critical');
             if (this.editMode) {
                 this.enableEditMode(currentRow);
             }
@@ -262,6 +283,7 @@ class Spe extends Base {
             this.selectedRows.delete(currentRowId);
             this.disableEditMode(currentRow);
             currentRow.removeClass('selected');
+            circle.removeClass('circle-critical');
         }
     }
 
@@ -454,6 +476,52 @@ class Spe extends Base {
         this.downloadFile(`/api/document/download-document-file/${fileId}`).catch(console.error);
     }
 
+    private createFgisSpe = async (event: Event) => {
+        event.preventDefault();
+
+        const button = $(event.target);
+        const form = button.closest('form').get(0);
+        const dialog = $('#create-fgis-dialog');
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        button.prop('disabled', true);
+
+        const formData = {
+            outNumber: dialog.find('textarea[name="outNumber"]').val(),
+            notation: dialog.find('textarea[name="notation"]').val(),
+            modification: dialog.find('textarea[name="modification"]').val(),
+            accuracyClass: dialog.find('textarea[name="accuracyClass"]').val(),
+            limitMeasurement: dialog.find('textarea[name="limitMeasurement"]').val(),
+            subDivision: this.saveMassive['subDivision'],
+            employee: this.saveMassive['employee'],
+        };
+
+        try {
+            const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe-fgis', formData);
+            this.saveMassive = {};
+            this.localCache.set(newSPE.id, newSPE);
+            (dialog[0] as any).close();
+            const newRow = this.createRow(newSPE);
+            $(`.table-body`).append(newRow);
+            button.prop('disabled', false);
+        } catch (error) {
+            this.saveMassive = {};
+            // form.reset();
+            if (error.response?.status === 404) {
+                this.createNotification('СИ не найдено в реестре ФГИС', NotificationType.WARNING);
+            } else {
+                this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
+            }
+
+            button.prop('disabled', false);
+        }
+
+    }
+
     private createSpe = async (event: Event) => {
         event.preventDefault();
 
@@ -469,17 +537,17 @@ class Spe extends Base {
         button.prop('disabled', true);
 
         const formData = {
-            name: $('input[name="name"]').val(),
-            type: $('textarea[name="type"]').val(),
-            outNumber: $('textarea[name="outNumber"]').val(),
-            accuracyClass: $('textarea[name="accuracyClass"]').val(),
-            limitMeasurement: $('textarea[name="limitMeasurement"]').val(),
+            name: dialog.find('input[name="name"]').val(),
+            type: dialog.find('textarea[name="type"]').val(),
+            outNumber: dialog.find('textarea[name="outNumber"]').val(),
+            accuracyClass: dialog.find('textarea[name="accuracyClass"]').val(),
+            limitMeasurement: dialog.find('textarea[name="limitMeasurement"]').val(),
             subDivision: this.saveMassive['subDivision'],
             employee: this.saveMassive['employee'],
-            periodicity: $('textarea[name="periodicity"]').val(),
-            datePreparation: $('input[name="datePreparation"]').val(),
-            dateVerification: $('input[name="dateVerification"]').val(),
-            certificateNumber: $('textarea[name="certificateNumber"]').val()
+            periodicity: dialog.find('textarea[name="periodicity"]').val(),
+            datePreparation: dialog.find('input[name="datePreparation"]').val(),
+            dateVerification: dialog.find('input[name="dateVerification"]').val(),
+            certificateNumber: dialog.find('textarea[name="certificateNumber"]').val()
         };
 
         try {

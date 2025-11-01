@@ -3,6 +3,7 @@ package com.example.rces.configuration;
 import com.example.rces.service.impl.WebSecurityService;
 import com.example.rces.utils.AppUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +14,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
 
 @Configuration
 @EnableWebSecurity
@@ -42,7 +46,7 @@ public class WebSecurityConfig {
                         .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
                         .requestMatchers(new TypeBasedRequestMatcher(webSecurityService)).authenticated()
-                        .requestMatchers("/api/sgi/test").permitAll()
+                        .requestMatchers("/api/spe/test").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -71,5 +75,13 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplateBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(30))
+                .build();
     }
 }

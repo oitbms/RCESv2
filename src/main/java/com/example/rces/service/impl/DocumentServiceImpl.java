@@ -47,8 +47,17 @@ public class DocumentServiceImpl implements DocumentService {
         Document document = new Document();
         document.setName(Optional.ofNullable(dto.getName())
                 .orElse(String.format("Документ от %s", formatedDate(LocalDateTime.now()))));
-        document.setFiles(addFilesToDocument(document, dto.getFiles()));
+        setFileToDocument(document, document.getFiles());
         document.setImages(addImages(dto.getImages(), document));
+        return repository.save(document);
+    }
+
+    @Override
+    public Document createDocumentAndAddFile(DocumentCreateDTO dto, Object file) {
+        validateDocument(dto);
+        Document document = new Document();
+        document.setName(dto.getName());
+        setFileToDocument(document, file);
         return repository.save(document);
     }
 
@@ -88,6 +97,16 @@ public class DocumentServiceImpl implements DocumentService {
         DocumentFile file = filesRepository.findById(fileId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Файл с id=%s не найден", fileId)));
         return fileMapper.toDTO(file);
+    }
+
+    private void setFileToDocument(Document document, Object data) {
+        if (data instanceof byte[] bytes) {
+            DocumentFile file = com.example.rces.utils.FilesUtil.addFileToDocument(document, bytes);
+            document.getFiles().add(file);
+        } else if (data instanceof List<?> fileList && !fileList.isEmpty() && fileList.get(0) instanceof MultipartFile) {
+            List<DocumentFile> files = com.example.rces.utils.FilesUtil.addFilesToDocument(document, (List<MultipartFile>) fileList);
+            document.getFiles().addAll(files);
+        }
     }
 
 }
