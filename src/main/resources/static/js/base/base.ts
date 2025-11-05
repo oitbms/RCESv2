@@ -36,6 +36,7 @@ abstract class Base {
     protected constructor(rowContainer: any, itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
         this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
+        // this.createHandler('mouseenter', '.tooltip', () => this.showToolTip, true);
         this.init(...initCallbacks);
     }
 
@@ -106,7 +107,7 @@ abstract class Base {
             const row = this.createRow(item);
             this.rowContainer.append(row);
         }
-        callbacks.forEach(callback => callback?.());
+        callbacks.forEach(callback => callback?.(data));
     });
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {
@@ -138,7 +139,7 @@ abstract class Base {
     }
 
     public readonly print = (url: string, params: any): void => {
-        if (!params) return this.createNotification("Выберите строки для печати", NotificationType.INFO);
+        if (!params?.length) return this.createNotification("Выберите строки для печати", NotificationType.INFO);
         window.open(url + (Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''));
     };
 
@@ -188,7 +189,7 @@ abstract class Base {
             setTimeout(() => {
                 $note.removeClass('show').addClass('hiding');
                 setTimeout(() => $note.remove(), 350);
-            }, 3250);
+            }, 4250);
         } catch (error) {
             console.error(error);
         }
@@ -270,6 +271,11 @@ abstract class Base {
             }
         });
     }
+
+    // private readonly showToolTip = (event: Event) => {
+    //     const element = event.target as HTMLElement;
+    //
+    // }
 
     public readonly formatDate = (dateString: string): string => {
         if (!dateString) return "";

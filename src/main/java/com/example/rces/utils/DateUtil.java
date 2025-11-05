@@ -47,6 +47,9 @@ public class DateUtil {
     }
 
     public static LocalDate parseLocalDate(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return null;
+        }
         return LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
 

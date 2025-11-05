@@ -49,7 +49,7 @@ public class SPERestController {
 
     @PostMapping("/create-document/{number}")
     public ResponseEntity<DocumentDTO> createDocument(@PathVariable Integer number, @ModelAttribute DocumentCreateDTO dto) {
-        return ResponseEntity.ok(service.createSpeDocument(number, dto));
+        return ResponseEntity.ok(service.createSpeDocument(service.findByNumber(number), dto, null));
     }
 
     @DeleteMapping("/delete/{number}")

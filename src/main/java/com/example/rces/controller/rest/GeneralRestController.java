@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
+
 @RestController
 @RequestMapping("/api")
 public class GeneralRestController {
@@ -50,7 +52,7 @@ public class GeneralRestController {
     @GetMapping("/updater")
     @ResponseBody
     public Employee getUpdater() {
-        return employeeService.getCurrentUser();
+        return currentUser().orElseThrow();
     }
 
     @GetMapping("/customer-orders")

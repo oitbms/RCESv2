@@ -12,14 +12,6 @@ public class DocumentCreateDTO {
 
     private MultipartFile[] images;
 
-    public DocumentCreateDTO() {
-
-    }
-
-    public DocumentCreateDTO(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }

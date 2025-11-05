@@ -24,28 +24,28 @@
             <p class="subtitle">Актуальная информация о состоянии и поверке оборудования</p>
         </div>
         <div class="toolbar">
-            <div class="tool edit" id="edit-button">
-                <button title="Редактировать">
+            <div class="tool edit" id="edit-button" data-description="Включить режим редактирования">
+                <button>
                     <i class="fas fa-pencil-alt"></i>
                 </button>
             </div>
-            <div class="tool save" id="save-button">
-                <button title="Сохранить">
+            <div class="tool save" id="save-button" data-description="Сохранить записи">
+                <button>
                     <i class="fas fa-floppy-disk"></i>
                 </button>
             </div>
-            <div class="tool create" id="create-button" onclick="document.getElementById('create-fgis-dialog').showModal()">
-                <button title="Создать">
+            <div class="tool create" id="create-fgis-button" data-description="Добавить инструмент и документ">
+                <button>
                     <i class="fas fa-square-plus text-success fs-4" style="text-shadow: 0 0 2px white;"></i>
                 </button>
             </div>
-            <div class="tool create" id="create-button" onclick="document.getElementById('create-dialog').showModal()">
-                <button title="Создать">
+            <div class="tool create" id="create-button" data-description="Добавить инструмент">
+                <button>
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
-            <div class="tool print" id="print-button">
-                <button title="Печать">
+            <div class="tool print" id="print-button" data-description="Печать отчета">
+                <button>
                     <i class="fas fa-print"></i>
                 </button>
             </div>
@@ -294,18 +294,8 @@
         <div class="modal-body">
 
             <div class="form-group">
-                <label class="form-label">Обозначение типа СИ</label>
-                <textarea class="form-control" name="notation" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Заводской номер СИ</label>
+                <label class="form-label">Заводской номер</label>
                 <textarea class="form-control" name="outNumber" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Модификация СИ</label>
-                <textarea class="form-control" name="modification" required></textarea>
             </div>
 
             <div class="form-group">

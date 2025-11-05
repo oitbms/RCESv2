@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.FilesUtil.handleImageCollection;
 import static com.example.rces.utils.FilesUtil.isJson;
 
@@ -104,7 +105,7 @@ public class RequestServiceImpl implements RequestsService {
     @Override
     public void save(UUID id, String description, String status, Integer qty, Set<Inconsistency> inconsistencyData) {
         Requests request = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
-        Employee updaterEmployee = employeeService.getCurrentUser();
+        Employee updaterEmployee = currentUser().orElseThrow();
 
         if (status == null) {
             if (request.getEmployee().equals(updaterEmployee)) {
@@ -161,7 +162,7 @@ public class RequestServiceImpl implements RequestsService {
             throw new RuntimeException(e);
         }
 
-        Employee updaterEmployee = employeeService.getCurrentUser();
+        Employee updaterEmployee = currentUser().orElseThrow();
 
         List<Field> fields = List.of(request.getClass().getDeclaredFields());
 

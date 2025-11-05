@@ -15,6 +15,8 @@ class Spe extends Base {
         }, true);
         this.createHandler('click', '#print-button',
             () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
+        this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
+        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
@@ -492,8 +494,6 @@ class Spe extends Base {
 
         const formData = {
             outNumber: dialog.find('textarea[name="outNumber"]').val(),
-            notation: dialog.find('textarea[name="notation"]').val(),
-            modification: dialog.find('textarea[name="modification"]').val(),
             accuracyClass: dialog.find('textarea[name="accuracyClass"]').val(),
             limitMeasurement: dialog.find('textarea[name="limitMeasurement"]').val(),
             subDivision: this.saveMassive['subDivision'],
@@ -504,15 +504,17 @@ class Spe extends Base {
             const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe-fgis', formData);
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
-            (dialog[0] as any).close();
+            this.dialog.close('create-fgis-dialog');
             const newRow = this.createRow(newSPE);
             $(`.table-body`).append(newRow);
             button.prop('disabled', false);
         } catch (error) {
             this.saveMassive = {};
             // form.reset();
-            if (error.response?.status === 404) {
+            if (error.status === 404) {
                 this.createNotification('СИ не найдено в реестре ФГИС', NotificationType.WARNING);
+                this.dialog.close('create-fgis-dialog');
+                setTimeout(() =>this.dialog.open('create-dialog'), 850);
             } else {
                 this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
             }
@@ -554,7 +556,7 @@ class Spe extends Base {
             const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe', formData);
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
-            (dialog[0] as any).close();
+            this.dialog.close("create-dialog'");
             const newRow = this.createRow(newSPE);
             $(`.table-body`).append(newRow);
             button.prop('disabled', false);

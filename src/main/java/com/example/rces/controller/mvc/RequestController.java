@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.DateUtil.formatedDate;
 
 
@@ -45,7 +46,7 @@ public class RequestController {
             model.addAttribute("type", type);
             return "error";
         }
-        Employee currentUser = employeeService.getCurrentUser();
+        Employee currentUser = currentUser().orElseThrow();
         SubDivisionDTO subDivisionDTO = subDivisionMapper.toDTO(currentUser.getSubDivision());
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
@@ -57,7 +58,7 @@ public class RequestController {
 
     @PostMapping("/create")
     public String createRequest(@ModelAttribute CreateRequestDto createRequestDto, Model model) throws JsonProcessingException {
-        Employee createdEmployee = employeeService.getCurrentUser();
+        Employee createdEmployee = currentUser().orElseThrow();
         RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto);
         model.addAttribute("create", true);
         model.addAttribute("requestNumber", requestDto.getRequestNumber());
@@ -67,7 +68,7 @@ public class RequestController {
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
         Requests requests = requestsService.findByRequestNumber(requestNumber);
-        Employee user = employeeService.getCurrentUser();
+        Employee user = currentUser().orElseThrow();
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreatedDate()));

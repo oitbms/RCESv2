@@ -591,6 +591,10 @@ dialog::backdrop {
     background: #a0a0a0;
 }
 
+#create-fgis-dialog {
+    height: 450px!important;
+}
+
 #create-dialog, #create-fgis-dialog {
     width: 50%;
     height: 580px;

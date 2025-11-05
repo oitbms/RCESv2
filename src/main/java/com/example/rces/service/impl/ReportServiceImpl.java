@@ -8,7 +8,6 @@ import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
 import com.example.rces.models.enums.Format;
 import com.example.rces.models.enums.Status;
-import com.example.rces.service.EmployeeService;
 import com.example.rces.service.ReportService;
 import com.example.rces.utils.JasperReportExporter;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
 
 @Service
@@ -41,12 +41,10 @@ public class ReportServiceImpl implements ReportService {
     private EntityManager entityManager;
 
     private final JasperReportExporter jasperReportExporter;
-    private final EmployeeService employeeService;
 
     @Autowired
-    public ReportServiceImpl(JasperReportExporter jasperReportExporter, EmployeeService employeeService) {
+    public ReportServiceImpl(JasperReportExporter jasperReportExporter) {
         this.jasperReportExporter = jasperReportExporter;
-        this.employeeService = employeeService;
     }
 
     //TODO переделать под JasperReports
@@ -84,7 +82,7 @@ public class ReportServiceImpl implements ReportService {
     //TODO переделать под JasperReports
     @Override
     public byte[] reportBid() throws IOException {
-        Employee user = employeeService.getCurrentUser();
+        Employee user = currentUser().orElseThrow();
         List<Requests> rejectedBid = entityManager.createQuery(
                         "SELECT e FROM Requests e " +
                                 "WHERE e.subDivision = :subDivision AND e.status = :status", Requests.class)

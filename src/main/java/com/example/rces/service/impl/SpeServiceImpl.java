@@ -1,7 +1,6 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.dto.*;
-import com.example.rces.exception.ResourceNotFoundException;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
@@ -10,6 +9,7 @@ import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.DocumentService;
 import com.example.rces.service.ReportService;
 import com.example.rces.service.SpeService;
+import com.example.rces.utils.ApiClient;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,15 +20,12 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
@@ -40,66 +37,44 @@ public class SpeServiceImpl implements SpeService {
     private final DocumentService documentService;
     private final SPEMapper mapper;
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate;
     private final ReportService reportService;
+    private final ApiClient apiClient;
 
     @Autowired
-    public SpeServiceImpl(SpeRepository repository, DocumentService documentService, SPEMapper mapper, ObjectMapper objectMapper, RestTemplate restTemplate, ReportService reportService) {
+    public SpeServiceImpl(SpeRepository repository, DocumentService documentService, SPEMapper mapper, ObjectMapper objectMapper, ReportService reportService, ApiClient apiClient) {
         this.repository = repository;
         this.documentService = documentService;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
-        this.restTemplate = restTemplate;
         this.reportService = reportService;
+        this.apiClient = apiClient;
     }
 
     @Override
     public SpeDTO createSPE(SpeFgisCreateDTO dto) {
-        String url = "https://fgis.gost.ru/fundmetrology/eapi/vri";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("mi_number", dto.getOutNumber())
-                .queryParam("rows", 100)
-                .queryParam("org_title", "ФБУ \"ВОРОНЕЖСКИЙ ЦСМ\"");
-//        Optional.ofNullable(dto.getModification())
-//                .filter(str -> !str.isBlank())
-//                .ifPresent(str -> builder.queryParam("mi_modification", str));
-//        Optional.ofNullable(dto.getNotation())
-//                .filter(str -> !str.isBlank())
-//                .ifPresent(str -> builder.queryParam("mit_notation", str));
-        var responseForId = restTemplate.getForObject(builder.toUriString(), JsonNode.class);
-        if (responseForId != null && !responseForId.path("result").path("items").isEmpty()) {
-            var items = responseForId.path("result").path("items");
-            for (JsonNode item : items) {
-                var vriId = item.path("vri_id").asText();
-                var response = restTemplate.getForObject(url + "/" + vriId, JsonNode.class);
-                JsonNode result = Objects.requireNonNull(response).path("result");
-                if (!result.path("vriInfo").path("miOwner").asText().equals("Общество с ограниченной ответственностью \"Борисоглебское машиностроение\"")) {
-                    continue;
-                }
-
-                SpeCreateDTO createDTO = new SpeCreateDTO(result, dto);
-                SPE newSpe = mapper.toEntityFromCreateDTO(createDTO);
-                Document newDocument = documentService.createDocumentAndAddFile(
-                        new DocumentCreateDTO(String.format("Инструмент %s сертификат %s", newSpe.getName(), newSpe.getCertificateNumber())),
-                        reportService.createSpeFgisReport(result));
-                newSpe.setDocument(newDocument);
-                SPE savedSpe = repository.save(newSpe);
-                return mapper.toDTO(savedSpe);
-            }
-            throw new ResourceNotFoundException(String.format("СИ не найдено в реестре ФГИС по параметрам: номер-%s, модификация-%s, обозначение-%s",
-                    dto.getOutNumber(), dto.getModification(), dto.getNotation()));
-        } else {
-            throw new ResourceNotFoundException(String.format("СИ не найдено в реестре ФГИС по параметрам: номер-%s, модификация-%s, обозначение-%s",
-                    dto.getOutNumber(), dto.getModification(), dto.getNotation()));
-        }
+        JsonNode fgisData = apiClient.getFgisData(dto.getOutNumber());
+        SpeCreateDTO createDTO = new SpeCreateDTO(fgisData, dto);
+        SPE newSPE = mapper.toEntityFromCreateDTO(createDTO);
+        this.createSpeDocument(newSPE, new DocumentCreateDTO(), reportService.createSpeFgisReport(fgisData));
+        newSPE.setStatus(calculateStatus(newSPE));
+        newSPE.setColor(colorCalculate(newSPE));
+        SPE savedSpe = repository.save(newSPE);
+        return mapper.toDTO(savedSpe);
     }
 
 
     @Override
     public SpeDTO createSPE(SpeCreateDTO dto) {
         SPE newSPE = mapper.toEntityFromCreateDTO(dto);
+        newSPE.setStatus(calculateStatus(newSPE));
+        newSPE.setColor(colorCalculate(newSPE));
         SPE savedSpe = repository.save(newSPE);
         return mapper.toDTO(savedSpe);
+    }
+
+    @Override
+    public SPE findByNumber(Integer number) {
+        return repository.findById(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
     }
 
     @Override
@@ -153,10 +128,14 @@ public class SpeServiceImpl implements SpeService {
     }
 
     @Override
-    public DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto) {
-        SPE spe = repository.findById(number).orElseThrow(() -> new EntityNotFoundException("SPE не найден"));
+    public DocumentDTO createSpeDocument(SPE spe, DocumentCreateDTO dto, Object file) {
         dto.setName(String.format("Инструмент %s сертификат %s", spe.getName(), spe.getCertificateNumber()));
-        Document document = documentService.createDocument(dto);
+        Document document;
+        if (file != null) {
+            document = documentService.createDocument(dto, file);
+        } else {
+            document = documentService.createDocument(dto);
+        }
         spe.setDocument(document);
         repository.save(spe);
         return documentService.toDTO(document);

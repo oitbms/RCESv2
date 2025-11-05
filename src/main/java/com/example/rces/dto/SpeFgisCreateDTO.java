@@ -4,10 +4,6 @@ public class SpeFgisCreateDTO {
 
     private String outNumber;
 
-    private String notation;
-
-    private String modification;
-
     private String accuracyClass;
 
     private String limitMeasurement;
@@ -22,22 +18,6 @@ public class SpeFgisCreateDTO {
 
     public void setOutNumber(String outNumber) {
         this.outNumber = outNumber;
-    }
-
-    public String getNotation() {
-        return notation;
-    }
-
-    public void setNotation(String notation) {
-        this.notation = notation;
-    }
-
-    public String getModification() {
-        return modification;
-    }
-
-    public void setModification(String modification) {
-        this.modification = modification;
     }
 
     public String getAccuracyClass() {

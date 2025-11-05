@@ -2,6 +2,8 @@ package com.example.rces.service;
 
 import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.models.Employee;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -18,8 +20,6 @@ public interface EmployeeService {
     Boolean currentUserHaveControlRoles();
 
     Boolean isResponsible(Employee responsobleEmployee);
-
-    Employee getCurrentUser();
 
     EmployeeDTO getCurrentUserDTO();
 

@@ -106,25 +106,25 @@
         </thead>
         <tbody>
         <#list users as req>
-            <tr id="req-${req.id()}">
-                <td>${req.name()}</td>
-                <td>${(req.mlmNode())!""}</td>
-                <td>${req.role()!""}</td>
-                <td>${req.chatId()!""}</td>
+            <tr id="req-${req.id}">
+                <td>${req.name}</td>
+                <td>${(req.mlmNode)!""}</td>
+                <td>${req.role!""}</td>
+                <td>${req.chatId!""}</td>
                 <td>
                     <button type="button"
                             class="btn btn-primary d-none d-md-inline-block create-btn"
                             data-bs-toggle="modal"
                             data-bs-target="#createModal"
-                            data-id="${req.id()}"
-                            data-user="${req.name()}"
+                            data-id="${req.id}"
+                            data-user="${req.name}"
                     >
                         Редактировать
                     </button>
                     <button
                             type="button"
                             class="btn btn-danger delete-btn"
-                            data-id="${req.id()}"
+                            data-id="${req.id}"
                     >
                         Удалить
                     </button>

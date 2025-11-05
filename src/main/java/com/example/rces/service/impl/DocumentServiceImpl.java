@@ -53,7 +53,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Document createDocumentAndAddFile(DocumentCreateDTO dto, Object file) {
+    public Document createDocument(DocumentCreateDTO dto, Object file) {
         validateDocument(dto);
         Document document = new Document();
         document.setName(dto.getName());

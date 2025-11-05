@@ -1,7 +1,6 @@
 package com.example.rces.dto.report;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
@@ -68,7 +67,11 @@ public class SpeFgisReportModel {
         setVrfDate(vriInfo.path("vrfDate").asText());
         setValidDate(vriInfo.path("validDate").asText());
         setDocTitle(vriInfo.path("docTitle").asText());
-        setSuitable(parseLocalDate(validDate).isBefore(LocalDate.now()) ? "Да" : "Нет");
+        setSuitable(
+                !validDate.isEmpty() ?
+                        parseLocalDate(validDate).isBefore(LocalDate.now()) ? "Да" : "Нет"
+                        : "Нет"
+        );
         setCertNum(applicable.path("certNum").asText());
         setSignPass(applicable.path("signPass").asBoolean() ? "Да" : "Нет");
         setSignMi(applicable.path("signMi").asBoolean() ? "Да" : "Нет");

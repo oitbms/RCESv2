@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
+
 @Configuration
 @EnableJpaAuditing
 public class AuditConfig {
@@ -20,7 +22,7 @@ public class AuditConfig {
     public AuditorAware<Employee> auditorAware(EmployeeService employeeService) {
         return () -> {
             try {
-                return Optional.of(employeeService.getCurrentUser());
+                return currentUser();
             } catch (Exception e) {
                 return Optional.empty();
             }

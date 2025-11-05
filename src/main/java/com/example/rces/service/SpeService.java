@@ -10,13 +10,15 @@ public interface SpeService {
 
     SpeDTO createSPE(SpeFgisCreateDTO dto);
 
+    SPE findByNumber(Integer number);
+
     SpeDTO createSPE(SpeCreateDTO dto);
 
     List<SpeDTO> getAllSPE();
 
     SpeDTO updateSPE(Integer number, Long version, Map<String, Object> changes);
 
-    DocumentDTO createSpeDocument(Integer number, DocumentCreateDTO dto);
+    DocumentDTO createSpeDocument(SPE spe, DocumentCreateDTO dto, Object file);
 
     void deleteSpe(Integer number);
 

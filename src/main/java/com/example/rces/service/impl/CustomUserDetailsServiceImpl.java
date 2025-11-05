@@ -10,7 +10,7 @@ import com.example.rces.service.EmployeeService;
 import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -93,35 +93,36 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         return repository.findAllByRole(role).stream().map(mapper::toDTO).toList();
     }
 
-    @Override
-    public Employee getCurrentUser() {
+    public static Optional<Employee> currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) return Optional.empty();
         Object principal = authentication.getPrincipal();
-        return (Employee) principal;
+        return Optional.ofNullable((Employee) principal);
     }
 
     public EmployeeDTO getCurrentUserDTO() {
-        return mapper.toDTO(getCurrentUser());
+        return mapper.toDTO(currentUser().orElseThrow());
     }
 
     @Override
     public Boolean currentUserHaveControlRoles() {
-        return controlRoles.contains(getCurrentUser().getRole());
+        return controlRoles.contains(currentUser().orElseThrow().getRole());
     }
 
     @Override
     public Boolean isResponsible(Employee responsobleEmployee) {
-        return responsobleEmployee.getId().equals(getCurrentUser().getId());
+        return responsobleEmployee.getId().equals(currentUser().orElseThrow().getId());
     }
 
     @Override
     public void setSecurityContext(Employee employee) {
-        Authentication anonymousAuth = new AnonymousAuthenticationToken(
-                UUID.randomUUID().toString(),
-                employee.getName(),
-                List.of(new SimpleGrantedAuthority(employee.getRole())));
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                employee,
+                null,
+                List.of(new SimpleGrantedAuthority(employee.getRole()))
+        );
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(anonymousAuth);
+        context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
     }
 

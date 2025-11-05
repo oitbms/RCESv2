@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.DateUtil.formatedDate;
 import static com.example.rces.utils.DecimalUtil.*;
 import static com.example.rces.utils.ServiceUtil.getCreateRequestsMaster;
@@ -56,7 +57,7 @@ public class RegistrationsController {
     @GetMapping("/menu")
     public String menu(Model model) {
         List<Requests> requests = requestsService.findAll();
-        Employee user = employeeService.getCurrentUser();
+        Employee user = currentUser().orElseThrow();
         EmployeeDTO userDTO = employeeService.getCurrentUserDTO();
         List<Requests> requestsList;
         if (user.getRole().equalsIgnoreCase(String.valueOf(Role.MASTER))) {

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
+
 @RestController
 @RequestMapping("/api/request")
 public class RequestRestController {
@@ -98,7 +100,7 @@ public class RequestRestController {
         UUID imageId = UUID.fromString(payload.get("id"));
         UUID requestId = UUID.fromString(payload.get("reqId"));
         Requests requests = requestsService.findById(requestId);
-        Employee currentUser = employeeService.getCurrentUser();
+        Employee currentUser = currentUser().orElseThrow();
         if (!requests.getEmployee().getName().equals(currentUser.getName())) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Пользователь не может удалять фото в заявке!");

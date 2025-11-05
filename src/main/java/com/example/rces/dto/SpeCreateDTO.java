@@ -2,9 +2,11 @@ package com.example.rces.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import static com.example.rces.utils.DateUtil.parseLocalDate;
 
@@ -33,7 +35,9 @@ public class SpeCreateDTO {
             JsonNode applicable = vriInfo.path("applicable");
 
             setName(singleMI.path("mitypeTitle").asText());
-            setType(singleMI.path("mitypeType").asText());
+            setType(Optional.ofNullable(singleMI.path("mitypeType").asText(null))
+                    .filter(text -> !text.isBlank())
+                    .orElse("нет данных"));
             setOutNumber(singleMI.path("mitypeNumber").asText());
             setAccuracyClass(dto.getAccuracyClass());
             setLimitMeasurement(dto.getLimitMeasurement());
