@@ -99,20 +99,19 @@ public class Init {
                 try {
                     log.info("Исполнение скрипта {}", id);
                     task.run();
-                    this.markRunOnce(this.em, id, always);
+                    this.markRunOnce(id, always);
                 } catch (Exception e) {
                     log.error("Ошибка при выполнении задачи: {}", id, e);
                     status.setRollbackOnly();
                     throw new RuntimeException("Ошибка при инициализации", e);
                 }
-
                 return null;
             });
         }
     }
 
 
-    private void markRunOnce(EntityManager em, String id, Boolean always) {
+    private void markRunOnce(String id, Boolean always) {
         ExecutedRunOnceScripts s = new ExecutedRunOnceScripts();
         s.setName(id + (always ? Instant.now() : ""));
         em.persist(s);
