@@ -82,6 +82,9 @@
             <button class="filter-btn filter-status" data-status="REPAIR">
                 <i class="fas fa-exclamation-triangle"></i>На ремонте
             </button>
+            <button class="filter-btn filter-status" data-status="NO_DOCUMENT">
+                <i class="fas fa-file-excel"></i>Без документа
+            </button>
         </div>
     </div>
 
@@ -112,13 +115,20 @@
                     <div class="stat-label">На ремонте</div>
                     <div class="stat-value" id="at-repair"></div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-label">Без документа</div>
+                    <div class="stat-value" id="no-document"></div>
+                </div>
             </div>
 
         </div>
 
         <div class="table-container">
             <div class="table-header">
-                <div class="table-header-cell" style="width: var(--equipment);">Оборудование</div>
+                <div class="table-header-cell" style="width: var(--equipment);">
+                    <div class="circle circle-header"></div>
+                    Оборудование
+                </div>
                 <div class="table-header-cell" style="width: var(--characteristics);">Характеристики</div>
                 <div class="table-header-cell" style="width: var(--subdivision);">Подразделение</div>
                 <div class="table-header-cell" style="width: var(--responsible);">Ответственный</div>

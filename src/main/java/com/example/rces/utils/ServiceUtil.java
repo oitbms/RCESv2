@@ -36,22 +36,13 @@ public class ServiceUtil {
     }
 
     public static Color colorCalculate(SPE spe) {
-        if (spe.getStatus().equals(StatusSPE.CORRECTED)) {
-            return Color.GREEN;
-        } else if (spe.getStatus().equals(StatusSPE.WRITE_OFF)) {
-            return Color.GREEN;
-        } else if (spe.getStatus().equals(StatusSPE.AT_INSPECTION)) {
-            return Color.BLUE;
-        } else if (spe.getStatus().equals(StatusSPE.REPAIR)) {
-            return Color.BLUE;
-        } else if (LocalDate.now().isAfter(spe.getDateVerification())) {
-            return Color.RED;
-        } else if (ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 0 ||
-                ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 1) {
-            return Color.YELLOW;
-        } else {
-            return Color.NONE;
-        }
+        return switch (spe.getStatus()) {
+            case CORRECTED, WRITE_OFF -> Color.GREEN;
+            case AT_INSPECTION, REPAIR -> Color.BLUE;
+            case VERIFICATION_REQUIRED -> Color.YELLOW;
+            case EXPIRED -> Color.RED;
+            default -> Color.NONE;
+        };
     }
 
     public static Map<String, List<Requests>> getCreateRequestsMaster(List<Requests> requests) {

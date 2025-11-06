@@ -7,7 +7,8 @@ class Spe extends Base {
         super($(`.table-body`), itemsPerPage, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
-        this.createHandler('click', '.circle', this.selecteRow.bind(this), true);
+        this.createHandler('click', '.circle-header', this.selecteRows.bind(this),true);
+        this.createHandler('click', '.circle-row', this.selecteRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
                 this.enableEditMode()
@@ -65,7 +66,7 @@ class Spe extends Base {
                 <div class="table-row" id="${spe.id}" data-index="${spe.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
-                            <div class="circle"></div>
+                            <div class="circle circle-row"></div>
                             <div data-name="name" contenteditable="false">
                                 ${spe.name}
                             </div>
@@ -132,7 +133,7 @@ class Spe extends Base {
                         <i class="document fa-solid fa-file"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
-                        <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}">
+                        <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}" data-document="${spe.documentId != null ? 'true' : 'false'}">
                            ${status}
                         </span>
                     </div>
@@ -165,6 +166,7 @@ class Spe extends Base {
         $('#verification-period-has-expired').text(data.filter(s => s.status === 'EXPIRED').length);
         $('#at-inspection').text(data.filter(s => s.status === 'AT_INSPECTION').length);
         $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
+        $('#no-document').text(data.filter(s => s.documentId === null).length);
     }
 
     private enableEditMode(row?: any): void {
@@ -255,6 +257,29 @@ class Spe extends Base {
         $('#edit-button').removeClass('active');
     }
 
+    private async selecteRows(event: Event): Promise<void> {
+        if (this.editMode) {
+            this.createNotification('Выключите режим редактирования', NotificationType.INFO);
+            return;
+        }
+        const circle = $(event.currentTarget);
+        const allRows = $('.table-row:visible');
+
+        if (circle.hasClass('active')) {
+            this.selectedRows.clear();
+            allRows.removeClass('selected');
+            circle.removeClass('active');
+        } else {
+            this.selectedRows.clear();
+            allRows.each((_, row) => {
+                const rowId = $(row).attr('id');
+                this.selectedRows.add(rowId);
+                $(row).addClass('selected');
+            });
+            circle.addClass('active');
+        }
+    }
+
     private async selecteRow(event: Event): Promise<void> {
         const circle = $(event.currentTarget);
         const currentRow = circle.closest('.table-row');
@@ -269,7 +294,7 @@ class Spe extends Base {
         if (!this.selectedRows.has(currentRowId)) {
             this.selectedRows.add(currentRowId);
             currentRow.addClass('selected');
-            circle.addClass('circle-critical');
+            circle.addClass('active-critical');
             if (this.editMode) {
                 this.enableEditMode(currentRow);
             }
@@ -277,7 +302,8 @@ class Spe extends Base {
             this.selectedRows.delete(currentRowId);
             this.disableEditMode(currentRow);
             currentRow.removeClass('selected');
-            circle.removeClass('circle-critical');
+            $('.circle-header').removeClass('active');
+            circle.removeClass('active-critical');
         }
     }
 
@@ -506,7 +532,7 @@ class Spe extends Base {
             if (error.status === 404) {
                 this.createNotification('СИ не найдено в реестре ФГИС', NotificationType.WARNING);
                 this.dialog.close('create-fgis-dialog');
-                setTimeout(() =>this.dialog.open('create-dialog'), 850);
+                setTimeout(() => this.dialog.open('create-dialog'), 850);
             } else {
                 this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
             }
@@ -563,7 +589,10 @@ class Spe extends Base {
     private applyFilters = () => {
         $('.table-row').each((_, element) => {
             const row = $(element);
-            const statusMatch: boolean = this.currentStatus === 'NONE' || row.find('[data-status]').attr('data-status') === this.currentStatus;
+            const statusMatch: boolean =
+                this.currentStatus === 'NONE' ||
+                (this.currentStatus === 'NO_DOCUMENT' ? row.find('[data-document="false"]').length > 0 :
+                    row.find('[data-status]').attr('data-status') === this.currentStatus);
             const subDivisionMatch: boolean = !this.currentSubDivision || row.find('[data-name="subDivision"]').text().trim() === this.currentSubDivision;
             const employeeMatch: boolean = !this.currentEmployee || row.find('[data-name="employee"]').text().trim() === this.currentEmployee;
             const textMatch: boolean = this.searchText === '' || row.text().toLowerCase().includes(this.searchText.toLowerCase());

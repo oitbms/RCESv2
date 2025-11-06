@@ -275,9 +275,16 @@ h1 {
     border-left: 1px solid var(--border-color);
 
     & .table-header-cell {
+        position: relative;
         padding: 15px 5px;
         font-size: 14px;
         border-right: 1px solid var(--border-color);
+
+        & .circle {
+            top: 3px;
+            left: 3px;
+            background-color: var(--default-color);
+        }
 
         &.last-child {
             border-right: none;
@@ -339,22 +346,6 @@ h1 {
         & .change {
             border: 1px solid var(--critical-color);
             border-radius: 8px;
-        }
-
-        & .circle {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-radius: 55%;
-            background-color: var(--info-color);
-            top: -4.2px;
-            left: -3px;
-            transition: background-color 0.3s ease-in-out;
-            cursor: pointer;
-
-            &.circle-critical {
-                background-color: var(--critical-color);
-            }
         }
     }
 }

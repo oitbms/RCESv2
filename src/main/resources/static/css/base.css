@@ -142,6 +142,26 @@ dialog[open] {
     }
 }
 
+.circle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 55%;
+    background-color: var(--info-color);
+    top: -4.2px;
+    left: -3px;
+    transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
+
+    &.active {
+        background-color: var(--success-color)!important;
+    }
+
+    &.active-critical {
+        background-color: var(--critical-color);
+    }
+}
+
 #context-menu {
     position: fixed;
     background: white;
