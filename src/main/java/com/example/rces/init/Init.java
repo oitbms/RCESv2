@@ -61,7 +61,7 @@ public class Init {
     }
 
     private void init() {
-        log.info("Инициализация приложения");
+        log.info("Инициализация задач");
         runOnce("#1-Перерасчет дат метрологии", speService::calculateDateVerification, true);
         runOnce("#2-Установка документов в SPE", this::installDocumentOnSPE, true);
     }
@@ -97,13 +97,13 @@ public class Init {
         if (always || this.checkRunOnce(id)) {
             transactionTemplate.execute(status -> {
                 try {
-                    log.info("Исполнение скрипта {}", id);
+                    log.info("Исполнение задачи {}", id);
                     task.run();
                     this.markRunOnce(id, always);
                 } catch (Exception e) {
                     log.error("Ошибка при выполнении задачи: {}", id, e);
                     status.setRollbackOnly();
-                    throw new RuntimeException("Ошибка при инициализации", e);
+                    throw new RuntimeException("Ошибка при инициализации задачи", e);
                 }
                 return null;
             });

@@ -128,7 +128,7 @@
                 <div class="table-header-cell" style="width: var(--certificate);">Свидетельство</div>
                 <div class="table-header-cell" style="width: var(--periodicity);">Периодичность</div>
                 <div class="table-header-cell" style="width: var(--file);">Документ</div>
-                <div class="table-header-cell" style="width: var(--status);">Статус</div>
+                <div class="table-header-cell last-child" style="width: var(--status);">Статус</div>
             </div>
 
             <div class="table-body">

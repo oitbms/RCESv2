@@ -5,34 +5,39 @@
     --text-secondary: #64748b;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
-    --equipment: 260px;
-    --characteristics: 150px;
+    --equipment: 300px;
+    --characteristics: 170px;
     --subdivision: 160px;
     --responsible: 135px;
     --mark: 120px;
     --preparationDate: 125px;
     --verificationDate: 125px;
-    --certificate: 220px;
+    --certificate: 225px;
     --periodicity: 120px;
-    --status: 86px;
+    --status: 100px;
     --file: 80px;
 }
+
+
 
 body {
     background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     color: var(--text-primary);
     line-height: 1.6;
-    padding-top: 20px;
-    min-height: 100vh;
 }
 
 .container {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding-right: 0 !important;
+    height: 100vh;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-right: 30px;
 }
 
 header {
+    flex-shrink: 0;
+
     & .title {
         text-align: center;
     }
@@ -108,6 +113,7 @@ h1 {
 }
 
 .controls {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
@@ -183,11 +189,16 @@ h1 {
 }
 
 .data-container {
+    flex: 1;
+    height: 100%;
     display: flex;
     gap: 20px;
+    min-height: 0;
 }
 
 .sidebar {
+    height: 100%;
+    overflow-y: auto;
     width: 200px;
     background: var(--default-color);
     border-radius: 12px;
@@ -246,38 +257,50 @@ h1 {
     flex: 1;
     background: var(--default-color);
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    overflow-x: auto;
+    min-height: 0;
+    border: 1px solid var(--border-color);
 }
 
 .table-header {
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     background: var(--accent);
     border-bottom: 1px solid var(--border-color);
+    border-radius: 12px 12px 0 0;
     font-weight: 600;
     color: white;
     text-align: center;
+    border-left: 1px solid var(--border-color);
+
+    & .table-header-cell {
+        padding: 15px 5px;
+        font-size: 14px;
+        border-right: 1px solid var(--border-color);
+
+        &.last-child {
+            border-right: none;
+        }
+    }
 }
 
-.table-header-cell {
-    padding: 15px 0;
-    font-size: 14px;
-    border-right: 1px solid var(--border-color);
-}
 
 .table-body {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(98vh - 300px);
 }
 
 .table-row {
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid var(--border-color);
-    border-left: 1px solid var(--border-color);
     transition: background 0.3s;
+    border-left: 1px solid var(--border-color);
 
     &:hover {
         & .circle {
@@ -299,12 +322,15 @@ h1 {
         flex-direction: column;
         justify-content: center;
         font-size: 16px;
+        border-right: 1px solid var(--border-color);
+        overflow: hidden;
 
         & [contenteditable="true"] {
             user-select: text;
         }
 
-        & input, select {
+        & input,
+        select {
             border: none;
             background-color: inherit;
 
@@ -337,11 +363,29 @@ h1 {
     position: relative;
     height: 100%;
     font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    &>[data-name="name"] {
+        flex-shrink: 0;
+        /* Запрещаем сжатие названия */
+    }
 
     & .equipments {
+        flex: 1;
         display: flex;
         flex-direction: row;
         justify-content: space-around;
+        min-height: 0;
+        overflow: hidden;
+
+        & .equipment-type,
+        .equipment-number {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         & .equipment-type {
             font-size: 10.5px;
@@ -592,10 +636,11 @@ dialog::backdrop {
 }
 
 #create-fgis-dialog {
-    height: 450px!important;
+    height: 450px !important;
 }
 
-#create-dialog, #create-fgis-dialog {
+#create-dialog,
+#create-fgis-dialog {
     width: 50%;
     height: 580px;
 
@@ -708,4 +753,22 @@ dialog::backdrop {
         gap: 8px;
     }
 
+}
+
+.table-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
