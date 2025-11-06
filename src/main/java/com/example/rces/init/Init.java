@@ -56,14 +56,14 @@ public class Init {
             this.employeeService.setSecurityContext(employeeService.loadUserByUsername("system"));
             this.init();
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка PostConstruct в Init", e);
+            throw new RuntimeException("Error PostConstruct in Init", e);
         }
     }
 
     private void init() {
-        log.info("Инициализация задач");
-        runOnce("#1-Перерасчет дат метрологии", speService::calculateDateVerification, true);
-        runOnce("#2-Установка документов в SPE", this::installDocumentOnSPE, true);
+        log.info("Initialization tasks");
+        runOnce("#1-Recalculation date metrology", speService::calculateDateVerification, true);
+        runOnce("#2-Install documents in SPE", this::installDocumentOnSPE, true);
     }
 
     private void installDocumentOnSPE() {
@@ -85,10 +85,14 @@ public class Init {
             try {
                 String outNumber = data.path("miInfo").path("singleMI").path("manufactureNum").asText();
                 SPE spe = speByOutNumber.get(outNumber);
-                speService.createSpeDocument(spe, new DocumentCreateDTO(), reportService.createSpeFgisReport(data));
-                log.info("Установлен документ в {}", spe.getOutNumber());
+                if (spe!=null) {
+                    speService.createSpeDocument(spe, new DocumentCreateDTO(), reportService.createSpeFgisReport(data));
+                    log.info("Installed document in {}", spe.getOutNumber());
+                } else {
+                    log.info("SPE is NULL for {}", outNumber);
+                }
             } catch (Exception e) {
-                throw new ApplicationContextException("Ошибка при инициализации установки документов в SPE", e);
+                throw new ApplicationContextException("Error at initialization installations document in SPE", e);
             }
         }
     }
@@ -97,13 +101,13 @@ public class Init {
         if (always || this.checkRunOnce(id)) {
             transactionTemplate.execute(status -> {
                 try {
-                    log.info("Исполнение задачи {}", id);
+                    log.info("Execution task {}", id);
                     task.run();
                     this.markRunOnce(id, always);
                 } catch (Exception e) {
-                    log.error("Ошибка при выполнении задачи: {}", id, e);
+                    log.error("Error at execution task: {}", id, e);
                     status.setRollbackOnly();
-                    throw new RuntimeException("Ошибка при инициализации задачи", e);
+                    throw new RuntimeException("Error at initialization task", e);
                 }
                 return null;
             });
