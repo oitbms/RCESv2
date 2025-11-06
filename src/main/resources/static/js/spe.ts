@@ -154,6 +154,7 @@ class Spe extends Base {
         });
         this.save('/api/spe/update', ...itemsArray).then(() => {
             this.disableEditMode();
+            itemsArray.forEach((id) => this.selectedRows.delete(Number(id)));
         });
     }
 
@@ -219,7 +220,9 @@ class Spe extends Base {
     }
 
     private disableEditMode(row?: any): void {
-        if (this.editMode && Object.keys(this.saveMassive).length > 0 && (row && row.find('.change-textarea').length > 0)) {
+        if (this.editMode &&
+            Object.keys(this.saveMassive).length > 0 &&
+            ((row && row.find('.change').length > 0) || $('.table-row .change').length > 0)) {
             this.createNotification("Сохраните изменения", NotificationType.WARNING);
             return;
         }
@@ -252,27 +255,16 @@ class Spe extends Base {
         $('#edit-button').removeClass('active');
     }
 
-    // private async dblClickOnRow(event: Event): Promise<void> {
-    //     const currentRow = $(event.currentTarget);
-    //     const currentRowId: string = currentRow.attr('id');
-    //
-    //     if (!this.selectedRows.has(currentRowId)) {
-    //         this.selectedRows.add(currentRowId);
-    //         currentRow.addClass('selected');
-    //         if (this.editMode) {
-    //             this.enableEditMode(currentRow);
-    //         }
-    //     } else if (!this.editMode) {
-    //         this.selectedRows.delete(currentRowId);
-    //         this.disableEditMode(currentRow);
-    //         currentRow.removeClass('selected');
-    //     }
-    // }
-
     private async selecteRow(event: Event): Promise<void> {
         const circle = $(event.currentTarget);
         const currentRow = circle.closest('.table-row');
         const currentRowId: string = currentRow.attr('id');
+        const changes = currentRow.find('.change').length;
+
+        if (this.editMode && changes > 0) {
+            this.createNotification("Сохраните изменения", NotificationType.WARNING);
+            return
+        }
 
         if (!this.selectedRows.has(currentRowId)) {
             this.selectedRows.add(currentRowId);
@@ -281,7 +273,7 @@ class Spe extends Base {
             if (this.editMode) {
                 this.enableEditMode(currentRow);
             }
-        } else if (!this.editMode) {
+        } else {
             this.selectedRows.delete(currentRowId);
             this.disableEditMode(currentRow);
             currentRow.removeClass('selected');
@@ -365,7 +357,7 @@ class Spe extends Base {
             });
         }
 
-        modalDiv.addClass('change-area');
+        modalDiv.addClass('change');
     }
 
     private async openDocument(event: Event): Promise<void> {
