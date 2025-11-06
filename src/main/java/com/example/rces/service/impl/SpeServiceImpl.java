@@ -164,9 +164,9 @@ public class SpeServiceImpl implements SpeService {
         StatusSPE currentStatus = spe.getStatus();
         if (currentStatus == StatusSPE.WRITE_OFF || currentStatus == StatusSPE.AT_INSPECTION || currentStatus == StatusSPE.REPAIR) {
             return currentStatus;
-        } else if (LocalDate.now().isAfter(spe.getDateVerification())) {
+        } else if (spe.getDateVerification()!=null && LocalDate.now().isAfter(spe.getDateVerification())) {
             return StatusSPE.EXPIRED;
-        } else if (ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 0 ||
+        } else if (spe.getDateVerification()!=null && ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 0 ||
                 ChronoUnit.MONTHS.between(LocalDate.now(), spe.getDateVerification()) == 1) {
             return StatusSPE.VERIFICATION_REQUIRED;
         } else {
