@@ -24,27 +24,27 @@
             <p class="subtitle">Актуальная информация о состоянии и поверке оборудования</p>
         </div>
         <div class="toolbar">
-            <div class="tool edit" id="edit-button" data-description="Включить режим редактирования">
+            <div class="tool edit tooltip-trigger" id="edit-button" data-description="Переключить режим редактирования">
                 <button>
                     <i class="fas fa-pencil-alt"></i>
                 </button>
             </div>
-            <div class="tool save" id="save-button" data-description="Сохранить записи">
+            <div class="tool save tooltip-trigger" id="save-button" data-description="Сохранить записи">
                 <button>
                     <i class="fas fa-floppy-disk"></i>
                 </button>
             </div>
-            <div class="tool create" id="create-fgis-button" data-description="Добавить инструмент и документ">
+            <div class="tool create tooltip-trigger" id="create-fgis-button" data-description="Добавить инструмент (ФГИС)">
                 <button>
                     <i class="fas fa-square-plus text-success fs-4" style="text-shadow: 0 0 2px white;"></i>
                 </button>
             </div>
-            <div class="tool create" id="create-button" data-description="Добавить инструмент">
+            <div class="tool create tooltip-trigger" id="create-button" data-description="Добавить инструмент">
                 <button>
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
-            <div class="tool print" id="print-button" data-description="Печать отчета">
+            <div class="tool print tooltip-trigger" id="print-button" data-description="Печать отчета">
                 <button>
                     <i class="fas fa-print"></i>
                 </button>
@@ -58,7 +58,7 @@
             <input type="text" id="searchInput" placeholder="Поиск оборудования...">
         </div>
         <div class="filters">
-            <button class="subdivision-button filter-btn">
+            <button class="subdivision-button filter-btn tooltip-trigger" data-description="Фильтр по подразделению">
                 <i class="fas fa-sitemap"></i>Подразделения
             </button>
 <#--            <button class="employee-button filter-btn">-->
@@ -126,7 +126,7 @@
         <div class="table-container">
             <div class="table-header">
                 <div class="table-header-cell" style="width: var(--equipment);">
-                    <div class="circle circle-header"></div>
+                    <div class="circle circle-header tooltip-trigger" data-description="Выделить все строки"></div>
                     Оборудование
                 </div>
                 <div class="table-header-cell" style="width: var(--characteristics);">Характеристики</div>

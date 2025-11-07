@@ -97,8 +97,15 @@ class Spe extends Base {
             }
         });
         this.applyFilters = () => {
+            if (this.editMode) {
+                this.createNotification('Выключите режим редактирования', NotificationType.INFO);
+                return;
+            }
             $('.table-row').each((_, element) => {
                 const row = $(element);
+                row.removeClass('selected');
+                const rowId = row.attr('id');
+                this.selectedRows.delete(rowId);
                 const statusMatch = this.currentStatus === 'NONE' ||
                     (this.currentStatus === 'NO_DOCUMENT' ? row.find('[data-document="false"]').length > 0 :
                         row.find('[data-status]').attr('data-status') === this.currentStatus);
@@ -107,6 +114,7 @@ class Spe extends Base {
                 const textMatch = this.searchText === '' || row.text().toLowerCase().includes(this.searchText.toLowerCase());
                 row.toggle(statusMatch && subDivisionMatch && employeeMatch && textMatch);
             });
+            $('.circle-header').removeClass('active');
         };
         this.filterButtonHandler = (event) => {
             this.currentStatus = $(event.target).data('status');
@@ -194,7 +202,7 @@ class Spe extends Base {
                 <div class="table-row" id="${spe.id}" data-index="${spe.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
-                            <div class="circle circle-row"></div>
+                            <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
                             <div data-name="name" contenteditable="false">
                                 ${spe.name}
                             </div>
@@ -258,7 +266,7 @@ class Spe extends Base {
                         </div> месяцев
                     </div>
                     <div class="table-cell" style="width: var(--file);">
-                        <i class="document fa-solid fa-file"></i>
+                        <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно документа"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
                         <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}" data-document="${spe.documentId != null ? 'true' : 'false'}">
@@ -477,6 +485,7 @@ class Spe extends Base {
                         return;
                     }
                     modalDiv.text(selected.name);
+                    modalDiv.val(selected.name);
                     if (currentId) {
                         this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
                     }
@@ -532,7 +541,10 @@ class Spe extends Base {
                     {
                         label: 'Удалить файл',
                         action: () => {
-                            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => this.deleteRow(fileId));
+                            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
+                                this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
+                                this.deleteRow(fileId);
+                            });
                         }
                     }
                 ], mouseEvent.clientX, mouseEvent.clientY);

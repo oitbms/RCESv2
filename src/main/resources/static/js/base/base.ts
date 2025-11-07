@@ -36,7 +36,7 @@ abstract class Base {
     protected constructor(rowContainer: any, itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
         this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
-        // this.createHandler('mouseenter', '.tooltip', () => this.showToolTip, true);
+        this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
         this.init(...initCallbacks);
     }
 
@@ -272,10 +272,39 @@ abstract class Base {
         });
     }
 
-    // private readonly showToolTip = (event: Event) => {
-    //     const element = event.target as HTMLElement;
-    //
-    // }
+    private readonly showToolTip = (event: Event) => {
+        const element = event.currentTarget as HTMLElement;
+
+        const tooltipTimeout = setTimeout(() => {
+            const description = element.getAttribute('data-description');
+            if (!description) return;
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.textContent = description;
+            document.body.appendChild(tooltip);
+
+            const rect = element.getBoundingClientRect();
+            tooltip.style.position = 'absolute';
+            tooltip.style.left = `${rect.left + window.pageXOffset}px`;
+            tooltip.style.top = `${rect.bottom + window.pageYOffset + 5}px`;
+
+            (element as any)._currentTooltip = tooltip;
+        }, 450);
+
+        (element as any)._tooltipTimeout = tooltipTimeout;
+
+        const hideHandler = () => {
+            clearTimeout(tooltipTimeout);
+            if ((element as any)._currentTooltip) {
+                (element as any)._currentTooltip.remove();
+                (element as any)._currentTooltip = null;
+            }
+            element.removeEventListener('mouseleave', hideHandler);
+        };
+
+        element.addEventListener('mouseleave', hideHandler);
+    };
 
     public readonly formatDate = (dateString: string): string => {
         if (!dateString) return "";
