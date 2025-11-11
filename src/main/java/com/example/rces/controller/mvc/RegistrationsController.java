@@ -68,6 +68,7 @@ public class RegistrationsController {
                     .toList();
         } else {
             requestsList = requests.stream()
+                    .filter(r -> r.getEmployee() != null)
                     .filter(r -> r.getEmployee().equals(user))
                     .filter(r -> r.getStatus().equals(Status.New))
                     .sorted(Comparator.comparing(Requests::getRequestNumber))

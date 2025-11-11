@@ -81,9 +81,9 @@
         </#if>
         <td>${req.getRequestNumber()}</td>
         <td>${req.getCreatedBy().getName()}</td>
-        <td>${req.getEmployee().getName()}</td>
+        <td>${(req.getEmployee().getName())!"Не назначен"}</td>
         <td>${(req.getCustomerOrder().getName())!"Нет"}</td>
-        <td>${req.getMlmNode().getName()}</td>
+        <td>${req.getSubDivision().getName()}</td>
         <#if typeRequest == 'otk'>
             <td>${(req.getReason_wr())!"-"}</td>
         <#else>
@@ -93,7 +93,7 @@
         <td>${req.getStatus().getName()}</td>
         <td>${formattedBidList[reqIndex]!"-"}</td>
         <td>${updateDateList[reqIndex]!"-"}</td>
-        <td>${(req.getUpdateBy().getName())!"-"}</td>
+        <td>${(req.getUpdatedBy().getName())!"-"}</td>
         <#if typeRequest == 'otk'>
             <td>${(req.getControl())!"Нет"}</td>
             <td>${(req.getQtyRejected()!"0")}</td>

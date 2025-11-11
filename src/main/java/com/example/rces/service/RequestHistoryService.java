@@ -12,4 +12,11 @@ public interface RequestHistoryService {
      * @return Возвращает полную историю для заявок.
      */
     List<RequestHistoryDTO> getDetailedRequestHistory(UUID requestId);
+
+    /**
+     *
+     * @param requestId
+     * @return Возвращает заявки с несоответствиями
+     */
+    List<RequestHistoryDTO> getRequestHistory(UUID requestId);
 }

@@ -32,7 +32,7 @@
                     <label for="mlmnode">Цех:</label>
                     <select id="mlmnode" name="mlmNode" class="form-control" required>
                         <#list mlmNode as node>
-                            <option value="${node.name()}">${node.getName()}</option>
+                            <option value="${node.getName()}">${node.getName()}</option>
                         </#list>
                     </select>
                 </div>

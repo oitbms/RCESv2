@@ -3,11 +3,13 @@ package com.example.rces.controller.mvc;
 import com.example.rces.configuration.DeviceDetector;
 import com.example.rces.dto.CreateRequestDto;
 import com.example.rces.dto.RequestDto;
+import com.example.rces.dto.RequestHistoryDTO;
 import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.service.EmployeeService;
+import com.example.rces.service.RequestHistoryService;
 import com.example.rces.service.RequestsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
@@ -27,17 +31,18 @@ import static com.example.rces.utils.DateUtil.formatedDate;
 @Controller
 public class RequestController {
 
-    private final EmployeeService employeeService;
     private final DeviceDetector detector;
     private final RequestsService requestsService;
     private final SubDivisionMapper subDivisionMapper;
+    private final RequestHistoryService requestHistoryService;
 
     @Autowired
-    public RequestController(EmployeeService employeeService, DeviceDetector detector, RequestsService requestsService, SubDivisionMapper subDivisionMapper) {
-        this.employeeService = employeeService;
+    public RequestController(DeviceDetector detector, RequestsService requestsService,
+                             SubDivisionMapper subDivisionMapper, RequestHistoryService requestHistoryService) {
         this.detector = detector;
         this.requestsService = requestsService;
         this.subDivisionMapper = subDivisionMapper;
+        this.requestHistoryService = requestHistoryService;
     }
 
     @GetMapping("/create")
@@ -57,9 +62,11 @@ public class RequestController {
     }
 
     @PostMapping("/create")
-    public String createRequest(@ModelAttribute CreateRequestDto createRequestDto, Model model) throws JsonProcessingException {
+    public String createRequest(@ModelAttribute CreateRequestDto createRequestDto, Model model,
+                                @RequestParam("additionalFiles") MultipartFile[] additionalFiles) throws JsonProcessingException {
+
         Employee createdEmployee = currentUser().orElseThrow();
-        RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto);
+        RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto,additionalFiles);
         model.addAttribute("create", true);
         model.addAttribute("requestNumber", requestDto.getRequestNumber());
         return "success";
@@ -69,10 +76,22 @@ public class RequestController {
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
         Requests requests = requestsService.findByRequestNumber(requestNumber);
         Employee user = currentUser().orElseThrow();
+        boolean canChangeEmployee = false;
+        if (requests.getEmployee() == null) {
+            canChangeEmployee = true;
+        } else if (requests.getEmployee() != null && user.getRole().equals("CONTROL")) {
+            canChangeEmployee = true;
+        }
+        List<RequestHistoryDTO> requestHistoryDTOList = new ArrayList<>();
+        if (requests.getQtyRejected() > 0) {
+            requestHistoryDTOList = requestHistoryService.getRequestHistory(requests.getId());
+        }
+        model.addAttribute("canChangeEmployee", canChangeEmployee);
         model.addAttribute("bid", requests);
         model.addAttribute("type", requests.getTypeRequest());
         model.addAttribute("date", formatedDate(requests.getCreatedDate()));
         model.addAttribute("viewForm", true);
+        model.addAttribute("requestHistoryDTOList", requestHistoryDTOList);
         model.addAttribute("role", user.getRole());
         return "/requests";
     }

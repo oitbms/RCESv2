@@ -15,8 +15,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        uses = SubDivisionMapper.class)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRequestDto> {
 
     @Mapping(target = "typeRequest", source = "type")
@@ -26,17 +25,16 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
     @Mapping(target = "requestNumber", source = "requestNumber")
     @Mapping(target = "title", source = "titleJson")
     @Mapping(target = "reason_wr", source = "reasonsJson")
-    Requests toRequestFromCreateDTO(CreateRequestDto createDto, @Context ObjectMapper objectMapper);
+    Requests toRequestFromCreateDTO(CreateRequestDto createDto);
 
     default Requests createFullRequest(CreateRequestDto createDto,
-                                       ObjectMapper objectMapper,
                                        Item item,
                                        GeneralReason reason,
                                        SubDivision mlmNode,
                                        Employee employee,
                                        CustomerOrder customerOrder,
                                        Employee createdEmployee) {
-        Requests requests = toRequestFromCreateDTO(createDto, objectMapper);
+        Requests requests = toRequestFromCreateDTO(createDto);
         setAdditionalFields(requests, item, reason, mlmNode, employee, customerOrder, createdEmployee);
         return requests;
     }
@@ -51,7 +49,9 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
         requests.setItem(item);
         requests.setReason(reason);
         requests.setSubDivision(mlmNode);
-        requests.setEmployee(employee);
+        if (employee != null) {
+            requests.setEmployee(employee);
+        }
         requests.setCustomerOrder(customerOrder);
         requests.setCreatedBy(createdEmployee);
         requests.setStatus(Status.New);
@@ -63,4 +63,5 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
     RequestDto toDTO(Requests entity);
 
 }
+
 

@@ -45,28 +45,27 @@ public class ApiClient {
     }
 
     public List<JsonNode> getFgisData(List<String> miNumbers) {
-        try (ExecutorService pool = Executors.newFixedThreadPool(5)) {
-            List<CompletableFuture<JsonNode>> futures = miNumbers.stream()
-                    .map(miNumber -> CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return getFgisData(miNumber);
-                        } catch (Exception ignored) {
-                            return null;
-                        }
-                    }, pool))
-                    .toList();
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            return futures.stream()
-                    .map(future -> {
-                        try {
-                            return future.get();
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        }
+            ExecutorService pool = Executors.newFixedThreadPool(5);
+            try {
+                List<CompletableFuture<JsonNode>> futures = miNumbers.stream()
+                        .map(miNumber -> CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return getFgisData(miNumber);
+                            } catch (Exception e) {
+                                return null;
+                            }
+                        }, pool))
+                        .toList();
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                return futures.stream()
+                        .map(CompletableFuture::join)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+            } finally {
+                pool.shutdown();
+            }
     }
 
 }

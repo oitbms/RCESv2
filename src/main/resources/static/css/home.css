@@ -9,6 +9,11 @@ body {
     padding: 20px;
 }
 
+html, body {
+    overflow: hidden;
+    height: 100%;
+}
+
 .menu {
     display: flex;
     flex-direction: column;
@@ -56,7 +61,7 @@ body {
 }
 
 .menu-item:hover a {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4169e1 0%, #0000ff 100%);
     color: white;
 }
 
@@ -137,4 +142,20 @@ body {
 .menu-item:active {
     transform: translateY(-3px) scale(0.98);
     transition: all 0.1s ease;
+}
+
+
+.menu-item .disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.menu-item .disabled .glow-effect {
+    display: none;
+}
+
+.menu-item .disabled .menu-icon {
+    opacity: 0.5;
 }

@@ -1,32 +1,21 @@
 package com.example.rces.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public class CustomerOrderDTO {
 
     private UUID id;
-
     private String name;
-
-    private LocalDateTime createDate;
-
+    private Instant createdDate;
     private String employeeName;
 
-    public String getEmployeeName() {
-        return employeeName;
+    public UUID getId() {
+        return id;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -37,11 +26,19 @@ public class CustomerOrderDTO {
         this.name = name;
     }
 
-    public UUID getId() {
-        return id;
+    public Instant getCreatedDate() {
+        return createdDate;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 }

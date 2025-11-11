@@ -352,10 +352,20 @@ if (document.title.includes('Заявка на вызов')) {
 // ==============================
 document.addEventListener('DOMContentLoaded', () => {
     const actionButtons = document.querySelectorAll('button.work[data-param]');
+    const actionReworkButton = document.getElementById('successRework');
+    if (actionReworkButton) {
+        actionReworkButton.addEventListener('click', () => handleReworkClick(actionReworkButton));
+    } else {
+        console.error('Элемент с id "successRework" не найден');
+    }
 
     const handleClick = async (button) => {
-        const param = button.dataset.param;
+        const requestId = button.dataset.param;
         const status = button.dataset.status;
+        let description;
+        // const but1 = document.getElementById('noticeId').value;
+        // const but2 = document.getElementById('noticeOgtId').value;
+        // const but3 = document.getElementById('noticeOgcId').value;
 
         const inconsistencyInput = document.getElementById('inconsistencyJson1');
         const inconsistencyData = inconsistencyInput?.value || '';
@@ -365,29 +375,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (description === '') {
                 description = document.getElementById('description1')?.value || '';
             }
+        } else if (bidType === 'technologist') {
+            description = document.getElementById('descriptionTechnologyId')?.value || '';
         } else {
             description = document.getElementById('description')?.value || '';
         }
 
         let qty = document.getElementById('qtyCompleted')?.value || '';
 
-        const formData = new URLSearchParams();
-        formData.append('param', param);
-        formData.append('description', description);
-
-        if (status !== undefined && status !== null) {
-            formData.append('status', status);
-        }
-
-        formData.append('qtyCompleted', qty);
-        formData.append('inconsistencyData', inconsistencyData);
-
+        const formData = {
+            requestId: requestId,
+            description: description,
+            status: status,
+            qtyCompleted: qty,
+            inconsistencyData: inconsistencyData
+            // noticeNp: but1,
+            // noticeOgt: but2,
+            // noticeOgc: but3
+        };
         const response = await fetch('/api/request/in-work', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             },
-            body: formData
+            body: JSON.stringify(formData)
         }).then(async response => {
             const text = await response.text();
 
@@ -422,9 +433,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const handleReworkClick = async (button) => {
+        const status = button.dataset.status;
+        const requestId = button.dataset.param;
+
+        const formData = {
+            status: status,
+            requestId: requestId
+        };
+        const response = await fetch('/api/request/in-work', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+    }
+
     actionButtons.forEach(button => {
         button.addEventListener('click', () => handleClick(button));
     });
+
+    actionReworkButton.forEach(button => {
+        button.addEventListener('click', () => handleReworkClick(button));
+    })
 });
 
 // ==============================
@@ -792,12 +824,12 @@ function handleItemSelection(selectedItem) {
 // 15. Completed Field Editing
 // ==============================
 if (viewForm) {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const successQtyInput = document.getElementById('qtyCompleted');
         const rejectedBlock = document.getElementById('rejectedBidOtk');
 
         if (bidQty > 0) {
-            successQtyInput.addEventListener('input', function() {
+            successQtyInput.addEventListener('input', function () {
                 const enteredValue = parseInt(successQtyInput.value, 10);
                 if (!isNaN(enteredValue) && enteredValue < bidQty) {
                     rejectedBlock.classList.remove('d-none');
@@ -808,7 +840,7 @@ if (viewForm) {
         }
     });
 
-    document.getElementById('successId').addEventListener('click', function(e) {
+    document.getElementById('successId').addEventListener('click', function (e) {
         const form = document.querySelector('.modal-content');
         const qtyInput = document.getElementById('qtyCompleted');
 
@@ -820,7 +852,7 @@ if (viewForm) {
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const qtyCompletedInput = document.getElementById('qtyCompleted');
         const movedQuantitySpan = document.getElementById('movedQuantity');
         const maxQty = bidQty;

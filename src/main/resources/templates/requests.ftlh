@@ -11,7 +11,7 @@
     <script src="/js/bootstrap.bundle.js"></script>
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;
-        <#if viewForm?? && viewForm>
+        <#if viewForm?? && viewForm && bid.typeRequest == "otk" && bid.getSubDivision().getName() != 'workShop1'>
         const bidQty = ${bid.getQty()}</#if>;
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -22,27 +22,30 @@
 <#if createForm!false>
     <div class="container mt-5 mb-5">
         <form id="createRequestForm" action="/create" method="POST" enctype="multipart/form-data"
-              class="p-4 border rounded bg-light shadow-sm">
+              class="p-4 border rounded bg-light shadow-sm" novalidate>
             <h2 class="mb-4">Создание заявки</h2>
 
             <input type="hidden" name="type" value="${type}">
 
             <!-- Сотрудник -->
-            <div class="mb-3">
-                <label class="form-label">Сотрудник</label>
-                <div class="input-group has-validation">
-                    <input type="text" id="employeeName" class="form-control" placeholder="Имя сотрудника" required>
-                    <input type="hidden" id="employeeJson" name="employeeJson" required>
-                    <button type="button" class="btn btn-outline-primary openModal"
-                            data-endpoint="employees"
-                            data-input-id="employeeName"
-                            data-hidden-entity="employeeJson"
-                            data-modal-id="employeesModal"
-                            data-param="${type}">
-                        Выбрать
-                    </button>
+            <#if type == 'otk'>
+                <div class="mb-3">
+                    <label class="form-label">Сотрудник</label>
+                    <div class="input-group has-validation">
+                        <input type="text" id="employeeName" class="form-control" placeholder="Имя сотрудника" required>
+                        <input type="hidden" id="employeeJson" name="employeeJson" required>
+                        <button type="button" class="btn btn-outline-primary openModal"
+                                data-endpoint="employees"
+                                data-input-id="employeeName"
+                                data-hidden-entity="employeeJson"
+                                data-modal-id="employeesModal"
+                                data-param="${type}">
+                            Выбрать
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </#if>
+
 
             <!-- Цех -->
             <div class="mb-3" id="mlmNodeCreateField">
@@ -50,7 +53,7 @@
                 <div class="input-group">
                     <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех"
                            value="${mlmNodeEmployee.getName()}" required>
-                    <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee}">
+                    <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee.getName()}">
                 </div>
             </div>
 
@@ -62,20 +65,22 @@
             </div>
 
             <!-- ТМЦ -->
-            <div class="mb-3">
-                <label class="form-label">Тип ТМЦ</label>
-                <div class="input-group">
-                    <input type="text" id="itemName" class="form-control" placeholder="ТМЦ">
-                    <input type="hidden" id="itemNameJson" name="itemNameJson">
-                    <button type="button" class="btn btn-outline-primary openModal"
-                            data-endpoint="item"
-                            data-input-id="itemName"
-                            data-hidden-entity="itemNameJson"
-                            data-modal-id="itemModal">
-                        Выбрать
-                    </button>
+            <#if type != 'technologist'>
+                <div class="mb-3">
+                    <label class="form-label">Тип ТМЦ</label>
+                    <div class="input-group">
+                        <input type="text" id="itemName" class="form-control" placeholder="ТМЦ">
+                        <input type="hidden" id="itemNameJson" name="itemNameJson">
+                        <button type="button" class="btn btn-outline-primary openModal"
+                                data-endpoint="item"
+                                data-input-id="itemName"
+                                data-hidden-entity="itemNameJson"
+                                data-modal-id="itemModal">
+                            Выбрать
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </#if>
 
             <!-- Кол-во деталей -->
             <#if type == 'otk'>
@@ -84,7 +89,7 @@
                     <#if mlmNodeEmployee.getName() == 'Цех №1'>
                         <input type="text" id="qty" name="qty" class="form-control">
                     <#else >
-                        <input type="text" id="qty" name="qty" class="form-control" required>
+                        <input type="number" id="qty" name="qty" class="form-control" required>
                     </#if>
                 </div>
             </#if>
@@ -118,8 +123,17 @@
                         <input type="text" id="customerOrderString" name="customerOrderString" class="form-control"
                                placeholder="Номер заказа">
                     <#else >
-                        <input type="text" id="customerOrderString" name="customerOrderString" class="form-control"
-                               placeholder="Номер заказа" required>
+                        <input type="text"
+                               id="customerOrderString"
+                               name="customerOrderString"
+                               class="form-control"
+                               placeholder="Заказ должен начинаться с 20..."
+                               value=""
+                               oninput="validateOrderNumber(this)"
+                               pattern="20.*"
+                               title="Заказ должен начинаться с 20">
+
+                        <div class="invalid-feedback" id="orderError">Заказ должен начинаться с 20</div>
                     </#if>
 
                     <input type="hidden" id="customerOrderJson" name="customerOrderJson">
@@ -154,7 +168,9 @@
                 <div class="mb-3" id="divReasonsId">
                     <label for="reasonsJson" class="form-label">Причина</label>
                     <input type="text" id="reasonsJson" name="reasonsJson" class="form-control"
-                           placeholder="Причина">
+                           placeholder="Введите причину" list="reasonsList">
+                    <datalist id="reasonsList">
+                    </datalist>
                 </div>
             </#if>
 
@@ -175,7 +191,12 @@
 
             <!-- Кнопка отправки -->
             <div class="d-grid" id="createId">
-                <button type="submit" class="btn btn-success">Создать заявку</button>
+                <button type="submit" class="btn btn-success" id="submitBtn">
+                    <span id="btnText">Создать заявку</span>
+                    <div id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </button>
             </div>
         </form>
     </div>
@@ -186,49 +207,71 @@
 
         <!-- Информация -->
         <div class="card mb-4">
-            <#if bid.getStatus().getName() == 'Новый'>
-                <div class="card-header bg-secondary text-white">
-                    Информация
-                </div>
-            <#elseif bid.getStatus().getName() == 'В работе'>
-                <div class="card-header bg-warning text-white">
-                    Информация
-                </div>
-            <#elseif bid.getStatus().getName() == 'Забракована'>
-                <div class="card-header bg-danger text-white">
-                    Информация
-                </div>
-            <#elseif bid.getStatus().getName() == 'Закрыт'>
-                <div class="card-header btn-success text-white">
-                    Информация
-                </div>
-            </#if>
+            <#switch bid.getStatus().getName()>
+                <#case "Новый">
+                    <div class="card-header bg-secondary text-white">
+                        Информация
+                    </div>
+                    <#break>
+                <#case "В работе">
+                    <div class="card-header bg-warning text-white">
+                        Информация
+                    </div>
+                    <#break>
+                <#case "Забракована">
+                    <div class="card-header bg-danger text-white">
+                        Информация
+                    </div>
+                    <#break>
+                <#case "Закрыт">
+                    <div class="card-header btn-success text-white">
+                        Информация
+                    </div>
+                    <#break>
+                <#case "На доработке">
+                    <div class="card-header bg-warning text-white">
+                        Информация
+                    </div>
+                    <#break>
+            </#switch>
             <div class="card-body">
-                <#if bid.getStatus().getName() == 'Новый'>
-                    <p class="card-header fs-5 fw-bold bg-secondary text-center text-white">Заявка
-                        №${bid.requestNumber}</p>
-                <#elseif bid.getStatus().getName() == 'В работе'>
-                    <p class="card-header fs-5 fw-bold bg-warning text-center text-white">Заявка
-                        №${bid.requestNumber}</p>
-                <#elseif bid.getStatus().getName() == 'Забракована'>
-                    <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка
-                        №${bid.requestNumber}</p>
-                <#elseif bid.getStatus().getName() == 'Закрыта'>
-                    <p class="card-header fs-5 fw-bold btn-success text-center text-white">Заявка
-                        №${bid.requestNumber}</p>
-                </#if>
+                <#switch bid.getStatus().getName()>
+                    <#case "Новый">
+                        <p class="card-header fs-5 fw-bold bg-secondary text-center text-white">Заявка
+                            №${bid.requestNumber}</p>
+                        <#break>
+                    <#case "В работе">
+                        <p class="card-header fs-5 fw-bold bg-warning text-center text-white">Заявка
+                            №${bid.requestNumber}</p>
+                        <#break>
+                    <#case "Забракована">
+                        <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка
+                            №${bid.requestNumber}</p>
+                        <#break>
+                    <#case "Закрыта">
+                        <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка
+                            №${bid.requestNumber}</p>
+                        <#break>
+                    <#case "На доработке">
+                        <p class="card-header fs-5 fw-bold bg-warning text-center text-white">Заявка
+                            №${bid.requestNumber}</p>
+                        <#break>
+                </#switch>
                 <#if bid.status.getName() != "Новый">
                     <p class="mb-2 m-lg-2"><strong>Ответственный:</strong> ${(bid.getEmployee().getName())!""}</p>
                 </#if>
                 <p class="mt-2 mb-2 m-lg-2"><strong>Дата создания:</strong> ${(date)!""}</p>
-                <p class="mb-2 m-lg-2"><strong>Цех:</strong> ${(bid.mlmNode.getName())!""}</p>
-                <p class="mb-2 m-lg-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
+                <p class="mb-2 m-lg-2"><strong>Цех:</strong> ${(bid.getSubDivision().getName())!""}</p>
+                <#if bid.typeRequest.name() != 'technologist'>
+                    <p class="mb-2 m-lg-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
+                </#if>
                 <p class="mb-2 m-lg-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!"Не указан"}</p>
                 <p class="mb-2 m-lg-2"><strong>Обозначение/Наименование:</strong> ${(bid.getTitle())!"Не указан"}</p>
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2 m-lg-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
                     <#if bid.typeRequest == 'otk' && (bid.status.getName() == "Новый" || bid.status.getName() == "В работе")>
-                        <p class="mb-2 m-lg-2"><strong>Количество деталей к контролю:</strong> ${(bid.qty)!0}</p>
+                        <p class="mb-2 m-lg-2"><strong>Количество деталей к контролю:</strong> ${(bid.qty)!"Не указано"}
+                        </p>
                     <#elseif bid.typeRequest == 'otk' && bid.status.getName() == "Закрыт">
                         <p class="mb-2 m-lg-2"><strong>Количество деталей принято:</strong> ${(bid.qty)!0}</p>
                     <#elseif bid.typeRequest == 'otk' && bid.status.getName() == "Забракована">
@@ -254,13 +297,16 @@
         <div class="d-flex justify-content-between">
             <a href="/requestslist/${type}" class="btn btn-outline-secondary d-none d-md-block mb-3">Перейти в
                 список</a>
-            <#if bid.getQtyRejected() = 0>
-                <a class="btn btn-outline-secondary mb-3">Количество брака заявки: ${(bid.getQtyRejected())!0}</a>
-            <#else>
-                <a class="btn btn-danger mb-3 history-icon" data-id="${bid.id}" data-bs-toggle="tooltip" title="Нажмите для просмотра истории изменений">
-                    <i class="bi bi-clock-history me-2"></i>
-                    Количество брака заявки: ${(bid.getQtyRejected())!0}
-                </a>
+            <#if bid.typeRequest == "otk">
+                <#if bid.getQtyRejected() = 0>
+                    <a class="btn btn-outline-secondary mb-3">Количество брака заявки: ${(bid.getQtyRejected())!0}</a>
+                <#else>
+                    <a class="btn btn-danger mb-3 history-icon" data-id="${bid.id}" data-bs-toggle="tooltip"
+                       title="Нажмите для просмотра истории изменений">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Количество брака заявки: ${(bid.getQtyRejected())!0}
+                    </a>
+                </#if>
             </#if>
 
         </div>
@@ -268,24 +314,58 @@
 
         <!-- Редактирование -->
         <div class="card mb-4">
-            <#if bid.getStatus().getName() == 'Новый'>
-                <div class="card-header bg-secondary text-white">
-                    Редактирование
-                </div>
-            <#elseif bid.getStatus().getName() == 'В работе'>
-                <div class="card-header bg-warning text-white">
-                    Редактирование
-                </div>
-            <#elseif bid.getStatus().getName() == 'Забракована'>
-                <div class="card-header bg-danger text-white">
-                    Редактирование
-                </div>
-            <#elseif bid.getStatus().getName() == 'Закрыт'>
-                <div class="card-header btn-success text-white">
-                    Редактирование
-                </div>
-            </#if>
+            <#switch bid.getStatus().getName()>
+                <#case "Новый">
+                    <div class="card-header bg-secondary text-white">
+                        Редактирование
+                    </div>
+                    <#break >
+                <#case "В работе">
+                    <div class="card-header bg-warning text-white">
+                        Редактирование
+                    </div>
+                    <#break>
+                <#case "Забракована">
+                    <div class="card-header bg-danger text-white">
+                        Редактирование
+                    </div>
+                    <#break>
+                <#case "Закрыт">
+                    <div class="card-header btn-success text-white">
+                        Редактирование
+                    </div>
+                    <#break>
+                <#case "На доработке">
+                    <div class="card-header bg-warning text-white">
+                        Редактирование
+                    </div>
+                    <#break>
+            </#switch>
             <div class="card-body">
+
+                <#if bid.status.getName() == "На доработке">
+                    <div class="mt-3">
+                        <label for="closed" class="form-label">Несоответствия</label>
+                        <input type="text" class="form-control mb-2"
+                               value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}"
+                               readonly>
+                        <label for="closed" class="form-label">Описание несоответствия</label>
+                        <textarea class="form-control mb-3"
+                                  name="description"
+                                  id="description"
+                                  rows="3"
+                                  readonly>${bid.getDescription()!""}
+                            </textarea>
+                        <button class="btn btn-success work"
+                                id="successRework"
+                                data-param="${bid.getId()}"
+                                data-status="underRework"
+                        >
+                            Принять в доработку
+                        </button>
+                        <button class="btn btn-danger" id="cancelRework">Отклонить</button>
+                    </div>
+                </#if>
 
                 <#if bid.status.getName() == "Новый">
                     <!-- Ответственный -->
@@ -293,22 +373,29 @@
                         <label for="employeeName" class="form-label">Ответственный:</label>
                         <div class="input-group">
                             <input type="text" id="employeeName"
-                                   value="${bid.employee.name?trim}"
+                                   value="<#if bid.employee??>${bid.employee.name?trim}<#else>Не назначен</#if>"
                                    readonly
                                    class="form-control">
-                            <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                            <#if bid.employee??>
+                                <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                            <#else>
+                                <#assign employeeJson = '{"id":"", "name":""}'>
+                            </#if>
                             <input type="hidden" id="employeeJson"
                                    value='${employeeJson}'
                                    name="employee">
-                            <button type="button"
-                                    class="btn btn-outline-secondary openModal"
-                                    data-endpoint="employees"
-                                    data-input-id="employeeName"
-                                    data-hidden-entity="employeeJson"
-                                    data-modal-id="employeesModal"
-                                    data-param="${bid.getTypeRequest().name()}">
-                                Изменить
-                            </button>
+                            <#if canChangeEmployee || bid.typeRequest.name() == 'otk'>
+                                <button type="button"
+                                        class="btn btn-outline-secondary openModal"
+                                        data-endpoint="employees"
+                                        data-input-id="employeeName"
+                                        data-hidden-entity="employeeJson"
+                                        data-modal-id="employeesModal"
+                                        data-param="${bid.getTypeRequest().name()}">
+                                    Изменить
+                                </button>
+                            </#if>
+
                         </div>
                         <#if role != 'MASTER'>
                         <p class="mb-2"><strong>Комментарий:</strong>
@@ -340,8 +427,9 @@
                             class="btn btn-success mb-3 work"
                             id="executeBtn"
                             data-bs-toggle="modal"
-                            data-bs-target="#exampleModal">
-                        Выполнение
+                            data-bs-target="#completedTechnologistModal"
+                    >
+                        Выполнено
                     </button>
                 <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type == 'otk'>
                     <button type="button"
@@ -381,6 +469,10 @@
 
                 <#if bid.getStatus().getName() == 'Закрыт'>
                     <p class="text-success fs-3 fw-bold">Заявка закрыта!</p>
+                    <#if bid.typeRequest.name() == 'technologist'>
+                        <p class="text fw-bold">Описание решения поставленной
+                            задачи:${(bid.getDescription())!"Описание решения заявки отсутствует!"}</p>
+                    </#if>
                 </#if>
 
                 <#if bid.getStatus().getName() == 'Забракована'>
@@ -418,100 +510,113 @@
                     </textarea>
 
                     <#if role == 'MASTER'>
-                        <button type="button"
-                                class="btn btn-success mt-3 work"
-                                id="canceledBtn"
-                                data-param="${bid.getId()}"
-                                data-status="update"
-                        >Отправить повторно
-                        </button>
+                        <div class="d-flex justify-content-between">
+                            <button type="button"
+                                    class="btn btn-success mt-3 work"
+                                    id="canceledBtn"
+                                    data-param="${bid.getId()}"
+                                    data-status="update"
+                            >Отправить повторно
+                            </button>
+                            <button type="button"
+                                    class="btn btn-danger mt-3 d-none"
+                                    id="invokeServiceButtonId"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#invokeServiceModalId"
+                            >Отправить на исправление
+                            </button>
+                        </div>
                     </#if>
 
                 </#if>
 
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                     aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Выполнение заявки</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Закрыть"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3 d-flex justify-content-between">
-                                    <label for="qtyCompleted" class="form-label mt-2">Количество принятых
-                                        деталей: </label>
-                                    <div style="width: 450px;">
-                                        <input type="number" id="qtyCompleted" name="qtyCompleted" class="form-control"
-                                               min="0"
-                                               max="${bid.getQty()}">
-                                        <div class="invalid-feedback">
-                                            Введите корректное количество (Количество деталей к
-                                            контролю: ${bid.getQty()})
+                <#if bid.typeRequest == "otk">
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                         aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Выполнение заявки</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3 d-flex justify-content-between">
+                                        <label for="qtyCompleted" class="form-label mt-2">Количество принятых
+                                            деталей: </label>
+                                        <div style="width: 450px;">
+                                            <input type="number" id="qtyCompleted" name="qtyCompleted"
+                                                   class="form-control"
+                                                   min="0"
+                                                   max="${(bid.getQty())!0}">
+                                            <div class="invalid-feedback">
+                                                Введите корректное количество (Количество деталей к
+                                                контролю: ${(bid.getQty())!0})
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div id="rejectedBidOtk" class="d-none">
-                                    <div class="mb-2">
+                                    <div id="rejectedBidOtk" class="d-none">
                                         <div class="mb-2">
-                                            <p class="text-danger">Количество, которое будет перемещено в заявку с
-                                                браком:
-                                                <span id="movedQuantity">0</span>
-                                            </p>
+                                            <div class="mb-2">
+                                                <p class="text-danger">Количество, которое будет перемещено в заявку с
+                                                    браком:
+                                                    <span id="movedQuantity">0</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="inconsistencyName1" class="mb-3">Несоответствия:</label>
+                                            <input type="text" id="inconsistencyName1" readonly
+                                                   class="form-control readonly-scroll"
+                                                   value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}">
+                                            <input type="hidden" id="inconsistencyJson1" name="inconsistencies"
+                                                   value='[<#list bid.inconsistencies as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
+                                            <button type="button" class="btn btn-primary mt-2 openModal"
+                                                    data-endpoint="inconsistency"
+                                                    data-input-id="inconsistencyName1"
+                                                    data-hidden-entity="inconsistencyJson1"
+                                                    data-modal-id="inconsistencyModal"
+                                                    data-multiple="true"
+                                                    data-param="${bid.getControl()!""}">
+                                                Изменить
+                                            </button>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Описание несоответствия:</label>
+                                            <textarea class="form-control"
+                                                      id="description1"
+                                                      name="description"
+                                                      rows="4"
+                                                      placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
+                                        </div>
+                                        <div>
+                                            <!-- ДОБАВЛЕНИЕ ФОТО -->
+                                            <button class="btn btn-outline-secondary"
+                                                    type="button"
+                                                    id="openPhotoModal1"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#photoModal"
+                                            >Прикрепленные фото
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="mb-2">
-                                        <label for="inconsistencyName1" class="mb-3">Несоответствия:</label>
-                                        <input type="text" id="inconsistencyName1" readonly
-                                               class="form-control readonly-scroll"
-                                               value="${(bid.inconsistencies??)?then(bid.inconsistencies?map(i -> i.getName())?join(', '), '')}">
-                                        <input type="hidden" id="inconsistencyJson1" name="inconsistencies"
-                                               value='[<#list bid.inconsistencies as i>{"name": "${i.getName()?json_string}"}<#sep>, </#sep></#list>]'>
-                                        <button type="button" class="btn btn-primary mt-2 openModal"
-                                                data-endpoint="inconsistency"
-                                                data-input-id="inconsistencyName1"
-                                                data-hidden-entity="inconsistencyJson1"
-                                                data-modal-id="inconsistencyModal"
-                                                data-multiple="true"
-                                                data-param="${bid.getControl()!""}">
-                                            Изменить
-                                        </button>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Описание несоответствия:</label>
-                                        <textarea class="form-control"
-                                                  id="description1"
-                                                  name="description"
-                                                  rows="4"
-                                                  placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
-                                    </div>
-                                    <div>
-                                        <!-- ДОБАВЛЕНИЕ ФОТО -->
-                                        <button class="btn btn-outline-secondary"
-                                                type="button"
-                                                id="openPhotoModal1"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#photoModal"
-                                        >Прикрепленные фото
-                                        </button>
-                                    </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                <button type="button"
-                                        id="successId"
-                                        class="btn btn-success work"
-                                        data-endpoint="request/in-work"
-                                        data-param="${bid.getId()}"
-                                        data-status="closed">
-                                    Сохранить
-                                </button>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена
+                                    </button>
+                                    <button type="button"
+                                            id="successId"
+                                            class="btn btn-success work"
+                                            data-endpoint="request/in-work"
+                                            data-param="${bid.getId()}"
+                                            data-status="closed">
+                                        Сохранить
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </#if>
 
                 <div class="modal fade" id="exampleFullPhotoModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -559,8 +664,30 @@
                                                 data-bs-target="#addInconsistenciesModal">✅
                                         </button>
                                     </p>
-                                </div>
-                                <div class="mb-3">
+<#--                                    <div class="d-flex flex-column flex-md-row justify-content-evenly align-items-center gap-3 mt-2">-->
+<#--                                        <div class="text-center">-->
+<#--                                            <h5>Уведомление НП</h5>-->
+<#--                                            <button type="button" class="btn btn-primary" id="noticeId"-->
+<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+<#--                                            </button>-->
+<#--                                        </div>-->
+
+<#--                                        <div class="text-center">-->
+<#--                                            <h5>Уведомление для ОГТ</h5>-->
+<#--                                            <button type="button" class="btn btn-primary" id="noticeOgtId"-->
+<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+<#--                                            </button>-->
+<#--                                        </div>-->
+
+<#--                                        <div class="text-center">-->
+<#--                                            <h5>Уведомления для ОГК</h5>-->
+<#--                                            <button type="button" class="btn btn-primary" id="noticeOgcId"-->
+<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+<#--                                            </button>-->
+<#--                                        </div>-->
+<#--                                    </div>-->
+<#--                                </div>-->
+                                <div class="mb-3 mt-4">
                                     <label for="description" class="form-label">Описание несоответствия:</label>
                                     <textarea class="form-control"
                                               id="description2"
@@ -615,6 +742,203 @@
             </div>
         </div>
 
+        <#if bid.getStatus().getName() == "Забракована" || (bid.getStatus().getName() == "Закрыт" && bid.qtyRejected > 0)>
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">Забракованные версии</div>
+                <div class="card-body">
+
+                    <!-- Десктопная версия -->
+                    <div class="d-none d-md-block">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <td>Дата</td>
+                                <td>Несоответствие</td>
+                                <td>Описание</td>
+                                <td>Фото</td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <#list requestHistoryDTOList as history>
+                                <tr>
+                                    <td>${history.changeRequestDate()}</td>
+                                    <td>
+                                        <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
+                                            ${history.requestData.inconsistencies?join(", ")}
+                                        <#else>
+                                            Не указано
+                                        </#if>
+                                    </td>
+                                    <td>${(history.getRequestData().getDescription())!"-"}</td>
+                                    <td>
+                                        <#if history.requestData.images?? && history.requestData.images?size gt 0>
+                                            <button type="button"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#photoModal${history?index}">
+                                                <i class="bi bi-image"></i> Фото (${history.requestData.images?size})
+                                            </button>
+                                        <#else>
+                                            <span class="text-muted">Нет фото</span>
+                                        </#if>
+                                    </td>
+                                </tr>
+                            </#list>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Мобильная версия -->
+                    <div class="d-md-none">
+                        <div class="request-history-mobile">
+                            <#list requestHistoryDTOList as history>
+                                <div class="card history-card mb-3">
+                                    <div class="card-body">
+                                        <!-- Верхняя строка с датой и фото -->
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-calendar text-primary me-2"></i>
+                                                <strong class="text-dark">${history.changeRequestDate()}</strong>
+                                            </div>
+                                            <#if history.requestData.images?? && history.requestData.images?size gt 0>
+                                                <button type="button"
+                                                        class="btn btn-outline-primary btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#photoModal${history?index}">
+                                                    <i class="bi bi-images me-1"></i>
+                                                    <span class="badge bg-primary">${history.requestData.images?size}</span>
+                                                </button>
+                                            <#else>
+                                                <span class="badge bg-secondary">Нет фото</span>
+                                            </#if>
+                                        </div>
+
+                                        <!-- Несоответствие -->
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Несоответствие:</small>
+                                            <div class="fw-medium">
+                                                <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
+                                                    ${history.requestData.inconsistencies?join(", ")}
+                                                <#else>
+                                                    <span class="text-muted">Не указано</span>
+                                                </#if>
+                                            </div>
+                                        </div>
+
+                                        <!-- Описание -->
+                                        <div>
+                                            <small class="text-muted d-block">Описание:</small>
+                                            <div class="text-break">
+                                                ${(history.getRequestData().getDescription())!"-"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </#list>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </#if>
+
+        <#list requestHistoryDTOList as history>
+            <#if history.requestData.images?? && history.requestData.images?size gt 0>
+                <div class="modal fade" id="photoModal${history?index}" tabindex="-1"
+                     aria-labelledby="photoModalLabel${history?index}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="photoModalLabel${history?index}">
+                                    Фото версии от ${history.changeRequestDate()}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Закрыть"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="carousel${history?index}" class="carousel slide" data-bs-ride="carousel">
+                                    <#if history.requestData.images?size gt 1>
+                                        <div class="carousel-indicators">
+                                            <#list history.requestData.images as image>
+                                                <button type="button"
+                                                        data-bs-target="#carousel${history?index}"
+                                                        data-bs-slide-to="${image?index}"
+                                                        <#if image?index == 0>class="active" aria-current="true"</#if>
+                                                        aria-label="Фото ${image?index + 1}">
+                                                </button>
+                                            </#list>
+                                        </div>
+                                    </#if>
+
+                                    <div class="carousel-inner">
+                                        <#list history.requestData.images as image>
+                                            <div class="carousel-item <#if image?index == 0>active</#if>">
+                                                <#if image.data?? && image.data?has_content>
+                                                    <#assign imageData = image.data>
+                                                    <#if !image.data?starts_with("data:")>
+                                                        <#assign imageData = "data:image/jpeg;base64," + image.data>
+                                                    </#if>
+
+                                                    <img src="${imageData}"
+                                                         class="d-block w-100"
+                                                         alt="Фото ${image?index + 1}"
+                                                         style="max-height: 70vh; object-fit: contain;"
+                                                         onerror="console.error('Image load error'); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                <#else>
+                                                    <div class="d-block w-100 bg-light d-flex align-items-center justify-content-center"
+                                                         style="height: 400px;">
+                                                        <div class="text-center text-muted">
+                                                            <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                            <p class="mt-2">Нет данных изображения</p>
+                                                            <small>Data: ${(image.data??)?then('exists','null')}</small>
+                                                        </div>
+                                                    </div>
+                                                </#if>
+
+                                                <div class="d-none bg-light d-flex align-items-center justify-content-center"
+                                                     style="height: 400px;">
+                                                    <div class="text-center text-danger">
+                                                        <i class="bi bi-exclamation-triangle"
+                                                           style="font-size: 3rem;"></i>
+                                                        <p class="mt-2">Ошибка загрузки изображения</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                                    <p class="mb-0">
+                                                        <#if image.name??>
+                                                            ${image.name?replace("T", " ")}
+                                                        <#else>
+                                                            Фото ${image?index + 1}
+                                                        </#if>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </#list>
+                                    </div>
+
+                                    <#if history.requestData.images?size gt 1>
+                                        <button class="carousel-control-prev" type="button"
+                                                data-bs-target="#carousel${history?index}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Предыдущее</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button"
+                                                data-bs-target="#carousel${history?index}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Следующее</span>
+                                        </button>
+                                    </#if>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </#if>
+        </#list>
+
         <!-- Telegram уведомление -->
         <div class="form-check form-switch mb-4 d-none">
             <input type="hidden" name="sendToTelegram" value="true">
@@ -635,8 +959,85 @@
             </button>
             <a href="/menu" class="btn btn-outline-secondary">Меню</a>
         </div>
-
+        <div class="modal fade" id="completedTechnologistModal" tabindex="-1"
+             aria-labelledby="completedTechnologistModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="completedTechnologistModalLabel">Выполнение заявки</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание выполненной работы:</label>
+                            <textarea class="form-control"
+                                      id="descriptionTechnologyId"
+                                      rows="4"
+                                      placeholder="Введите описание выполненной работы"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button"
+                                id="successId"
+                                class="btn btn-success work"
+                                data-endpoint="request/in-work"
+                                data-param="${bid.getId()}"
+                                data-status="completed">
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </form>
+    <div class="modal fade" id="invokeServiceModalId" tabindex="-1"
+         aria-labelledby="invokeServiceModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invokeServiceModalLabel">Вызов отдела на исправление</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invokeServiceForm" action="/api/request/create-invoke" method="POST">
+                        <input type="hidden" name="bidId" value="${bid.id}">
+
+                        <label for="typeServiceId" class="mt-2 mb-2">Выберите отдел для вызова сотрудника: </label>
+                        <select id="typeServiceId" name="typeService" class="form-select">
+                            <#--                            <#list bid.typeRequest.values() as typeService>-->
+                            <#--                                <option value="${typeService}">${typeService.getName()}</option>-->
+                            <#--                            </#list>-->
+                        </select>
+
+                        <label for="descriptionInvokeServiceId" class="mt-2 mb-2">Причина вызова: </label>
+                        <textarea class="form-control"
+                                  id="descriptionInvokeServiceId"
+                                  name="description"
+                                  rows="4"
+                                  placeholder="Введите причину вызова">${(bid.getDescription())!""}</textarea>
+
+                        <label for="titleInvokeServiceId" class="mt-2 mb-2">Обозначение/Наименование: </label>
+                        <input type="text" id="titleInvokeServiceId" name="title"
+                               class="form-control mt-2 mb-2"
+                               placeholder="Введите Обозначение/Наименование"
+                               value="${(bid.getTitle())!""}">
+
+                        <div class="d-flex justify-content-between mt-5 mb-2">
+                            <button type="submit" class="btn btn-success">
+                                Сохранить
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </#if>
 
 <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
@@ -657,7 +1058,13 @@
                 <img id="fullPhoto" src="" style="max-width:100%; max-height:80vh; margin-top:10px; display: none">
             </div>
             <div class="modal-footer">
-                <button type="button" id="addPhotoBtn" class="btn btn-primary">Добавить фото</button>
+                <#if createForm!false >
+                    <button type="button" id="addPhotoBtn" class="btn btn-primary">Добавить фото</button>
+                <#else>
+                    <#if bid.getStatus().getName() != "Забракована">
+                        <button type="button" id="addPhotoBtn" class="btn btn-primary">Добавить фото</button>
+                    </#if>
+                </#if>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
             </div>
         </div>
@@ -672,7 +1079,7 @@
                 <h5 class="modal-title" id="addInconsistenciesModalLabel">Добавление несоответствия</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
-            <form id="inconsistenciesForm" action="/inconsistencies/create" method="post">
+            <form id="inconsistenciesForm" action="/api/inconsistencies/create" method="post">
                 <div class="modal-body">
                     <div class="text-center">
                         <label for="addInconsistencies">Название
@@ -747,37 +1154,144 @@
 <!-- Уведомления -->
 <div id="notification-container"></div>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Анимация переключения карточки несоответствий
-        const inconsistenciesToggle = document.querySelector('.inconsistencies-toggle');
-        const inconsistenciesCard = document.querySelector('.inconsistencies-card');
+    function validateOrderNumber(input) {
+        const value = input.value;
+        const errorElement = document.getElementById('orderError');
 
-        if (inconsistenciesToggle) {
-            inconsistenciesToggle.addEventListener('click', function () {
-                inconsistenciesCard.classList.toggle('card-collapsed');
-            });
+        if (value && !value.startsWith('20')) {
+            input.classList.add('is-invalid');
+            errorElement.style.display = 'block';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            errorElement.style.display = 'none';
+            return true;
+        }
+    }
+</script>
+<script>
+    let isSubmitting = false;
+
+    document.getElementById('createRequestForm').addEventListener('submit', function (e) {
+
+        if (isSubmitting) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
         }
 
-        // Анимация для кнопок описания
-        const descriptionToggles = document.querySelectorAll('.description-toggle');
-        descriptionToggles.forEach(toggle => {
-            toggle.addEventListener('click', function () {
-                this.classList.toggle('collapsed');
-            });
-        });
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('was-validated');
+            return;
+        }
 
-        // Плавное раскрытие/сворачивание
-        const inconsistenciesCollapse = document.getElementById('inconsistenciesCollapse');
-        if (inconsistenciesCollapse) {
-            inconsistenciesCollapse.addEventListener('show.bs.collapse', function () {
-                inconsistenciesToggle.querySelector('.bi-chevron-down').style.transform = 'rotate(0deg)';
-            });
+        isSubmitting = true;
+        setButtonState(true);
 
-            inconsistenciesCollapse.addEventListener('hide.bs.collapse', function () {
-                inconsistenciesToggle.querySelector('.bi-chevron-down').style.transform = 'rotate(-90deg)';
-            });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        resetSubmitButton();
+    });
+
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            resetSubmitButton();
         }
     });
+
+    function setButtonState(submitting) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        if (submitting) {
+            submitBtn.disabled = true;
+            btnText.textContent = 'Создание заявки...';
+            btnSpinner.classList.remove('d-none');
+            submitBtn.classList.add('btn-processing');
+        } else {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Создать заявку';
+            btnSpinner.classList.add('d-none');
+            submitBtn.classList.remove('btn-processing');
+        }
+    }
+
+    function resetSubmitButton() {
+        isSubmitting = false;
+        setButtonState(false);
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', function (e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    window.addEventListener('load', function () {
+        const errorMessages = document.querySelector('.alert-danger, .error-message');
+        if (errorMessages) {
+            resetSubmitButton();
+        }
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        var timeoutId;
+        var lastSearchTerm = '';
+
+        function loadReasons(searchTerm) {
+            if (!searchTerm || searchTerm === lastSearchTerm) {
+                return;
+            }
+            lastSearchTerm = searchTerm;
+            $.ajax({
+                url: '/api/reasons-wr',
+                data: {search: searchTerm},
+                dataType: 'json',
+                success: function (data) {
+                    var datalist = $('#reasonsList');
+                    datalist.empty();
+                    data.forEach(function (reason) {
+                        $('<option>').val(reason.text).appendTo(datalist);
+                    });
+                }
+            });
+        }
+
+        $('#reasonsJson').on('input', function () {
+            var searchTerm = $(this).val().trim();
+            if (searchTerm.length < 5) {
+                $('#reasonsList').empty();
+                lastSearchTerm = '';
+                return;
+            }
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(function () {
+                loadReasons(searchTerm);
+            }, 700);
+        });
+    });
+</script>
+<script>
+    function toggleValue(button) {
+        button.value = button.value === 'true' ? 'false' : 'true';
+
+        if (button.value === 'true') {
+            button.classList.replace('btn-primary', 'btn-success');
+            button.textContent = '✅ Уведомлено';
+        } else {
+            button.classList.replace('btn-success', 'btn-primary');
+            button.textContent = 'Уведомить';
+        }
+        return false;
+    }
 </script>
 </body>
 </html>

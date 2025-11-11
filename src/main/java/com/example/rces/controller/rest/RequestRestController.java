@@ -1,7 +1,9 @@
 package com.example.rces.controller.rest;
 
 import com.example.rces.dto.ImagesDTO;
+import com.example.rces.dto.RequestDto;
 import com.example.rces.dto.RequestHistoryDTO;
+import com.example.rces.dto.RequestParamsDto;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
@@ -19,7 +21,6 @@ import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.current
 @RequestMapping("/api/request")
 public class RequestRestController {
 
-    private final EmployeeService employeeService;
     private final RequestsService requestsService;
     private final ImageService imageService;
     private final InconsistenciesService inconsistenciesService;
@@ -27,8 +28,7 @@ public class RequestRestController {
     private final RequestLogService requestLogService;
 
     @Autowired
-    public RequestRestController(EmployeeService employeeService, RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService, RequestHistoryService requestHistoryService, RequestLogService requestLogService) {
-        this.employeeService = employeeService;
+    public RequestRestController(RequestsService requestsService, ImageService imageService, InconsistenciesService inconsistenciesService, RequestHistoryService requestHistoryService, RequestLogService requestLogService) {
         this.requestsService = requestsService;
         this.imageService = imageService;
         this.inconsistenciesService = inconsistenciesService;
@@ -37,28 +37,25 @@ public class RequestRestController {
     }
 
     @PostMapping("/in-work")
-    public ResponseEntity<?> inWork(@RequestParam UUID param,
-                                    @RequestParam(required = false) String description,
-                                    @RequestParam(required = false) String status,
-                                    @RequestParam(required = false) Integer qtyCompleted,
-                                    @RequestParam(required = false) String inconsistencyData
-    ) {
-        Requests requests = requestsService.findById(param);
+    public ResponseEntity<?> inWork(@RequestBody RequestParamsDto requestParams) {
+        Requests requests = requestsService.findById(requestParams.getRequestId());
         Set<Inconsistency> inconsistencies = Collections.emptySet();
-        if (inconsistencyData != null && !inconsistencyData.isEmpty()) {
+        if (requestParams.getInconsistencyData() != null && !requestParams.getInconsistencyData().isEmpty()) {
             try {
-                inconsistencies = Inconsistency.fromField(inconsistencyData, new HashSet<>(inconsistenciesService.findAll()));
+                inconsistencies = Inconsistency.fromField(requestParams.getInconsistencyData(), new HashSet<>(inconsistenciesService.findAll()));
             } catch (Exception e) {
                 throw new RuntimeException("Ошибка парсинга inconsistencyData", e);
             }
         }
-        if (status != null && status.equals("closed")) {
-            if (qtyCompleted == null || qtyCompleted < 0 || qtyCompleted > requests.getQty()) {
-                throw new RuntimeException("Передано некорректное число!");
+        if (requestParams.getStatus() != null && requestParams.getStatus().equals("closed")) {
+            if (requests.getTypeRequest().name().equals("otk")) {
+                if (requestParams.getQtyCompleted() == null || requestParams.getQtyCompleted() < 0 || requestParams.getQtyCompleted() > requests.getQty()) {
+                    throw new RuntimeException("Передано некорректное число!");
+                }
             }
         }
         try {
-            requestsService.save(param, description, status, qtyCompleted, inconsistencies);
+            requestsService.save(requestParams, inconsistencies);
             Map<String, String> successMap = new HashMap<>();
             successMap.put("message", String.format("Заявка: %s успешно принята в работу!", requests.getRequestNumber()));
             return ResponseEntity.ok(successMap);
@@ -101,7 +98,7 @@ public class RequestRestController {
         UUID requestId = UUID.fromString(payload.get("reqId"));
         Requests requests = requestsService.findById(requestId);
         Employee currentUser = currentUser().orElseThrow();
-        if (!requests.getEmployee().getName().equals(currentUser.getName())) {
+        if (requests.getEmployee() == null || !requests.getEmployee().getName().equals(currentUser.getName())) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Пользователь не может удалять фото в заявке!");
             return ResponseEntity.badRequest().body(errorResponse);
@@ -112,17 +109,16 @@ public class RequestRestController {
         return ResponseEntity.ok(messageResponse);
     }
 
-    @GetMapping("/{id}/history")
-    public ResponseEntity<List<?>> getHistory(@PathVariable UUID id) {
+    @GetMapping("/{requestId}/history")
+    public ResponseEntity<List<?>> getHistory(@PathVariable UUID requestId) {
         try {
-            List<RequestHistoryDTO> history = requestHistoryService.getDetailedRequestHistory(id);
+            List<RequestHistoryDTO> history = requestHistoryService.getDetailedRequestHistory(requestId);
             if (history.isEmpty()) {
-                return ResponseEntity.ok(requestLogService.getAllByRequestId(id));
+                return ResponseEntity.ok(requestLogService.getAllByRequestId(requestId));
             }
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

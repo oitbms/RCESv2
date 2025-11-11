@@ -2,6 +2,7 @@ package com.example.rces.service;
 
 import com.example.rces.dto.CreateRequestDto;
 import com.example.rces.dto.RequestDto;
+import com.example.rces.dto.RequestParamsDto;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.Inconsistency;
@@ -15,11 +16,11 @@ import java.util.UUID;
 
 public interface RequestsService {
 
-    RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto) throws JsonProcessingException;
+    RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto, MultipartFile[] additionalFiles) throws JsonProcessingException;
 
     void save(Requests requests);
 
-    void save(UUID id, String description, String status, Integer qty, Set<Inconsistency> inconsistencyData);
+    void save(RequestParamsDto paramsDto, Set<Inconsistency> inconsistencyData);
 
     void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields);
 

@@ -1,7 +1,9 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.dto.CreateRequestDto;
+import com.example.rces.dto.RequestContext;
 import com.example.rces.dto.RequestDto;
+import com.example.rces.dto.RequestParamsDto;
 import com.example.rces.mapper.RequestMapper;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
@@ -17,12 +19,15 @@ import jakarta.persistence.Entity;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -43,12 +48,15 @@ public class RequestServiceImpl implements RequestsService {
     private final InconsistenciesService inconsistenciesService;
     private final RequestMapper requestMapper;
     private final SubDivisionService subDivisionService;
+    private final ReasonService reasonService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper,
                               TelegramService telegramService, CustomerOrderService customerOrderService,
                               ImageService imageService, EmployeeService employeeService,
-                              InconsistenciesService inconsistenciesService, RequestMapper requestMapper, SubDivisionService subDivisionServicel) {
+                              InconsistenciesService inconsistenciesService, RequestMapper requestMapper,
+                              SubDivisionService subDivisionService, ReasonService reasonService, JdbcTemplate jdbcTemplate) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.telegramService = telegramService;
@@ -57,13 +65,21 @@ public class RequestServiceImpl implements RequestsService {
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
         this.requestMapper = requestMapper;
-        this.subDivisionService = subDivisionServicel;
+        this.subDivisionService = subDivisionService;
+        this.reasonService = reasonService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
-    public RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto) throws JsonProcessingException {
-        Employee employee = objectMapper.readValue(createRequestDto.getEmployeeJson(), Employee.class);
-        employee = employeeService.loadUserByUsername(employee.getUsername());
+    public RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto, MultipartFile[] additionalFiles) throws JsonProcessingException {
+
+        Employee employee = null;
+
+        if (createRequestDto.getEmployeeJson() != null) {
+            employee = objectMapper.readValue(createRequestDto.getEmployeeJson(), Employee.class);
+            employee = employeeService.loadUserByUsername(employee.getUsername());
+        }
+
         CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(createdEmployee,
                 createRequestDto.getCustomerOrderString(), createRequestDto.getCustomerOrderJson());
         GeneralReason reason = null;
@@ -83,19 +99,32 @@ public class RequestServiceImpl implements RequestsService {
         if (!createRequestDto.getMlmNodeJson().isBlank()) {
             mlmNode = subDivisionService.getByName(createRequestDto.getMlmNodeJson());
         }
+
+
         createRequestDto.setRequestNumber(repository.findNextRequestNumber());
-        Requests requests = requestMapper.createFullRequest(
+        Requests requests = repository.save(requestMapper.createFullRequest(
                 createRequestDto,
-                objectMapper,
                 item,
                 reason,
                 mlmNode,
                 employee,
                 customerOrder,
                 createdEmployee
-        );
-        return requestMapper.toDTO(repository.save(requests));
+        ));
+
+        if (additionalFiles != null && additionalFiles.length > 0) {
+            imageService.createImages(additionalFiles, requests, true);
+        }
+
+        if (reasonText != null) {
+            reasonService.createOrUpdateReason(reasonText, createRequestDto.getType());
+        }
+
+        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getEmployee(), MessageType.CREATE));
+
+        return requestMapper.toDTO((requests));
     }
+
 
     @Override
     public void save(Requests requests) {
@@ -103,54 +132,27 @@ public class RequestServiceImpl implements RequestsService {
     }
 
     @Override
-    public void save(UUID id, String description, String status, Integer qty, Set<Inconsistency> inconsistencyData) {
-        Requests request = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
-        Employee updaterEmployee = currentUser().orElseThrow();
+    public void save(RequestParamsDto requestParamsDto, Set<Inconsistency> inconsistencyData) {
+        Requests requests = repository.findById(requestParamsDto.getRequestId())
+                .orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + requestParamsDto.getRequestId()));
+        Employee updatedEmployee = currentUser().orElseThrow();
 
-        if (status == null) {
-            if (request.getEmployee().equals(updaterEmployee)) {
-                if (request.getStatus().equals(Status.New)) {
-                    request.setStatus(Status.InWork);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.WORK));
-                } else if (!request.getInconsistencies().isEmpty()) {
-                    request.setStatus(Status.Rejected);
-                    request.setDescription(description);
-                    request.setQtyRejected(request.getQtyRejected() + 1);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CANCEL));
-                }
-            } else {
-                throw new ForbiddenException("Пользователь не может изменять заявку!");
-            }
-        } else if (status.equals("closed")) {
-            if (Objects.equals(request.getQty(), qty)) {
-                request.setStatus(Status.Closed);
-                Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
-                request.setCloseDate(LocalDateTime.now());
-                request.setClosedEmployee(updaterEmployee);
-                request.setChatId(message != null ? message.getChatId() : -1);
-                request.setMessageId(message != null ? message.getMessageId() : -1);
-            } else if (request.getQty() > qty) {
-                Requests requestsRejected = addRequestRejected(request, qty, description, inconsistencyData);
-                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requestsRejected, requestsRejected.getCreatedBy(), MessageType.REJECTED));
-                request.getImages().clear();
-                request.setStatus(Status.Closed);
-                request.setQty(qty);
-                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getCreatedBy(), MessageType.CLOSE));
-                request.setCloseDate(LocalDateTime.now());
-            }
+        RequestContext context = new RequestContext(requests, requestParamsDto.getDescription(),
+                requestParamsDto.getStatus(), requestParamsDto.getQtyCompleted(),
+                inconsistencyData, updatedEmployee,
+                requestParamsDto.getNoticeNp(),requestParamsDto.getNoticeOgt(), requestParamsDto.getNoticeOgc());
 
-        } else if (status.equals("update")) {
-            request.setStatus(Status.New);
-            request.getInconsistencies().clear();
-            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.UPDATE));
-        } else if (status.equals("refresh")) {
-            request.setStatus(Status.New);
+        if (requestParamsDto.getStatus() == null) {
+            handleStatusNull(context);
+        } else {
+            handleStatusUpdate(context);
         }
 
-        request.setDateWork(LocalDateTime.now());
-        request.setVersion(request.getVersion() + 1);
-        repository.save(request);
+        requests.setDateWork(LocalDateTime.now());
+        requests.setVersion(requests.getVersion() + 1);
+        repository.save(requests);
     }
+
 
     @Override
     public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
@@ -260,28 +262,220 @@ public class RequestServiceImpl implements RequestsService {
         return requests.getTypeRequest().name();
     }
 
-    private Requests addRequestRejected(Requests request, int qty, String description, Set<Inconsistency> inconsistencyData) {
-        Requests requestsRejected = new Requests();
-        requestsRejected.setCreatedBy(request.getCreatedBy());
-        requestsRejected.setRequestNumber(repository.findNextRequestNumber());
-        requestsRejected.setEmployee(request.getEmployee());
-        requestsRejected.setSubDivision(request.getSubDivision());
-        requestsRejected.setReason_wr(request.getReason_wr());
-        requestsRejected.setStatus(Status.Rejected);
-        requestsRejected.setQty(request.getQty() - qty);
-        requestsRejected.setTitle(request.getTitle());
-        requestsRejected.setItem(request.getItem());
-        requestsRejected.setTypeRequest(request.getTypeRequest());
-        requestsRejected.setCustomerOrder(request.getCustomerOrder());
-        requestsRejected.setControl(request.getControl());
-        requestsRejected.setInconsistencies(inconsistencyData);
-        requestsRejected.setDescription(description);
-        requestsRejected.setQtyRejected(request.getQtyRejected() + 1);
-        requestsRejected.setImages(new ArrayList<>(request.getImages()).stream()
-                .peek(images -> images.setRequest(requestsRejected))
-                .toList());
-        repository.save(requestsRejected);
-        return requestsRejected;
+    /**
+     * Обрабатывает заявку при первоначальном назначении ответственного сотрудника.
+     * Выполняет проверки и устанавливает соответствующий статус в зависимости от условий:
+     * <ul>
+     *   <li><b>Назначение на нового сотрудника</b> - проверяет, что заявка не назначена на другого сотрудника,
+     *        затем устанавливает статус {@link Status#InWork} и отправляет уведомление о взятии в работу</li>
+     *   <li><b>Повторное отклонение</b> - если заявка имеет несоответствия и повторно назначается на того же сотрудника,
+     *        устанавливает статус {@link Status#Rejected}, увеличивает счетчик отклонений и отправляет уведомление об отмене</li>
+     * </ul>
+     *
+     * @param context контекст запроса, содержащий заявку и данные обновления
+     * @throws ForbiddenException если:
+     *         <ul>
+     *           <li>заявка уже назначена на другого сотрудника</li>
+     *           <li>не указан ответственный сотрудник</li>
+     *         </ul>
+     * @throws NullPointerException если context или обязательные поля context равны null
+     */
+    private void handleStatusNull(RequestContext context) {
+        Requests requests = context.getRequest();
+        Employee updateEmployee = context.getEmployee();
+
+        if (requests.getEmployee() != null) {
+            if (requests.getEmployee().equals(updateEmployee)) {
+                if (requests.getStatus().equals(Status.New)) {
+                    requests.setStatus(Status.InWork);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.WORK));
+//                } else if (!requests.getInconsistencies().isEmpty() && (context.getNoticeOgc() || context.getNoticeOgt())) {
+//                    requests.setStatus(Status.UnderRework);
+//                    requests.setDescription(context.getDescription());
+//                    requests.setQtyRejected(requests.getQtyRejected() + 1);
+//                    System.out.println("Отправляем сообщение технологам или конструкторам");
+//                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
+                } else if (!requests.getInconsistencies().isEmpty()) {
+                    requests.setStatus(Status.Rejected);
+                    requests.setDescription(context.getDescription());
+                    requests.setQtyRejected(requests.getQtyRejected() + 1);
+                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
+                }
+            } else {
+                throw new ForbiddenException("Эта заявка уже назначена на другого сотрудника. Вы можете изменить ответственного, выбрав нового исполнителя в поле «Ответственный».");
+            }
+        } else {
+            throw new ForbiddenException("Для начала работы с заявкой требуется назначить ответственного!");
+        }
+    }
+
+    /**
+     * Обрабатывает изменение статуса заявки.
+     * В зависимости от целевого статуса выполняет дополнительные действия:
+     * <ul>
+     *   <li><b>closed</b> - делегирует обработку методу {@link #handleClosedStatus(RequestContext)}</li>
+     *   <li><b>update</b> - сбрасывает статус на {@link Status#New}, очищает список несоответствий
+     *        и отправляет уведомление об обновлении через Telegram</li>
+     *   <li><b>refresh</b> - сбрасывает статус на {@link Status#New} без дополнительных действий</li>
+     *   <li><b>completed</b> - устанавливает статус {@link Status#Closed}, фиксирует дату закрытия,
+     *        обновляет описание и отправляет уведомление о закрытии инициатору заявки</li>
+     * </ul>
+     *
+     * @param context контекст запроса, содержащий обрабатываемую заявку
+     * @throws IllegalArgumentException если передан неизвестный статус
+     * @throws NullPointerException если context или requests в context равны null
+     */
+
+    private void handleStatusUpdate(RequestContext context) {
+        Requests requests = context.getRequest();
+        String description = context.getDescription();
+        String status = context.getStatus();
+
+        switch (status) {
+            case "closed":
+                handleClosedStatus(context);
+                break;
+            case "update":
+                requests.setStatus(Status.New);
+                requests.getInconsistencies().clear();
+                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getEmployee(), MessageType.UPDATE));
+                break;
+            case "refresh":
+                requests.setStatus(Status.New);
+                break;
+            case "completed":
+                requests.setStatus(Status.Closed);
+                requests.setCloseDate(LocalDateTime.now());
+                requests.setDescription(description);
+                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+                break;
+            case "underRework":
+                requests.setStatus(Status.UnderRework);
+                System.out.println("Отправляем сообщения в телеграмм");
+                break;
+            default:
+                throw new IllegalArgumentException("Неизвестный статус: " + status);
+        }
+    }
+
+    private void handleClosedStatus(RequestContext context) {
+        Requests requests = context.getRequest();
+        String description = context.getDescription();
+        Integer qty = context.getQty();
+        Set<Inconsistency> inconsistencyData = context.getInconsistencies();
+        Employee updaterEmployee = context.getEmployee();
+
+        if (Objects.equals(requests.getQty(), qty)) {
+            requests.setStatus(Status.Closed);
+            requests.setCloseDate(LocalDateTime.now());
+            requests.setClosedEmployee(updaterEmployee);
+            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+            requests.setChatId(message != null ? message.getChatId() : -1);
+            requests.setMessageId(message != null ? message.getMessageId() : -1);
+        } else if (qty == 0) {
+            requests.setStatus(Status.Rejected);
+            requests.setDescription(description);
+            requests.setInconsistencies(inconsistencyData);
+            requests.setQtyRejected(requests.getQtyRejected() + 1);
+            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
+        } else if (requests.getQty() > qty) {
+            handlePartialRejection(context);
+        }
+    }
+
+    private void handlePartialRejection(RequestContext context) {
+        Requests requests = context.getRequest();
+        Integer qty = context.getQty();
+        String description = context.getDescription();
+        Set<Inconsistency> inconsistencyData = context.getInconsistencies();
+
+        Requests rejected = createChildRejectedRequest(requests, qty, description, inconsistencyData);
+
+        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, rejected, rejected.getCreatedBy(), MessageType.REJECTED));
+
+        requests.setStatus(Status.Closed);
+        requests.setQty(qty);
+
+        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+        requests.setCloseDate(LocalDateTime.now());
+    }
+
+    private Requests createChildRejectedRequest(Requests parent, Integer qty, String description, Set<Inconsistency> inconsistencyData) {
+        UUID newId = UUID.randomUUID();
+
+        try {
+            jdbcTemplate.update("""
+                                INSERT INTO rces.requests (
+                                    id, type_request, work_date, request_number, employee_id, 
+                                    customer_order_id, reason, qty, item, status_id, reason_wr, 
+                                    description, title, control, subdivision_id,
+                                    created_by, created_date, updated_by, updated_date, version,
+                                    qty_rejected,
+                                    chat_id, comment, comment_agreed, frozen
+                                ) VALUES (
+                                    UUID_TO_BIN(?), ?, ?, ?, ?, 
+                                    UUID_TO_BIN(?), ?, ?, ?, ?, 
+                                    ?, ?, ?, ?, ?,
+                                    ?, ?, ?, ?, 0, ?,
+                                    ?, ?, ?, ?
+                                )
+                            """,
+                    newId.toString(),
+                    parent.getTypeRequest() != null ? parent.getTypeRequest().name() : null,
+                    parent.getDateWork(),
+                    repository.findNextRequestNumber(),
+                    parent.getEmployee() != null ? parent.getEmployee().getId() : null,
+                    parent.getCustomerOrder() != null ? parent.getCustomerOrder().getId().toString() : null,
+                    parent.getReason() != null ? parent.getReason().name() : null,
+                    parent.getQty() - qty,
+                    parent.getItem() != null ? parent.getItem().name() : null,
+                    "Rejected",
+                    parent.getReason_wr(),
+                    description,
+                    parent.getTitle(),
+                    parent.getControl(),
+                    parent.getSubDivision() != null ? parent.getSubDivision().getId() : null,
+                    parent.getCreatedBy().getId(),
+                    parent.getCreatedDate() != null ? parent.getCreatedDate() : Instant.now(),
+                    parent.getUpdatedBy() != null ? parent.getUpdatedBy().getId() : parent.getCreatedBy().getId(),
+                    Instant.now(),
+                    1,
+                    parent.getChatId(),
+                    parent.getComment(),
+                    parent.getCommentAgreed(),
+                    parent.isFrozen()
+            );
+
+            Requests savedRequest = repository.findById(newId)
+                    .orElseThrow(() -> new RuntimeException("Не удалось создать заявку на брак с id: " + newId));
+
+            savedRequest.setInconsistencies(new HashSet<>(inconsistencyData));
+            copyImagesRequest(parent, savedRequest);
+
+            return repository.save(savedRequest);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при создании заявки на брак: " + e.getMessage(), e);
+        }
+    }
+
+    private void copyImagesRequest(Requests parent, Requests child) {
+        if (parent.getImages() == null || parent.getImages().isEmpty()) {
+            return;
+        }
+
+        if (child.getImages() == null) {
+            child.setImages(new ArrayList<>());
+        }
+
+        for (Images original : parent.getImages()) {
+            Images newImage = new Images();
+            newImage.setData(original.getData());
+            newImage.setName(original.getName());
+            newImage.setBase64Data(original.getBase64Data());
+            newImage.setRequest(child);
+            child.getImages().add(newImage);
+        }
     }
 
 }

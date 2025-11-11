@@ -7,6 +7,7 @@ import com.example.rces.models.Employee;
 import com.example.rces.repository.CustomerOrderRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,32 +39,31 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     public CustomerOrder createOrGetCustomerOrder(Employee createdEmployee, String customerOrderName, String customerOrderJson) {
         try {
-            CustomerOrder existingOrder = null;
-            if (!customerOrderName.isBlank()) {
-                CustomerOrder customerOrder = repository.findByName(customerOrderName);
-                if (customerOrder != null) {
-                    existingOrder = customerOrder;
-                }
-            }
-            CustomerOrder jsonOrder = null;
+            String orderNameToUse = customerOrderName;
+
             if (customerOrderJson != null && !customerOrderJson.isBlank()) {
-                jsonOrder = objectMapper.readValue(customerOrderJson, CustomerOrder.class);
-            }
-            if (existingOrder != null && jsonOrder != null) {
-                if (existingOrder.getName().equals(jsonOrder.getName())) {
-                    return jsonOrder;
+                JsonNode jsonNode = objectMapper.readTree(customerOrderJson);
+                if (jsonNode.has("name") && jsonNode.get("name").isTextual()) {
+                    orderNameToUse = jsonNode.get("name").asText();
                 }
-            } else if (existingOrder != null) {
-                return existingOrder;
-            } else {
-                CustomerOrder newOrder = new CustomerOrder();
-                newOrder.setName(customerOrderName);
-                return repository.save(newOrder);
             }
+
+            if (orderNameToUse == null || orderNameToUse.isBlank()) {
+                return null;
+            }
+
+            CustomerOrder existingOrder = repository.findByName(orderNameToUse);
+            if (existingOrder != null) {
+                return existingOrder;
+            }
+
+            CustomerOrder newOrder = new CustomerOrder();
+            newOrder.setName(orderNameToUse);
+            return repository.save(newOrder);
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Ошибка при десериализации JSON CustomerOrder", e);
         }
-        return null;
     }
 
     @Override

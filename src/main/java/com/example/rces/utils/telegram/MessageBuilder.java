@@ -13,6 +13,8 @@ public class MessageBuilder {
     private final String baseUrl;
     private final ChatIdResolver chatIdResolver;
 
+    private static final int TOPIC_CONSTRUCTOR = 2343;
+
     public MessageBuilder(String baseUrl, ChatIdResolver chatIdResolver) {
         this.baseUrl = baseUrl;
         this.chatIdResolver = chatIdResolver;
@@ -48,11 +50,15 @@ public class MessageBuilder {
 
     private void buildCreateMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         String reason;
-        if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
-            message.setMessageThreadId(2343);
-            message.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
+        if (updaterEmployee != null) {
+            if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
+                message.setMessageThreadId(TOPIC_CONSTRUCTOR);
+                message.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
+            } else {
+                message.setChatId(updaterEmployee.getChatId());
+            }
         } else {
-            message.setChatId(updaterEmployee.getChatId());
+            message.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
         }
         if (request.getTypeRequest().equals(Requests.Type.otk)) {
             reason = request.getReason_wr() != null ? request.getReason_wr() : "Причина не указана";
@@ -63,12 +69,12 @@ public class MessageBuilder {
                 String.format(
                         "Создана новая заявка: %d\nОтветственный: %s%s\nЗаказ клиента: %s%s\n%s\nКомментарий: %s\nПричина: %s\nСсылка на заявку: %s",
                         request.getRequestNumber(),
-                        request.getEmployee().getName(),
-                        request.getSubDivision() != null ? "\nЦех: " + request.getSubDivision().getName() : "",
-                        request.getCustomerOrder().getName(),
-                        request.getItem() != null ? "\nТип ТМЦ: " + request.getItem().getName() : "\nТип не задан",
+                        request.getEmployee() != null ? request.getEmployee().getName() : "Пользователь не задан",
+                        request.getSubDivision() != null ? "\nЦех: " + request.getSubDivision().getName() : "Цех не задан",
+                        request.getCustomerOrder() != null ? request.getCustomerOrder().getName() : "Заказ не указан",
+                        (request.getItem() != null && !"ОГТ".equals(request.getTypeRequest().name())) ? "\nТип ТМЦ: " + request.getItem().getName() : "",
                         !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
-                        request.getComment() != null ? request.getComment() : "",
+                        request.getComment() != null ? request.getComment() : "Комментарий не прикреплен",
                         reason,
                         baseUrl + "/view/" + request.getRequestNumber()));
     }
@@ -76,7 +82,7 @@ public class MessageBuilder {
     private void buildUpdateMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         String reason;
         if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
-            message.setMessageThreadId(2343);
+            message.setMessageThreadId(TOPIC_CONSTRUCTOR);
             message.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
         } else {
             message.setChatId(updaterEmployee.getChatId());
@@ -88,12 +94,12 @@ public class MessageBuilder {
         }
         message.setText(
                 String.format(
-                        "Заявка обновлена: %d \nОтветственный: %s \n%s\nЗаказ клиента: %s %s\n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
+                        "Заявка обновлена: %d \nОтветственный: %s \n%s\nЗаказ клиента: %s\nТип ТМЦ: %s \n%s\nКомментарий: %s\nПричина: %s\nСтатус: %s\nСсылка на заявку: %s",
                         request.getRequestNumber(),
                         request.getEmployee().getName(),
                         request.getSubDivision().getName(),
-                        request.getCustomerOrder().getName(),
-                        request.getItem() != null ? request.getItem().getName() : "\nТип не задан",
+                        request.getCustomerOrder() != null ? request.getCustomerOrder().getName() : "не указан ",
+                        request.getItem() != null && "ОГТ".equals(request.getTypeRequest().getName()) ? "\nТип ТМЦ: " + request.getItem().getName() : "",
                         !request.getImages().isEmpty() ? "Прикреплены фото" : "Фото не прикреплены",
                         request.getComment() != null ? request.getComment() : "",
                         reason,
@@ -108,7 +114,7 @@ public class MessageBuilder {
 
     private void buildRedirectMessage(Requests request, SendMessage message, Employee updaterEmployee) {
         if (updaterEmployee.getRole().equals("CONSTRUCTOR")) {
-            message.setMessageThreadId(2343);
+            message.setMessageThreadId(TOPIC_CONSTRUCTOR);
             message.setChatId(chatIdResolver.resolveGroupId(request.getTypeRequest()));
         } else {
             message.setChatId(updaterEmployee.getChatId());

@@ -23,7 +23,19 @@ import java.util.UUID;
 public class Requests extends BaseAuditingEntity implements Cloneable {
 
     public enum Type {
-        constructor, otk, technologist
+        constructor("ОГК"),
+        otk("ОТК"),
+        technologist("ОГТ");
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     @Id
@@ -147,6 +159,10 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     @DisplayName("Количество выполненного")
     private int qtyCompleted;
 
+    @Column(name = "notice")
+    @DisplayName("Уведомления")
+    private Boolean notice;
+
     //TODO че со старыми логами делать
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -155,6 +171,14 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     private List<RequestLog> log = new ArrayList<>();
 
     private boolean frozen;
+
+    public Boolean getNotice() {
+        return notice;
+    }
+
+    public void setNotice(Boolean notice) {
+        this.notice = notice;
+    }
 
     public int getQtyCompleted() {
         return qtyCompleted;

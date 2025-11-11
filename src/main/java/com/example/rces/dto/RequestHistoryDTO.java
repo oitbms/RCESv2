@@ -2,11 +2,13 @@ package com.example.rces.dto;
 
 import com.example.rces.models.Inconsistency;
 import com.example.rces.models.Requests;
-import com.example.rces.models.SubDivision;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,7 +29,6 @@ public class RequestHistoryDTO {
         private Integer requestNumber;
         private GeneralReason reason;
         private Integer qty;
-        private SubDivision mlmNode;
         private Item item;
         private String status;
         private String comment;
@@ -39,8 +40,17 @@ public class RequestHistoryDTO {
         private String title;
         private int qtyRejected;
         private Set<String> inconsistencies;
+        private List<ImagesDTO> images = new ArrayList<>();
 
         public RequestHistoryData() {
+        }
+
+        public List<ImagesDTO> getImages() {
+            return images;
+        }
+
+        public void setImages(List<ImagesDTO> images) {
+            this.images = images;
         }
 
         public Set<String> getInconsistencies() {
@@ -89,14 +99,6 @@ public class RequestHistoryDTO {
 
         public void setQty(Integer qty) {
             this.qty = qty;
-        }
-
-        public SubDivision getMlmNode() {
-            return mlmNode;
-        }
-
-        public void setMlmNode(SubDivision mlmNode) {
-            this.mlmNode = mlmNode;
         }
 
         public Item getItem() {
@@ -186,7 +188,6 @@ public class RequestHistoryDTO {
             data.setRequestNumber(request.getRequestNumber());
             data.setReason(request.getReason());
             data.setQty(request.getQty());
-            data.setMlmNode(request.getSubDivision());
             data.setItem(request.getItem());
             data.setStatus(request.getStatus().getName());
             data.setComment(request.getComment());
@@ -254,6 +255,14 @@ public class RequestHistoryDTO {
 
     public void setChangedBy(String changedBy) {
         this.changedBy = changedBy;
+    }
+
+    public String changeRequestDate() {
+        if (revisionDate != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+            return revisionDate.format(formatter);
+        }
+        return "";
     }
 
 }

@@ -8,7 +8,8 @@ public enum Status {
     Closed(3L, "Закрыт"),
     Cancel(4L, "Отменен"),
     Completed(5L, "Выполнен"),
-    Rejected(6L,"Забракована");
+    Rejected(6L,"Забракована"),
+    UnderRework(7L,"На доработке");
 
     private final Long id;
     private final String name;

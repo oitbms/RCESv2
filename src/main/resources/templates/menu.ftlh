@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script>
-        const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>,</#if></#list>];
-        const dailyCountConstructor = [<#list dailyCountsConstructor as item>${item}<#if item_has_next>,</#if></#list>];
-        const dailyCountOtk = [<#list dailyCountOtk as item>${item}<#if item_has_next>,</#if></#list>];
-        const dailyCountTechnologist = [<#list dailyCountTechnologist as item>${item}<#if item_has_next>,</#if></#list>];
+        const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
+        const dailyCountConstructor = [<#list dailyCountsConstructor as item>${item}<#if item_has_next>, </#if></#list>];
+        const dailyCountOtk = [<#list dailyCountOtk as item>${item}<#if item_has_next>, </#if></#list>];
+        const dailyCountTechnologist = [<#list dailyCountTechnologist as item>${item}<#if item_has_next>, </#if></#list>];
     </script>
     <script src="js/menu.js"></script>
 
@@ -29,30 +29,34 @@
                     <ul class="nav justify-content-center">
                         <li class="nav-item">
                             <#if user.getRole() == 'ADMIN'>
-                                    <a class="btn btn-primary bottom-margin" href="/sgi">СГИ</a>
-                                    <a class="btn btn-primary bottom-margin" href="/admin">Пользователи</a>
-                                    <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
-                                    <a class="btn btn-primary bottom-margin" href="report">Дерево ЗК</a>
-                                    <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
+                                <a class="btn btn-primary bottom-margin" href="/sgi">СГИ</a>
+                                <a class="btn btn-primary bottom-margin" href="/admin">Пользователи</a>
+                                <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
+                                <a class="btn btn-primary bottom-margin" href="report">Дерево ЗК</a>
+                                <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                             </#if>
                             <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
                                 <a class="btn btn-primary" href="/sgi">СГИ</a>
+                                <a class="btn btn-primary" href="/spe">СПЕ</a>
                             </#if>
                             <a class="btn btn-primary " href="/logout">Выйти</a>
-<#--                            <a class="btn btn-primary " href="/help">Справка по заявкам</a>-->
+                            <#--                            <a class="btn btn-primary " href="/help">Справка по заявкам</a>-->
                         </li>
                     </ul>
                 </nav>
                 <#if user.getRole() == 'MASTER'>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal1">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal1">
                         Созданные заявки для ОГТ
                     </button>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal2">
                         Созданные заявки для ОГК
                     </button>
-                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal" data-bs-target="#exampleModal3">
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal3">
                         Созданные заявки для ОТК
                     </button>
                 </#if>
@@ -106,7 +110,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="modalDataValue" name="type" />
+                <input type="hidden" id="modalDataValue" name="type"/>
                 <table class="table table-hover vertical-align: middle">
                     <thead>
                     <tr class="taq">
@@ -120,7 +124,7 @@
                     <#list requests as request>
                         <tr>
                             <td>${request.requestNumber}</td>
-                            <td>${request.customerOrder.getName()}</td>
+                            <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
                             <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
@@ -140,7 +144,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="modalDataValue" name="type" />
+                <input type="hidden" id="modalDataValue" name="type"/>
                 <table class="table table-hover vertical-align: middle">
                     <thead>
                     <tr class="taq">
@@ -154,7 +158,7 @@
                     <#list requestsMaster['technologist'] as request>
                         <tr data-type="technologist">
                             <td>${request.requestNumber}</td>
-                            <td>${request.customerOrder.getName()}</td>
+                            <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
                             <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
@@ -174,7 +178,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="modalDataValue" name="type" />
+                <input type="hidden" id="modalDataValue" name="type"/>
                 <table class="table table-hover vertical-align: middle">
                     <thead>
                     <tr class="taq">
@@ -188,7 +192,7 @@
                     <#list requestsMaster['constructor'] as request>
                         <tr data-type="constructor">
                             <td>${request.requestNumber}</td>
-                            <td>${request.customerOrder.getName()}</td>
+                            <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
                             <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
@@ -208,7 +212,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="modalDataValue" name="type" />
+                <input type="hidden" id="modalDataValue" name="type"/>
                 <table class="table table-hover vertical-align: middle">
                     <thead>
                     <tr class="taq">
@@ -222,7 +226,7 @@
                     <#list requestsMaster['otk'] as request>
                         <tr data-type="otk">
                             <td>${request.requestNumber}</td>
-                            <td>${request.customerOrder.getName()}</td>
+                            <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
                             <td><a href="view/${request.requestNumber}">Просмотр</a></td>
                         </tr>
@@ -237,11 +241,13 @@
 <#if rejectedBid?size != 0>
     <#if user.getRole() == 'MASTER'>
         <div class="btn-counter-container pulse-div">
-            <button class="btn btn-danger mt-1 mb-1 pulse-counter" type="button" data-bs-toggle="collapse" data-bs-target="#tableCollapse" aria-expanded="false" aria-controls="tableCollapse">
+            <button class="btn btn-danger mt-1 mb-1 pulse-counter" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#tableCollapse" aria-expanded="false" aria-controls="tableCollapse">
                 Просмотр забракованных заявок
             </button>
             <div class="pulse-counter mobile-counter" title="Количество забракованной продукции">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
+                     aria-hidden="true">
                     <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7.002 5a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V5zm.998 7a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/>
                 </svg>
                 <span class="counter-text">Кол-во: ${rejectedBid?size}</span>
@@ -254,11 +260,29 @@
     <#if user.getRole() == 'OTK'>
         <div class="card">
             <div class="btn-counter-container">
-                <button class="btn btn-primary btn-sm-mobile" type="button" data-bs-toggle="collapse" data-bs-target="#tableCollapseOtk" aria-expanded="false" aria-controls="tableCollapseOtk">
+                <button class="btn btn-primary btn-sm-mobile" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#tableCollapseOtk" aria-expanded="false" aria-controls="tableCollapseOtk">
                     Просмотр заявок
                 </button>
                 <div class="pulse-counter-otk mobile-counter" title="Количество заявок для пользователя">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
+                         fill="currentColor" aria-hidden="true">
+                        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7.002 5a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V5zm.998 7a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/>
+                    </svg>
+                    <span class="counter-text">Кол-во: ${requests?size}</span>
+                </div>
+            </div>
+        </div>
+    <#elseif user.getRole() == 'TECHNOLOGIST'>
+        <div class="card">
+            <div class="btn-counter-container">
+                <button class="btn btn-primary btn-sm-mobile" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#tableCollapseOtk" aria-expanded="false" aria-controls="tableCollapseOtk">
+                    Просмотр заявок
+                </button>
+                <div class="pulse-counter-otk mobile-counter" title="Количество заявок для пользователя">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
+                         fill="currentColor" aria-hidden="true">
                         <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7.002 5a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V5zm.998 7a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/>
                     </svg>
                     <span class="counter-text">Кол-во: ${requests?size}</span>
@@ -288,9 +312,10 @@
                     <tr>
                         <td class="text-center">${reject.getRequestNumber()}</td>
                         <td class="text-center">${(reject.getTitle()!"")}</td>
-                        <td class="text-center">${reject.getCustomerOrder().getName()}</td>
+                        <td class="text-center">${(reject.getCustomerOrder().getName())!"Не указано"}</td>
                         <td class="text-center">${(rejectedDate[rejIn])!""}</td>
-                        <td class="text-center"><a href="view/${reject.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a></td>
+                        <td class="text-center"><a href="view/${reject.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a>
+                        </td>
                     </tr>
                 </#list>
                 </tbody>
@@ -310,7 +335,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-6"><strong>ЗК:</strong></div>
-                                <div class="col-6">${reject.getCustomerOrder().getName()}</div>
+                                <div class="col-6">${(reject.getCustomerOrder().getName())!"Не указано"}</div>
                             </div>
                             <div class="row">
                                 <div class="col-6"><strong>Дата:</strong></div>
@@ -351,10 +376,15 @@
                     <tr>
                         <td class="text-center">${bid.getRequestNumber()}</td>
                         <td class="text-center">${(bid.getTitle()!"Не указано")}</td>
-                        <td class="text-center">${bid.getCustomerOrder().getName()}</td>
+                        <td class="text-center">${(bid.getCustomerOrder().getName())!"Не указано"}</td>
                         <td class="text-center">${(requestsDate[req])!""}</td>
-                        <td class="text-center">${(bid.getReason_wr()!"Не указана")}</td>
-                        <td class="text-center"><a href="view/${bid.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a></td>
+                        <#if bid.getTypeRequest().name() == 'otk'>
+                            <td class="text-center">${(bid.getReason_wr())!"Не указана"}</td>
+                        <#else >
+                            <td class="text-center">${(bid.getReason().getName())!"Не указана"}</td>
+                        </#if>
+                        <td class="text-center"><a href="view/${bid.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a>
+                        </td>
                     </tr>
                 </#list>
                 </tbody>
@@ -374,7 +404,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-6"><strong>ЗК:</strong></div>
-                                <div class="col-6">${bid.getCustomerOrder().getName()}</div>
+                                <div class="col-6">${(bid.getCustomerOrder().getName())!"Не указано"}</div>
                             </div>
                             <div class="row">
                                 <div class="col-6"><strong>Дата:</strong></div>
@@ -386,7 +416,8 @@
                             </div>
                             <div class="row mt-2">
                                 <div class="col-12">
-                                    <a href="view/${bid.getRequestNumber()}" class="btn btn-info btn-sm w-100">Перейти</a>
+                                    <a href="view/${bid.getRequestNumber()}"
+                                       class="btn btn-info btn-sm w-100">Перейти</a>
                                 </div>
                             </div>
                         </div>

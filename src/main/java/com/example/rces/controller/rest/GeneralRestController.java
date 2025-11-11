@@ -1,9 +1,6 @@
 package com.example.rces.controller.rest;
 
-import com.example.rces.dto.CustomerOrderDTO;
-import com.example.rces.dto.EmployeeDTO;
-import com.example.rces.dto.InconsistencyDto;
-import com.example.rces.dto.SubDivisionDTO;
+import com.example.rces.dto.*;
 import com.example.rces.models.Employee;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
@@ -74,9 +71,8 @@ public class GeneralRestController {
     }
 
     @GetMapping("/item")
-    public List<Item> getItems() {
-        return Arrays.stream(Item.values())
-                .collect(Collectors.toList());
+    public List<ItemDto> getItems() {
+        return Arrays.stream(Item.values()).map(item -> new ItemDto(item.getName())).toList();
     }
 
     @GetMapping("/status")

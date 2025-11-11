@@ -17,7 +17,7 @@ import java.util.UUID;
 public interface RequestsRepository extends BaseAuditingRepository<Requests, UUID> {
 
     @Override
-    @EntityGraph("employee, createdBy")
+    @EntityGraph(attributePaths = {"employee", "createdBy", "customerOrder", "subDivision"})
     @NonNull
     List<Requests> findAll();
 
@@ -26,6 +26,7 @@ public interface RequestsRepository extends BaseAuditingRepository<Requests, UUI
 
     Requests findByRequestNumber(Integer requestNumber);
 
+    @EntityGraph(attributePaths = {"createdBy", "customerOrder", "employee", "subDivision"})
     List<Requests> findAllByTypeRequest(Requests.Type type);
 
     @Override
