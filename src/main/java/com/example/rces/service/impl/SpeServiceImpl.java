@@ -4,6 +4,7 @@ import com.example.rces.dto.*;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
+import com.example.rces.models.enums.OrganizationSPE;
 import com.example.rces.models.enums.StatusSPE;
 import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.DocumentService;
@@ -139,6 +140,14 @@ public class SpeServiceImpl implements SpeService {
         spe.setDocument(document);
         repository.save(spe);
         return documentService.toDTO(document);
+    }
+
+    @Override
+    public void setOrganizationWithFgis(SPE spe, JsonNode data) {
+        String organizationName = data.path("vriInfo").path("organization").asText();
+        OrganizationSPE organization = OrganizationSPE.fromString(organizationName);
+        spe.setOrganization(organization);
+        repository.save(spe);
     }
 
     @Override

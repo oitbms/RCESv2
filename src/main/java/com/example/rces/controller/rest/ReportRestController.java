@@ -78,4 +78,19 @@ public class ReportRestController {
                 .body(resource);
     }
 
+    @GetMapping("/print/spe-schedule")
+    public ResponseEntity<Resource> printSpeSchedule(@RequestParam List<Integer> idList) {
+        byte[] report = service.createSpeSchedule(idList);
+        ByteArrayResource resource = new ByteArrayResource(report);
+        String fileName = String.format("График_поверки_от_%s.pdf", formatedDate(LocalDate.now()));
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename*=UTF-8''" + encodedFileName)
+                .contentType(MediaType.parseMediaType(Format.PDF.getMimeType()))
+                .contentLength(report.length)
+                .body(resource);
+    }
+
 }

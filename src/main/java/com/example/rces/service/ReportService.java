@@ -20,4 +20,6 @@ public interface ReportService {
     byte[] createSpeReport(List<Integer> numberList);
 
     byte[] createSpeFgisReport(JsonNode data);
+
+    byte[] createSpeSchedule(List<Integer> numberList);
 }

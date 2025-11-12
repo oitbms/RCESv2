@@ -24,7 +24,8 @@ abstract class Base {
     private handlers: { event: string, selector: string, handler: Function }[] = [];
     public selectedRows = new Set<string | number>();
     public localCache = new Map<string | number, object>();
-    private readonly itemsPerPage: number
+    private readonly itemsPerPage: number;
+    private readonly visibleRow: number;
     public currentPage: number = 1;
     public saveMassive: object = {};
 
@@ -33,15 +34,17 @@ abstract class Base {
     protected cache: CacheBormash = new CacheBormashImpl();
     protected dialog: Dialog = new DialogImpl();
 
-    protected constructor(rowContainer: any, itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
+    protected constructor(rowContainer: any, itemsPerPage: number = Infinity, visibleRow = Infinity, ...initCallbacks: Function[]) {
         this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
-        this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
+        this.visibleRow = visibleRow;
         this.init(...initCallbacks);
     }
 
     private init(...callbacks: Function[]) {
         $(() => {
+            this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
+            $('.table-body').on('scroll', this.onScroll.bind(this));
             this.initializeHandlers();
             callbacks.forEach(callback => callback());
         });
@@ -77,6 +80,8 @@ abstract class Base {
     //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
 
+    public abstract onScroll(): void;
+
     public readonly updateRow = (item: any, rowIndex: string | number): void => {
         const $oldRow = $(`[data-index="${rowIndex}"]`);
         const $newRow = this.createRow(item).hide();
@@ -102,11 +107,22 @@ abstract class Base {
 
     public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
         const data: any[] = await this.requestToApi(url, 'GET', param);
-        for (const item of data) {
+
+        const visibleItems = data.slice(0, this.visibleRow);
+        const hiddenItems = data.slice(this.visibleRow);
+
+        visibleItems.forEach(item => {
             this.localCache.set(item.id, item);
             const row = this.createRow(item);
             this.rowContainer.append(row);
-        }
+        });
+
+        hiddenItems.forEach(item => {
+            this.localCache.set(item.id, item);
+            const row = this.createRow(item).hide();
+            this.rowContainer.append(row);
+        });
+
         callbacks.forEach(callback => callback?.(data));
     });
 

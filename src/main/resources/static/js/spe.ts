@@ -3,8 +3,8 @@ declare const $: any;
 
 class Spe extends Base {
 
-    constructor(itemsPerPage = Infinity) {
-        super($(`.table-body`), itemsPerPage, () => {
+    constructor(itemsPerPage = Infinity, visibleRow = 12) {
+        super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
         this.createHandler('click', '.circle-header', this.selecteRows.bind(this),true);
@@ -139,6 +139,11 @@ class Spe extends Base {
                     </div>
                 </div>`;
         return $(row);
+    }
+
+
+    public override onScroll() {
+
     }
 
     private saveSpe() {
@@ -571,7 +576,8 @@ class Spe extends Base {
             periodicity: dialog.find('textarea[name="periodicity"]').val(),
             datePreparation: dialog.find('input[name="datePreparation"]').val(),
             dateVerification: dialog.find('input[name="dateVerification"]').val(),
-            certificateNumber: dialog.find('textarea[name="certificateNumber"]').val()
+            certificateNumber: dialog.find('textarea[name="certificateNumber"]').val(),
+            organization: dialog.find('select[name="organization"]').val()
         };
 
         try {
