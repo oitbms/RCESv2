@@ -143,6 +143,69 @@ dialog[open] {
     }
 }
 
+.print-dialog {
+    height: 190px;
+    width: 600px;
+    border: none;
+    border-radius: 8px;
+    background: var(--default-color);
+    padding: 8px;
+
+    .print-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        h3 {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+
+        .print-select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .format-block {
+            display: flex;
+            justify-content: space-around;
+            label {
+                font-size: 14px;
+                cursor: pointer;
+            }
+        }
+
+        .print-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+
+            button {
+                padding: 6px 12px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                background: var(--info-color);
+                color: var(--default-color);
+                transition: 0.2s;
+
+                &:hover {
+                    background: var(--info-color);
+                }
+
+                &#printCancel {
+                    background: #9ca3af;
+                    &:hover {
+                        background: #6b7280;
+                    }
+                }
+            }
+        }
+    }
+}
+
 .circle {
     position: absolute;
     width: 16px;

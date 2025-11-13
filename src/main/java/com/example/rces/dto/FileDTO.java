@@ -6,6 +6,14 @@ public class FileDTO {
 
     private byte[] data;
 
+    public FileDTO() {
+    }
+
+    public FileDTO(String name, byte[] data) {
+        this.name = name;
+        this.data = data;
+    }
+
     public String getName() {
         return name;
     }

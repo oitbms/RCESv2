@@ -14,8 +14,7 @@ class Spe extends Base {
                 this.enableEditMode()
             } else this.disableEditMode();
         }, true);
-        this.createHandler('click', '#print-button',
-            () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
+        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
@@ -142,8 +141,41 @@ class Spe extends Base {
     }
 
 
+
     public override onScroll() {
 
+    }
+
+    public override async print(): Promise<void> {
+        if (!this.selectedRows || this.selectedRows.size === 0) {
+            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+        }
+        this.reports = [
+            {
+                name: 'Извещения о предъявлении СИ на поверку/калибровку',
+                api: '/api/report/print/spe',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
+            },
+            {
+                name: 'Графики поверки (калибровки) средств измерений',
+                api: '/api/report/print/spe-schedule',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
+                function : () => {
+                    const format = $('input[name="fmt"]:checked').val() as string;
+                    const groupByOrganization = Array.from(this.selectedRows)
+                            .reduce((map, id) => {
+                        const item = this.localCache.get(Number(id)) as SpeIn;
+                        const org = item.organization;
+                        return map.set(org, [...(map.get(org) || []), item]);
+                    }, new Map<string, SpeIn[]>());
+                    groupByOrganization.forEach((speList, organization)=> {
+                        const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
+                        this.downloadFile('/api/report/print/spe-schedule', params);
+                    });
+                }
+            }
+        ];
+        return super.print();
     }
 
     private saveSpe() {
@@ -273,13 +305,19 @@ class Spe extends Base {
         if (circle.hasClass('active')) {
             this.selectedRows.clear();
             allRows.removeClass('selected');
+            allRows.each((_, row) => {
+                const circle = $(row).find('.circle-row');
+                circle.removeClass('active-critical');
+            });
             circle.removeClass('active');
         } else {
             this.selectedRows.clear();
             allRows.each((_, row) => {
+                const circle = $(row).find('.circle-row')
                 const rowId = $(row).attr('id');
                 this.selectedRows.add(rowId);
                 $(row).addClass('selected');
+                circle.addClass('active-critical')
             });
             circle.addClass('active');
         }
@@ -605,6 +643,7 @@ class Spe extends Base {
             const row = $(element);
 
             row.removeClass('selected');
+            row.find('.circle-row').removeClass('active-critical');
             const rowId = row.attr('id');
             this.selectedRows.delete(rowId);
 

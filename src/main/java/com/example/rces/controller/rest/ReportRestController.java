@@ -1,5 +1,6 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.FileDTO;
 import com.example.rces.models.SGI;
 import com.example.rces.models.enums.Format;
 import com.example.rces.service.ReportService;
@@ -63,34 +64,27 @@ public class ReportRestController {
     }
 
     @GetMapping("/print/spe")
-    public ResponseEntity<Resource> printSPE(@RequestParam List<Integer> idList) {
-        byte[] report = service.createSpeReport(idList);
-        ByteArrayResource resource = new ByteArrayResource(report);
-        String fileName = String.format("Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_%s.pdf",
-                formatedDate(LocalDate.now()));
-        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
-                .replace("+", "%20");
+    public ResponseEntity<FileDTO> printSPE(@RequestParam(name = "format") String formatString, @RequestParam List<Integer> idList) {
+        Format format = Format.valueOf(formatString);
+        byte[] report = service.createSpeReport(format, idList);
+        String fileName = String.format("Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_%s.%s",
+                formatedDate(LocalDate.now()), format.getFileExtension());
+        FileDTO fileDTO = new FileDTO(fileName, report);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename*=UTF-8''" + encodedFileName)
-                .contentType(MediaType.parseMediaType(Format.PDF.getMimeType()))
-                .contentLength(report.length)
-                .body(resource);
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileDTO);
     }
 
     @GetMapping("/print/spe-schedule")
-    public ResponseEntity<Resource> printSpeSchedule(@RequestParam List<Integer> idList) {
-        byte[] report = service.createSpeSchedule(idList);
-        ByteArrayResource resource = new ByteArrayResource(report);
-        String fileName = String.format("График_поверки_от_%s.pdf", formatedDate(LocalDate.now()));
-        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
-                .replace("+", "%20");
+    public ResponseEntity<FileDTO> printSpeSchedule(@RequestParam(name = "format") String formatString, @RequestParam List<Integer> idList) {
+        Format format = Format.valueOf(formatString);
+        byte[] report = service.createSpeSchedule(format, idList);
+        String fileName = String.format("График_поверки_от_%s.%s",
+                formatedDate(LocalDate.now()), format.getFileExtension());
+        FileDTO fileDTO = new FileDTO(fileName, report);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename*=UTF-8''" + encodedFileName)
-                .contentType(MediaType.parseMediaType(Format.PDF.getMimeType()))
-                .contentLength(report.length)
-                .body(resource);
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileDTO);
     }
 
 }
