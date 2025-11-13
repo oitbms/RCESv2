@@ -171,26 +171,31 @@ abstract class Base {
 
         const dialogId = 'printDialog';
         const $dialog = $(`
-            <dialog id="${dialogId}" class="print-dialog">
-                <div class="print-content">
-                    <h3>Выберите отчёт и формат</h3>
-                    <select id="reportSelect" class="print-select">
-                        ${this.reports.map(r => `<option value="${r.api}">${r.name}</option>`).join('')}
-                    </select>
-                    <div class="format-block">
-                        <label><input type="radio" name="fmt" value="PDF" checked> PDF</label>
-                        <label><input type="radio" name="fmt" value="XLSX"> XLSX</label>
-                    </div>
-                    <div class="print-buttons">
-                        <button id="printCancel">Отмена</button>
-                        <button id="printOk">Печать</button>
+        <dialog id="${dialogId}" class="print-dialog">
+            <div class="print-content">
+                <h3>Выберите отчёт и формат</h3>
+                <select id="reportSelect" class="print-select">
+                    ${this.reports.map(r => `<option value="${r.api}">${r.name}</option>`).join('')}
+                </select>
+                <div class="format-block">
+                    <div class="format-toggle">
+                        <button type="button" class="format-btn active" data-format="PDF">PDF</button>
+                        <button type="button" class="format-btn" data-format="XLSX">XLSX</button>
                     </div>
                 </div>
-            </dialog>
-        `);
+                <div class="print-buttons">
+                    <button id="printCancel">Отмена</button>
+                    <button id="printOk">Печать</button>
+                </div>
+            </div>
+        </dialog>
+    `);
+
         let format = "PDF";
-        $dialog.find('input[name="fmt"]').on('change', function() {
-            format = $(this).closest('label').text().trim();
+        $dialog.find('.format-btn').on('click', function () {
+            $dialog.find('.format-btn').removeClass('active');
+            $(this).addClass('active');
+            format = $(this).data('format') as string;
         });
 
         $('body').append($dialog);
@@ -211,7 +216,7 @@ abstract class Base {
 
                 try {
                     if (report.function) {
-                        return await report.function();
+                        return await report.function(format);
                     }
                     const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
                     await this.downloadFile(report.api, params);
@@ -222,11 +227,12 @@ abstract class Base {
                 resolve();
             });
         });
-    };
+    }
 
     public readonly downloadFile = async (url: string, params?: any): Promise<void> => {
         try {
-            const file = await this.requestToApi(url + params, 'GET') as FileDTO;
+            url = url + (params ? `?${new URLSearchParams(params).toString()}` : '');
+            const file = await this.requestToApi(url, 'GET') as FileDTO;
             const binaryString = atob(file.data);
             const uint8Array = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {

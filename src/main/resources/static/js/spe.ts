@@ -3,7 +3,7 @@ declare const $: any;
 
 class Spe extends Base {
 
-    constructor(itemsPerPage = Infinity, visibleRow = 12) {
+    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
@@ -140,8 +140,6 @@ class Spe extends Base {
         return $(row);
     }
 
-
-
     public override onScroll() {
 
     }
@@ -160,18 +158,27 @@ class Spe extends Base {
                 name: 'Графики поверки (калибровки) средств измерений',
                 api: '/api/report/print/spe-schedule',
                 params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
-                function : () => {
-                    const format = $('input[name="fmt"]:checked').val() as string;
+                function: async (format: string) => {
+                    const nonOrganization: string[] = []
                     const groupByOrganization = Array.from(this.selectedRows)
-                            .reduce((map, id) => {
-                        const item = this.localCache.get(Number(id)) as SpeIn;
-                        const org = item.organization;
-                        return map.set(org, [...(map.get(org) || []), item]);
-                    }, new Map<string, SpeIn[]>());
-                    groupByOrganization.forEach((speList, organization)=> {
+                        .reduce((map, id) => {
+                            const item = this.localCache.get(Number(id)) as SpeIn;
+                            const org = item.organization;
+                            if (org == null) {
+                                nonOrganization.push(item.outNumber);
+                            } else {
+                                map.set(org, [...(map.get(org) || []), item]);
+                            }
+                            return map;
+                        }, new Map<string, SpeIn[]>());
+
+                    for (const [organization, speList] of Array.from(groupByOrganization)) {
                         const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
-                        this.downloadFile('/api/report/print/spe-schedule', params);
-                    });
+                        await this.downloadFile('/api/report/print/spe-schedule', params);
+                    }
+                    if (nonOrganization.length > 0) {
+                        this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
+                    }
                 }
             }
         ];
@@ -455,15 +462,37 @@ class Spe extends Base {
         }
 
         rowContainer.append(`
-        <div class="dialog-content-rows-row">
-            <div class="content-row-column col-450"></div>
-            <div class="content-row-column col-100"></div>
-            <div class="content-row-column col-100">
-                <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
-                <input type="file" id="fileInput" style="display: none;"/>
-            </div>
-        </div>`
+            <div class="dialog-content-rows-row">
+                <div class="content-row-column col-450"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`
         );
+
+        const organizationSelect = $(`
+            <select class="organization-select form-control">
+                <option value="">Выберите организацию</option>
+                <option value="organization1">Борисоглебский филиал ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization3">ООО "СТАНДАРТ"</option>
+            </select>
+        `);
+
+        if (spe.organization) {
+            organizationSelect.find('option[value=""]').remove();
+            organizationSelect.val(spe.organization);
+        }
+
+        dialog.find('.organization-row').empty().append(organizationSelect);
+
+        $(document).off('change', '.organization-select').on('change', '.organization-select', (event: Event) => {
+            const value = $(event.currentTarget).val();
+            this.saveMassive[currentSpeId] = {...this.saveMassive[currentSpeId], organization: value};
+            this.saveSpe();
+        });
 
         $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
         $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
@@ -488,11 +517,10 @@ class Spe extends Base {
             ], mouseEvent.clientX, mouseEvent.clientY);
         });
 
-
         this.dialog.open('documentDialog');
     }
 
-    private addFileToDocument(event: Event, speId: string): void {
+        private addFileToDocument(event: Event, speId: string): void {
         const formData = new FormData();
         const currentInput = event.currentTarget as HTMLInputElement;
         const spe = this.localCache.get(Number(speId)) as SpeIn;
@@ -622,7 +650,7 @@ class Spe extends Base {
             const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe', formData);
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
-            this.dialog.close("create-dialog'");
+            this.dialog.close("create-dialog");
             const newRow = this.createRow(newSPE);
             $(`.table-body`).append(newRow);
             button.prop('disabled', false);

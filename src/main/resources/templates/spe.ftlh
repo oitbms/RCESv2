@@ -212,15 +212,12 @@
                 <div style="text-align: end;" class="dialog-content-header-column col-100">Файл</div>
             </div>
             <div class="dialog-content-rows">
-
             </div>
+            <div class="organization-row"></div>
         </div>
         <div class="dialog-container-footer">
             <button class="dialog-btn" id="cancelButton">
                 Отмена
-            </button>
-            <button class="dialog-btn primary" id="changeSubDivision">
-                Сохранить
             </button>
         </div>
     </div>

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,7 +81,7 @@ public class ReportRestController {
         Format format = Format.valueOf(formatString);
         byte[] report = service.createSpeSchedule(format, idList);
         String fileName = String.format("График_поверки_от_%s.%s",
-                formatedDate(LocalDate.now()), format.getFileExtension());
+                formatedDate(LocalDateTime.now()), format.getFileExtension());
         FileDTO fileDTO = new FileDTO(fileName, report);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

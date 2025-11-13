@@ -3,6 +3,7 @@ package com.example.rces.dto.report;
 import com.example.rces.models.SPE;
 import com.example.rces.models.enums.OrganizationSPE;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,8 @@ public class SpeScheduleReportModel {
     private String position;
 
     private String verifier;
+
+    private String now;
 
     private List<SpeScheduleReportModel.Table> lines = new ArrayList<>();
 
@@ -42,6 +45,14 @@ public class SpeScheduleReportModel {
         this.verifier = verifier;
     }
 
+    public String getNow() {
+        return now;
+    }
+
+    public void setNow(String now) {
+        this.now = now;
+    }
+
     public List<Table> getLines() {
         return lines;
     }
@@ -55,6 +66,7 @@ public class SpeScheduleReportModel {
         setOrganization(organization.getName());
         setPosition(organization.getPosition());
         setVerifier(organization.getVerifier());
+        setNow(formatedDate(LocalDate.now()));
 
         for (SPE spe : data) {
             SpeScheduleReportModel.Table table = new SpeScheduleReportModel.Table();

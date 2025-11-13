@@ -149,7 +149,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public byte[] createSpeSchedule(Format format, List<Integer> numberList) {
         List<SPE> speList = entityManager.createQuery(
-                        "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
+                        "SELECT e FROM SPE e WHERE e.id IN (:ids) AND e.organization IS NOT NULL ORDER BY e.number ASC")
                 .setParameter("ids", numberList).getResultList();
         SpeScheduleReportModel model = new SpeScheduleReportModel(speList);
         return jasperReportExporter.generateJrxmlReport("SpeSchedule", null, List.of(model), format);
