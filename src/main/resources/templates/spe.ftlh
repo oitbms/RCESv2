@@ -212,15 +212,12 @@
                 <div style="text-align: end;" class="dialog-content-header-column col-100">Файл</div>
             </div>
             <div class="dialog-content-rows">
-
             </div>
+            <div class="organization-row"></div>
         </div>
         <div class="dialog-container-footer">
             <button class="dialog-btn" id="cancelButton">
                 Отмена
-            </button>
-            <button class="dialog-btn primary" id="changeSubDivision">
-                Сохранить
             </button>
         </div>
     </div>
@@ -285,6 +282,16 @@
             <div class="form-group">
                 <label class="form-label">Сертификат</label>
                 <textarea class="form-control" name="certificateNumber"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Организация-поверитель</label>
+                <select class="form-control" name="organization" required>
+                    <option value="">Выберите организацию</option>
+                    <option value="organization1">Борисоглебский филиал ФБУ</option>
+                    <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
+                    <option value="organization3">ООО "СТАНДАРТ"</option>
+                </select>
             </div>
 
         </div>

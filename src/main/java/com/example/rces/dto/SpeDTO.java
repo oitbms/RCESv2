@@ -1,6 +1,7 @@
 package com.example.rces.dto;
 
 import com.example.rces.models.enums.Color;
+import com.example.rces.models.enums.OrganizationSPE;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class SpeDTO {
     private UUID documentId;
     private String status;
     private Color color;
+    private OrganizationSPE organization;
 
     public Integer getId() {
         return id;
@@ -159,5 +161,13 @@ public class SpeDTO {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public OrganizationSPE getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationSPE organization) {
+        this.organization = organization;
     }
 }

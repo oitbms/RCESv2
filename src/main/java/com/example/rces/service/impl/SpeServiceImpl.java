@@ -4,6 +4,7 @@ import com.example.rces.dto.*;
 import com.example.rces.mapper.SPEMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.SPE;
+import com.example.rces.models.enums.OrganizationSPE;
 import com.example.rces.models.enums.StatusSPE;
 import com.example.rces.repository.SpeRepository;
 import com.example.rces.service.DocumentService;
@@ -55,9 +56,9 @@ public class SpeServiceImpl implements SpeService {
         JsonNode fgisData = apiClient.getFgisData(dto.getOutNumber());
         SpeCreateDTO createDTO = new SpeCreateDTO(fgisData, dto);
         SPE newSPE = mapper.toEntityFromCreateDTO(createDTO);
-        this.createSpeDocument(newSPE, new DocumentCreateDTO(), reportService.createSpeFgisReport(fgisData));
         newSPE.setStatus(calculateStatus(newSPE));
         newSPE.setColor(colorCalculate(newSPE));
+        this.createSpeDocument(newSPE, new DocumentCreateDTO(), reportService.createSpeFgisReport(fgisData));
         SPE savedSpe = repository.save(newSPE);
         return mapper.toDTO(savedSpe);
     }
@@ -131,14 +132,21 @@ public class SpeServiceImpl implements SpeService {
     public DocumentDTO createSpeDocument(SPE spe, DocumentCreateDTO dto, Object file) {
         dto.setName(String.format("Инструмент %s сертификат %s", spe.getName(), spe.getCertificateNumber()));
         Document document;
-        if (file != null) {
-            document = documentService.createDocument(dto, file);
+        if (file != null || dto.getFiles()!=null) {
+            document = documentService.createDocument(dto, file!=null ? file : dto.getFiles());
         } else {
             document = documentService.createDocument(dto);
         }
         spe.setDocument(document);
-        repository.save(spe);
         return documentService.toDTO(document);
+    }
+
+    @Override
+    public void setOrganizationWithFgis(SPE spe, JsonNode data) {
+        String organizationName = data.path("vriInfo").path("organization").asText();
+        OrganizationSPE organization = OrganizationSPE.fromString(organizationName);
+        spe.setOrganization(organization);
+        repository.save(spe);
     }
 
     @Override

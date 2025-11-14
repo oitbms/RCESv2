@@ -2,6 +2,7 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.report.SpeFgisReportModel;
 import com.example.rces.dto.report.SpeReportModel;
+import com.example.rces.dto.report.SpeScheduleReportModel;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
@@ -131,18 +132,27 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] createSpeReport(List<Integer> numberList) {
+    public byte[] createSpeReport(Format format, List<Integer> numberList) {
         List<SPE> speList = entityManager.createQuery(
                         "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
                 .setParameter("ids", numberList).getResultList();
         SpeReportModel model = new SpeReportModel(speList);
-        return jasperReportExporter.generateJrxmlReport("Spe", null, List.of(model), Format.PDF);
+        return jasperReportExporter.generateJrxmlReport("Spe", null, List.of(model), format);
     }
 
     @Override
     public byte[] createSpeFgisReport(JsonNode data) {
         SpeFgisReportModel model = new SpeFgisReportModel(data);
         return jasperReportExporter.generateJrxmlReport("SpeFgis", null, List.of(model), Format.PDF);
+    }
+
+    @Override
+    public byte[] createSpeSchedule(Format format, List<Integer> numberList) {
+        List<SPE> speList = entityManager.createQuery(
+                        "SELECT e FROM SPE e WHERE e.id IN (:ids) AND e.organization IS NOT NULL ORDER BY e.number ASC")
+                .setParameter("ids", numberList).getResultList();
+        SpeScheduleReportModel model = new SpeScheduleReportModel(speList);
+        return jasperReportExporter.generateJrxmlReport("SpeSchedule", null, List.of(model), format);
     }
 
 }

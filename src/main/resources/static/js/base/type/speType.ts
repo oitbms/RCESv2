@@ -16,4 +16,11 @@ type SpeIn = {
     documentId: number;
     status: string;
     color: Color;
+    organization: string;
+}
+
+type OrganizationSPE = {
+    name: string;
+    position: string;
+    verifier: string;
 }

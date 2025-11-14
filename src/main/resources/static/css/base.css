@@ -143,6 +143,99 @@ dialog[open] {
     }
 }
 
+.print-dialog {
+    height: 200px;
+    width: 600px;
+    border: none;
+    border-radius: 8px;
+    background: var(--default-color);
+    padding: 8px;
+
+    .print-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        h3 {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+
+        .print-select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .format-block {
+            display: flex;
+            justify-content: center;
+
+            .format-toggle {
+                display: flex;
+                background: #f1f5f9;
+                border-radius: 6px;
+                padding: 2px;
+                border: 1px solid #e2e8f0;
+
+                .format-btn {
+                    padding: 6px 16px;
+                    border: none;
+                    background: transparent;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.2s ease;
+                    color: #64748b;
+
+                    &:hover {
+                        background: #e2e8f0;
+                        color: #475569;
+                    }
+
+                    &.active {
+                        background: var(--info-color);
+                        color: white;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    }
+
+                    &:first-child {
+                        margin-right: 1px;
+                    }
+                }
+            }
+        }
+
+        .print-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+
+            button {
+                padding: 6px 12px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                background: var(--info-color);
+                color: var(--default-color);
+                transition: 0.2s;
+
+                &:hover {
+                    background: var(--info-color-dark);
+                }
+
+                &#printCancel {
+                    background: #9ca3af;
+                    &:hover {
+                        background: #6b7280;
+                    }
+                }
+            }
+        }
+    }
+}
+
 .circle {
     position: absolute;
     width: 16px;

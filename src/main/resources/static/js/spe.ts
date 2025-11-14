@@ -3,8 +3,8 @@ declare const $: any;
 
 class Spe extends Base {
 
-    constructor(itemsPerPage = Infinity) {
-        super($(`.table-body`), itemsPerPage, () => {
+    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
+        super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
         this.createHandler('click', '.circle-header', this.selecteRows.bind(this),true);
@@ -14,8 +14,7 @@ class Spe extends Base {
                 this.enableEditMode()
             } else this.disableEditMode();
         }, true);
-        this.createHandler('click', '#print-button',
-            () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
+        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
@@ -139,6 +138,51 @@ class Spe extends Base {
                     </div>
                 </div>`;
         return $(row);
+    }
+
+    public override onScroll() {
+
+    }
+
+    public override async print(): Promise<void> {
+        if (!this.selectedRows || this.selectedRows.size === 0) {
+            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+        }
+        this.reports = [
+            {
+                name: 'Извещения о предъявлении СИ на поверку/калибровку',
+                api: '/api/report/print/spe',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
+            },
+            {
+                name: 'Графики поверки (калибровки) средств измерений',
+                api: '/api/report/print/spe-schedule',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
+                function: async (format: string) => {
+                    const nonOrganization: string[] = []
+                    const groupByOrganization = Array.from(this.selectedRows)
+                        .reduce((map, id) => {
+                            const item = this.localCache.get(Number(id)) as SpeIn;
+                            const org = item.organization;
+                            if (org == null) {
+                                nonOrganization.push(item.outNumber);
+                            } else {
+                                map.set(org, [...(map.get(org) || []), item]);
+                            }
+                            return map;
+                        }, new Map<string, SpeIn[]>());
+
+                    for (const [organization, speList] of Array.from(groupByOrganization)) {
+                        const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
+                        await this.downloadFile('/api/report/print/spe-schedule', params);
+                    }
+                    if (nonOrganization.length > 0) {
+                        this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
+                    }
+                }
+            }
+        ];
+        return super.print();
     }
 
     private saveSpe() {
@@ -268,13 +312,19 @@ class Spe extends Base {
         if (circle.hasClass('active')) {
             this.selectedRows.clear();
             allRows.removeClass('selected');
+            allRows.each((_, row) => {
+                const circle = $(row).find('.circle-row');
+                circle.removeClass('active-critical');
+            });
             circle.removeClass('active');
         } else {
             this.selectedRows.clear();
             allRows.each((_, row) => {
+                const circle = $(row).find('.circle-row')
                 const rowId = $(row).attr('id');
                 this.selectedRows.add(rowId);
                 $(row).addClass('selected');
+                circle.addClass('active-critical')
             });
             circle.addClass('active');
         }
@@ -412,15 +462,37 @@ class Spe extends Base {
         }
 
         rowContainer.append(`
-        <div class="dialog-content-rows-row">
-            <div class="content-row-column col-450"></div>
-            <div class="content-row-column col-100"></div>
-            <div class="content-row-column col-100">
-                <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
-                <input type="file" id="fileInput" style="display: none;"/>
-            </div>
-        </div>`
+            <div class="dialog-content-rows-row">
+                <div class="content-row-column col-450"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`
         );
+
+        const organizationSelect = $(`
+            <select class="organization-select form-control">
+                <option value="">Выберите организацию</option>
+                <option value="organization1">Борисоглебский филиал ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization3">ООО "СТАНДАРТ"</option>
+            </select>
+        `);
+
+        if (spe.organization) {
+            organizationSelect.find('option[value=""]').remove();
+            organizationSelect.val(spe.organization);
+        }
+
+        dialog.find('.organization-row').empty().append(organizationSelect);
+
+        $(document).off('change', '.organization-select').on('change', '.organization-select', (event: Event) => {
+            const value = $(event.currentTarget).val();
+            this.saveMassive[currentSpeId] = {...this.saveMassive[currentSpeId], organization: value};
+            this.saveSpe();
+        });
 
         $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
         $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
@@ -445,11 +517,10 @@ class Spe extends Base {
             ], mouseEvent.clientX, mouseEvent.clientY);
         });
 
-
         this.dialog.open('documentDialog');
     }
 
-    private addFileToDocument(event: Event, speId: string): void {
+        private addFileToDocument(event: Event, speId: string): void {
         const formData = new FormData();
         const currentInput = event.currentTarget as HTMLInputElement;
         const spe = this.localCache.get(Number(speId)) as SpeIn;
@@ -571,14 +642,15 @@ class Spe extends Base {
             periodicity: dialog.find('textarea[name="periodicity"]').val(),
             datePreparation: dialog.find('input[name="datePreparation"]').val(),
             dateVerification: dialog.find('input[name="dateVerification"]').val(),
-            certificateNumber: dialog.find('textarea[name="certificateNumber"]').val()
+            certificateNumber: dialog.find('textarea[name="certificateNumber"]').val(),
+            organization: dialog.find('select[name="organization"]').val()
         };
 
         try {
             const newSPE: SpeIn = await this.createEntity('/api/spe/create-spe', formData);
             this.saveMassive = {};
             this.localCache.set(newSPE.id, newSPE);
-            this.dialog.close("create-dialog'");
+            this.dialog.close("create-dialog");
             const newRow = this.createRow(newSPE);
             $(`.table-body`).append(newRow);
             button.prop('disabled', false);
@@ -599,6 +671,7 @@ class Spe extends Base {
             const row = $(element);
 
             row.removeClass('selected');
+            row.find('.circle-row').removeClass('active-critical');
             const rowId = row.attr('id');
             this.selectedRows.delete(rowId);
 

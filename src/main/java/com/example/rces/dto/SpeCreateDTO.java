@@ -1,5 +1,6 @@
 package com.example.rces.dto;
 
+import com.example.rces.models.enums.OrganizationSPE;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.lang.Nullable;
@@ -24,6 +25,7 @@ public class SpeCreateDTO {
     private LocalDate dateVerification;
     private String certificateNumber;
     private Integer periodicity;
+    private OrganizationSPE organization;
 
     public SpeCreateDTO() {
     }
@@ -46,8 +48,20 @@ public class SpeCreateDTO {
             setMark(null);
             setDatePreparation(parseLocalDate(vriInfo.path("vrfDate").asText()).minusMonths(1));
             setDateVerification(parseLocalDate(vriInfo.path("vrfDate").asText()));
-            setCertificateNumber(applicable.path("certNum").asText());
-            setPeriodicity((int) ChronoUnit.MONTHS.between(dateVerification, parseLocalDate(vriInfo.path("validDate").asText())) + 1);
+
+            String certNum = applicable.path("certNum").asText();
+            if (certNum == null || certNum.isEmpty() || certNum.equals("null")) {
+                certNum = vriInfo.path("inapplicable").path("noticeNum").asText();
+            }
+            setCertificateNumber(certNum);
+
+            if (!vriInfo.path("validDate").asText().isEmpty()) {
+                setPeriodicity((int) ChronoUnit.MONTHS.between(dateVerification, parseLocalDate(vriInfo.path("validDate").asText())) + 1);
+            } else {
+                setPeriodicity(1);
+            }
+            setOrganization(OrganizationSPE.fromString(vriInfo.path("organization").asText()));
+
         } catch (Exception e) {
             throw new ApplicationContextException("Ошибка при создании Spe", e);
         }
@@ -147,5 +161,13 @@ public class SpeCreateDTO {
 
     public void setPeriodicity(Integer periodicity) {
         this.periodicity = periodicity;
+    }
+
+    public OrganizationSPE getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationSPE organization) {
+        this.organization = organization;
     }
 }

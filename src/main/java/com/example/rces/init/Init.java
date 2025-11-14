@@ -64,6 +64,7 @@ public class Init {
         log.info("Initialization tasks");
         runOnce("#1-Recalculation date metrology", speService::calculateDateVerification, true);
         runOnce("#2-Install documents in SPE", this::installDocumentOnSPE, true);
+        runOnce("#3-Set organization in SPE", this::setOrganizationOnSPE, false);
     }
 
     private void installDocumentOnSPE() {
@@ -97,6 +98,37 @@ public class Init {
         }
     }
 
+    private void setOrganizationOnSPE() {
+        List<SPE> speList = em.createQuery(
+                "SELECT e FROM SPE e WHERE e.organization IS NULL",
+                SPE.class
+        ).getResultList();
+        Map<String, SPE> speByOutNumber = speList.stream()
+                .collect(Collectors.toMap(
+                        SPE::getOutNumber,
+                        Function.identity(),
+                        (existing, replacement) -> existing
+                ));
+        List<JsonNode> fgisData = apiClient.getFgisData(new ArrayList<>(speByOutNumber.keySet()));
+        if (fgisData.isEmpty()) {
+            return;
+        }
+        for (JsonNode data : fgisData) {
+            try {
+                String outNumber = data.path("miInfo").path("singleMI").path("manufactureNum").asText();
+                SPE spe = speByOutNumber.get(outNumber);
+                if (spe!=null) {
+                    speService.setOrganizationWithFgis(spe, data);
+                    log.info("Organization installed in {}", spe.getOutNumber());
+                } else {
+                    log.info("SPE is NULL for {}", outNumber);
+                }
+            } catch (Exception e) {
+                throw new ApplicationContextException("Error at initialization set organization in SPE", e);
+            }
+        }
+    }
+
     private void runOnce(String id, Runnable task, Boolean always) {
         if (always || this.checkRunOnce(id)) {
             transactionTemplate.execute(status -> {
@@ -113,7 +145,6 @@ public class Init {
             });
         }
     }
-
 
     private void markRunOnce(String id, Boolean always) {
         ExecutedRunOnceScripts s = new ExecutedRunOnceScripts();

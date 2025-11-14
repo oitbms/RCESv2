@@ -3,6 +3,13 @@ interface FileDTO {
     data: string;
 }
 
+interface ReportItem {
+    api: string;
+    name: string;
+    params: any;
+    function?: Function;
+}
+
 enum NotificationType {
     SUCCESS = 'success',
     ERROR = 'error',
@@ -19,29 +26,37 @@ enum Color {
     BLUE = 'BLUE'
 }
 
+
 abstract class Base {
     private locks = new Map<string, boolean>();
     private handlers: { event: string, selector: string, handler: Function }[] = [];
     public selectedRows = new Set<string | number>();
     public localCache = new Map<string | number, object>();
-    private readonly itemsPerPage: number
+    private readonly itemsPerPage: number;
+    private readonly visibleRow: number;
     public currentPage: number = 1;
     public saveMassive: object = {};
+    public reports: ReportItem[];
 
     public readonly rowContainer: any;
 
     protected cache: CacheBormash = new CacheBormashImpl();
     protected dialog: Dialog = new DialogImpl();
 
-    protected constructor(rowContainer: any, itemsPerPage: number = Infinity, ...initCallbacks: Function[]) {
+    protected constructor(rowContainer: any,
+                          itemsPerPage: number = Infinity,
+                          visibleRow = Infinity,
+                          ...initCallbacks: Function[]) {
         this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
-        this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
+        this.visibleRow = visibleRow;
         this.init(...initCallbacks);
     }
 
     private init(...callbacks: Function[]) {
         $(() => {
+            this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
+            $('.table-body').on('scroll', this.onScroll.bind(this));
             this.initializeHandlers();
             callbacks.forEach(callback => callback());
         });
@@ -77,6 +92,8 @@ abstract class Base {
     //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
 
+    public abstract onScroll(): void;
+
     public readonly updateRow = (item: any, rowIndex: string | number): void => {
         const $oldRow = $(`[data-index="${rowIndex}"]`);
         const $newRow = this.createRow(item).hide();
@@ -102,11 +119,22 @@ abstract class Base {
 
     public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
         const data: any[] = await this.requestToApi(url, 'GET', param);
-        for (const item of data) {
+
+        const visibleItems = data.slice(0, this.visibleRow);
+        const hiddenItems = data.slice(this.visibleRow);
+
+        visibleItems.forEach(item => {
             this.localCache.set(item.id, item);
             const row = this.createRow(item);
             this.rowContainer.append(row);
-        }
+        });
+
+        hiddenItems.forEach(item => {
+            this.localCache.set(item.id, item);
+            const row = this.createRow(item).hide();
+            this.rowContainer.append(row);
+        });
+
         callbacks.forEach(callback => callback?.(data));
     });
 
@@ -138,14 +166,73 @@ abstract class Base {
         });
     }
 
-    public readonly print = (url: string, params: any): void => {
-        if (!params?.length) return this.createNotification("Выберите строки для печати", NotificationType.INFO);
-        window.open(url + (Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''));
-    };
+    public async print(): Promise<void> {
+        if (!this.reports.length) return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
 
-    public readonly downloadFile = async (url: string, params?: object): Promise<void> => {
+        const dialogId = 'printDialog';
+        const $dialog = $(`
+        <dialog id="${dialogId}" class="print-dialog">
+            <div class="print-content">
+                <h3>Выберите отчёт и формат</h3>
+                <select id="reportSelect" class="print-select">
+                    ${this.reports.map(r => `<option value="${r.api}">${r.name}</option>`).join('')}
+                </select>
+                <div class="format-block">
+                    <div class="format-toggle">
+                        <button type="button" class="format-btn active" data-format="PDF">PDF</button>
+                        <button type="button" class="format-btn" data-format="XLSX">XLSX</button>
+                    </div>
+                </div>
+                <div class="print-buttons">
+                    <button id="printCancel">Отмена</button>
+                    <button id="printOk">Печать</button>
+                </div>
+            </div>
+        </dialog>
+    `);
+
+        let format = "PDF";
+        $dialog.find('.format-btn').on('click', function () {
+            $dialog.find('.format-btn').removeClass('active');
+            $(this).addClass('active');
+            format = $(this).data('format') as string;
+        });
+
+        $('body').append($dialog);
+        this.dialog.open(dialogId);
+
+        return new Promise<void>((resolve) => {
+            $('#printCancel').on('click', () => {
+                this.dialog.close(dialogId);
+                $dialog.remove();
+                resolve();
+            });
+
+            $('#printOk').on('click', async () => {
+                const api = $('#reportSelect').val() as string;
+                const report = this.reports.find(r => r.api === api);
+                this.dialog.close(dialogId);
+                $dialog.remove();
+
+                try {
+                    if (report.function) {
+                        return await report.function(format);
+                    }
+                    const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
+                    await this.downloadFile(report.api, params);
+                } catch (e) {
+                    this.createNotification('Ошибка при печати', NotificationType.ERROR);
+                    console.error(e);
+                }
+                resolve();
+            });
+        });
+    }
+
+    public readonly downloadFile = async (url: string, params?: any): Promise<void> => {
         try {
-            const file = await this.requestToApi(url, 'GET', params) as FileDTO;
+            url = url + (params ? `?${new URLSearchParams(params).toString()}` : '');
+            const file = await this.requestToApi(url, 'GET') as FileDTO;
             const binaryString = atob(file.data);
             const uint8Array = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {

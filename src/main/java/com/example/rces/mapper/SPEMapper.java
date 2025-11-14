@@ -25,6 +25,7 @@ public interface SPEMapper extends BaseMapper<SPE, SpeDTO, SpeCreateDTO> {
     @Override
     @Mapping(target = "id", source = "number")
     @Mapping(target = "documentId", source = "document.id")
+    @Mapping(target = "organization", source = "organization")
     SpeDTO toDTO(SPE entity);
 
 }

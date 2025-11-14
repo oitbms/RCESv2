@@ -1,6 +1,7 @@
 package com.example.rces.models;
 
 import com.example.rces.models.enums.Color;
+import com.example.rces.models.enums.OrganizationSPE;
 import com.example.rces.models.enums.StatusSPE;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -83,6 +84,10 @@ public class SPE extends BaseAuditingEntity {
     @Enumerated(EnumType.STRING)
     private Color color = Color.NONE;
 
+    @Column(name = "organization")
+    @Enumerated(EnumType.STRING)
+    private OrganizationSPE organization;
+
     public Integer getNumber() {
         return number;
     }
@@ -131,7 +136,7 @@ public class SPE extends BaseAuditingEntity {
         this.limitMeasurement = limitMeasurement;
     }
 
-    public  SubDivision getSubDivision() {
+    public SubDivision getSubDivision() {
         return subDivision;
     }
 
@@ -209,5 +214,13 @@ public class SPE extends BaseAuditingEntity {
 
     public void setDocument(Document document) {
         this.document = document;
+    }
+
+    public OrganizationSPE getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationSPE organization) {
+        this.organization = organization;
     }
 }

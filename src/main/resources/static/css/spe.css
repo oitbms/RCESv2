@@ -746,6 +746,18 @@ dialog::backdrop {
 
 }
 
+#documentDialog {
+    & .organization-row {
+        position: absolute;
+        bottom : 94px;
+        left: 16px;
+    }
+    & .organization-select {
+        border-left: none!important;
+        border-bottom: none!important;
+    }
+}
+
 .table-body::-webkit-scrollbar {
     width: 8px;
 }
