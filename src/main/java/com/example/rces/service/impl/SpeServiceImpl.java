@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +131,7 @@ public class SpeServiceImpl implements SpeService {
 
     @Override
     public DocumentDTO createSpeDocument(SPE spe, DocumentCreateDTO dto, Object file) {
-        dto.setName(String.format("Инструмент %s сертификат %s", spe.getName(), spe.getCertificateNumber()));
+        dto.setName(String.format("Инструмент %s сертификат %s %s", spe.getName(), spe.getCertificateNumber(), LocalDateTime.now()));
         Document document;
         if (file != null || dto.getFiles()!=null) {
             document = documentService.createDocument(dto, file!=null ? file : dto.getFiles());

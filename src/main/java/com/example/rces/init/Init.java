@@ -65,6 +65,7 @@ public class Init {
         runOnce("#1-Recalculation date metrology", speService::calculateDateVerification, true);
         runOnce("#2-Install documents in SPE", this::installDocumentOnSPE, true);
         runOnce("#3-Set organization in SPE", this::setOrganizationOnSPE, false);
+
     }
 
     private void installDocumentOnSPE() {
@@ -96,6 +97,13 @@ public class Init {
                 throw new ApplicationContextException("Error at initialization installations document in SPE", e);
             }
         }
+    }
+
+    private void test() {
+        List<SPE> speList = em.createQuery(
+                "SELECT e FROM SPE e WHERE e.id = ''",
+                SPE.class
+        ).getResultList();
     }
 
     private void setOrganizationOnSPE() {

@@ -159,9 +159,9 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     @DisplayName("Количество выполненного")
     private int qtyCompleted;
 
-    @Column(name = "notice")
-    @DisplayName("Уведомления")
-    private Boolean notice;
+//    @Column(name = "notice")
+//    @DisplayName("Уведомления")
+//    private Boolean notice;
 
     //TODO че со старыми логами делать
 
@@ -172,13 +172,13 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
 
     private boolean frozen;
 
-    public Boolean getNotice() {
-        return notice;
-    }
-
-    public void setNotice(Boolean notice) {
-        this.notice = notice;
-    }
+//    public Boolean getNotice() {
+//        return notice;
+//    }
+//
+//    public void setNotice(Boolean notice) {
+//        this.notice = notice;
+//    }
 
     public int getQtyCompleted() {
         return qtyCompleted;
