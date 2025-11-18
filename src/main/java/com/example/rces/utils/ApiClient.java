@@ -45,7 +45,8 @@ public class ApiClient {
     }
 
     public List<JsonNode> getFgisData(List<String> miNumbers) {
-        try (ExecutorService pool = Executors.newFixedThreadPool(5)) {
+        ExecutorService pool = Executors.newFixedThreadPool(5);
+        try {
             List<CompletableFuture<JsonNode>> futures = miNumbers.stream()
                     .map(miNumber -> CompletableFuture.supplyAsync(() -> {
                         try {
@@ -66,6 +67,8 @@ public class ApiClient {
                     })
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+        } finally {
+            pool.shutdown();
         }
     }
 

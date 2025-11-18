@@ -56,7 +56,7 @@ abstract class Base {
     private init(...callbacks: Function[]) {
         $(() => {
             this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
-            $('.table-body').on('scroll', this.onScroll.bind(this));
+            $(this.rowContainer).on('scroll', this.onScroll.bind(this));
             this.initializeHandlers();
             callbacks.forEach(callback => callback());
         });
@@ -92,6 +92,7 @@ abstract class Base {
     //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
 
+    //Обработчик при скролле в rowContainer
     public abstract onScroll(): void;
 
     public readonly updateRow = (item: any, rowIndex: string | number): void => {

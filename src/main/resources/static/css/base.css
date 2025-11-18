@@ -18,6 +18,12 @@
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
+body {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
 dialog {
     position: fixed;
     top: 25%;
@@ -242,8 +248,8 @@ dialog[open] {
     height: 16px;
     border-radius: 55%;
     background-color: var(--info-color);
-    top: -4.2px;
-    left: -3px;
+    top: 0;
+    left: 0;
     transition: background-color 0.3s ease-in-out;
     cursor: pointer;
 
@@ -280,7 +286,7 @@ dialog[open] {
     color: var(--black-color);
     padding: 6px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 10px;
     z-index: 2147483647;
     max-width: 300px;
     transition: all 0.3s;

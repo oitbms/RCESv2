@@ -520,7 +520,7 @@ class Spe extends Base {
         this.dialog.open('documentDialog');
     }
 
-        private addFileToDocument(event: Event, speId: string): void {
+    private addFileToDocument(event: Event, speId: string): void {
         const formData = new FormData();
         const currentInput = event.currentTarget as HTMLInputElement;
         const spe = this.localCache.get(Number(speId)) as SpeIn;
