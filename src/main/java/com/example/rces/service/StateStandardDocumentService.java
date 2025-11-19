@@ -1,9 +1,6 @@
 package com.example.rces.service;
 
-import com.example.rces.dto.DocumentCreateDTO;
-import com.example.rces.dto.DocumentDTO;
-import com.example.rces.dto.NTDocumentCreateDTO;
-import com.example.rces.dto.NTDocumentDTO;
+import com.example.rces.dto.*;
 import com.example.rces.models.NTDocument;
 
 import java.util.List;
@@ -23,5 +20,15 @@ public interface StateStandardDocumentService {
     DocumentDTO createDocumentForNTD(NTDocument ntd, DocumentCreateDTO dto, Object file);
 
     void deleteNtd(UUID id);
+
+    List<NTDocumentReferenceDTO> getAllReferences(UUID id, List<UUID> ids);
+
+    List<NTDocumentReferenceDTO> getReferences(List<UUID> ids);
+
+    void addReference(UUID id, UUID referenceId);
+
+    void removeReference(UUID id, UUID referenceId);
+
+    void calculateReferences(UUID id);
 
 }

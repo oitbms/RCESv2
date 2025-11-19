@@ -1,9 +1,6 @@
 package com.example.rces.controller.rest;
 
-import com.example.rces.dto.DocumentCreateDTO;
-import com.example.rces.dto.DocumentDTO;
-import com.example.rces.dto.NTDocumentCreateDTO;
-import com.example.rces.dto.NTDocumentDTO;
+import com.example.rces.dto.*;
 import com.example.rces.service.StateStandardDocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +50,34 @@ public class NTDocumentRestController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.deleteNtd(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/get-all-references")
+    public ResponseEntity<List<NTDocumentReferenceDTO>> getAllReferences(@RequestParam UUID id, @RequestParam(required = false) List<UUID> ids) {
+        return ResponseEntity.ok(service.getAllReferences(id, ids));
+    }
+
+    @GetMapping("/get-references")
+    public ResponseEntity<List<NTDocumentReferenceDTO>> getReferences(@RequestParam List<UUID> ids) {
+        return ResponseEntity.ok(service.getReferences(ids));
+    }
+
+    @PatchMapping("/add-reference")
+    public ResponseEntity<Void> addReference(@RequestParam UUID id, @RequestParam UUID referenceId) {
+        service.addReference(id, referenceId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/remove-reference")
+        public ResponseEntity<Void> removeReference(@RequestParam UUID id, @RequestParam UUID referenceId) {
+        service.removeReference(id, referenceId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/calculate-references")
+    public ResponseEntity<Void> calculateReferences(@RequestParam UUID id) {
+        service.calculateReferences(id);
         return ResponseEntity.ok().build();
     }
 }

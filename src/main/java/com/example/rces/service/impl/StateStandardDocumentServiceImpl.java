@@ -1,12 +1,10 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.dto.DocumentCreateDTO;
-import com.example.rces.dto.DocumentDTO;
-import com.example.rces.dto.NTDocumentCreateDTO;
-import com.example.rces.dto.NTDocumentDTO;
+import com.example.rces.dto.*;
 import com.example.rces.mapper.NTDocumentsMapper;
 import com.example.rces.models.Document;
 import com.example.rces.models.NTDocument;
+import com.example.rces.models.enums.Color;
 import com.example.rces.repository.StateStandardDocumentRepository;
 import com.example.rces.service.DocumentService;
 import com.example.rces.service.StateStandardDocumentService;
@@ -43,7 +41,7 @@ public class StateStandardDocumentServiceImpl implements StateStandardDocumentSe
     public List<NTDocumentDTO> getAllNTDocuments() {
         return repository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(NTDocument::getCreatedDate))
+                .sorted(Comparator.comparing(NTDocument::getName))
                 .map(mapper::toDTO).toList();
     }
 
@@ -66,7 +64,9 @@ public class StateStandardDocumentServiceImpl implements StateStandardDocumentSe
         } catch (JsonMappingException e) {
             throw new ApplicationContextException("Ошибка при обновлении NTD", e);
         }
+        ntdEntity.setColor(Color.NONE);
         repository.save(ntdEntity);
+
         ntdEntity.setVersion(ntdEntity.getVersion() + 1);
         return mapper.toDTO(ntdEntity);
     }
@@ -95,6 +95,48 @@ public class StateStandardDocumentServiceImpl implements StateStandardDocumentSe
         if (ntd.getDocument() != null) {
             documentService.deleteDocument(ntd.getDocument().getId());
         }
+        ntd.getReferences().clear();
         repository.deleteById(id);
+    }
+
+    @Override
+    public List<NTDocumentReferenceDTO> getAllReferences(UUID id, List<UUID> ids) {
+        List<NTDocument> references;
+        if (ids!=null) {
+            ids.add(id);
+            references = repository.findAllWithoutIds(ids);
+        } else {
+            references = repository.findAllWithoutIds(List.of(id));
+        }
+        return references.stream().map(mapper::toReferenceDTO).toList();
+    }
+
+    @Override
+    public List<NTDocumentReferenceDTO> getReferences(List<UUID> ids) {
+        List<NTDocument> references = repository.findAllById(ids);
+        return references.stream().map(mapper::toReferenceDTO).toList();
+    }
+
+    @Override
+    public void addReference(UUID ntdId, UUID referenceId) {
+        NTDocument ntd = repository.findById(ntdId).orElseThrow(() -> new EntityNotFoundException("NTD не найден"));
+        NTDocument reference = repository.findById(referenceId).orElseThrow(() -> new EntityNotFoundException("NTD reference не найден"));
+        ntd.getReferences().add(reference);
+        repository.save(ntd);
+    }
+
+    @Override
+    public void removeReference(UUID ntdId, UUID referenceId) {
+        NTDocument ntd = repository.findById(ntdId).orElseThrow(() -> new EntityNotFoundException("NTD не найден"));
+        NTDocument reference = repository.findById(referenceId).orElseThrow(() -> new EntityNotFoundException("NTD reference не найден"));
+        ntd.getReferences().remove(reference);
+        repository.save(ntd);
+    }
+
+    @Override
+    public void calculateReferences(UUID id) {
+        NTDocument ntd = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("NTD не найден"));
+        ntd.getReferences().forEach(ref -> ref.setColor(Color.RED));
+        repository.save(ntd);
     }
 }

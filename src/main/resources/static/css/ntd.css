@@ -16,7 +16,6 @@
 }
 
 .container {
-    height: 100vh;
     max-width: 100%;
     display: flex;
     flex-direction: column;
@@ -177,7 +176,9 @@ header {
         text-align: left;
     }
 
-    .document {
+    .document, .references {
+        height: 100%;
+        width: 100%;
         font-size: 18px;
         cursor: pointer;
         padding: 8px;
@@ -205,6 +206,10 @@ header {
     &:hover {
         background-color: var(--warning-color);
     }
+}
+
+.frame {
+    padding: 14px;
 }
 
 .table-row {
@@ -292,6 +297,8 @@ dialog::backdrop {
 .dialog-content-header-column {
     padding: 0 8px;
     font-size: 0.95rem;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
 }
 
 .col-25 {
@@ -347,6 +354,7 @@ dialog::backdrop {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.9rem;
+    border-right: 1px solid var(--border-color);
 }
 
 .dialog-container-footer {
@@ -517,4 +525,13 @@ dialog::backdrop {
         gap: 8px;
     }
 
+}
+
+#referencesDialog {
+    width: 1250px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0!important;
 }

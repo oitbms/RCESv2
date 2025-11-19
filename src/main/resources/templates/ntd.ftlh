@@ -114,10 +114,35 @@
                 <div style="text-align: end;" class="dialog-content-header-column col-100">Файл</div>
             </div>
             <div class="dialog-content-rows">
+            </div>
         </div>
         <div class="dialog-container-footer">
             <button class="dialog-btn" id="cancelButton">
                 Отмена
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="referencesDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно работы со связями</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column" style="width: 500px">Наименование</div>
+                <div class="dialog-content-header-column" style="width: 150px">Тип</div>
+                <div class="dialog-content-header-column" style="width: 200px">Дата последней поверки</div>
+                <div class="dialog-content-header-column" style="width: 100px">Документ</div>
+                <div class="dialog-content-header-column" style="width: 500px">Комментарий</div>
+                <div style="border-right: none; width: 100px" class="dialog-content-header-column">Связано</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" id="cancelButton">
+                Выйти
             </button>
         </div>
     </div>

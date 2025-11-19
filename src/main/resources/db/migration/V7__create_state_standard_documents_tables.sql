@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS rces.state_standard_documents
     date_verification DATE,
     document_id       BINARY(16),
     comment           TEXT,
+    color             VARCHAR(50)           DEFAULT 'NONE',
     version           BIGINT       NOT NULL DEFAULT 0,
     created_date      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
     updated_date      TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS rces_history.state_standard_documents_history
     date_verification DATE,
     document_id       BINARY(16),
     comment           TEXT,
+    color             VARCHAR(50),
 
     rev               BIGINT     NOT NULL,
     revtype           TINYINT,

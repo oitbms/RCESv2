@@ -3,11 +3,9 @@ package com.example.rces.dto;
 import com.example.rces.models.enums.Color;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-public class NTDocumentDTO {
+public class NTDocumentReferenceDTO {
 
     private UUID id;
 
@@ -22,8 +20,6 @@ public class NTDocumentDTO {
     private UUID documentId;
 
     private String comment;
-
-    private List<UUID> references = new ArrayList<>();
 
     private Color color;
 
@@ -81,14 +77,6 @@ public class NTDocumentDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public List<UUID> getReferences() {
-        return references;
-    }
-
-    public void setReferences(List<UUID> references) {
-        this.references = references;
     }
 
     public Color getColor() {

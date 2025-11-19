@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.models.enums.Color;
 import jakarta.persistence.*;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
@@ -46,6 +47,10 @@ public class NTDocument extends BaseAuditingEntity {
     )
     @NotAudited
     private List<NTDocument> references = new ArrayList<>();
+
+    @Column(name = "color")
+    @Enumerated(EnumType.STRING)
+    private Color color = Color.NONE;
 
     public UUID getId() {
         return id;
@@ -101,5 +106,13 @@ public class NTDocument extends BaseAuditingEntity {
 
     public void setReferences(List<NTDocument> references) {
         this.references = references;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

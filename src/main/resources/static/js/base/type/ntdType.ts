@@ -6,5 +6,17 @@ type NtdIn = {
     dateVerification: string;
     documentId: number;
     comment: string;
-    references: number[];
+    references: string[];
+    color: Color;
+}
+
+type NtdRefIn = {
+    id: number;
+    version: number;
+    name: string;
+    type: string;
+    dateVerification: string;
+    documentId: number;
+    comment: string;
+    color: Color;
 }

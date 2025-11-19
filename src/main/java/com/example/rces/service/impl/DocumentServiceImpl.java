@@ -2,7 +2,9 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.DocumentFileDTO;
 import com.example.rces.dto.FileDTO;
+import com.example.rces.mapper.DocumentFileMapper;
 import com.example.rces.mapper.DocumentMapper;
 import com.example.rces.mapper.FileMapper;
 import com.example.rces.models.Document;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,13 +34,15 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository repository;
     private final DocumentFilesRepository filesRepository;
     private final DocumentMapper mapper;
+    private final DocumentFileMapper documentFileMapper;
     private final FileMapper fileMapper;
 
     @Autowired
-    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository, DocumentMapper mapper, FileMapper fileMapper) {
+    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository, DocumentMapper mapper, DocumentFileMapper documentFileMapper, FileMapper fileMapper) {
         this.repository = repository;
         this.filesRepository = filesRepository;
         this.mapper = mapper;
+        this.documentFileMapper = documentFileMapper;
         this.fileMapper = fileMapper;
     }
 
@@ -74,12 +79,26 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentDTO addFileToDocument(UUID id, List<MultipartFile> files) {
-        Document document = repository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", id)));
+    public DocumentDTO addFileToDocument(UUID documentId, List<MultipartFile> files) {
+        Document document = repository.findById(documentId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
         document.getFiles().addAll(addFilesToDocument(document, files));
         repository.save(document);
         return mapper.toDTO(document);
+    }
+
+    @Override
+    public DocumentFileDTO addFileToDocument(UUID documentId, MultipartFile file) {
+        Document document = repository.findById(documentId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
+        DocumentFile newFile;
+        try {
+            newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Ошибка при добавлении файла в документ %s id=%s", document.getName(), documentId), e);
+        }
+        filesRepository.save(newFile);
+        return documentFileMapper.toDTO(newFile);
     }
 
     @Override
@@ -97,6 +116,13 @@ public class DocumentServiceImpl implements DocumentService {
         DocumentFile file = filesRepository.findById(fileId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Файл с id=%s не найден", fileId)));
         return fileMapper.toDTO(file);
+    }
+
+    @Override
+    public List<FileDTO> downloadAllFile(UUID documentId) {
+        Document document = repository.findById(documentId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
+        return document.getFiles().stream().map(fileMapper::toDTO).toList();
     }
 
     private void setFileToDocument(Document document, Object data) {

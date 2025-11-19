@@ -1,8 +1,8 @@
 package com.example.rces.controller.rest;
 
 import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.DocumentFileDTO;
 import com.example.rces.dto.FileDTO;
-import com.example.rces.models.DocumentFile;
 import com.example.rces.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +33,11 @@ public class DocumentRestController {
         return ResponseEntity.ok(documentService.addFileToDocument(id, files));
     }
 
+    @PatchMapping("/add-file-2-document/{id}")
+    public ResponseEntity<DocumentFileDTO> addFileToDocument(@PathVariable UUID id, @RequestParam MultipartFile file) {
+        return ResponseEntity.ok(documentService.addFileToDocument(id, file));
+    }
+
     @DeleteMapping("/delete-file-from-document/{id}")
     public ResponseEntity<Void> deleteFileFromDocument(@PathVariable UUID id) {
         documentService.deleteFileFromDocument(id);
@@ -50,4 +55,10 @@ public class DocumentRestController {
         FileDTO file = documentService.downloadFile(id);
         return ResponseEntity.ok(file);
     }
+
+        @GetMapping("/download-all-document-file/{documentId}")
+        public ResponseEntity<List<FileDTO>> downloadAllFile(@PathVariable UUID documentId) {
+            List<FileDTO> files = documentService.downloadAllFile(documentId);
+            return ResponseEntity.ok(files);
+        }
 }

@@ -17,6 +17,7 @@ class NtDocuments extends Base {
         this.createHandler('click', '#save-button', () => this.saveNtd(), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
+        this.createHandler('click', '.references', this.openReferences.bind(this), true);
         this.createHandler('change', '#fileInput', this.addFileToDocument.bind(this), true);
         this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
         this.createHandler('click', '#createBtn', this.createNtd, true);
@@ -45,14 +46,16 @@ class NtDocuments extends Base {
                         ${this.formatDate(ntd.dateVerification)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--file);">
-                    <div data-name="document" contenteditable="false">
-                        <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно документа"></i>
+                <div class="table-cell" style="width: var(--file); padding: 0">
+                    <div data-name="document" contenteditable="false" style="height: 100%; width: 100%">
+                        <div class="frame" style="background-color: ${this.calculateColor(ntd.color)}">
+                            <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно документа"></i>
+                        </div>
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--references);">
                     <div data-name="references" contenteditable="false">
-                        <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно связанных документов"></i>
+                        <i class="references fa-solid fa-file tooltip-trigger" data-description="Открыть окно связанных документов"></i>
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--comment);">
@@ -240,21 +243,14 @@ class NtDocuments extends Base {
         const currentNtdId = currentRow.attr('id');
         const ntd = this.localCache.get(currentNtdId) as NtdIn;
         const rowContainer = dialog.find('.dialog-content-rows');
+        let document;
 
         rowContainer.empty();
-
         if (ntd.documentId !== null) {
-            const document: any = await this.requestToApi(`/api/document/get-document/${ntd.documentId}`, "GET");
+            document = await this.requestToApi(`/api/document/get-document/${ntd.documentId}`, "GET");
             this.localCache.set('document', document);
-
-            document.files.forEach((file: any) => {
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" id="${file.id}">
-                    <div class="content-row-column col-450">${file.baseFileName}</div>
-                    <div class="content-row-column col-100">${file.type}</div>
-                    <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
-                </div>`
-                );
+            document.files.forEach((file: DocumentFile) => {
+                this.createRowOnDocument(file);
             });
         }
 
@@ -276,11 +272,23 @@ class NtDocuments extends Base {
                 <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
                 <option value="organization3">ООО "СТАНДАРТ"</option>
             </select>
-        `)
+        `);
 
         dialog.find('.organization-row').empty().append(organizationSelect);
 
-        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentNtdId));
+        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => {
+            if (e.target.files.length > 0) {
+                e.target.files.forEach((file: File) => {
+                    const fileName = file.name;
+                    if ($('.dialog-content-rows').find(`.col-450:contains("${fileName}")`).length > 0) {
+                        this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
+                        return;
+                    }
+                });
+            }
+            this.addFileToDocument(e, currentNtdId)
+        });
+
         $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
             const $row = $(event.currentTarget);
             const fileId = $row.attr('id');
@@ -303,8 +311,61 @@ class NtDocuments extends Base {
             ], mouseEvent.clientX, mouseEvent.clientY);
         });
 
+        $(document).off('click', '#reloadFileInput').on('click', '#reloadFileInput', (event: Event) => {
+            const currentInput = event.currentTarget as HTMLInputElement;
+            let multipartFile;
+            if (currentInput.files) {
+                Array.from(currentInput.files).forEach(file => {
+                    multipartFile = file;
+                });
+            } else {
+                return;
+            }
+
+            const fileId = $(currentInput).closest('.dialog-content-rows-row').attr('id');
+
+            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
+                () => {
+                    const ntd = this.localCache.get(currentNtdId) as NtdIn;
+                    this.requestToApi(`/api/document/add-file-2-document/${ntd.documentId}?file=${multipartFile}`, "PATCH").then(
+                        (file: DocumentFile) => {
+                            this.createRowOnDocument(file, fileId);
+                            this.requestToApi(`/api/ntd/calculate-references?id=${currentNtdId}`, 'POST').then(
+                                () => {
+                                    this.createNotification('Файл успешно перезагружен', NotificationType.SUCCESS);
+                                    ntd.references.forEach((refId: string) => {
+                                        const ref = this.localCache.get(refId) as NtdRefIn;
+                                        this.updateRow(ref, refId);
+                                    });
+                                }
+                            );
+                        }
+                    );
+                }
+            );
+        });
+
         this.dialog.open('documentDialog');
     }
+
+    private createRowOnDocument = (file: DocumentFile, index?: string) => {
+        const rowContainer = $('#documentDialog').find('.dialog-content-rows');
+        const rowHtml = `
+                <div class="dialog-content-rows-row" id="${file.id}">
+                    <div class="content-row-column col-450">${file.baseFileName}</div>
+                    <div class="content-row-column col-100">${file.type}</div>
+                    <div class="content-row-column col-100">
+                        <i class="fas fa-arrows-rotate reload-icon" data-file-id="${file.id}" onclick="$('#reloadFileInput').click()"></i>
+                        <input type="file" id="reloadFileInput" class="reload-file-input" style="display: none;"/>
+                        <i style="float: right" class="download fas fa-download" data-file-id="${file.id}"></i>
+                    </div>
+                </div>`;
+        if (index) {
+            rowContainer.find(`#${index}`).replaceWith(rowHtml);
+        } else {
+            rowContainer.append(rowHtml);
+        }
+    };
 
     private addFileToDocument(event: Event, ntdId: string): void {
         const formData = new FormData();
@@ -313,6 +374,7 @@ class NtDocuments extends Base {
 
         if (currentInput.files) {
             Array.from(currentInput.files).forEach(file => {
+
                 formData.append('files', file);
             });
         }
@@ -328,13 +390,7 @@ class NtDocuments extends Base {
             const rowContainer = dialog.find('.dialog-content-rows');
             rowContainer.empty();
             for (const file of document.files) {
-                rowContainer.append(`
-                    <div class="dialog-content-rows-row" id="${file.id}">
-                        <div class="content-row-column col-450">${file.baseFileName}</div>
-                        <div class="content-row-column col-100">${file.type}</div>
-                        <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
-                    </div>`
-                );
+                this.createRowOnDocument(file);
             }
             rowContainer.append(`
             <div class="dialog-content-rows-row">
@@ -350,6 +406,99 @@ class NtDocuments extends Base {
         }).catch(console.error);
 
         currentInput.value = '';
+    }
+
+    private async openReferences(event: Event): Promise<void> {
+        const dialog = $('#referencesDialog');
+        const currentRow = $(event.currentTarget).closest('.table-row');
+        const currentNtdId = currentRow.attr('id');
+        const ntd = this.localCache.get(currentNtdId) as NtdIn;
+        const rowContainer = dialog.find('.dialog-content-rows');
+
+        if (!dialog.find('.search-container').length) {
+            dialog.find('.dialog-container-header').append(`
+            <div class="search-container" style="margin: 10px 0;">
+                <input type="text" id="search-input" class="search-input" placeholder="Поиск по наименованию..." 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+        `);
+        }
+
+        rowContainer.empty();
+
+        const renderReference = (references: NtdRefIn[], checked: boolean) => {
+            references.forEach((ref: NtdRefIn) => {
+                rowContainer.append(`
+            <div class="dialog-content-rows-row" id="${ref.id}" data-name="${ref.name.toLowerCase()}">
+                <div class="content-row-column" style="width: 500px">${ref.name}</div>
+                <div class="content-row-column" style="width: 150px; text-align: center">${ref.type}</div>
+                <div class="content-row-column" style="width: 200px; text-align: center">${this.formatDate(ref.dateVerification)}</div>
+                <div class="content-row-column" style="width: 100px; text-align: center">
+                    <i class="download-inn fa-solid fa-file tooltip-trigger" data-description="Скачать документ" id="${ref.documentId}"></i>
+                </div>
+                <div class="content-row-column" style="width: 500px">${ref.comment}</div>
+                <div class="content-row-column" style="width: 100px">
+                    <label class="container-checkbox tooltip-trigger" data-description="${checked ? 'Отвязать документацию' : 'Связать документацию'}">
+                        <input class="checkbox" ${checked ? 'checked="checked"' : ''} type="checkbox">
+                        <div class="checkmark"></div>
+                    </label>
+                </div>
+            </div>`
+                );
+            });
+        }
+
+        if (ntd.references.length > 0) {
+            const references: NtdRefIn[] = await this.requestToApi(`/api/ntd/get-references?ids=${ntd.references}`, "GET");
+            this.localCache.set('references', references);
+            renderReference(references, true);
+        }
+        const references: NtdRefIn[] = await this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
+        renderReference(references, false);
+
+        dialog.off('input', '.search-input').on('input', '.search-input', function () {
+            const searchText = $(this).val().toString().toLowerCase();
+            $('.dialog-content-rows-row').each(function () {
+                const rowName = $(this).find('.content-row-column').first().text().toLowerCase();
+                $(this).toggle(rowName.includes(searchText));
+            });
+        });
+
+        dialog.off('click', '.container-checkbox').on('click', '.container-checkbox', async (event: Event) => {
+            event.preventDefault();
+
+            const $container = $(event.currentTarget);
+            const $checkbox = $container.find('input[type="checkbox"]');
+            const referenceId = $container.closest('.dialog-content-rows-row').attr('id');
+
+            const newState = !$checkbox.prop('checked');
+
+            if (newState) {
+                await this.requestToApi(`/api/ntd/add-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
+                ntd.references.push(referenceId);
+            } else {
+                await this.requestToApi(`/api/ntd/remove-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
+                ntd.references = ntd.references.filter(ref => ref !== referenceId);
+            }
+            $checkbox.prop('checked', newState);
+            $container.toggleClass('checked', newState);
+        });
+
+        dialog.off('click', '.download-inn').on('click', '.download-inn', (event: Event) => {
+            const $icon = $(event.currentTarget);
+            const documentId = $icon.attr('id');
+            if (documentId) {
+                this.downloadFile(`/api/document/download-all-document-file/${documentId}`).catch(console.error);
+            } else {
+                this.createNotification("Файл не прикреплен", NotificationType.INFO);
+            }
+        });
+
+        this.dialog.open('referencesDialog', {
+            onClose: () => {
+                $('#referencesDialog .search-input').val('');
+            }
+        });
     }
 
     private handleDownloadFile(event: Event): void {
@@ -372,7 +521,7 @@ class NtDocuments extends Base {
             {
                 label: 'Удалить',
                 action: () => {
-                    this.createConfirmationDialog("Подтвердите удаление документации: {outNumber}", {name: rowName}).then((confirmed) => {
+                    this.createConfirmationDialog("Подтвердите удаление документации: {name}", {name: rowName}).then((confirmed) => {
                         // @ts-ignore
                         if (confirmed) {
                             this.deleteEntity(`/api/ntd/delete/${rowId}`).then(() => {

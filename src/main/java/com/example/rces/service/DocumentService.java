@@ -2,9 +2,9 @@ package com.example.rces.service;
 
 import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
+import com.example.rces.dto.DocumentFileDTO;
 import com.example.rces.dto.FileDTO;
 import com.example.rces.models.Document;
-import com.example.rces.models.DocumentFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,11 +20,15 @@ public interface DocumentService {
 
     DocumentDTO getDocumentById(UUID id);
 
-    DocumentDTO addFileToDocument(UUID id, List<MultipartFile> files);
+    DocumentDTO addFileToDocument(UUID documentId, List<MultipartFile> files);
+
+    DocumentFileDTO addFileToDocument(UUID documentId, MultipartFile file);
 
     void deleteFileFromDocument(UUID fileId);
 
     void deleteDocument(UUID id);
 
     FileDTO downloadFile(UUID fileId);
+
+    List<FileDTO> downloadAllFile(UUID documentId);
 }

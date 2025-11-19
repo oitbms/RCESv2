@@ -2,6 +2,7 @@ package com.example.rces.mapper;
 
 import com.example.rces.dto.NTDocumentCreateDTO;
 import com.example.rces.dto.NTDocumentDTO;
+import com.example.rces.dto.NTDocumentReferenceDTO;
 import com.example.rces.models.NTDocument;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -27,6 +28,9 @@ public interface NTDocumentsMapper extends BaseMapper<NTDocument, NTDocumentDTO,
     @Mapping(target = "documentId", source = "document.id")
     @Mapping(target = "references", source = "references", qualifiedByName = "mapReferencesToIds")
     NTDocumentDTO toDTO(NTDocument entity);
+
+    @Mapping(target = "documentId", source = "document.id")
+    NTDocumentReferenceDTO toReferenceDTO(NTDocument entity);
 
     @Named("mapReferencesToIds")
     default List<UUID> mapReferencesToIds(List<NTDocument> references) {
