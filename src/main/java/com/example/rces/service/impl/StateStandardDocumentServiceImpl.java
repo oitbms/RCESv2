@@ -137,6 +137,7 @@ public class StateStandardDocumentServiceImpl implements StateStandardDocumentSe
     public void calculateReferences(UUID id) {
         NTDocument ntd = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("NTD не найден"));
         ntd.getReferences().forEach(ref -> ref.setColor(Color.RED));
+        ntd.setColor(Color.NONE);
         repository.save(ntd);
     }
 }

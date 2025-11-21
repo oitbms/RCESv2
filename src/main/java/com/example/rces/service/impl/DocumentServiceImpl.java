@@ -92,11 +92,7 @@ public class DocumentServiceImpl implements DocumentService {
         Document document = repository.findById(documentId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
         DocumentFile newFile;
-        try {
-            newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Ошибка при добавлении файла в документ %s id=%s", document.getName(), documentId), e);
-        }
+        newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file);
         filesRepository.save(newFile);
         return documentFileMapper.toDTO(newFile);
     }

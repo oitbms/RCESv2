@@ -27,7 +27,7 @@ public class Document extends BaseAuditingEntity {
 
     @Column(name = "name", nullable = false, length = 150, unique = true)
     @NotBlank(message = "Наименование документа не может быть пустым")
-    @Size(min = 1, max = 150, message = "Наименование документа должно содержать от 1 до 150 символов")
+    @Size(min = 1, max = 350, message = "Наименование документа должно содержать от 1 до 350 символов")
     private String name;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

@@ -172,6 +172,17 @@ public class FilesUtil {
         return documentFile;
     }
 
+    public static DocumentFile addFileToDocument(Document document, MultipartFile file) {
+        DocumentFile documentFile = new DocumentFile();
+
+        documentFile.setBaseFileName(file.getOriginalFilename());
+        documentFile.setType(determineFileType(file.getOriginalFilename()));
+        documentFile.setDocument(document);
+        documentFile.setContent(getBytes(file));
+
+        return documentFile;
+    }
+
     public static void validateDocument(DocumentCreateDTO documentDTO) {
         if (documentDTO.getName() == null || documentDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Наименование документа не может быть пустым");

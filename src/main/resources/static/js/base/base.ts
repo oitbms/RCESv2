@@ -26,7 +26,6 @@ enum Color {
     BLUE = 'BLUE'
 }
 
-
 abstract class Base {
     private locks = new Map<string, boolean>();
     private handlers: { event: string, selector: string, handler: Function }[] = [];
@@ -99,9 +98,9 @@ abstract class Base {
         const $oldRow = $(`[data-index="${rowIndex}"]`);
         const $newRow = this.createRow(item).hide();
 
-        $oldRow.fadeOut(350, () => {
+        $oldRow.fadeOut(100, () => {
             $oldRow.replaceWith($newRow);
-            $newRow.fadeIn(350);
+            $newRow.fadeIn(280);
             this.localCache.set(item.id, item);
         });
     };
@@ -230,24 +229,32 @@ abstract class Base {
         });
     }
 
+    //Скачивает все файлы с api
     public readonly downloadFile = async (url: string, params?: any): Promise<void> => {
         try {
             url = url + (params ? `?${new URLSearchParams(params).toString()}` : '');
-            const file = await this.requestToApi(url, 'GET') as FileDTO;
-            const binaryString = atob(file.data);
-            const uint8Array = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                uint8Array[i] = binaryString.charCodeAt(i);
+            const response = await this.requestToApi(url, 'GET') as FileDTO | FileDTO[];
+
+            const files = Array.isArray(response) ? response : [response];
+
+            for (const file of files) {
+                const binaryString = atob(file.data);
+                const uint8Array = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    uint8Array[i] = binaryString.charCodeAt(i);
+                }
+                const blob = new Blob([uint8Array]);
+                const objectUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = file.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
+
+                if (files.length > 1) await new Promise(resolve => setTimeout(resolve, 1250));
             }
-            const blob = new Blob([uint8Array]);
-            const objectUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
         } catch (error) {
             this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
         }

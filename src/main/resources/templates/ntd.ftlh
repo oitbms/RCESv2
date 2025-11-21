@@ -24,6 +24,10 @@
             <h1>Нормативно-техническая документация ООО «БорМаш»</h1>
         </div>
         <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск документации...">
+            </div>
             <div class="tool edit tooltip-trigger" id="edit-button" data-description="Переключить режим редактирования">
                 <button>
                     <i class="fas fa-pencil-alt"></i>
@@ -111,7 +115,7 @@
             <div class="dialog-content-header">
                 <div class="dialog-content-header-column col-450">Наименование файла</div>
                 <div class="dialog-content-header-column col-100">Тип</div>
-                <div style="text-align: end;" class="dialog-content-header-column col-100">Файл</div>
+                <div style="text-align: center;" class="dialog-content-header-column col-100">Файл</div>
             </div>
             <div class="dialog-content-rows">
             </div>
