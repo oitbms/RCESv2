@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +74,10 @@ public class DocumentServiceImpl implements DocumentService {
     public DocumentDTO getDocumentById(UUID id) {
         Document document = repository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", id)));
-        return mapper.toDTO(document);
+        DocumentDTO dto = mapper.toDTO(document);
+        List<DocumentFileDTO> files = filesRepository.findFileMetadataByDocumentId(id);
+        dto.setFiles(files);
+        return dto;
     }
 
     @Override

@@ -57,6 +57,7 @@ abstract class Base {
             this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
             $(this.rowContainer).on('scroll', this.onScroll.bind(this));
             this.initializeHandlers();
+            
             callbacks.forEach(callback => callback());
         });
     }

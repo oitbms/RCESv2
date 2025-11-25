@@ -68,8 +68,8 @@ public class SpeFgisReportModel {
         setValidDate(vriInfo.path("validDate").asText());
         setDocTitle(vriInfo.path("docTitle").asText());
         setSuitable(
-                !validDate.isEmpty() ?
-                        parseLocalDate(validDate).isBefore(LocalDate.now()) ? "Да" : "Нет"
+                !vrfDate.isEmpty() ?
+                        !parseLocalDate(vrfDate).isBefore(LocalDate.now()) ? "Да" : "Нет"
                         : "Нет"
         );
         setCertNum(applicable.path("certNum").asText());

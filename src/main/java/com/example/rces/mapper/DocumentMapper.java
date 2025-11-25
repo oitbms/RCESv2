@@ -14,4 +14,7 @@ import org.mapstruct.ReportingPolicy;
         })
 public interface DocumentMapper extends BaseMapper<Document, DocumentDTO, DocumentCreateDTO> {
 
+        @Override
+        @Mapping(target = "files", ignore = true)
+        DocumentDTO toDTO(Document entity);
 }

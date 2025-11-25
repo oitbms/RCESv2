@@ -62,14 +62,14 @@ public class Init {
     private void init() {
         log.info("Initialization tasks");
         runOnce("#1-Recalculation date metrology", speService::calculateDateVerification, true);
-        runOnce("#2-Install documents in SPE", this::installDocumentOnSPE, true);
+        runOnce("#2-Install documents in SPE", () -> installDocumentOnSPE(false), true);
         runOnce("#3-Set organization in SPE", this::setOrganizationOnSPE, false);
 
     }
 
-    private void installDocumentOnSPE() {
+    private void installDocumentOnSPE(Boolean reinstall) {
         List<SPE> speList = em.createQuery(
-                "SELECT e FROM SPE e WHERE e.document.id IS NULL",
+                "SELECT e FROM SPE e" + (!reinstall ? " WHERE e.document.id IS NULL" : ""),
                 SPE.class
         ).getResultList();
         Map<String, SPE> speByOutNumber = speList.stream()

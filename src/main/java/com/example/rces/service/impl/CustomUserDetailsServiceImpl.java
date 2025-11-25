@@ -68,7 +68,6 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         repository.save(employee);
     }
 
-
     @Override
     public void deleteById(Long id) {
         repository.deleteById(id);
