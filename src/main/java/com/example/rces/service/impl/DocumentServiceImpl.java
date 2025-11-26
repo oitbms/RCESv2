@@ -19,12 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.example.rces.utils.DateUtil.formatedDate;
-import static com.example.rces.utils.FilesUtil.*;
+import static com.example.rces.utils.FilesUtil.addImages;
+import static com.example.rces.utils.FilesUtil.validateDocument;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -67,7 +69,10 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public DocumentDTO toDTO(Document document) {
-        return mapper.toDTO(document);
+        List<DocumentFileDTO> files = document.getFiles().stream().map(documentFileMapper::toDTO).toList();
+        DocumentDTO dto = mapper.toDTO(document);
+        dto.setFiles(files);
+        return dto;
     }
 
     @Override
@@ -81,12 +86,16 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentDTO addFileToDocument(UUID documentId, List<MultipartFile> files) {
+    public List<DocumentFileDTO> addFileToDocument(UUID documentId, List<MultipartFile> files) {
         Document document = repository.findById(documentId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
-        document.getFiles().addAll(addFilesToDocument(document, files));
-        repository.save(document);
-        return mapper.toDTO(document);
+        List<DocumentFileDTO> newFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            DocumentFile newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file);
+            filesRepository.save(newFile);
+            newFiles.add(documentFileMapper.toDTO(newFile));
+        }
+        return newFiles;
     }
 
     @Override

@@ -20,7 +20,7 @@ public interface DocumentService {
 
     DocumentDTO getDocumentById(UUID id);
 
-    DocumentDTO addFileToDocument(UUID documentId, List<MultipartFile> files);
+    List<DocumentFileDTO> addFileToDocument(UUID documentId, List<MultipartFile> files);
 
     DocumentFileDTO addFileToDocument(UUID documentId, MultipartFile file);
 

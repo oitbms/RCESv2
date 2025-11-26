@@ -233,6 +233,7 @@ dialog[open] {
 
                 &#printCancel {
                     background: #9ca3af;
+
                     &:hover {
                         background: #6b7280;
                     }
@@ -254,7 +255,7 @@ dialog[open] {
     cursor: pointer;
 
     &.active {
-        background-color: var(--success-color)!important;
+        background-color: var(--success-color) !important;
     }
 
     &.active-critical {
@@ -277,7 +278,41 @@ dialog[open] {
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 0!important;
+    padding: 0 !important;
+}
+
+.lock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2147483647;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 18px;
+    backdrop-filter: blur(2px);
+    font-family: Arial, sans-serif;
+
+    &:after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 3px solid transparent;
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+}
+
+body.locked {
+    pointer-events: none;
+    overflow: hidden;
+    user-select: none;
 }
 
 .container-checkbox input {
@@ -321,23 +356,7 @@ dialog[open] {
         }
     }
 
-input:checked + .checkmark {
-    background-color: #2196F3;
-
-    &:after {
-        left: 0.45em;
-        top: 0.25em;
-        width: 0.25em;
-        height: 0.5em;
-        border-color: #fff0 white white #fff0;
-        border-width: 0 0.15em 0.15em 0;
-        border-radius: 0em;
-        transform: rotate(45deg);
-    }
-}
-
-&.checked {
-    .checkmark {
+    input:checked + .checkmark {
         background-color: #2196F3;
 
         &:after {
@@ -351,7 +370,23 @@ input:checked + .checkmark {
             transform: rotate(45deg);
         }
     }
-}
+
+    &.checked {
+        .checkmark {
+            background-color: #2196F3;
+
+            &:after {
+                left: 0.45em;
+                top: 0.25em;
+                width: 0.25em;
+                height: 0.5em;
+                border-color: #fff0 white white #fff0;
+                border-width: 0 0.15em 0.15em 0;
+                border-radius: 0em;
+                transform: rotate(45deg);
+            }
+        }
+    }
 }
 
 #context-menu {
@@ -512,5 +547,14 @@ input:checked + .checkmark {
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }

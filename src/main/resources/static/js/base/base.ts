@@ -423,4 +423,14 @@ abstract class Base {
         }
     }
 
+    public readonly lockScreen = (message: string = "Загрузка..."): (() => void) => {
+        const overlay = $(`<div class="lock-overlay">${message}</div>`);
+        $('body').addClass('locked').append(overlay);
+
+        return () => {
+            overlay.remove();
+            $('body').removeClass('locked');
+        };
+    };
+
 }

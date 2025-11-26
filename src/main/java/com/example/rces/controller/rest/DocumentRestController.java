@@ -29,7 +29,7 @@ public class DocumentRestController {
     }
 
     @PatchMapping("/add-file-to-document/{id}")
-    public ResponseEntity<DocumentDTO> addFileToDocument(@PathVariable UUID id, @RequestParam List<MultipartFile> files) {
+    public ResponseEntity<List<DocumentFileDTO>> addFileToDocument(@PathVariable UUID id, @RequestParam List<MultipartFile> files) {
         return ResponseEntity.ok(documentService.addFileToDocument(id, files));
     }
 
@@ -56,9 +56,9 @@ public class DocumentRestController {
         return ResponseEntity.ok(file);
     }
 
-        @GetMapping("/download-all-document-file/{documentId}")
-        public ResponseEntity<List<FileDTO>> downloadAllFile(@PathVariable UUID documentId) {
-            List<FileDTO> files = documentService.downloadAllFile(documentId);
-            return ResponseEntity.ok(files);
-        }
+    @GetMapping("/download-all-document-file/{documentId}")
+    public ResponseEntity<List<FileDTO>> downloadAllFile(@PathVariable UUID documentId) {
+        List<FileDTO> files = documentService.downloadAllFile(documentId);
+        return ResponseEntity.ok(files);
+    }
 }

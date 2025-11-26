@@ -263,7 +263,7 @@ class NtDocuments extends Base {
         }
 
         rowContainer.append(`
-            <div class="dialog-content-rows-row" style="height: 50px">
+            <div class="dialog-content-rows-row" id="newFileRow" style="height: 50px">
                 <div class="content-row-column col-450" style="border: none;"></div>
                 <div class="content-row-column col-100"></div>
                 <div class="content-row-column col-100 center" style="padding: 0;border-bottom: 1px solid var(--border-color);">
@@ -319,28 +319,29 @@ class NtDocuments extends Base {
             let multipartFile = currentInput.files[0];
             const fileId = $(currentInput).closest('.dialog-content-rows-row').attr('id');
 
-            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
-                () => {
-                    const ntd = this.localCache.get(currentNtdId) as NtdIn;
-                    const formData = new FormData();
-                    formData.append('file', multipartFile);
-                    this.requestToApi(`/api/document/add-file-2-document/${ntd.documentId}`, "PATCH", formData).then(
-                        (file: DocumentFile) => {
-                            this.createRowOnDocument(file, fileId);
-                            this.requestToApi(`/api/ntd/calculate-references?id=${currentNtdId}`, 'POST').then(
-                                () => {
-                                    this.createNotification('Файл успешно перезагружен', NotificationType.SUCCESS);
-                                    ntd.references.forEach((refId: string) => {
-                                        const ref = this.localCache.get(refId) as NtdRefIn;
-                                        ref.color = Color.RED;
-                                        this.updateRow(ref, refId);
-                                    });
-                                }
-                            );
-                        }
-                    );
+            const unlock = this.lockScreen();
+
+            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
+                const ntd = this.localCache.get(currentNtdId) as NtdIn;
+                const formData = new FormData();
+                formData.append('file', multipartFile);
+                return this.requestToApi(`/api/document/add-file-2-document/${ntd.documentId}`, "PATCH", formData);
+            }).then((file: DocumentFile) => {
+                this.createRowOnDocument(file, fileId);
+                return this.requestToApi(`/api/ntd/calculate-references?id=${currentNtdId}`, 'POST');
+            }).then(() => {
+                this.createNotification('Файл успешно перезагружен', NotificationType.SUCCESS);
+                const ntd = this.localCache.get(currentNtdId) as NtdIn;
+                ntd.references.forEach((refId: string) => {
+                    const ref = this.localCache.get(refId) as NtdRefIn;
+                    ref.color = Color.RED;
+                    this.updateRow(ref, refId);
+                });
+            }).catch(error => {
+                    this.createNotification('Произошла ошибка при перезагрузки документации', NotificationType.ERROR);
                 }
-            );
+                // @ts-ignore
+            ).finally(() => unlock());
         });
 
         this.dialog.open('documentDialog');
@@ -382,26 +383,32 @@ class NtDocuments extends Base {
             : `/api/ntd/create-document/${ntd.id}`;
 
         const requestType = ntd.documentId ? 'PATCH' : 'POST';
+        const unlock = this.lockScreen();
 
-        this.requestToApi(url, requestType, formData).then((document: DocumentBormash) => {
+        this.requestToApi(url, requestType, formData).then((files) => {
             const dialog = $('#documentDialog');
             const rowContainer = dialog.find('.dialog-content-rows');
-            rowContainer.empty();
-            for (const file of document.files) {
+            rowContainer.find('#newFileRow').remove();
+            if (!ntd.documentId) {
+                files = files.files;
+            }
+            for (const file of files) {
                 this.createRowOnDocument(file);
             }
             rowContainer.append(`
-            <div class="dialog-content-rows-row">
-                <div class="content-row-column col-450"></div>
-                <div class="content-row-column col-100"></div>
-                <div class="content-row-column col-100">
-                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
-                    <input type="file" id="fileInput" style="display: none;"/>
-                </div>
-            </div>`
+                <div class="dialog-content-rows-row" id="newFileRow" style="height: 50px">
+                    <div class="content-row-column col-450" style="border: none;"></div>
+                    <div class="content-row-column col-100"></div>
+                    <div class="content-row-column col-100 center" style="padding: 0;border-bottom: 1px solid var(--border-color);">
+                        <i style="float: right" class="uploadIcon upload-file fas fa-file-upload tooltip-trigger" data-description="Добавить документацию" onclick="$('#fileInput').click()"></i>
+                        <input type="file" id="fileInput" style="display: none;"/>
+                    </div>
+                </div>`
             );
             this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
-        }).catch(console.error);
+        }).catch(console.error)
+            // @ts-ignore
+            .finally(() => unlock());
 
         currentInput.value = '';
     }
