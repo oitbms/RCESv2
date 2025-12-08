@@ -12,7 +12,10 @@
     <script>const bidType = "${type}";
         const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;
         <#if viewForm?? && viewForm && bid.typeRequest == "otk" && bid.getSubDivision().getName() != 'workShop1'>
-        const bidQty = ${bid.getQty()}</#if>;
+        <#if bid.getQty()??>
+        const bidQty = ${bid.getQty()?c};
+        </#if>
+        </#if>
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/js/script.js" defer></script>
@@ -421,17 +424,18 @@
                 </#if>
 
                 <#if bid.getStatus().getName() == 'В работе' && role == 'MASTER'>
-                    <p class="text-success fs-3 fw-bold">Заявка была принята в работу</p>
-                <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type != 'otk'>
-                    <button type="button"
-                            class="btn btn-success mb-3 work"
-                            id="executeBtn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#completedTechnologistModal"
-                    >
-                        Выполнено
-                    </button>
-                <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type == 'otk'>
+                <p class="text-success fs-3 fw-bold">Заявка была принята в работу</p>
+            <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type != 'otk'>
+                <button type="button"
+                        class="btn btn-success mb-3 work"
+                        id="executeBtn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#completedTechnologistModal"
+                >
+                    Выполнено
+                </button>
+            <#elseif bid.getStatus().getName() == 'В работе' && role != 'MASTER' && type == 'otk'>
+                <div>
                     <button type="button"
                             class="btn btn-success mb-3 work"
                             id="workId"
@@ -447,10 +451,17 @@
                             data-bs-target="#exampleModalOtk">
                         Забракован
                     </button>
+                </div>
+                <p class="mb-2 m-lg-2"><strong>Комментарий от ОТК:</strong>
+                    <textarea class="form-control"
+                              id="descriptionCompletedId"
+<#--                              name="descriptionCompleted"-->
+                              rows="5"
+                              style="resize: both;"
+                    ></textarea>
+                    </#if>
 
-                </#if>
-
-                <#if role == ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
+                    <#if role == ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
                     <#if type != 'otk'>
                         <label for="closed" class="form-label">Описание несоответствия</label>
                         <textarea class="form-control"
@@ -463,8 +474,8 @@
                         <input type="text" readonly class="form-control" value="${bid.status.getName()}">
                     </#if>
 
-                <#elseif role != ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
-                    <p class="text-success fs-3 fw-bold">Решение отправлено</p>
+                    <#elseif role != ('MASTER') && bid.getStatus().getName() == 'Выполнен'>
+                <p class="text-success fs-3 fw-bold">Решение отправлено</p>
                 </#if>
 
                 <#if bid.getStatus().getName() == 'Закрыт'>
@@ -472,6 +483,38 @@
                     <#if bid.typeRequest.name() == 'technologist'>
                         <p class="text fw-bold">Описание решения поставленной
                             задачи:${(bid.getDescription())!"Описание решения заявки отсутствует!"}</p>
+                    <#elseif bid.typeRequest.name() == 'otk'>
+                        <#if bid.getDescription()?? && bid.getDescription()?has_content>
+                            <div class="comment-minimalist mt-4" data-theme="light">
+                                <div class="comment-header d-flex align-items-center gap-2 mb-3">
+            <span class="comment-badge d-inline-flex align-items-center gap-1 px-3 py-1 rounded-pill"
+                  style="background: rgba(13, 110, 253, 0.1); color: #0d6efd;">
+                <i class="bi bi-pencil-square"></i>
+                <span class="fw-semibold">Комментарий</span>
+            </span>
+                                    <span class="text-muted small">•</span>
+                                    <span class="text-muted small">Дополнительная информация</span>
+                                </div>
+                                <div class="comment-text p-4 rounded-3"
+                                     style="background: #fff;
+                    border-left: 4px solid #0d6efd;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                                    <p class="mb-0"
+                                       style="color: #374151; line-height: 1.7;">${bid.getDescription()}</p>
+                                </div>
+                            </div>
+                        <#else>
+                            <div class="empty-comment-minimalist mt-4 p-4 rounded-3 text-center"
+                                 style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                <div class="empty-icon-wrapper mb-3">
+                                    <div class="d-inline-flex p-3 rounded-circle" style="background: #e2e8f0;">
+                                        <i class="bi bi-chat-dots fs-4" style="color: #94a3b8;"></i>
+                                    </div>
+                                </div>
+                                <p class="fw-medium mb-1" style="color: #64748b;">Нет комментариев</p>
+                                <p class="small text-muted mb-0">Комментарий не был добавлен к выполнению</p>
+                            </div>
+                        </#if>
                     </#if>
                 </#if>
 
@@ -664,334 +707,340 @@
                                                 data-bs-target="#addInconsistenciesModal">✅
                                         </button>
                                     </p>
-<#--                                    <div class="d-flex flex-column flex-md-row justify-content-evenly align-items-center gap-3 mt-2">-->
-<#--                                        <div class="text-center">-->
-<#--                                            <h5>Уведомление НП</h5>-->
-<#--                                            <button type="button" class="btn btn-primary" id="noticeId"-->
-<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
-<#--                                            </button>-->
-<#--                                        </div>-->
+                                    <#--                                    <div class="d-flex flex-column flex-md-row justify-content-evenly align-items-center gap-3 mt-2">-->
+                                    <#--                                        <div class="text-center">-->
+                                    <#--                                            <h5>Уведомление НП</h5>-->
+                                    <#--                                            <button type="button" class="btn btn-primary" id="noticeId"-->
+                                    <#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+                                    <#--                                            </button>-->
+                                    <#--                                        </div>-->
 
-<#--                                        <div class="text-center">-->
-<#--                                            <h5>Уведомление для ОГТ</h5>-->
-<#--                                            <button type="button" class="btn btn-primary" id="noticeOgtId"-->
-<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
-<#--                                            </button>-->
-<#--                                        </div>-->
+                                    <#--                                        <div class="text-center">-->
+                                    <#--                                            <h5>Уведомление для ОГТ</h5>-->
+                                    <#--                                            <button type="button" class="btn btn-primary" id="noticeOgtId"-->
+                                    <#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+                                    <#--                                            </button>-->
+                                    <#--                                        </div>-->
 
-<#--                                        <div class="text-center">-->
-<#--                                            <h5>Уведомления для ОГК</h5>-->
-<#--                                            <button type="button" class="btn btn-primary" id="noticeOgcId"-->
-<#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
-<#--                                            </button>-->
-<#--                                        </div>-->
-<#--                                    </div>-->
-<#--                                </div>-->
-                                <div class="mb-3 mt-4">
-                                    <label for="description" class="form-label">Описание несоответствия:</label>
-                                    <textarea class="form-control"
-                                              id="description2"
-                                              name="description"
-                                              rows="4"
-                                              placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
+                                    <#--                                        <div class="text-center">-->
+                                    <#--                                            <h5>Уведомления для ОГК</h5>-->
+                                    <#--                                            <button type="button" class="btn btn-primary" id="noticeOgcId"-->
+                                    <#--                                                    onclick="toggleValue(this)" value="false">Уведомить-->
+                                    <#--                                            </button>-->
+                                    <#--                                        </div>-->
+                                    <#--                                    </div>-->
+                                    <#--                                </div>-->
+                                    <div class="mb-3 mt-4">
+                                        <label for="description" class="form-label">Описание несоответствия:</label>
+                                        <textarea class="form-control"
+                                                  id="description2"
+                                                  name="description"
+                                                  rows="4"
+                                                  placeholder="Введите описание несоответствия">${bid.description!''}</textarea>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                <button type="button"
-                                        id="successId"
-                                        class="btn btn-success work"
-                                        data-endpoint="request/in-work"
-                                        data-param="${bid.getId()}"
-                                        data-description="${bid.getDescription()!""}">
-                                    Сохранить
-                                </button>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена
+                                    </button>
+                                    <button type="button"
+                                            id="successId"
+                                            class="btn btn-success work"
+                                            data-endpoint="request/in-work"
+                                            data-param="${bid.getId()}"
+                                            data-description="${bid.getDescription()!""}">
+                                        Сохранить
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <#if ((bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER")>
-                    <div class="mb-1 mt-2">
-                        <label for="comment" class="form-label">Комментарий:</label>
-                        <textarea class="form-control work"
-                                  id="comment"
-                                  name="comment"
-                                  rows="5"
-                                  style="resize: both;">${bid.comment!''}</textarea>
-                    </div>
-                </#if>
-                <#if bid.status.getName() == "В работе" && role == "OTK">
-                    <div class="mb-1 mt-2">
-                        <button class="btn btn-outline-secondary" id="openOtkId" type="button">Комментарий для детали
-                            которая пропущена с дефектами ↓
+                    <#if ((bid.status.getName() == "Новый" || bid.status.getName() == "Выполнен") && role == "MASTER")>
+                        <div class="mb-1 mt-2">
+                            <label for="comment" class="form-label">Комментарий:</label>
+                            <textarea class="form-control work"
+                                      id="comment"
+                                      name="comment"
+                                      rows="5"
+                                      style="resize: both;">${bid.comment!''}</textarea>
+                        </div>
+                    </#if>
+                    <#if bid.status.getName() == "В работе" && role == "OTK">
+                        <div class="mb-1 mt-2">
+                            <button class="btn btn-outline-secondary" id="openOtkId" type="button">Комментарий для
+                                детали
+                                которая пропущена с дефектами ↓
+                            </button>
+                            <textarea class="form-control mt-2"
+                                      id="commentOtk"
+                                      name="commentAgreed"
+                                      rows="5"
+                                      style="resize: both; display: none">${bid.commentAgreed!''}</textarea>
+                        </div>
+                        <button class="btn btn-success" id="commentOtkId"
+                                style="display: none"
+                                data-param="${bid.getId()}"
+                                data-comment="${bid.getCommentAgreed()!""}">
+                            Сохранить комментарий
                         </button>
-                        <textarea class="form-control mt-2"
-                                  id="commentOtk"
-                                  name="commentAgreed"
-                                  rows="5"
-                                  style="resize: both; display: none">${bid.commentAgreed!''}</textarea>
-                    </div>
-                    <button class="btn btn-success" id="commentOtkId"
-                            style="display: none"
-                            data-param="${bid.getId()}"
-                            data-comment="${bid.getCommentAgreed()!""}">
-                        Сохранить комментарий
-                    </button>
-                </#if>
+                    </#if>
+                </div>
             </div>
-        </div>
 
-        <#if bid.getStatus().getName() == "Забракована" || (bid.getStatus().getName() == "Закрыт" && bid.qtyRejected > 0)>
-            <div class="card mb-4">
-                <div class="card-header bg-danger text-white">Забракованные версии</div>
-                <div class="card-body">
+            <#if bid.getStatus().getName() == "Забракована" || (bid.getStatus().getName() == "Закрыт" && bid.qtyRejected > 0)>
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">Забракованные версии</div>
+                    <div class="card-body">
 
-                    <!-- Десктопная версия -->
-                    <div class="d-none d-md-block">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <td>Дата</td>
-                                <td>Несоответствие</td>
-                                <td>Описание</td>
-                                <td>Фото</td>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <#list requestHistoryDTOList as history>
+                        <!-- Десктопная версия -->
+                        <div class="d-none d-md-block">
+                            <table class="table">
+                                <thead>
                                 <tr>
-                                    <td>${history.changeRequestDate()}</td>
-                                    <td>
-                                        <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
-                                            ${history.requestData.inconsistencies?join(", ")}
-                                        <#else>
-                                            Не указано
-                                        </#if>
-                                    </td>
-                                    <td>${(history.getRequestData().getDescription())!"-"}</td>
-                                    <td>
-                                        <#if history.requestData.images?? && history.requestData.images?size gt 0>
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#photoModal${history?index}">
-                                                <i class="bi bi-image"></i> Фото (${history.requestData.images?size})
-                                            </button>
-                                        <#else>
-                                            <span class="text-muted">Нет фото</span>
-                                        </#if>
-                                    </td>
+                                    <td>Дата</td>
+                                    <td>Несоответствие</td>
+                                    <td>Описание</td>
+                                    <td>Фото</td>
                                 </tr>
-                            </#list>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Мобильная версия -->
-                    <div class="d-md-none">
-                        <div class="request-history-mobile">
-                            <#list requestHistoryDTOList as history>
-                                <div class="card history-card mb-3">
-                                    <div class="card-body">
-                                        <!-- Верхняя строка с датой и фото -->
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-calendar text-primary me-2"></i>
-                                                <strong class="text-dark">${history.changeRequestDate()}</strong>
-                                            </div>
+                                </thead>
+                                <tbody>
+                                <#list requestHistoryDTOList as history>
+                                    <tr>
+                                        <td>${history.changeRequestDate()}</td>
+                                        <td>
+                                            <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
+                                                ${history.requestData.inconsistencies?join(", ")}
+                                            <#else>
+                                                Не указано
+                                            </#if>
+                                        </td>
+                                        <td>${(history.getRequestData().getDescription())!"-"}</td>
+                                        <td>
                                             <#if history.requestData.images?? && history.requestData.images?size gt 0>
                                                 <button type="button"
                                                         class="btn btn-outline-primary btn-sm"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#photoModal${history?index}">
-                                                    <i class="bi bi-images me-1"></i>
-                                                    <span class="badge bg-primary">${history.requestData.images?size}</span>
+                                                    <i class="bi bi-image"></i> Фото (${history.requestData.images?size}
+                                                    )
                                                 </button>
                                             <#else>
-                                                <span class="badge bg-secondary">Нет фото</span>
+                                                <span class="text-muted">Нет фото</span>
                                             </#if>
-                                        </div>
-
-                                        <!-- Несоответствие -->
-                                        <div class="mb-2">
-                                            <small class="text-muted d-block">Несоответствие:</small>
-                                            <div class="fw-medium">
-                                                <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
-                                                    ${history.requestData.inconsistencies?join(", ")}
-                                                <#else>
-                                                    <span class="text-muted">Не указано</span>
-                                                </#if>
-                                            </div>
-                                        </div>
-
-                                        <!-- Описание -->
-                                        <div>
-                                            <small class="text-muted d-block">Описание:</small>
-                                            <div class="text-break">
-                                                ${(history.getRequestData().getDescription())!"-"}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </#list>
+                                        </td>
+                                    </tr>
+                                </#list>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </#if>
 
-        <#list requestHistoryDTOList as history>
-            <#if history.requestData.images?? && history.requestData.images?size gt 0>
-                <div class="modal fade" id="photoModal${history?index}" tabindex="-1"
-                     aria-labelledby="photoModalLabel${history?index}" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="photoModalLabel${history?index}">
-                                    Фото версии от ${history.changeRequestDate()}
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Закрыть"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="carousel${history?index}" class="carousel slide" data-bs-ride="carousel">
-                                    <#if history.requestData.images?size gt 1>
-                                        <div class="carousel-indicators">
-                                            <#list history.requestData.images as image>
-                                                <button type="button"
-                                                        data-bs-target="#carousel${history?index}"
-                                                        data-bs-slide-to="${image?index}"
-                                                        <#if image?index == 0>class="active" aria-current="true"</#if>
-                                                        aria-label="Фото ${image?index + 1}">
-                                                </button>
-                                            </#list>
-                                        </div>
-                                    </#if>
-
-                                    <div class="carousel-inner">
-                                        <#list history.requestData.images as image>
-                                            <div class="carousel-item <#if image?index == 0>active</#if>">
-                                                <#if image.data?? && image.data?has_content>
-                                                    <#assign imageData = image.data>
-                                                    <#if !image.data?starts_with("data:")>
-                                                        <#assign imageData = "data:image/jpeg;base64," + image.data>
-                                                    </#if>
-
-                                                    <img src="${imageData}"
-                                                         class="d-block w-100"
-                                                         alt="Фото ${image?index + 1}"
-                                                         style="max-height: 70vh; object-fit: contain;"
-                                                         onerror="console.error('Image load error'); this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                                <#else>
-                                                    <div class="d-block w-100 bg-light d-flex align-items-center justify-content-center"
-                                                         style="height: 400px;">
-                                                        <div class="text-center text-muted">
-                                                            <i class="bi bi-image" style="font-size: 3rem;"></i>
-                                                            <p class="mt-2">Нет данных изображения</p>
-                                                            <small>Data: ${(image.data??)?then('exists','null')}</small>
-                                                        </div>
-                                                    </div>
-                                                </#if>
-
-                                                <div class="d-none bg-light d-flex align-items-center justify-content-center"
-                                                     style="height: 400px;">
-                                                    <div class="text-center text-danger">
-                                                        <i class="bi bi-exclamation-triangle"
-                                                           style="font-size: 3rem;"></i>
-                                                        <p class="mt-2">Ошибка загрузки изображения</p>
-                                                    </div>
+                        <!-- Мобильная версия -->
+                        <div class="d-md-none">
+                            <div class="request-history-mobile">
+                                <#list requestHistoryDTOList as history>
+                                    <div class="card history-card mb-3">
+                                        <div class="card-body">
+                                            <!-- Верхняя строка с датой и фото -->
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-calendar text-primary me-2"></i>
+                                                    <strong class="text-dark">${history.changeRequestDate()}</strong>
                                                 </div>
+                                                <#if history.requestData.images?? && history.requestData.images?size gt 0>
+                                                    <button type="button"
+                                                            class="btn btn-outline-primary btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#photoModal${history?index}">
+                                                        <i class="bi bi-images me-1"></i>
+                                                        <span class="badge bg-primary">${history.requestData.images?size}</span>
+                                                    </button>
+                                                <#else>
+                                                    <span class="badge bg-secondary">Нет фото</span>
+                                                </#if>
+                                            </div>
 
-                                                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                                                    <p class="mb-0">
-                                                        <#if image.name??>
-                                                            ${image.name?replace("T", " ")}
-                                                        <#else>
-                                                            Фото ${image?index + 1}
-                                                        </#if>
-                                                    </p>
+                                            <!-- Несоответствие -->
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Несоответствие:</small>
+                                                <div class="fw-medium">
+                                                    <#if history.requestData.inconsistencies?? && history.requestData.inconsistencies?size gt 0>
+                                                        ${history.requestData.inconsistencies?join(", ")}
+                                                    <#else>
+                                                        <span class="text-muted">Не указано</span>
+                                                    </#if>
                                                 </div>
                                             </div>
-                                        </#list>
-                                    </div>
 
-                                    <#if history.requestData.images?size gt 1>
-                                        <button class="carousel-control-prev" type="button"
-                                                data-bs-target="#carousel${history?index}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Предыдущее</span>
-                                        </button>
-                                        <button class="carousel-control-next" type="button"
-                                                data-bs-target="#carousel${history?index}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Следующее</span>
-                                        </button>
-                                    </#if>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                            <!-- Описание -->
+                                            <div>
+                                                <small class="text-muted d-block">Описание:</small>
+                                                <div class="text-break">
+                                                    ${(history.getRequestData().getDescription())!"-"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </#list>
                             </div>
                         </div>
                     </div>
                 </div>
             </#if>
-        </#list>
 
-        <!-- Telegram уведомление -->
-        <div class="form-check form-switch mb-4 d-none">
-            <input type="hidden" name="sendToTelegram" value="true">
-            <input class="form-check-input" type="checkbox" id="telegramCheckbox" name="sendToTelegram" value="false">
-            <label class="form-check-label" for="telegramCheckbox">
-                Не отправлять уведомление в Telegram
-            </label>
-        </div>
+            <#list requestHistoryDTOList as history>
+                <#if history.requestData.images?? && history.requestData.images?size gt 0>
+                    <div class="modal fade" id="photoModal${history?index}" tabindex="-1"
+                         aria-labelledby="photoModalLabel${history?index}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="photoModalLabel${history?index}">
+                                        Фото версии от ${history.changeRequestDate()}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="carousel${history?index}" class="carousel slide" data-bs-ride="carousel">
+                                        <#if history.requestData.images?size gt 1>
+                                            <div class="carousel-indicators">
+                                                <#list history.requestData.images as image>
+                                                    <button type="button"
+                                                            data-bs-target="#carousel${history?index}"
+                                                            data-bs-slide-to="${image?index}"
+                                                            <#if image?index == 0>class="active"
+                                                            aria-current="true"</#if>
+                                                            aria-label="Фото ${image?index + 1}">
+                                                    </button>
+                                                </#list>
+                                            </div>
+                                        </#if>
 
-        <!-- Кнопки действий -->
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-outline-secondary"
-                    type="button"
-                    id="openPhotoModal"
-                    data-bs-toggle="modal"
-                    data-bs-target="#photoModal"
-            >Прикрепленные фото
-            </button>
-            <a href="/menu" class="btn btn-outline-secondary">Меню</a>
-        </div>
-        <div class="modal fade" id="completedTechnologistModal" tabindex="-1"
-             aria-labelledby="completedTechnologistModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="completedTechnologistModalLabel">Выполнение заявки</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Закрыть"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Описание выполненной работы:</label>
-                            <textarea class="form-control"
-                                      id="descriptionTechnologyId"
-                                      rows="4"
-                                      placeholder="Введите описание выполненной работы"></textarea>
+                                        <div class="carousel-inner">
+                                            <#list history.requestData.images as image>
+                                                <div class="carousel-item <#if image?index == 0>active</#if>">
+                                                    <#if image.data?? && image.data?has_content>
+                                                        <#assign imageData = image.data>
+                                                        <#if !image.data?starts_with("data:")>
+                                                            <#assign imageData = "data:image/jpeg;base64," + image.data>
+                                                        </#if>
+
+                                                        <img src="${imageData}"
+                                                             class="d-block w-100"
+                                                             alt="Фото ${image?index + 1}"
+                                                             style="max-height: 70vh; object-fit: contain;"
+                                                             onerror="console.error('Image load error'); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                    <#else>
+                                                        <div class="d-block w-100 bg-light d-flex align-items-center justify-content-center"
+                                                             style="height: 400px;">
+                                                            <div class="text-center text-muted">
+                                                                <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                                                <p class="mt-2">Нет данных изображения</p>
+                                                                <small>Data: ${(image.data??)?then('exists','null')}</small>
+                                                            </div>
+                                                        </div>
+                                                    </#if>
+
+                                                    <div class="d-none bg-light d-flex align-items-center justify-content-center"
+                                                         style="height: 400px;">
+                                                        <div class="text-center text-danger">
+                                                            <i class="bi bi-exclamation-triangle"
+                                                               style="font-size: 3rem;"></i>
+                                                            <p class="mt-2">Ошибка загрузки изображения</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                                        <p class="mb-0">
+                                                            <#if image.name??>
+                                                                ${image.name?replace("T", " ")}
+                                                            <#else>
+                                                                Фото ${image?index + 1}
+                                                            </#if>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </#list>
+                                        </div>
+
+                                        <#if history.requestData.images?size gt 1>
+                                            <button class="carousel-control-prev" type="button"
+                                                    data-bs-target="#carousel${history?index}" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Предыдущее</span>
+                                            </button>
+                                            <button class="carousel-control-next" type="button"
+                                                    data-bs-target="#carousel${history?index}" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Следующее</span>
+                                            </button>
+                                        </#if>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="button"
-                                id="successId"
-                                class="btn btn-success work"
-                                data-endpoint="request/in-work"
-                                data-param="${bid.getId()}"
-                                data-status="completed">
-                            Сохранить
-                        </button>
+                </#if>
+            </#list>
+
+            <!-- Telegram уведомление -->
+            <div class="form-check form-switch mb-4 d-none">
+                <input type="hidden" name="sendToTelegram" value="true">
+                <input class="form-check-input" type="checkbox" id="telegramCheckbox" name="sendToTelegram"
+                       value="false">
+                <label class="form-check-label" for="telegramCheckbox">
+                    Не отправлять уведомление в Telegram
+                </label>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        id="openPhotoModal"
+                        data-bs-toggle="modal"
+                        data-bs-target="#photoModal"
+                >Прикрепленные фото
+                </button>
+                <a href="/menu" class="btn btn-outline-secondary">Меню</a>
+            </div>
+            <div class="modal fade" id="completedTechnologistModal" tabindex="-1"
+                 aria-labelledby="completedTechnologistModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="completedTechnologistModalLabel">Выполнение заявки</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Закрыть"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Описание выполненной работы:</label>
+                                <textarea class="form-control"
+                                          id="descriptionTechnologyId"
+                                          rows="4"
+                                          placeholder="Введите описание выполненной работы"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="button"
+                                    id="successId"
+                                    class="btn btn-success work"
+                                    data-endpoint="request/in-work"
+                                    data-param="${bid.getId()}"
+                                    data-status="completed">
+                                Сохранить
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
     </form>
     <div class="modal fade" id="invokeServiceModalId" tabindex="-1"
          aria-labelledby="invokeServiceModalLabel"

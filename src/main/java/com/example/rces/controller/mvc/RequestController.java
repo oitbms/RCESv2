@@ -8,7 +8,6 @@ import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestHistoryService;
 import com.example.rces.service.RequestsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,13 +17,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
+import static com.example.rces.utils.DateUtil.formatDateUpdate;
 import static com.example.rces.utils.DateUtil.formatedDate;
 
 
@@ -66,7 +66,7 @@ public class RequestController {
                                 @RequestParam("additionalFiles") MultipartFile[] additionalFiles) throws JsonProcessingException {
 
         Employee createdEmployee = currentUser().orElseThrow();
-        RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto,additionalFiles);
+        RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto, additionalFiles);
         model.addAttribute("create", true);
         model.addAttribute("requestNumber", requestDto.getRequestNumber());
         return "success";
@@ -107,8 +107,11 @@ public class RequestController {
         List<String> formattedDates = requestsList.stream()
                 .map(request -> formatedDate(request.getCreatedDate()))
                 .collect(Collectors.toList());
+
         List<String> updateDate = requestsList.stream()
-                .map(req -> formatedDate(req.getUpdatedDate())).toList();
+                .map(request -> formatDateUpdate(request.getUpdatedDate()))
+                .collect(Collectors.toList());
+
         model.addAttribute("requestsList", requestsList);
         model.addAttribute("typeRequest", type);
         model.addAttribute("formattedBidList", formattedDates);

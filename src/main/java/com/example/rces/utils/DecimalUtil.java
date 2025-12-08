@@ -3,15 +3,17 @@ package com.example.rces.utils;
 import com.example.rces.models.Requests;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DecimalUtil {
+
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public static List<Integer> countDailyRequestsList(List<Requests> filteredRequests) {
         int[] dailyCounts = countDailyRequests(filteredRequests);
@@ -98,6 +100,60 @@ public class DecimalUtil {
                             createdDate.getYear() == now.getYear();
                 })
                 .toList();
+    }
+
+    public static Map<String, List<List<Map<String, String>>>> getAllRequestsByTypes(
+            List<Requests> requestsFilterDate,
+            List<String> chartDates,
+            String... types) {
+
+        Map<String, Map<String, List<Requests>>> groupedByDate = new HashMap<>();
+
+        for (Requests request : requestsFilterDate) {
+            String date = formatDate(request.getCreatedDate());
+            String type = request.getTypeRequest().getName();
+
+            groupedByDate
+                    .computeIfAbsent(date, k -> new HashMap<>())
+                    .computeIfAbsent(type, k -> new ArrayList<>())
+                    .add(request);
+        }
+
+        Map<String, List<List<Map<String, String>>>> result = new HashMap<>();
+
+        for (String type : types) {
+            List<List<Map<String, String>>> typeRequests = new ArrayList<>();
+
+            for (String date : chartDates) {
+                Map<String, List<Requests>> dayData = groupedByDate.getOrDefault(date, Collections.emptyMap());
+                List<Requests> dayRequests = dayData.getOrDefault(type, Collections.emptyList());
+
+                List<Map<String, String>> mappedRequests = dayRequests.stream()
+                        .map(DecimalUtil::mapRequestToDto)
+                        .collect(Collectors.toList());
+
+                typeRequests.add(mappedRequests);
+            }
+
+            result.put(type, typeRequests);
+        }
+
+        return result;
+    }
+
+    private static Map<String, String> mapRequestToDto(Requests request) {
+        Map<String, String> dto = new HashMap<>();
+        dto.put("number", String.valueOf(request.getRequestNumber()));
+        dto.put("id", String.valueOf(request.getId()));
+        dto.put("title", request.getTitle() != null ? request.getTitle() : "");
+        dto.put("status", request.getStatus() != null ? request.getStatus().getName() : "");
+        return dto;
+    }
+
+    private static String formatDate(Instant instant) {
+        if (instant == null) return "";
+        LocalDate createdDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+        return createdDate.format(DATE_FORMATTER);
     }
 
     public static Map<String, Integer> countRequest(List<Requests> filteredRequests) {

@@ -363,12 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestId = button.dataset.param;
         const status = button.dataset.status;
         let description;
-        // const but1 = document.getElementById('noticeId').value;
-        // const but2 = document.getElementById('noticeOgtId').value;
-        // const but3 = document.getElementById('noticeOgcId').value;
 
         const inconsistencyInput = document.getElementById('inconsistencyJson1');
         const inconsistencyData = inconsistencyInput?.value || '';
+        const descriptionsCompleted = document.getElementById('descriptionCompletedId')?.value || '';
 
         if (bidType === 'otk') {
             description = document.getElementById('description2')?.value || '';
@@ -388,10 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
             description: description,
             status: status,
             qtyCompleted: qty,
-            inconsistencyData: inconsistencyData
-            // noticeNp: but1,
-            // noticeOgt: but2,
-            // noticeOgc: but3
+            inconsistencyData: inconsistencyData,
+            descriptionsCompleted: descriptionsCompleted
         };
         const response = await fetch('/api/request/in-work', {
             method: 'POST',

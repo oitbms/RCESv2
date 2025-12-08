@@ -28,6 +28,15 @@ public class DateUtil {
                 .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
 
+    public static String formatDateUpdate(Instant date) {
+        if (date == null) {
+            return "-";
+        }
+
+        return date.atZone(ZoneId.of("Europe/Moscow"))
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    }
+
     public static String formatedDate(LocalDateTime date) {
         if (date == null) {
             return "-";

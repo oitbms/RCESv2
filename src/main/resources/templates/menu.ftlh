@@ -6,11 +6,65 @@
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+
     <script>
+
         const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
+
         const dailyCountConstructor = [<#list dailyCountsConstructor as item>${item}<#if item_has_next>, </#if></#list>];
+
         const dailyCountOtk = [<#list dailyCountOtk as item>${item}<#if item_has_next>, </#if></#list>];
+
         const dailyCountTechnologist = [<#list dailyCountTechnologist as item>${item}<#if item_has_next>, </#if></#list>];
+
+        const chartDates = [
+            <#list chartDates as date>"${date}"<#if date_has_next>, </#if></#list>
+        ];
+
+        const dailyApplicationsConstructor = [
+            <#list dailyApplicationsConstructor as dayApps>
+            [
+                <#list dayApps as app>
+                {
+                    number: "${app.number}",
+                    id: "${app.id}",
+                    title: "${app.title?js_string}",
+                    status: "${(app.status)!""?js_string}"
+                }<#if app_has_next>, </#if>
+                </#list>
+            ]<#if dayApps_has_next>, </#if>
+            </#list>
+        ];
+
+        const dailyApplicationsOtk = [
+            <#list dailyApplicationsOtk as dayApps>
+            [
+                <#list dayApps as app>
+                {
+                    number: "${app.number}",
+                    id: "${app.id}",
+                    title: "${app.title?js_string}",
+                    status: "${(app.status)!""?js_string}"
+                }<#if app_has_next>, </#if>
+                </#list>
+            ]<#if dayApps_has_next>, </#if>
+            </#list>
+        ];
+
+        const dailyApplicationsTechnologist = [
+            <#list dailyApplicationsTechnologist as dayApps>
+            [
+                <#list dayApps as app>
+                {
+                    number: "${app.number}",
+                    id: "${app.id}",
+                    title: "${app.title?js_string}",
+                    status: "${(app.status)!""?js_string}"
+                }<#if app_has_next>, </#if>
+                </#list>
+            ]<#if dayApps_has_next>, </#if>
+            </#list>
+        ];
     </script>
     <script src="js/menu.js"></script>
 

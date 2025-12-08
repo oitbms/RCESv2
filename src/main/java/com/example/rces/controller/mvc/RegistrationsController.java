@@ -9,6 +9,7 @@ import com.example.rces.models.enums.Status;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestsService;
 import com.example.rces.service.SubDivisionService;
+import com.example.rces.utils.DecimalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +94,23 @@ public class RegistrationsController {
         List<String> requestsDate = requestsList.stream()
                 .map(req -> formatedDate(req.getCreatedDate()))
                 .toList();
+
+        int daysCount = dailyCountsList.size();
+        List<String> chartDates = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (int i = daysCount - 1; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            chartDates.add(date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+        }
+
+        Map<String, List<List<Map<String, String>>>> allRequests =
+                DecimalUtil.getAllRequestsByTypes(
+                        requestsFilterDate,
+                        chartDates,
+                        "ОГК", "ОТК", "ОГТ"
+                );
+
         model.addAttribute("user", userDTO);
         model.addAttribute("requests", requestsList);
         model.addAttribute("requestsMaster", createMasterRequest);
@@ -103,6 +123,10 @@ public class RegistrationsController {
         model.addAttribute("rejectedBid", rejectedBid);
         model.addAttribute("rejectedDate", rejectedDate);
         model.addAttribute("requestsDate", requestsDate);
+        model.addAttribute("chartDates", chartDates);
+        model.addAttribute("dailyApplicationsConstructor", allRequests.get("ОГК"));
+        model.addAttribute("dailyApplicationsOtk", allRequests.get("ОТК"));
+        model.addAttribute("dailyApplicationsTechnologist", allRequests.get("ОГТ"));
         model.addAttribute("qtuRequestTechnologist", qtyRequests.get("technologist"));
         return "menu";
     }

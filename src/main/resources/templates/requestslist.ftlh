@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/list.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap-table/1.24.1/src/bootstrap-table.js">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap-table/1.24.1/src/bootstrap-table.css">
     <link rel="stylesheet" href="/css/stylesMain.css">
     <script src="/js/list.js" defer></script>
 </head>

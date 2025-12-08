@@ -14,21 +14,25 @@ public class RequestContext {
     private Integer qty;
     private Set<Inconsistency> inconsistencies;
     private Employee employee;
-    private Boolean noticeNp;
-    private Boolean noticeOgt;
-    private Boolean noticeOgc;
+    private String descriptionsCompleted;
 
 
-    public RequestContext(Requests request, String description, String status, Integer qty, Set<Inconsistency> inconsistencies, Employee employee, Boolean noticeNp, Boolean noticeOgt, Boolean noticeOgc) {
+    public RequestContext(Requests request, String description, String status, Integer qty, Set<Inconsistency> inconsistencies, Employee employee, String descriptionsCompleted) {
         this.request = request;
         this.description = description;
         this.status = status;
         this.qty = qty;
         this.inconsistencies = inconsistencies;
         this.employee = employee;
-        this.noticeNp = noticeNp;
-        this.noticeOgt = noticeOgt;
-        this.noticeOgc = noticeOgc;
+        this.descriptionsCompleted = descriptionsCompleted;
+    }
+
+    public String getDescriptionsCompleted() {
+        return descriptionsCompleted;
+    }
+
+    public void setDescriptionsCompleted(String descriptionsCompleted) {
+        this.descriptionsCompleted = descriptionsCompleted;
     }
 
     public Requests getRequest() {
@@ -79,27 +83,4 @@ public class RequestContext {
         return employee;
     }
 
-    public Boolean getNoticeNp() {
-        return noticeNp;
-    }
-
-    public void setNoticeNp(Boolean noticeNp) {
-        this.noticeNp = noticeNp;
-    }
-
-    public Boolean getNoticeOgt() {
-        return noticeOgt;
-    }
-
-    public void setNoticeOgt(Boolean noticeOgt) {
-        this.noticeOgt = noticeOgt;
-    }
-
-    public Boolean getNoticeOgc() {
-        return noticeOgc;
-    }
-
-    public void setNoticeOgc(Boolean noticeOgc) {
-        this.noticeOgc = noticeOgc;
-    }
 }

@@ -1,8 +1,5 @@
 package com.example.rces.dto;
 
-import com.example.rces.models.Inconsistency;
-
-import java.util.Set;
 import java.util.UUID;
 
 public class RequestParamsDto {
@@ -12,9 +9,15 @@ public class RequestParamsDto {
     private String description;
     private Integer qtyCompleted;
     private String inconsistencyData;
-    private Boolean noticeNp;
-    private Boolean noticeOgt;
-    private Boolean noticeOgc;
+    private String descriptionsCompleted;
+
+    public String getDescriptionsCompleted() {
+        return descriptionsCompleted;
+    }
+
+    public void setDescriptionsCompleted(String descriptionsCompleted) {
+        this.descriptionsCompleted = descriptionsCompleted;
+    }
 
     public String getStatus() {
         return status;
@@ -30,30 +33,6 @@ public class RequestParamsDto {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Boolean getNoticeNp() {
-        return noticeNp;
-    }
-
-    public void setNoticeNp(Boolean noticeNp) {
-        this.noticeNp = noticeNp;
-    }
-
-    public Boolean getNoticeOgt() {
-        return noticeOgt;
-    }
-
-    public void setNoticeOgt(Boolean noticeOgt) {
-        this.noticeOgt = noticeOgt;
-    }
-
-    public Boolean getNoticeOgc() {
-        return noticeOgc;
-    }
-
-    public void setNoticeOgc(Boolean noticeOgc) {
-        this.noticeOgc = noticeOgc;
     }
 
     public UUID getRequestId() {

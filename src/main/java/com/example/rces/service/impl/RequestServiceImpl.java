@@ -139,8 +139,7 @@ public class RequestServiceImpl implements RequestsService {
 
         RequestContext context = new RequestContext(requests, requestParamsDto.getDescription(),
                 requestParamsDto.getStatus(), requestParamsDto.getQtyCompleted(),
-                inconsistencyData, updatedEmployee,
-                requestParamsDto.getNoticeNp(),requestParamsDto.getNoticeOgt(), requestParamsDto.getNoticeOgc());
+                inconsistencyData, updatedEmployee, requestParamsDto.getDescriptionsCompleted());
 
         if (requestParamsDto.getStatus() == null) {
             handleStatusNull(context);
@@ -167,7 +166,6 @@ public class RequestServiceImpl implements RequestsService {
         Employee updaterEmployee = currentUser().orElseThrow();
 
         List<Field> fields = List.of(request.getClass().getDeclaredFields());
-
         updatedFields.forEach((key, value) -> {
             if (!"id".equals(key)) {
                 try {
@@ -368,6 +366,7 @@ public class RequestServiceImpl implements RequestsService {
         if (Objects.equals(requests.getQty(), qty)) {
             requests.setStatus(Status.Closed);
             requests.setCloseDate(LocalDateTime.now());
+            requests.setDescription(context.getDescriptionsCompleted());
             requests.setClosedEmployee(updaterEmployee);
             Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
             requests.setChatId(message != null ? message.getChatId() : -1);
@@ -477,5 +476,4 @@ public class RequestServiceImpl implements RequestsService {
             child.getImages().add(newImage);
         }
     }
-
 }

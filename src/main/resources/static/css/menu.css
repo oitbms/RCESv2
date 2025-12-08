@@ -282,7 +282,7 @@ body {
         transform: scale(1.03);
     }
     75% {
-        filter: drop-shadow(0 0 6px rgba(255, 0, 0, 0.6));
+        filter: drop_shadow(0 0 6px rgba(255, 0, 0, 0.6));
         border-color: rgba(255, 0, 0, 0.8);
         transform: scale(1.01);
     }
@@ -338,4 +338,162 @@ body {
             transform: scale(1.005);
         }
     }
+}
+
+/* Стили для кастомного tooltip */
+#chartCustomTooltip {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    /* The rest of the tooltip container styles are set in menu.js */
+}
+
+#chartCustomTooltip h4 {
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3498db;
+}
+
+.tooltip-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid #d1e8ff;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Базовые стили для всех ссылок */
+.tooltip-link {
+    background: linear-gradient(135deg, #f8fafc 0%, #e8f4ff 100%);
+    color: #2c5282;
+}
+
+/* Стили для разных статусов */
+.tooltip-link.status-new {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    border-color: #cccccc;
+    color: #666666;
+}
+
+.tooltip-link.status-closed {
+    background: linear-gradient(135deg, #f0fff4 0%, #00CC00 100%);
+    border-color: #00CC00;
+    color: #00CC00;
+}
+
+.tooltip-link.status-rejected {
+    background: linear-gradient(135deg, #fff5f5 0%, #FF0000 100%);
+    border-color: #FF0000;
+    color: #FF0000;
+}
+
+.tooltip-link.status-work {
+    background: linear-gradient(135deg, #ffe8e8 0%, #FFFF00 100%);
+    border-color: #FFFF00;
+    color: #FFFF00;
+}
+
+/* Ховер-эффекты для разных статусов */
+.tooltip-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-link.status-new:hover {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%);
+    border-color: #b3b3b3;
+}
+
+.tooltip-link.status-closed:hover {
+    background: linear-gradient(135deg, #dcffe4 0%, #c6f6d5 100%);
+    border-color: #68d391;
+}
+
+.tooltip-link.status-rejected:hover {
+    background: linear-gradient(135deg, #ffe8e8 0%, #fed7d7 100%);
+    border-color: #fc8181;
+    color: #9b2c2c;
+}
+
+.tooltip-link.status-work:hover {
+    background: linear-gradient(135deg, #ffe8e8 0%, #dcd36a 100%);
+    border-color: #e1cc4f;
+    color: #cca817;
+}
+
+.tooltip-link:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #90caf9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #1a365d;
+}
+
+.tooltip-link strong {
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 70px;
+    color: #2d3748;
+}
+
+.tooltip-link span {
+    color: #4a5568;
+    font-size: 13px;
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.tooltip-link:hover strong {
+    color: #1a365d;
+}
+
+.tooltip-link:hover span {
+    color: #2d3748;
+}
+
+/* Стиль для пустого состояния */
+#chartCustomTooltip .no-requests {
+    padding: 15px;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 6px;
+    color: #6c757d;
+    font-style: italic;
+    border: 1px dashed #dee2e6;
+}
+/* New status styles */
+.tooltip-link.status-NEW {
+    background: linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%); /* Light Grey */
+    border-color: #b0bec5;
+}
+
+.tooltip-link.status-NEW:hover {
+    background: linear-gradient(135deg, #cfd8dc 0%, #b0bec5 100%);
+    border-color: #90a4ae;
+}
+
+.tooltip-link.status-CLOSED {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); /* Light Green */
+    border-color: #a5d6a7;
+}
+
+.tooltip-link.status-CLOSED:hover {
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+    border-color: #81c784;
+}
+
+.tooltip-link.status-REJECTED {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); /* Light Red */
+    border-color: #ef9a9a;
+}
+
+.tooltip-link.status-REJECTED:hover {
+    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+    border-color: #e57373;
 }
