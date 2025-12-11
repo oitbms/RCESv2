@@ -71,6 +71,8 @@ dependencies {
     //Скрипты Kotlin
     implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.22")
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:1.9.22")
+
+    implementation("org.webjars.npm:bootstrap-table:1.24.1")
 }
 
 tasks.withType<JavaCompile> {

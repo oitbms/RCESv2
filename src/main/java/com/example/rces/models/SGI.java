@@ -30,6 +30,14 @@ import java.util.UUID;
 @BatchSize(size = 20)
 public class SGI extends BaseAuditingEntity implements Cloneable {
 
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
     public enum Department {
         mechanic("ОГМ"), builder("ОРС"), protection("ОТиПК"), energy("ОГЭ");
 
@@ -123,6 +131,10 @@ public class SGI extends BaseAuditingEntity implements Cloneable {
     @Deprecated(forRemoval = true)
     @NotAudited
     private List<SgiLog> log = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false)
+    private Document document;
 
     public UUID getId() {
         return id;

@@ -4,6 +4,7 @@ const localCache = new Map();
 let currentPage = 0;
 let totalPagesCount = 1;
 let selectedRows = [];
+let filters;
 
 //Обработчик работы с окном создания задачи
 $(document).on('click', '#createSGI', async function (e) {
@@ -323,7 +324,7 @@ $(document).on('click', '.btn-filters', async function (e) {
 
     // Обработчик применения фильтров
     dialog.find('#filtered').off('click').on('click', function () {
-        const filters = {
+         filters = {
             number: dialog.find('[data-field="number"]').val().trim(),
             workcenter: dialog.find('[data-field="workcenter"]').val().trim(),
             event: dialog.find('[data-field="event"]').val().trim(),
@@ -363,7 +364,6 @@ $(document).on('click', '.btn-filters', async function (e) {
         }
     });
 });
-
 // Функция применения фильтров к текущей странице
 function applyFiltersToCurrentPage(filters) {
     const rows = document.querySelectorAll('.row-items');
@@ -395,7 +395,6 @@ function applyFiltersToCurrentPage(filters) {
         row.style.display = notMatch != null && notMatch ? 'none' : '';
     });
 }
-
 //Обработчик согласования
 $(document).on('click', '#toggleAgreement', async function (event) {
     event.preventDefault();
@@ -791,6 +790,13 @@ async function createRow(item, inner) {
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                     </div>
+                                    <div class="row-item" style="width: var(--file); padding: 0">
+                                        <div data-name="document" contenteditable="false" style="height: 100%; width: 100%">
+                                            <div class="frame">
+                                                <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно документа"></i>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="row-item" style="width: var(--executions);">
                                         <button type="button" class="btn btn-info btn-sm execution-btn">
                                             ✔
@@ -920,6 +926,7 @@ async function displayPage(page = 0) {
     }
 
     await buildPagination(totalPagesCount, currentPage);
+    await applyFiltersToCurrentPage(filters)
 }
 
 $(document).on('click', '.pagination .page-btn', async function () {

@@ -62,9 +62,8 @@ public class Init {
     private void init() {
         log.info("Initialization tasks");
         runOnce("#1-Recalculation date metrology", speService::calculateDateVerification, true);
-        runOnce("#2-Install documents in SPE", () -> installDocumentOnSPE(false), true);
+//        runOnce("#2-Install documents in SPE", () -> installDocumentOnSPE(false), true);
         runOnce("#3-Set organization in SPE", this::setOrganizationOnSPE, false);
-
     }
 
     private void installDocumentOnSPE(Boolean reinstall) {

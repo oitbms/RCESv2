@@ -60,6 +60,7 @@ public class SgiMapper implements BaseMapper<SGI, SgiDTO, SgiCreateDTO> {
         dto.setAgree(sgi.getAgreed());
         dto.setSubSGI(subSgiToDto(sgi.getSubSGI()));
         dto.setFactExecution(factExecutionToDto(sgi.getExecution()));
+        dto.setDocumentId(sgi.getDocument()!=null ? sgi.getDocument().getId() : null);
 
         return dto;
     }

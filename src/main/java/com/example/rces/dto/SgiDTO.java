@@ -23,6 +23,7 @@ public class SgiDTO {
     private List<SubSgiDTO> subSGI;
     private FactExecutionSGIDTO factExecution;
     private SubSgiDTO parent;
+    private UUID documentId;
 
     public UUID getId() {
         return id;
@@ -158,5 +159,13 @@ public class SgiDTO {
 
     public void setParent(SubSgiDTO parent) {
         this.parent = parent;
+    }
+
+    public UUID getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(UUID documentId) {
+        this.documentId = documentId;
     }
 }
