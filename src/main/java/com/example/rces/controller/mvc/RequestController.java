@@ -18,13 +18,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
-import static com.example.rces.utils.DateUtil.formatDateUpdate;
 import static com.example.rces.utils.DateUtil.formatedDate;
 
 
@@ -107,10 +108,8 @@ public class RequestController {
         List<String> formattedDates = requestsList.stream()
                 .map(request -> formatedDate(request.getCreatedDate()))
                 .collect(Collectors.toList());
-
         List<String> updateDate = requestsList.stream()
-                .map(request -> formatDateUpdate(request.getUpdatedDate()))
-                .collect(Collectors.toList());
+                .map(requests -> requests.getUpdatedDate().atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).toList();
 
         model.addAttribute("requestsList", requestsList);
         model.addAttribute("typeRequest", type);
