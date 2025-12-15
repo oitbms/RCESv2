@@ -88,6 +88,8 @@
                                 <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
                                 <a class="btn btn-primary bottom-margin" href="report">Дерево ЗК</a>
                                 <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Доступная оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Список отчетов</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                             </#if>
