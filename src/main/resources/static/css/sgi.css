@@ -22,17 +22,16 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: var(--font-sans-serif);
     font-size: 0.9rem;
     text-decoration: none !important;
 }
 
 body {
-    width: max-content;
+    background: white;
 }
 
 main {
-    width: max-content;
+    height: calc(100vh - 120px);
 }
 
 .table-wrapper {
@@ -57,6 +56,7 @@ main {
         display: flex;
         padding: 0 0 0 6px;
         align-items: center;
+        justify-content: center;
         background-color: #007bff;
         border: 1px solid #007bff;
         border-radius: 0.3rem;
@@ -94,6 +94,10 @@ main {
                 &:hover {
                     background-color: #f5f5f5;
                 }
+            }
+
+            & .selected-row {
+                background-color: #dee2e6;
             }
 
             & .row-items-inner-row {
@@ -184,23 +188,221 @@ footer {
 }
 
 dialog {
-    max-width: 1200px;
     border: none;
-    border-radius: 8px;
+    width: min(70vw, 700px);
+    height: min(80vh, 700px);
+    border-radius: 12px;
     padding: 0;
-    top: -30%;
     margin: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    overflow: visible;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    background: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-    &::backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(2px);
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.dialog-container-header {
+    padding: 20px 25px 15px;
+    background: #f4f4f4;
+    color: #333;
+    flex-shrink: 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.dialog-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    color: #424242;
+}
+.dialog-container-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    padding: 0 15px;
+    background: #fafafa;
+}
+
+.dialog-content-header {
+    display: flex;
+    background: #f0f0f0;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+    color: #424242;
+    padding: 12px 10px;
+    flex-shrink: 0;
+}
+
+.dialog-content-header-column {
+    padding: 0 8px;
+    font-size: 0.95rem;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+}
+
+.col-25 {
+    width: 25%;
+}
+
+.col-100 {
+    width: 100px;
+}
+
+.col-250 {
+    width: 250px;
+}
+
+.col-450 {
+    width: 450px;
+}
+
+.dialog-content-rows {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    margin: 8px 0 15px;
+    background: #ffffff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.dialog-content-rows-row {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: #555;
+
+    & .file-items {
+        padding: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 }
 
+.dialog-content-rows-row.selected {
+    background-color: #f0f7ff;
+}
+
+.dialog-content-rows-row:last-child {
+    border-bottom: none;
+}
+
+.dialog-content-rows-row:hover {
+    background-color: #f5f5f5;
+}
+
+.content-row-column {
+    padding: 0 8px;
+    overflow: hidden;
+    font-size: 0.85rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.dialog-container-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 25px;
+    background: #f4f4f4;
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+.dialog-btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #d0d0d0;
+    background: #f0f0f0;
+    color: #424242;
+}
+
+.dialog-btn.primary {
+    background: #616161;
+    color: white;
+    border: none;
+}
+
+.dialog-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.dialog-btn.primary:hover {
+    background: #424242;
+}
+
+.dialog-content-rows::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dialog-content-rows::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.dialog-content-rows::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.dialog-content-rows::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+}
+
+.choice-field {
+    position: relative;
+}
+
+.choice-field input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    font-size: 15px;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.choice-field input:focus {
+    outline: none;
+    border-color: #bdbdbd;
+    box-shadow: 0 0 0 3px rgba(189, 189, 189, 0.3);
+}
+
+.choice-field::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+
 #create-dialog {
     width: 50%;
+    height: 475px;
 
     & .modal-title {
         margin: 0;
@@ -315,6 +517,7 @@ dialog {
 
 #editing-dialog, #filter-dialog {
     width: 55%;
+    height: 475px;
 
     & .modal-title {
         margin: 0;
@@ -383,8 +586,8 @@ dialog {
                 cursor: pointer;
                 z-index: 100;
                 height: 100px;
+                width: 100%;
                 overflow: auto;
-                width: 220px;
 
                 &:hover {
                     border-color: #0d6efd;
@@ -430,6 +633,7 @@ dialog {
 
 #execution-dialog {
     width: 20%;
+    height: 530px;
 
     & .modal-title {
         margin: 0;
@@ -534,9 +738,8 @@ dialog {
         padding: 16px 24px;
         background: #f8f9fa;
         border-top: 1px solid #dee2e6;
-
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         gap: 8px;
     }
 
@@ -581,7 +784,6 @@ dialog {
     stroke-dasharray: 20 300;
     stroke-dashoffset: -32.42;
 }
-
 
 .checkbox-wrapper-31 {
     position: relative;
@@ -1014,19 +1216,6 @@ dialog {
     }
     #filter-button {
 
-    }
-}
-
-.document, .references {
-    font-size: 18px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: var(--accent-light);
-        color: white;
     }
 }
 

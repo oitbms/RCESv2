@@ -22,7 +22,7 @@ public class SgiDTO {
     private Boolean agree;
     private List<SubSgiDTO> subSGI;
     private FactExecutionSGIDTO factExecution;
-    private SubSgiDTO parent;
+    private UUID parent;
     private UUID documentId;
 
     public UUID getId() {
@@ -153,11 +153,11 @@ public class SgiDTO {
         this.factExecution = factExecution;
     }
 
-    public SubSgiDTO getParent() {
+    public UUID getParent() {
         return parent;
     }
 
-    public void setParent(SubSgiDTO parent) {
+    public void setParent(UUID parent) {
         this.parent = parent;
     }
 

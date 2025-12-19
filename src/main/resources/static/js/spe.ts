@@ -141,7 +141,6 @@ class Spe extends Base {
     }
 
     public override onScroll() {
-
     }
 
     public override async print(): Promise<void> {

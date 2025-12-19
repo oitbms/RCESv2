@@ -23,9 +23,9 @@ public class NTDocumentRestController {
     }
 
     @GetMapping("/get-page-ntd")
-    public ResponseEntity<List<NTDocumentDTO>> getPage() {
+    public ResponseEntity<RequestDataDTO> getPage() {
         var allSpeList = service.getAllNTDocuments().stream().sorted(Comparator.comparing(NTDocumentDTO::getId)).toList();
-        return ResponseEntity.ok(allSpeList);
+        return ResponseEntity.ok(new RequestDataDTO(allSpeList, allSpeList.size()));
     }
 
     @PostMapping("/create-ntd")

@@ -41,7 +41,7 @@ public class StateStandardDocumentServiceImpl implements StateStandardDocumentSe
     public List<NTDocumentDTO> getAllNTDocuments() {
         return repository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(NTDocument::getName))
+                .sorted(Comparator.comparing(NTDocument::getName).thenComparing(NTDocument::getType))
                 .map(mapper::toDTO).toList();
     }
 

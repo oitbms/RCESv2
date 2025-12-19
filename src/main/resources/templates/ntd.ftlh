@@ -73,9 +73,8 @@
 
 <dialog id="create-dialog">
     <div class="modal-header">
-        <h2 class="modal-title">Создание оборудования</h2>
+        <h2 class="modal-title">Создание документации</h2>
     </div>
-
     <form id="ntdForm" enctype="multipart/form-data">
         <div class="modal-body">
             <div class="form-group">
@@ -104,7 +103,6 @@
             <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
         </div>
     </form>
-
 </dialog>
 <dialog id="documentDialog">
     <div class="dialog-container">

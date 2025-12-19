@@ -34,9 +34,9 @@ public class SPERestController {
     }
 
     @GetMapping("/get-page-spe")
-    public ResponseEntity<List<SpeDTO>> getPage() {
+    public ResponseEntity<RequestDataDTO> getPage() {
         var allSpeList = service.getAllSPE().stream().sorted(Comparator.comparing(SpeDTO::getId)).toList();
-        return ResponseEntity.ok(allSpeList);
+        return ResponseEntity.ok(new RequestDataDTO(allSpeList, allSpeList.size()));
     }
 
     @PatchMapping("/update/{number}")

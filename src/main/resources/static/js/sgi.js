@@ -59,23 +59,34 @@ $(document).on('click', '#createBtn', async function (e) {
     e.preventDefault();
 
     const button = $(this);
-    const form = button.closest('form').get(0);
-    const dialog = $('#create-dialog');
-    const totalRows = $('.row-items').length;
-
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    button.disabled = true;
-
+    const form = button.closest('form')[0];
     const formData = new FormData(form);
+    const formObject = {};
+    formData.forEach((value, key) => {
+        if (key === 'additionalFiles') {
+            const files = form.querySelector('input[name="additionalFiles"]').files;
+            formObject[key] = files;
+        } else if (key === 'employee') {
+            // Для сотрудника - парсим JSON
+            try {
+                formObject[key] = JSON.parse(value);
+            } catch {
+                formObject[key] = value;
+            }
+        } else {
+            formObject[key] = value;
+        }
+    });
+    const files = formObject.additionalFiles;
+    delete formObject.additionalFiles;
+
+    const jsonData = JSON.stringify(formObject);
+
     const newSGI = await $.ajax({
         url: '/api/sgi/create',
         type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
+        data: jsonData,
+        contentType: 'application/json',
         dataType: 'json'
     });
     localCache.set(newSGI.id, newSGI);
@@ -756,6 +767,13 @@ async function createRow(item, inner) {
                                 ✔
                             </button>
                         </div>
+                        <div class="row-item" style="width: var(--file); padding: 0">
+                            <div data-field="document" contenteditable="false" style="height: 100%; width: 100%">
+                                <div class="frame">
+                                    <i class="document fa-solid fa-file"></i>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row-item" style="width: var(--status);">
                             <div class="checkbox-wrapper-31">
                                 <input type="checkbox" id="toggleAgreement" ${item.agree ? 'checked' : ''}>
@@ -855,7 +873,6 @@ async function createRow(item, inner) {
                     </div>
                 </div>
             </div>`
-
     }
     const existingRow = $(`.row-items-row[data-id="${item.id}"]`);
     if (existingRow.length) {

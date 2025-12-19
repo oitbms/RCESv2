@@ -1,6 +1,6 @@
 interface FileDTO {
     name: string;
-    data: string;
+    data: [];
 }
 
 interface ReportItem {
@@ -8,6 +8,11 @@ interface ReportItem {
     name: string;
     params: any;
     function?: Function;
+}
+
+interface RequestDataDTO {
+    data: any;
+    count: number
 }
 
 enum NotificationType {
@@ -31,7 +36,7 @@ abstract class Base {
     private handlers: { event: string, selector: string, handler: Function }[] = [];
     public selectedRows = new Set<string | number>();
     public localCache = new Map<string | number, object>();
-    private readonly itemsPerPage: number;
+    public readonly itemsPerPage: number;
     private readonly visibleRow: number;
     public currentPage: number = 1;
     public saveMassive: object = {};
@@ -119,10 +124,13 @@ abstract class Base {
     }
 
     public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
-        const data: any[] = await this.requestToApi(url, 'GET', param);
+        if (this.currentPage > 1) {
+            param = { ...param, page: this.currentPage };
+        }
+        const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
 
-        const visibleItems = data.slice(0, this.visibleRow);
-        const hiddenItems = data.slice(this.visibleRow);
+        const visibleItems = request.data.slice(0, this.visibleRow);
+        const hiddenItems = request.data.slice(this.visibleRow);
 
         visibleItems.forEach(item => {
             this.localCache.set(item.id, item);
@@ -136,7 +144,7 @@ abstract class Base {
             this.rowContainer.append(row);
         });
 
-        callbacks.forEach(callback => callback?.(data));
+        callbacks.forEach(callback => callback?.(request.data, request.count));
     });
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {
@@ -152,7 +160,7 @@ abstract class Base {
             delete this.saveMassive[item.id];
         });
 
-        this.createNotification('Оборудование успешно обновлено', NotificationType.SUCCESS);
+        this.createNotification('Успешно обновлено', NotificationType.SUCCESS);
         return results;
     }
 
@@ -239,6 +247,8 @@ abstract class Base {
             const files = Array.isArray(response) ? response : [response];
 
             for (const file of files) {
+                // @ts-ignore
+                //Тут может быть какая то ошибка
                 const binaryString = atob(file.data);
                 const uint8Array = new Uint8Array(binaryString.length);
                 for (let i = 0; i < binaryString.length; i++) {
@@ -258,6 +268,7 @@ abstract class Base {
             }
         } catch (error) {
             this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
+            console.error(error);
         }
     }
 
@@ -425,11 +436,11 @@ abstract class Base {
 
     public readonly lockScreen = (message: string = "Загрузка..."): (() => void) => {
         const overlay = $(`<div class="lock-overlay">${message}</div>`);
-        $('body').addClass('locked').append(overlay);
+        this.rowContainer.addClass('locked').append(overlay);
 
         return () => {
             overlay.remove();
-            $('body').removeClass('locked');
+            this.rowContainer.removeClass('locked');
         };
     };
 

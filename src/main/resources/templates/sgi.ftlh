@@ -5,13 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СГИ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/sgi.css">
-    <script src="/js/cache.js" defer></script>
-    <script src="/js/sgi.js" defer></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/base/dialog.js"></script>
+    <script src="/js/base/cache.js"></script>
+    <script src="/js/base/base.js"></script>
+    <script src="/js/newSGI.js" defer></script>
 </head>
 
 <body>
@@ -70,7 +74,7 @@
             <div class="pagination">
             </div>
             <div class="buttons">
-                <button class="btn btn-primary btn-action" id="createSGI">
+                <button class="btn btn-primary btn-action" id="create-button">
                     <i class="bi bi-plus-circle"></i>
                     <span class="btn-text">Добавить</span>
                 </button>
@@ -80,7 +84,7 @@
                 </button>
                 <button class="btn btn-outline-secondary btn-action">
                     <i class="bi bi-list"></i>
-                    <a class="btn-text" href="/menu"  style="color: black">Меню</a>
+                    <a class="btn-text" href="/menu" style="color: black">Меню</a>
                 </button>
                 <div class="print-container" id="print-container-button">
                     <button class="btn btn-outline-secondary btn-action print-button">
@@ -142,9 +146,7 @@
 
             <div class="form-group">
                 <label class="form-label">Ответственный</label>
-                <select class="form-control" name="employee" required>
-                    <option value="">Выберите сотрудника</option>
-                </select>
+                <textarea class="area-modal form-control" data-field="employee" name="employee" readonly  required></textarea>
             </div>
 
             <div class="form-group">
@@ -208,8 +210,7 @@
 
         <div class="form-group">
             <label class="form-label">Ответственный</label>
-            <select class="form-control" data-field="employee">
-            </select>
+            <textarea class="area-modal form-control" data-field="employee" readonly  required></textarea>
         </div>
 
         <div class="form-group">
@@ -233,7 +234,17 @@
                 <div class="file-list">
                 </div>
             </div>
-            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles" data-field="imagesSGI">
+            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles"
+                   data-field="imagesSGI">
+        </div>
+
+        <div class="form-group">
+            <label style="text-align: center" class="form-label">Документ</label>
+            <div data-field="document" contenteditable="false">
+                <div class="frame">
+                    <i class="document fa-solid fa-file"></i>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,10 +272,12 @@
                 <div class="file-list">
                 </div>
             </div>
-            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles" data-field="imagesFactSGI">
+            <input type="file" multiple accept="image/*" style="display: none;" name="additionalFiles"
+                   data-field="imagesFactSGI">
         </div>
     </div>
     <div class="modal-footer">
+        <button class="btn btn-primary" id="cancelButton">Отмена</button>
         <button class="btn btn-primary" id="saveBtn">Сохранить</button>
     </div>
 </dialog>
@@ -297,7 +310,7 @@
 
         <div class="form-group">
             <label class="form-label">Отдел</label>
-            <select class="form-control" data-field="department">
+            <select class="form-control" data-field="departament">
                 <option value="">Выберите отдел</option>
                 <option value="mechanic">ОГМ</option>
                 <option value="builder">ОРС</option>
@@ -333,11 +346,53 @@
         <button class="btn btn-primary" id="filtered">Применить</button>
     </div>
 </dialog>
-<div id="customContextMenu"
-     style="display:none; position:absolute; z-index:1000; background:white; border:1px solid #ccc; padding:5px; border-radius:4px;">
-    <button id="deleteRowBtn" class="btn btn-danger btn-sm">Удалить</button>
-    <button id="printRowBtn" class="btn btn-info btn-sm">Печать</button>
-</div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<dialog id="employeeDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно выбора сотрудника</div>
+            <div class="choice-field">
+                <input type="text" placeholder="Введите фамилию сотрудника">
+            </div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-250">Имя</div>
+                <div class="dialog-content-header-column col-250">Подразделение</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" onclick="document.getElementById('employeeDialog').close()">
+                Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeEmployee">
+                Выбрать
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="documentDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно работы с документом</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-450">Наименование файла</div>
+                <div class="dialog-content-header-column col-100">Тип</div>
+                <div style="text-align: end; font-size: 1rem" class="dialog-content-header-column col-100">Файл</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+            <div class="organization-row"></div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" id="cancelButton">
+                Отмена
+            </button>
+        </div>
+    </div>
+</dialog>
 </body>
 </html>

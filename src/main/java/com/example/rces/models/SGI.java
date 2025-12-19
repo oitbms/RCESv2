@@ -50,6 +50,15 @@ public class SGI extends BaseAuditingEntity implements Cloneable {
         public String getName() {
             return name;
         }
+
+        public static Department fromName(String name) {
+            for (Department department : Department.values()) {
+                if (department.name.equals(name)) {
+                    return department;
+                }
+            }
+            throw new IllegalArgumentException("Неизвестный отдел: " + name);
+        }
     }
 
     @Id

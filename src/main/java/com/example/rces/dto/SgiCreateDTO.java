@@ -13,7 +13,6 @@ public class SgiCreateDTO {
     private EmployeeDTO employee;
     private LocalDate desiredDate;
     private String note;
-    private MultipartFile[] additionalFiles;
     private String parentId;
 
     public String getWorkcenter() {
@@ -70,14 +69,6 @@ public class SgiCreateDTO {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public MultipartFile[] getAdditionalFiles() {
-        return additionalFiles;
-    }
-
-    public void setAdditionalFiles(MultipartFile[] additionalFiles) {
-        this.additionalFiles = additionalFiles;
     }
 
     public String getParentId() {
