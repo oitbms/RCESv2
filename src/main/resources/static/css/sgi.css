@@ -27,12 +27,11 @@
 }
 
 body {
-    width: max-content;
     background: white;
 }
 
 main {
-    width: max-content;
+    height: calc(100vh - 120px);
 }
 
 .table-wrapper {

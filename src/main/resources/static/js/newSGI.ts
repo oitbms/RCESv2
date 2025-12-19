@@ -1170,7 +1170,6 @@ class Sgi extends Base {
         this.downloadFile(`/api/document/download-document-file/${fileId}`).catch(console.error);
     }
 
-
 }
 
 $(document).ready(() => {
