@@ -82,26 +82,24 @@
                 <nav class="mb-4">
                     <ul class="nav justify-content-center">
                         <li class="nav-item">
-                            <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
-                                <a class="btn btn-primary" href="/sgi">СГИ</a>
-                                <a class="btn btn-primary" href="/spe">СПЕ</a>
-                                <a class="btn btn-primary" href="/ntd">НТД</a>
-                            </#if>
-                            <#if user.getRole() == 'TECHNOLOGIST'>
-                                <a class="btn btn-primary" href="/ntd">НТД</a>
-                            </#if>
                             <#if user.getRole() == 'ADMIN'>
                                 <a class="btn btn-primary bottom-margin" href="/sgi">СГИ</a>
-                                <a class="btn btn-primary" href="/spe">СПЕ</a>
-                                <a class="btn btn-primary" href="/ntd">НТД</a>
                                 <a class="btn btn-primary bottom-margin" href="/admin">Пользователи</a>
                                 <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
                                 <a class="btn btn-primary bottom-margin" href="report">Дерево ЗК</a>
                                 <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Доступная оснастка</a>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Список отчетов</a>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Чек-листы</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
+                            <#elseif user.getRole() == 'TECHNOLOGIST'>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
+                            </#if>
+                            <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Чек-листы</a>
+                                <a class="btn btn-primary" href="/sgi">СГИ</a>
+                                <a class="btn btn-primary" href="/spe">СПЕ</a>
                             </#if>
                             <a class="btn btn-primary " href="/logout">Выйти</a>
                             <#--                            <a class="btn btn-primary " href="/help">Справка по заявкам</a>-->
