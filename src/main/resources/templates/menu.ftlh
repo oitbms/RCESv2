@@ -88,16 +88,16 @@
                                 <a class="btn btn-primary bottom-margin" href="/shift-task/task">ССЗ</a>
                                 <a class="btn btn-primary bottom-margin" href="report">Дерево ЗК</a>
                                 <a class="btn btn-primary bottom-margin" href="/createBid">Создать заявку</a>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Чек-листы</a>
+                                <a class="btn btn-primary bottom-margin" href="http://192.168.30.80:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://192.168.30.80:2006/report">Чек-листы</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'TECHNOLOGIST'>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://192.168.30.80:2001/">Оснастка</a>
                             </#if>
                             <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2001/">Оснастка</a>
-                                <a class="btn btn-primary bottom-margin" href="http://localhost:2006/report">Чек-листы</a>
+                                <a class="btn btn-primary bottom-margin" href="http://192.168.30.80:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="http://192.168.30.80:2006/report">Чек-листы</a>
                                 <a class="btn btn-primary" href="/sgi">СГИ</a>
                                 <a class="btn btn-primary" href="/spe">СПЕ</a>
                             </#if>
