@@ -15,13 +15,16 @@ type SgiIn = {
     agree: boolean;
     subSGI: SubSgiIn[];
     factExecution: FactExecutionSGIIn;
-    parent?: SubSgiIn;
+    parent?: string;
+    documentId: string;
+    imagesSGI: any;
 }
 
 type FactExecutionSGIIn = {
     id: string;
     executionDate: string;
     report: string;
+    imagesFactSGI: any;
 }
 
 type SubSgiIn = {
@@ -39,7 +42,9 @@ type SubSgiIn = {
     note: string;
     comment: string;
     agree: boolean;
-    factExecutionSGI: FactExecutionSGIIn;
-    parent?: SubSgiIn;
+    factExecution: FactExecutionSGIIn;
+    parent?: string;
+    documentId: string;
+    imagesSGI: any;
 }
 

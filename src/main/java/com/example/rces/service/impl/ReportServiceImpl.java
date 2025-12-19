@@ -56,7 +56,7 @@ public class ReportServiceImpl implements ReportService {
                             "SELECT e FROM SGI e " +
                                     "WHERE e.department = :department " +
                                     "ORDER BY e.requestNumber ASC", SGI.class)
-                    .setParameter("department", department)
+                    .setParameter("department", SGI.Department.fromName(department))
                     .getResultList();
         } else {
             return entityManager.createQuery(

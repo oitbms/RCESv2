@@ -61,6 +61,7 @@ public class SgiMapper implements BaseMapper<SGI, SgiDTO, SgiCreateDTO> {
         dto.setSubSGI(subSgiToDto(sgi.getSubSGI()));
         dto.setFactExecution(factExecutionToDto(sgi.getExecution()));
         dto.setDocumentId(sgi.getDocument()!=null ? sgi.getDocument().getId() : null);
+        dto.setParent(sgi.getParentSGI()!=null ? sgi.getParentSGI().getId() : null);
 
         return dto;
     }
@@ -108,7 +109,9 @@ public class SgiMapper implements BaseMapper<SGI, SgiDTO, SgiCreateDTO> {
             dto.setDepartmentName(sub.getDepartment().getName());
             dto.setPlanDate(sub.getPlanDate());
             dto.setComment(Optional.ofNullable(sub.getComment()).orElse(""));
-            dto.setFactExecutionSGI(factExecutionToDto(sub.getExecution()));
+            dto.setFactExecution(factExecutionToDto(sub.getExecution()));
+            dto.setParent(sub.getParentSGI()!=null ? sub.getParentSGI().getId() : null);
+            dto.setDocumentId(sub.getDocument()!=null ? sub.getDocument().getId() : null);
             subList.add(dto);
         }
         return subList;
@@ -131,7 +134,7 @@ public class SgiMapper implements BaseMapper<SGI, SgiDTO, SgiCreateDTO> {
             sgi.setEmployee(employeeMapper.toEntity(sub.getEmployee()));
             sgi.setComment(sub.getComment());
             sgi.setAgreed(sub.getAgree());
-            sgi.setExecution(factExecutionDtoToEntity(sub.getFactExecutionSGI()));
+            sgi.setExecution(factExecutionDtoToEntity(sub.getFactExecution()));
             subList.add(sgi);
         }
         return subList;

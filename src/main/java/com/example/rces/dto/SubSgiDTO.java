@@ -21,8 +21,9 @@ public class SubSgiDTO {
     private String note;
     private String comment;
     private Boolean agree;
-    private FactExecutionSGIDTO factExecutionSGI;
-    private SubSgiDTO parent;
+    private FactExecutionSGIDTO factExecution;
+    private UUID parent;
+    private UUID documentId;
 
     public UUID getId() {
         return id;
@@ -136,19 +137,27 @@ public class SubSgiDTO {
         this.agree = agree;
     }
 
-    public FactExecutionSGIDTO getFactExecutionSGI() {
-        return factExecutionSGI;
+    public FactExecutionSGIDTO getFactExecution() {
+        return factExecution;
     }
 
-    public void setFactExecutionSGI(FactExecutionSGIDTO factExecutionSGI) {
-        this.factExecutionSGI = factExecutionSGI;
+    public void setFactExecution(FactExecutionSGIDTO factExecution) {
+        this.factExecution = factExecution;
     }
 
-    public SubSgiDTO getParent() {
+    public UUID getParent() {
         return parent;
     }
 
-    public void setParent(SubSgiDTO parent) {
+    public void setParent(UUID parent) {
         this.parent = parent;
+    }
+
+    public UUID getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(UUID documentId) {
+        this.documentId = documentId;
     }
 }

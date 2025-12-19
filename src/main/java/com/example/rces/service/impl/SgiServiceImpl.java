@@ -1,12 +1,11 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.DocumentCreateDTO;
+import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SgiCreateDTO;
 import com.example.rces.dto.SgiDTO;
 import com.example.rces.mapper.SgiMapper;
-import com.example.rces.models.Employee;
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
-import com.example.rces.models.SGI;
+import com.example.rces.models.*;
 import com.example.rces.repository.SgiRepository;
 import com.example.rces.service.*;
 import com.example.rces.utils.FilesUtil;
@@ -27,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +45,7 @@ public class SgiServiceImpl implements SgiService {
     private final ImageService imageService;
     private final FactExecutionSgiService factExecutionSgiService;
     private final TelegramService telegramService;
+    private final DocumentService documentService;
     private final SgiMapper mapper;
 
     private final String controlChatId;
@@ -52,19 +53,20 @@ public class SgiServiceImpl implements SgiService {
 
     @Autowired
     public SgiServiceImpl(SgiRepository repository, EmployeeService employeeService, ImageService imageService,
-                          FactExecutionSgiService factExecutionSgiService, TelegramService telegramService, SgiMapper mapper,
+                          FactExecutionSgiService factExecutionSgiService, TelegramService telegramService, DocumentService documentService, SgiMapper mapper,
                           @Value("${telegram.chat.control.id}") String controlChatId, @Value("${telegram.chat.test.id}") String testChatId) {
         this.repository = repository;
         this.employeeService = employeeService;
         this.imageService = imageService;
         this.factExecutionSgiService = factExecutionSgiService;
         this.telegramService = telegramService;
+        this.documentService = documentService;
         this.mapper = mapper;
         this.controlChatId = controlChatId;
         this.testChatId = testChatId;
     }
 
-    public synchronized SgiDTO createSGI(SgiCreateDTO dto) {
+    public synchronized SgiDTO createSGI(SgiCreateDTO dto, MultipartFile[] additionalFiles) {
         if (!employeeService.currentUserHaveControlRoles()) {
             throw new ForbiddenException("Создавать заявки могут только управление");
         }
@@ -80,17 +82,17 @@ public class SgiServiceImpl implements SgiService {
         newSGI.setAgreed(false);
         newSGI.setExecution(factExecutionSgiService.createFactExecutionSGI(newSGI));
         newSGI.setColor(colorCalculate(newSGI, LocalDate.now()));
-        if (dto.getAdditionalFiles() != null) {
-            newSGI.setImages(imageService.createImages(dto.getAdditionalFiles(), newSGI, false));
+        if (additionalFiles != null) {
+            newSGI.setImages(imageService.createImages(additionalFiles, newSGI, false));
         }
-        repository.save(newSGI);
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, newSGI, null, MessageType.CREATE, this.controlChatId));
+        newSGI = repository.save(newSGI);
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, newSGI, null, MessageType.CREATE, this.testChatId));
         return mapper.toDTO(newSGI);
     }
 
     @Override
     public Page<SgiDTO> getPage(int page, int size) {
-        Page<SGI> sgiPage = repository.findAllWithAssociations(PageRequest.of(page, size));
+        Page<SGI> sgiPage = repository.findAllWithAssociations(PageRequest.of(page-1, size));
         return mapper.toDTOPage(sgiPage);
     }
 
@@ -111,7 +113,7 @@ public class SgiServiceImpl implements SgiService {
 
     @Override
     public void delete(SGI sgi) {
-        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.controlChatId));
+        telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.DELETE, this.testChatId));
         repository.delete(sgi);
     }
 
@@ -132,12 +134,25 @@ public class SgiServiceImpl implements SgiService {
                 sgi.setAgreed(agreed);
                 sgi.setColor(colorCalculate(sgi, LocalDate.now()));
                 repository.save(sgi);
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.CLOSE, this.testChatId));
                 return sgi;
             }
             throw new ApplicationContextException("Все подзадачи должны быть согласованы");
         }
         throw new ApplicationContextException("Согласовывать задачу может только");
+    }
+
+    @Override
+    public DocumentDTO createSpeDocument(SGI sgi, DocumentCreateDTO dto, Object file) {
+        dto.setName(String.format("Мероприятие %s ответственный %s %s", sgi.getRequestNumber(), sgi.getEmployee(), LocalDateTime.now()));
+        Document document;
+        if (file != null || dto.getFiles()!=null) {
+            document = documentService.createDocument(dto, file!=null ? file : dto.getFiles());
+        } else {
+            document = documentService.createDocument(dto);
+        }
+        sgi.setDocument(document);
+        return documentService.toDTO(document);
     }
 
     @Override
@@ -174,9 +189,9 @@ public class SgiServiceImpl implements SgiService {
             }
             repository.save(sgi);
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.WORK, this.testChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
             }
         } else {
             if (!employeeService.isResponsible(sgi.getEmployee()) & !employeeService.currentUserHaveControlRoles()) {
@@ -196,9 +211,9 @@ public class SgiServiceImpl implements SgiService {
             sgi.setExecution(factExecutionSGI);
             sgi.setColor(colorCalculate(sgi, LocalDate.now()));
             if (!planDateExist && executionDate != null) {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.COMPLETED, this.testChatId));
             } else {
-                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.controlChatId));
+                telegramService.sendMessageForSGI(new TelegramSgiEvent(this, sgi, null, MessageType.UPDATE, this.testChatId));
             }
             repository.save(sgi);
         }
@@ -212,7 +227,7 @@ public class SgiServiceImpl implements SgiService {
         List<SGI> sgiList = repository.findAll();
         String requestsNumbers = buildExpiredRequestsString(sgiList, today);
         if (!requestsNumbers.isEmpty()) {
-            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.controlChatId));
+            telegramService.sendRegularMessage(new TelegramRegularEvent("Просрочен срок выполнения мероприятий: №%s", requestsNumbers, this.testChatId));
         }
     }
 
