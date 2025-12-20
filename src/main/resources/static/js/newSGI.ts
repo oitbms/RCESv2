@@ -31,7 +31,7 @@ class Sgi extends Base {
 
     public createRow(sgi: SgiIn) {
         const hamburger = `
-            <label class="hamburger">
+            <label class="hamburger tooltip-trigger" data-description="Раскрыть список подзадач">
                 <input type="checkbox">
                 <svg viewBox="0 0 32 32">
                     <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
@@ -61,12 +61,12 @@ class Sgi extends Base {
                 </div>
                 <div class="row-item" data-field="comment" style="width: var(--comment);">${sgi.comment}</div>
                 <div class="row-item" style="width: var(--editing);">
-                    <button type="button" class="btn btn-info btn-sm editing-btn">
+                    <button type="button" class="btn btn-info btn-sm editing-btn tooltip-trigger" data-description="Открыть окно редактирования">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                 </div>
                 <div class="row-item" style="width: var(--executions);">
-                    <button type="button" class="btn btn-info btn-sm execution-btn">
+                    <button type="button" class="btn btn-info btn-sm execution-btn tooltip-trigger" data-description="Открыть окно факта выполнения">
                         ✔
                     </button>
                 </div>
@@ -904,7 +904,7 @@ class Sgi extends Base {
         }
     }
 
-    private showRowContextMenu = (event: Event) => {
+    private showRowContextMenu = async (event: Event) => {
         event.preventDefault();
 
         const mouseEvent = event as MouseEvent;
@@ -915,14 +915,29 @@ class Sgi extends Base {
             {
                 label: 'Удалить',
                 action: () => {
+                    const sgi: any =  this.localCache.get(rowId);
+                    if (sgi.agree) {
+                        this.createNotification('Нельзя удалять согласованное мероприятие!', NotificationType.ERROR);
+                        return;
+                    }
                     this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
                         // @ts-ignore
                         if (confirmed) {
                             this.deleteEntity(`/api/sgi/delete/${rowId}`).then(() => {
                                 this.deleteRow(rowId);
+                                this.localCache.delete(rowId);
+                                if (sgi.parent !=null) {
+                                    const parentSgi: any =  this.localCache.get(sgi.parent);
+                                    parentSgi.subSGI = parentSgi.subSGI.filter((sub) => sub.id !== sgi.id);
+                                    this.localCache.set(parentSgi.id, parentSgi);
+                                    if (parentSgi.subSGI.length === 0) {
+                                        this.updateRow(parentSgi, parentSgi.id);
+                                    }
+                                }
                                 this.createNotification("Мероприятие успешно удалено", NotificationType.SUCCESS);
-                            }).catch(() => {
+                            }).catch((error) => {
                                 this.createNotification("Возникла ошибка при удалении мероприятия", NotificationType.ERROR);
+                                console.error(error);
                             });
                         }
                     });
@@ -1129,9 +1144,8 @@ class Sgi extends Base {
         }
 
         const url = sgi.documentId
-            ? `/api/document/add-file-to-document/${sgi.documentId}`
+            ? `/api/document/add-file-to-document-and-get/${sgi.documentId}`
             : `/api/sgi/create-document/${sgi.id}`;
-
         const requestType = sgi.documentId ? 'PATCH' : 'POST';
 
         this.requestToApi(url, requestType, formData).then((document: DocumentBormash) => {

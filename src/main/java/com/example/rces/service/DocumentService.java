@@ -24,6 +24,10 @@ public interface DocumentService {
 
     DocumentFileDTO addFileToDocument(UUID documentId, MultipartFile file);
 
+    DocumentDTO addFileToDocumentAndGet(UUID documentId, List<MultipartFile> file);
+
+    DocumentDTO addFileToDocumentAndGet(UUID documentId, MultipartFile file);
+
     void deleteFileFromDocument(UUID fileId);
 
     void deleteDocument(UUID id);

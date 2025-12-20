@@ -109,6 +109,31 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+    public DocumentDTO addFileToDocumentAndGet(UUID documentId, List<MultipartFile> files) {
+        Document document = repository.findById(documentId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
+        List<DocumentFile> newFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            DocumentFile newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file);
+            filesRepository.save(newFile);
+            newFiles.add(newFile);
+        }
+        document.getFiles().addAll(newFiles);
+        return toDTO(document);
+    }
+
+    @Override
+    public DocumentDTO addFileToDocumentAndGet(UUID documentId, MultipartFile file) {
+        Document document = repository.findById(documentId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
+        DocumentFile newFile;
+        newFile = com.example.rces.utils.FilesUtil.addFileToDocument(document, file);
+        document.getFiles().add(newFile);
+        filesRepository.save(newFile);
+        return toDTO(document);
+    }
+
+    @Override
     public void deleteFileFromDocument(UUID fileId) {
         filesRepository.deleteById(fileId);
     }

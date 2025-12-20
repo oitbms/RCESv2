@@ -146,7 +146,7 @@
 
             <div class="form-group">
                 <label class="form-label">Ответственный</label>
-                <textarea class="area-modal form-control" data-field="employee" name="employee" readonly  required></textarea>
+                <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть модальное окно" data-field="employee" name="employee" readonly  required></textarea>
             </div>
 
             <div class="form-group">
@@ -161,7 +161,7 @@
 
             <div class="form-group">
                 <label class="form-label">Прикрепленные фото</label>
-                <div class="file-upload">
+                <div class="file-upload tooltip-trigger" data-description="Добавить фото">
                     <div class="file-list">
 
                     </div>
@@ -179,7 +179,7 @@
 <dialog id="editing-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Редактирование мероприятия</h2>
-        <button class="close-btn" id="cancelButton">&times;</button>
+        <button class="close-btn tooltip-trigger" data-description="Закрыть" id="cancelButton">&times;</button>
     </div>
 
     <div class="modal-body">
@@ -210,7 +210,7 @@
 
         <div class="form-group">
             <label class="form-label">Ответственный</label>
-            <textarea class="area-modal form-control" data-field="employee" readonly  required></textarea>
+            <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть Модальное окно" data-field="employee" readonly  required></textarea>
         </div>
 
         <div class="form-group">
@@ -230,7 +230,7 @@
 
         <div class="form-group">
             <label class="form-label">Прикрепленные фото</label>
-            <div class="file-upload">
+            <div class="file-upload tooltip-trigger" data-description="Добавить фото">
                 <div class="file-list">
                 </div>
             </div>
@@ -242,7 +242,7 @@
             <label style="text-align: center" class="form-label">Документ</label>
             <div data-field="document" contenteditable="false">
                 <div class="frame">
-                    <i class="document fa-solid fa-file"></i>
+                    <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть модально окно"></i>
                 </div>
             </div>
         </div>

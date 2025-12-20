@@ -38,6 +38,16 @@ public class DocumentRestController {
         return ResponseEntity.ok(documentService.addFileToDocument(id, file));
     }
 
+    @PatchMapping("/add-file-to-document-and-get/{id}")
+    public ResponseEntity<DocumentDTO> addFileToDocumentAndGet(@PathVariable UUID id, @RequestParam List<MultipartFile> files) {
+        return ResponseEntity.ok(documentService.addFileToDocumentAndGet(id, files));
+    }
+
+    @PatchMapping("/add-file-2-document-and-get/{id}")
+    public ResponseEntity<DocumentDTO> addFileToDocumentAndGet(@PathVariable UUID id, @RequestParam MultipartFile file) {
+        return ResponseEntity.ok(documentService.addFileToDocumentAndGet(id, file));
+    }
+
     @DeleteMapping("/delete-file-from-document/{id}")
     public ResponseEntity<Void> deleteFileFromDocument(@PathVariable UUID id) {
         documentService.deleteFileFromDocument(id);

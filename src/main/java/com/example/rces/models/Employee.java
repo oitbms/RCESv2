@@ -47,7 +47,7 @@ public class Employee extends BaseAuditingEntity implements UserDetails {
     @NotBlank(message = "Роль не может быть пустой")
     private String role;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
     @Column(name = "chat_id")
