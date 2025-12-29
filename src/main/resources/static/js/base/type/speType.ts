@@ -13,7 +13,7 @@ type SpeIn = {
     dateVerification: string;
     certificateNumber: string;
     periodicity: number;
-    documentId: number;
+    documentId: string;
     status: string;
     color: Color;
     organization: string;

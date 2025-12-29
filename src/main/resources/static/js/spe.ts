@@ -66,7 +66,7 @@ class Spe extends Base {
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
                             <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
-                            <div data-name="name" contenteditable="false">
+                            <div data-name="name" contenteditable="false" padding-left="18px">
                                 ${spe.name}
                             </div>
                             <div class="equipments">
@@ -531,7 +531,7 @@ class Spe extends Base {
         }
 
         const url = spe.documentId
-            ? `/api/document/add-file-to-document/${spe.documentId}`
+            ? `/api/document/add-file-to-document-and-get/${spe.documentId}`
             : `/api/spe/create-document/${spe.id}`;
 
         const requestType = spe.documentId ? 'PATCH' : 'POST';
@@ -559,6 +559,8 @@ class Spe extends Base {
                 </div>
             </div>`
             );
+            spe.documentId = document.id;
+            this.localCache.set(spe.id, spe);
             this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
         }).catch(console.error);
 
