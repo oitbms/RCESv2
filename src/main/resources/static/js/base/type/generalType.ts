@@ -1,3 +1,10 @@
+type ErrorResponse = {
+    statusError: number;
+    message: string;
+    timestamp: string;
+    notificationType: NotificationType
+}
+
 type Employee = {
     id: number;
     name: string;
@@ -29,5 +36,12 @@ type DocumentFile = {
     id: string;
     baseFileName: string;
     type: string;
+}
+
+type Image = {
+    id: string;
+    name: string;
+    data: string;
+    mainlink: string;
 }
 

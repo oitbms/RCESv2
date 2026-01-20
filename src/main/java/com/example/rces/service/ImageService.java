@@ -1,10 +1,7 @@
 package com.example.rces.service;
 
 import com.example.rces.dto.ImagesDTO;
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
-import com.example.rces.models.SGI;
+import com.example.rces.models.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -22,11 +19,15 @@ public interface ImageService {
 
     List<Images> createImages(MultipartFile[] additionalFiles, FactExecutionSGI factExecutionSGI, Boolean save);
 
+    List<Images> createImages(MultipartFile[] additionalFiles, InspectionViolation request, Boolean save);
+
     List<ImagesDTO> getImagesByRequestId(UUID param);
 
     List<ImagesDTO> getImagesForSgiId(UUID sgiId);
 
     List<ImagesDTO> getImagesForFactSgiId(UUID factsSgiId);
+
+    List<ImagesDTO> getImagesForInspectionId(UUID inspectionId);
 
     List<Images> findAllByIds(List<UUID> imageIds);
 

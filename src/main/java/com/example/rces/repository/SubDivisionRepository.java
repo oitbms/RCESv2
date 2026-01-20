@@ -8,4 +8,5 @@ public interface SubDivisionRepository extends BaseAuditingRepository<SubDivisio
 
     SubDivision findByName(String name);
 
+    SubDivision findByCode(String code);
 }

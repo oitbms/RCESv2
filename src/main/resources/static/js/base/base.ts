@@ -61,8 +61,9 @@ abstract class Base {
         $(() => {
             this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
             $(this.rowContainer).on('scroll', this.onScroll.bind(this));
+            this.createNotificationContainer();
             this.initializeHandlers();
-            
+
             callbacks.forEach(callback => callback());
         });
     }
@@ -93,6 +94,12 @@ abstract class Base {
             handler: locked ? this.lock(handler) : handler,
         });
     };
+
+    public readonly createNotificationContainer= () => {
+        const notificationsContainer = document.createElement('div');
+        notificationsContainer.id = 'notifications-container';
+        document.body.appendChild(notificationsContainer);
+    }
 
     //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
@@ -165,13 +172,15 @@ abstract class Base {
     }
 
     public readonly requestToApi = async (url: string, type: string, param?: object | FormData): Promise<any> => {
-        const isFormData = param instanceof FormData;
         return await $.ajax({
             url: url,
             method: type,
-            contentType: isFormData ? false : 'application/json',
-            processData: !isFormData,
-            data: isFormData ? param : JSON.stringify(param)
+            contentType: param instanceof FormData ? false : 'application/json',
+            processData: !(param instanceof FormData),
+            data: param instanceof FormData ? param : JSON.stringify(param)
+        }).catch((xhr) => {
+            const errorResponse: ErrorResponse = xhr.responseJSON;
+            this.createNotification(errorResponse.message, errorResponse.notificationType);
         });
     }
 
@@ -272,7 +281,7 @@ abstract class Base {
         }
     }
 
-    public readonly createEntity = (url: string, dto: any): any => {
+    public readonly createEntity = (url: string, dto?: any): any => {
         return this.requestToApi(url, 'POST', dto);
     }
 
@@ -282,6 +291,7 @@ abstract class Base {
 
     //Создание уведомления в левом верхнем углу
     public readonly createNotification = (message: string, type: NotificationType, params?: any, error?: Error): void => {
+        let container = document.getElementById('notifications-container');
         try {
             const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
 
@@ -289,14 +299,14 @@ abstract class Base {
             <div class="notification ${type}">
                 <div class="msg">${text}</div>
             </div>`)
-                .appendTo('body');
+                .appendTo(container);
             if (error) console.error(error);
 
             setTimeout(() => $note.addClass('show'), 10);
             setTimeout(() => {
                 $note.removeClass('show').addClass('hiding');
                 setTimeout(() => $note.remove(), 350);
-            }, 4250);
+            }, 3000);
         } catch (error) {
             console.error(error);
         }
@@ -358,23 +368,22 @@ abstract class Base {
     }[], x: number, y: number): void => {
         $('#context-menu').remove();
 
-        const menu = $('<div id="context-menu"></div>');
+        const menu = $('<div id="context-menu" popover="manual"></div>');
         items.forEach(item => {
             const $item = $(`<div>${item.label}</div>`);
             $item.on('click', () => {
                 item.action();
-                menu.remove();
+                menu[0].hidePopover();
             });
             menu.append($item);
         });
         $('body').append(menu.css({
             left: x + 'px',
             top: y + 'px',
-            zIndex: 2147483647
         }));
         $(document).one('click', (e) => {
             if (!$(e.target).closest('#context-menu').length) {
-                menu.remove();
+                menu[0].hidePopover();
             }
         });
     }
@@ -436,11 +445,11 @@ abstract class Base {
 
     public readonly lockScreen = (message: string = "Загрузка..."): (() => void) => {
         const overlay = $(`<div class="lock-overlay">${message}</div>`);
-        this.rowContainer.addClass('locked').append(overlay);
+        $(document.body).addClass('locked').append(overlay);
 
         return () => {
             overlay.remove();
-            this.rowContainer.removeClass('locked');
+            $(document.body).removeClass('locked');
         };
     };
 

@@ -6,16 +6,15 @@ import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.Status;
 import com.example.rces.payload.ReasonPayload;
-import com.example.rces.service.CustomerOrderService;
-import com.example.rces.service.EmployeeService;
-import com.example.rces.service.InconsistenciesService;
-import com.example.rces.service.SubDivisionService;
+import com.example.rces.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
@@ -28,13 +27,15 @@ public class GeneralRestController {
     private final CustomerOrderService customerOrderService;
     private final EmployeeService employeeService;
     private final SubDivisionService subDivisionService;
+    private final ImageService imageService;
 
     @Autowired
-    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService) {
+    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService, ImageService imageService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
         this.subDivisionService = subDivisionService;
+        this.imageService = imageService;
     }
 
     @GetMapping("/employees")
@@ -81,12 +82,18 @@ public class GeneralRestController {
             case "ADMIN" -> Arrays.asList(Status.values());
             case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
             case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel);
-            default -> Collections.emptyList();
+            default ->  Collections.emptyList();
         };
     }
 
     @GetMapping("/sub-divisions")
     public List<SubDivisionDTO> getSubDivisions() {
         return subDivisionService.getAll();
+    }
+
+    @DeleteMapping("/delete-image/{id}")
+    public ResponseEntity<Void> deleteImage(@PathVariable UUID id) {
+        imageService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

@@ -16,4 +16,5 @@ public interface ImageRepository  extends JpaRepository<Images, UUID> {
 
     List<Images> findAllBySgiId(UUID sgiId);
 
+    List<Images> findAllByInsVioId(UUID inspectionId);
 }

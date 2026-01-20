@@ -1,6 +1,7 @@
 package com.example.rces.utils;
 
 import com.example.rces.exception.ResourceNotFoundException;
+import com.example.rces.models.enums.NotificationType;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,9 +40,9 @@ public class ApiClient {
                 }
                 return data;
             }
-            throw new ResourceNotFoundException(String.format("В реестре ФГИС нет СИ с заводским номером %s для БорМаш", miNumber));
+            throw new ResourceNotFoundException(String.format("В реестре ФГИС нет СИ с заводским номером %s для БорМаш", miNumber), NotificationType.INFO);
         }
-        throw new ResourceNotFoundException(String.format("В реестре ФГИС нет СИ с заводским номером %s", miNumber));
+        throw new ResourceNotFoundException(String.format("В реестре ФГИС нет СИ с заводским номером %s", miNumber), NotificationType.INFO);
     }
 
     public List<JsonNode> getFgisData(List<String> miNumbers) {

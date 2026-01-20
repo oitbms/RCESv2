@@ -33,7 +33,7 @@ public enum OrganizationSPE {
         } else if (normalizedInput.contains("стандарт") || normalizedInput.contains("ооо")) {
             return organization3;
         }
-        throw new ResourceNotFoundException("Неизвестная организация: " + input);
+        throw new ResourceNotFoundException("Неизвестная организация: " + input, NotificationType.ERROR);
     }
 
     public String getName() {

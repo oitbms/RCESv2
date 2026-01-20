@@ -4,10 +4,10 @@ import com.example.rces.models.enums.NotificationType;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ResourceNotFoundException extends RuntimeException {
+@ResponseStatus(HttpStatus.FORBIDDEN)
+public class ForbiddenExceptionBormash extends RuntimeException {
 
-    public ResourceNotFoundException(String message, NotificationType notificationType) {
+    public ForbiddenExceptionBormash(String message, NotificationType notificationType) {
         super(message);
         this.notificationType = notificationType;
     }
@@ -21,6 +21,4 @@ public class ResourceNotFoundException extends RuntimeException {
     public void setNotificationType(NotificationType notificationType) {
         this.notificationType = notificationType;
     }
-
 }
-

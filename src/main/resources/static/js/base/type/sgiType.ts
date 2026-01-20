@@ -1,6 +1,6 @@
 type SgiIn = {
     id: string;
-    number: string;
+    number: number;
     color: string;
     workcenter: string;
     event: string;

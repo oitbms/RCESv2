@@ -12,6 +12,8 @@ public interface SubDivisionService {
 
     SubDivision getByName(String name);
 
+    SubDivision getByCode(String code);
+
     SubDivisionDTO getDTOByName(String name);
 
     List<SubDivisionDTO> getAll();

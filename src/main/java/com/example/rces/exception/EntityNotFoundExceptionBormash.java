@@ -5,11 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class ResourceNotFoundException extends RuntimeException {
+public class EntityNotFoundExceptionBormash extends RuntimeException {
 
-    public ResourceNotFoundException(String message, NotificationType notificationType) {
+    public EntityNotFoundExceptionBormash(String message, NotificationType notificationType) {
         super(message);
-        this.notificationType = notificationType;
     }
 
     private NotificationType notificationType;
@@ -21,6 +20,4 @@ public class ResourceNotFoundException extends RuntimeException {
     public void setNotificationType(NotificationType notificationType) {
         this.notificationType = notificationType;
     }
-
 }
-

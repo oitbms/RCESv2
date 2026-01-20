@@ -34,18 +34,23 @@ public class Images {
     private SGI sgim;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "insVio_id")
+    private InspectionViolation insVio;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id")
     private Document document;
 
     public Images() {
     }
 
-    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, Document document, String name) {
+    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, Document document, InspectionViolation insVio, String name) {
         this.data = data;
         this.request = request;
         this.sgi = sgi;
         this.sgim = sgim;
         this.document = document;
+        this.insVio = insVio;
         this.name = name;
     }
 
@@ -148,5 +153,13 @@ public class Images {
 
     public void setDocument(Document document) {
         this.document = document;
+    }
+
+    public InspectionViolation getInsVio() {
+        return insVio;
+    }
+
+    public void setInsVio(InspectionViolation insVio) {
+        this.insVio = insVio;
     }
 }

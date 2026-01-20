@@ -2,10 +2,7 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.ImagesDTO;
 import com.example.rces.mapper.ImagesMapper;
-import com.example.rces.models.FactExecutionSGI;
-import com.example.rces.models.Images;
-import com.example.rces.models.Requests;
-import com.example.rces.models.SGI;
+import com.example.rces.models.*;
 import com.example.rces.repository.ImageRepository;
 import com.example.rces.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,17 +43,22 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, Requests request, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, null,null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, SGI sgi, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, null,null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, FactExecutionSGI factExecutionSGI, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, null,null, file.getOriginalFilename()), save);
+    }
+
+    @Override
+    public List<Images> createImages(MultipartFile[] additionalFiles, InspectionViolation inspectionViolation, Boolean save) {
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, null, null,inspectionViolation, file.getOriginalFilename()), save);
     }
 
     @Override
@@ -74,6 +76,12 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public List<ImagesDTO> getImagesForFactSgiId(UUID factSgiId) {
         List<Images> images = repository.findAllBySgiId(factSgiId);
+        return mapper.toDTOList(images);
+    }
+
+    @Override
+    public List<ImagesDTO> getImagesForInspectionId(UUID inspectionId) {
+        List<Images> images = repository.findAllByInsVioId(inspectionId);
         return mapper.toDTOList(images);
     }
 
