@@ -18,12 +18,15 @@ import com.example.rces.service.InspectionService;
 import com.example.rces.service.SubDivisionService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -68,11 +71,31 @@ public class InspectionServiceImpl implements InspectionService {
         if (inspectionRepository.existsThisMonth(dto.getSubDivision())) {
             throw new ForbiddenExceptionBormash("Вы уже создали инспекцию за этот месяц", NotificationType.WARNING);
         }
+
+        LocalDate now = LocalDate.now();
+        LocalDate firstDayOfCurrentMonth = now.withDayOfMonth(1);
+        LocalDate firstDayOfPreviousMonth = firstDayOfCurrentMonth.minusMonths(1);
+        LocalDate firstDayOfMonthBeforePrevious = firstDayOfPreviousMonth.minusMonths(1);
+        List<InspectionViolation> notFixedInspectionViolation = inspectionViolationRepository
+                .notFixedInspectionViolation(dto.getSubDivision(),
+                        firstDayOfMonthBeforePrevious.atStartOfDay(ZoneId.systemDefault()).toInstant(),
+                        firstDayOfPreviousMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
         Inspection newInspection = new Inspection();
         newInspection.setDateInspection(LocalDateTime.now());
         newInspection.setSubDivision(subDivisionService.getByCode(dto.getSubDivision()));
         newInspection.setType(Inspection.TypeInspection.primary);
+        if (!notFixedInspectionViolation.isEmpty()) {
+            List<InspectionViolation> notFixedViolations = new ArrayList<>();
+            notFixedInspectionViolation.forEach(originalViolation -> {
+                InspectionViolation copiedViolation = getInspectionViolation(originalViolation, newInspection);
+                notFixedViolations.add(copiedViolation);
+            });
+            newInspection.setViolation(notFixedViolations);
+        }
+
         Inspection saveInspection = inspectionRepository.save(newInspection);
+
         return inspectionMapper.toDTO(saveInspection);
     }
 
@@ -96,14 +119,10 @@ public class InspectionServiceImpl implements InspectionService {
         List<InspectionViolation> secondaryViolations = new ArrayList<>();
         if (primaryInspection.getViolation() != null) {
             for (InspectionViolation originalViolation : primaryInspection.getViolation()) {
-                InspectionViolation copiedViolation = new InspectionViolation();
-
-                copiedViolation.setDescription(originalViolation.getDescription());
-                copiedViolation.setCriteria(originalViolation.getCriteriaInspection());
-                copiedViolation.setScore(originalViolation.getScore() + 1);
-                copiedViolation.setSubDivision(originalViolation.getSubDivision());
-                copiedViolation.setStatus(originalViolation.getStatusInspection());
-                copiedViolation.setInspection(secondaryInspection);
+                if (originalViolation.getStatusInspection().equals(InspectionViolation.StatusInspection.status2)) {
+                    continue;
+                }
+                InspectionViolation copiedViolation = getInspectionViolation(originalViolation, secondaryInspection);
 
                 secondaryViolations.add(copiedViolation);
             }
@@ -121,11 +140,28 @@ public class InspectionServiceImpl implements InspectionService {
         return inspectionMapper.toDTO(savedSecondary);
     }
 
+    @NotNull
+    private static InspectionViolation getInspectionViolation(InspectionViolation originalViolation, Inspection secondaryInspection) {
+        InspectionViolation copiedViolation = new InspectionViolation();
+
+        copiedViolation.setDescription(originalViolation.getDescription());
+        copiedViolation.setCriteria(originalViolation.getCriteriaInspection());
+        copiedViolation.setScore(originalViolation.getScore() + 1);
+        copiedViolation.setSubDivision(originalViolation.getSubDivision());
+        copiedViolation.setStatus(originalViolation.getStatusInspection());
+        copiedViolation.setInspection(secondaryInspection);
+        return copiedViolation;
+    }
+
     @Override
     public InspectionViolationDTO createViolation(InspectionViolationCreateDTO dto, MultipartFile[] additionalFiles) {
+        Inspection inspection = inspectionRepository.findById(dto.getInspectionId())
+                .orElseThrow(() -> new EntityNotFoundException("Инспекции с id" + dto.getInspectionId() + "не существует"));
+        if (inspection.getHaveSecondInspection()) {
+            throw new ForbiddenExceptionBormash("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+        }
         InspectionViolation newViolation = new InspectionViolation();
-        newViolation.setInspection(inspectionRepository.findById(dto.getInspectionId())
-                .orElseThrow(() -> new EntityNotFoundException("Инспекции с id" + dto.getInspectionId() + "не существует")));
+        newViolation.setInspection(inspection);
         newViolation.setCriteria(InspectionViolation.CriteriaInspection.getByName(dto.getCriteria()));
         newViolation.setStatus(InspectionViolation.StatusInspection.status1);
         newViolation.setDescription(dto.getDescription());
@@ -143,6 +179,9 @@ public class InspectionServiceImpl implements InspectionService {
     public void changeStatus(UUID id) {
         InspectionViolation violation = inspectionViolationRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Нарушения с id" + id + "не существует"));
+        if (violation.getInspection().getHaveSecondInspection()) {
+            throw new ForbiddenExceptionBormash("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+        }
         violation.setStatus(violation.getStatus().equals(InspectionViolation.StatusInspection.status1.getName()) ? InspectionViolation.StatusInspection.status2 : InspectionViolation.StatusInspection.status1);
         inspectionViolationRepository.save(violation);
         inspectionViolationMapper.toDTO(violation);
@@ -157,7 +196,6 @@ public class InspectionServiceImpl implements InspectionService {
             throw new ForbiddenException("Нельзя удалить основную инспекцию если есть вторичная");
         }
         Inspection primaryInspection = inspection.getPrimaryInspection();
-
         if (primaryInspection != null) {
             primaryInspection.setHaveSecondInspection(false);
             inspectionRepository.save(primaryInspection);
@@ -169,6 +207,10 @@ public class InspectionServiceImpl implements InspectionService {
     public void deleteInspectionViolation(UUID id) {
         InspectionViolation violation = inspectionViolationRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundExceptionBormash("Нарушения с id" + id + "не существует", NotificationType.ERROR));
+        Inspection inspection = violation.getInspection();
+        if (inspection.getHaveSecondInspection()) {
+            throw new ForbiddenExceptionBormash("Нельзя удалять нарушение у инспекции, если есть вторичная инспекция", NotificationType.WARNING);
+        }
         inspectionViolationRepository.delete(violation);
     }
 

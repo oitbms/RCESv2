@@ -34,6 +34,7 @@ class Inspection extends Base {
                 }
             });
         });
+        this.createHandler('click', '#report-btn', this.makeReport.bind(this), true);
     }
 
     public createRow(inspection: InspectionIn) {
@@ -46,12 +47,15 @@ class Inspection extends Base {
                        <p class="card-text">
                            Дата: ${this.formatDate(inspection.dateInspection)}<br>
                            Тип: ${inspection.type}<br>
-                           Цех: <span data-inspection-id="${inspection.id}">${inspection.subDivision?.name}</span>          
+                           Цех: <span data-inspection-id="${inspection.id}">${inspection.subDivision?.name}</span>
+                           ${inspection.primaryInspectionId != null ? 
+                                `<br> Первичная инспекция: <span data-inspection-id="${inspection.primaryInspectionId}">№${inspection.primaryInspectionId}</span>`
+                           : ''}       
                        </p>
                    <div class="buttons">
                        <button class="btn btn-outline-primary view-btn">Подробнее</button>
-                       <button class="btn btn-warning" id="createSecondaryBtn">Создать повторную проверку</button>
-                       <button class="btn btn-success">Отчеты</button>
+                       ${inspection.primaryInspectionId!=null ? '' : '<button class="btn btn-warning" id="createSecondaryBtn">Создать повторную проверку</button>'}
+                       <button class="btn btn-success" id="report-btn">Отчеты</button>
                        <button class="btn btn-danger delete-inspection">Удалить</button>
                    </div>
                </div>     
@@ -139,11 +143,28 @@ class Inspection extends Base {
                 </div>
             `);
         } else {
+
+
             inspection.violation.forEach((violation: InspectionViolationIn) => {
+                let maxScore = 5;
+                switch (violation.criteria) {
+                    case 'Технологическая дисциплина':
+                        maxScore = 3;
+                        break;
+                    case 'Организация рабочих мест':
+                        maxScore = 2;
+                        break;
+                    case 'Документация':
+                        maxScore = 3;
+                        break;
+                    case 'Безопасность и охрана труда':
+                        maxScore = 5;
+                        break;
+                }
                 const violationCard = `
                     <div class="violation-card" id="${currentInspectionId}" data-violation-id="${violation.id}">
                         <div class="violation-card-header">
-                            <div class="score">${violation.score}/5</div>
+                            <div class="score">${violation.score}/${maxScore}</div>
                             <div class="criteria">${violation.criteria}</div>
                         </div>
                         <div class="violation-card-body">
@@ -188,6 +209,10 @@ class Inspection extends Base {
 
         dialog.on('click', '.btn-delete', (event: Event) => {
             const button = $(event.currentTarget);
+            if (inspection.haveSecondInspection) {
+                this.createNotification("Нельзя удалять нарушение у инспекции, если есть вторичная инспекция", NotificationType.WARNING)
+                return;
+            }
             const violationId = button.attr('data-violation-id');
             this.createConfirmationDialog("Подтвердите удаление нарушения").then((confirmed) => {
                 // @ts-ignore
@@ -212,6 +237,10 @@ class Inspection extends Base {
 
         dialog.on('click', '.btn-fixed', (event: Event) => {
             const button = $(event.currentTarget);
+            if (inspection.haveSecondInspection) {
+                this.createNotification("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+                return;
+            }
             const violationId = button.attr('data-violation-id');
             const violation = inspection.violation.find((v: InspectionViolationIn) => v.id === violationId);
             this.requestToApi(`/api/inspection/change-status-violation/${violationId}`, "PATCH").then(() => {
@@ -221,7 +250,7 @@ class Inspection extends Base {
                 button.closest('.violation-card').find('[name="status"]').text(violation.status);
                 this.createNotification('Статус изменен', NotificationType.SUCCESS);
             });
-        })
+        });
 
         dialog.on('click', '.photo-icon', this.openImagesDialog.bind(this));
 
@@ -237,10 +266,26 @@ class Inspection extends Base {
         form.reset();
 
         const criteriaSelect = addDialog.find('#criteriaSelect');
-        const scoreInput = addDialog.find('#scoreInput');
+        const scoreSelect = addDialog.find('#scoreSelect');
 
-        scoreInput.attr('max', 5);
-        scoreInput.val(1);
+        const updateScoreOptions = (maxScore: number) => {
+            scoreSelect.empty();
+
+            for (let i = 1; i <= maxScore; i++) {
+                const option = $('<option>', {
+                    value: i,
+                    text: this.getScoreText(i)
+                });
+
+                if (i === 1) {
+                    option.prop('selected', true);
+                }
+
+                scoreSelect.append(option);
+            }
+        };
+
+        updateScoreOptions(5);
 
         criteriaSelect.off('change').on('change', function () {
             const criteria = $(this).val() as string;
@@ -259,14 +304,12 @@ class Inspection extends Base {
                 case 'Безопасность и охрана труда':
                     maxScore = 5;
                     break;
+                default:
+                    maxScore = 5; // По умолчанию, если критерий не выбран
+                    break;
             }
 
-            scoreInput.attr('max', maxScore);
-
-            const currentScore = parseInt(scoreInput.val() as string);
-            if (currentScore > maxScore) {
-                scoreInput.val(maxScore);
-            }
+            updateScoreOptions(maxScore);
         });
 
         addDialog.find('#cancelAddBtn').off('click').on('click', () => {
@@ -279,6 +322,25 @@ class Inspection extends Base {
         };
 
         this.dialog.open('addViolationDialog');
+    }
+
+    private getScoreText(score: number): string {
+        const lastDigit = score % 10;
+        const lastTwoDigits = score % 100;
+
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+            return `${score} баллов`;
+        }
+
+        if (lastDigit === 1) {
+            return `${score} балл`;
+        }
+
+        if (lastDigit >= 2 && lastDigit <= 4) {
+            return `${score} балла`;
+        }
+
+        return `${score} баллов`;
     }
 
     private async createViolation(event: Event) {
@@ -294,6 +356,10 @@ class Inspection extends Base {
             return;
         }
         const inspection = this.localCache.get(Number(currentInspectionId)) as InspectionIn;
+        if (inspection.haveSecondInspection) {
+            this.createNotification("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+            return;
+        }
         button.prop('disabled', true);
 
         const formData = new FormData();
@@ -301,18 +367,9 @@ class Inspection extends Base {
             inspectionId: currentInspectionId,
             description: dialog.find('textarea[name="description"]').val(),
             criteria: dialog.find('select[name="criteria"]').val(),
-            score: dialog.find('input[name="score"]').val(),
+            score: dialog.find('select[name="score"]').val(),
             subDivision: dialog.find('input[name="subDivision"]').val(),
         };
-        const isDuplicate = inspection.violation.some(violation => violation.criteria === jsonData.criteria);
-
-        if (isDuplicate) {
-            this.saveMassive = {};
-            form.reset();
-            this.createNotification("У инспекции уже есть нарушение по данному критерию", NotificationType.WARNING);
-            button.prop('disabled', false);
-            return;
-        }
 
         const jsonBlob = new Blob([JSON.stringify(jsonData)], {type: 'application/json'});
         formData.append('data', jsonBlob, 'data.json');
@@ -395,18 +452,58 @@ class Inspection extends Base {
         const rowContainer = dialog.find('.dialog-content-rows');
         const searchInput = dialog.find('.choice-field input');
         const changeButton = $('#changeSubDivision');
-        const currentId = modalDiv.data('inspection-id');
+        const currentId = modalDiv.closest('#addViolationDialog').data('inspection-id');
         let selected: any;
 
-        const data: any = await this.cache.get('subDivision');
+        const allSubDivisions: SubDivision[] = (await this.cache.get('subDivision')) as SubDivision[];
+
+        let currentInspection = null;
+        if (currentId) {
+            currentInspection = this.localCache.get(Number(currentId)) as InspectionIn;
+        }
+
+        // Фильтруем только нужные подразделения
+        const allowedNames = ['ОГТ', 'ОГМ', 'ОТиТБ', 'ПДО'];
+        const currentSubDivisionName = currentInspection?.subDivision?.name;
+
+        const filteredData = allSubDivisions.filter((item: SubDivision) => {
+            const itemName = item.name;
+
+            // Включаем текущее подразделение инспекции
+            if (currentSubDivisionName && itemName === currentSubDivisionName) {
+                return true;
+            }
+
+            // Включаем только разрешенные имена
+            for (const allowedName of allowedNames) {
+                if (itemName.includes(allowedName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        // Если текущее подразделение уже есть в списке разрешенных, убедимся, что оно не дублируется
+        const uniqueData = [];
+        const seenNames = new Set();
+
+        for (const item of filteredData) {
+            if (!seenNames.has(item.name)) {
+                seenNames.add(item.name);
+                uniqueData.push(item);
+            }
+        }
+
+        const data = uniqueData;
 
         const renderRows = (items: any[]) => {
             rowContainer.empty();
             items.forEach(item => {
                 rowContainer.append(`
-                    <div class="dialog-content-rows-row" data-id="${item.id}">
-                        <div class="content-row-column col-250">${item.name}</div>
-                    </div>`
+                <div class="dialog-content-rows-row" data-id="${item.id}">
+                    <div class="content-row-column col-250">${item.name}</div>
+                </div>`
                 );
             });
         };
@@ -427,7 +524,6 @@ class Inspection extends Base {
             $('.dialog-content-rows-row').removeClass('selected');
             $(this).addClass('selected');
         });
-
 
         changeButton.off('click').on('click', () => {
             if (!selected) {
@@ -542,6 +638,402 @@ class Inspection extends Base {
         dialog.on('dialog:open', () => {
             dialog.find('#closePhotosBtn').focus();
         });
+    }
+
+    private async makeReport(event: Event) {
+        event.preventDefault();
+
+        const currentInspectionId = $(event.target).closest('.table-card').attr('id');
+        const inspection = this.localCache.get(Number(currentInspectionId)) as InspectionIn;
+
+        if (!inspection.violation || inspection.violation.length === 0) {
+            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET");
+            this.localCache.set(Number(currentInspectionId), inspection);
+            if (!inspection.violation || inspection.violation.length === 0) {
+                this.createNotification('Нарушений не найдено', NotificationType.INFO);
+                return;
+            }
+        }
+
+        const dialog = $('#reportDialog');
+        const tabsHtml = `
+        <div class="report-tabs">
+            <button class="report-tab active" data-tab="workshop">Отчет по цеху</button>
+            <button class="report-tab" data-tab="special">Отчет по ПДО/ОГМ/ОТиТБ/ОГТ</button>
+        </div>
+    `;
+
+        if (!dialog.find('.report-tabs').length) {
+            dialog.find('.dialog-container-header').append(tabsHtml);
+        }
+
+        const contentHtml = `
+        <div class="report-tab-content active" id="workshopReport">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column">Цех/Подразделение</div>
+                <div class="dialog-content-header-column">Критерий</div>
+                <div class="dialog-content-header-column">Сумма баллов</div>
+            </div>
+            <div class="dialog-content-rows workshop-rows"></div>
+        </div>
+        <div class="report-tab-content" id="specialReport">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column">Цех/Подразделение</div>
+                <div class="dialog-content-header-column">Критерий</div>
+                <div class="dialog-content-header-column">Сумма баллов</div>
+            </div>
+            <div class="dialog-content-rows special-rows"></div>
+        </div>
+    `;
+
+        if (!dialog.find('.report-tab-content').length) {
+            dialog.find('.dialog-container-content').html(contentHtml);
+        }
+
+        await this.fillWorkshopReport(inspection);
+        await this.fillSpecialReport();
+
+        dialog.find('.report-tab').off('click').on('click', function() {
+            const tabId = $(this).data('tab');
+            dialog.find('.report-tab').removeClass('active');
+            $(this).addClass('active');
+            dialog.find('.report-tab-content').removeClass('active');
+            dialog.find(`#${tabId}Report`).addClass('active');
+
+            // Обновляем заголовок при переключении вкладок
+            if (tabId === 'workshop') {
+                const inspectionDate = new Date(inspection.dateInspection);
+                const monthNames = [
+                    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+                    'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+                ];
+                const monthName = monthNames[inspectionDate.getMonth()];
+                const year = inspectionDate.getFullYear();
+                $('#reportDialog .dialog-name').text(`Отчет по цеху "${inspection.subDivision?.name}" за ${monthName} ${year} года`);
+            } else {
+                $('#reportDialog .dialog-name').text('Отчет по ПДО/ОГМ/ОТиТБ/ОГТ за текущий месяц');
+            }
+        });
+
+        dialog.find('.dialog-btn.close').off('click').on('click', () => {
+            this.dialog.close('reportDialog');
+        });
+
+        this.dialog.open('reportDialog');
+    }
+
+    private async fillWorkshopReport(inspection: InspectionIn) {
+        const rowsContainer = $('#reportDialog .workshop-rows');
+        rowsContainer.empty();
+
+        const violationsByCriteria: {[key: string]: {
+                subDivisionName: string;
+                totalScore: number;
+                description: string;
+            }} = {};
+
+        inspection.violation.forEach((violation: InspectionViolationIn) => {
+            if (violation.subDivision && violation.subDivision.name === inspection.subDivision.name) {
+                const criteria = violation.criteria;
+
+                if (!violationsByCriteria[criteria]) {
+                    violationsByCriteria[criteria] = {
+                        subDivisionName: inspection.subDivision.name,
+                        totalScore: 0,
+                        description: criteria
+                    };
+                }
+
+                violationsByCriteria[criteria].totalScore += violation.score;
+            }
+        });
+
+        let index = 0;
+        for (const key in violationsByCriteria) {
+            if (violationsByCriteria.hasOwnProperty(key)) {
+                const violation = violationsByCriteria[key];
+                const row = `
+                    <div class="report-row" data-index="${index}">
+                        <div class="report-column">${violation.subDivisionName}</div>
+                        <div class="report-column">${violation.description}</div>
+                        <div class="report-column score-column">${violation.totalScore}</div>
+                    </div>
+                `;
+                rowsContainer.append(row);
+                index++;
+            }
+        }
+
+        if (index === 0) {
+            rowsContainer.append(`
+                <div class="no-data">
+                    Нет нарушений для подразделения "${inspection.subDivision.name}"
+                </div>
+            `);
+        }
+
+        rowsContainer.append('<div class="report-divider"></div>');
+
+        const baseBonus = 5.0;
+        let totalPenalty = 0;
+        const appliedPenalties: string[] = [];
+
+        const subDivisionName = inspection.subDivision?.name || '';
+        const isSpecialDivision = ['ПДО', 'ОГМ', 'ОТиТБ'].some(name =>
+            subDivisionName.toUpperCase().indexOf(name) !== -1
+        );
+
+        if (isSpecialDivision) {
+            const safetyScore = violationsByCriteria['Безопасность и охрана труда']?.totalScore || 0;
+            const docsScore = violationsByCriteria['Документация']?.totalScore || 0;
+
+            if (safetyScore >= 6) {
+                totalPenalty += 2.5;
+                appliedPenalties.push('Безопасность и охрана труда: -2.5%');
+            }
+            if (docsScore >= 6) {
+                totalPenalty += 2.5;
+                appliedPenalties.push('Документация: -2.5%');
+            }
+        } else {
+            const safetyScore = violationsByCriteria['Безопасность и охрана труда']?.totalScore || 0;
+            const techScore = violationsByCriteria['Технологическая дисциплина']?.totalScore || 0;
+            const orgScore = violationsByCriteria['Организация рабочих мест']?.totalScore || 0;
+            const docsScore = violationsByCriteria['Документация']?.totalScore || 0;
+
+            if (safetyScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Безопасность и охрана труда: -1.25%');
+            }
+            if (techScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Технологическая дисциплина: -1.25%');
+            }
+            if (orgScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Организация рабочих мест: -1.25%');
+            }
+            if (docsScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Документация: -1.25%');
+            }
+        }
+
+        const finalBonus = Math.max(0, baseBonus - totalPenalty);
+
+        let penaltiesHtml = '';
+        if (appliedPenalties.length > 0) {
+            appliedPenalties.forEach(penalty => {
+                penaltiesHtml += `
+                    <div class="penalty-row">
+                        <span class="penalty-label">${penalty}</span>
+                    </div>
+                `;
+            });
+        }
+
+        const bonusRow = `
+            <div class="bonus-calculation">
+                <h4>Расчет премии для ${inspection.subDivision.name}</h4>
+                <div class="bonus-row">
+                    <span class="bonus-label">Базовая премия:</span>
+                    <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
+                </div>
+                ${appliedPenalties.length > 0 ? `
+                    <div class="bonus-section">
+                        <div class="bonus-section-title">Примененные штрафы:</div>
+                        ${penaltiesHtml}
+                    </div>
+                ` : `
+                    <div class="bonus-row">
+                        <span class="bonus-label">Штрафы не применены</span>
+                        <span class="bonus-value">-</span>
+                    </div>
+                `}
+                <div class="bonus-row final-bonus">
+                    <span class="bonus-label">Финальная премия:</span>
+                    <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
+                </div>
+            </div>
+        `;
+        rowsContainer.append(bonusRow);
+    }
+
+    private async fillSpecialReport() {
+        const rowsContainer = $('#reportDialog .special-rows');
+        rowsContainer.empty();
+
+        try {
+            const allInspectionsResponse = await this.requestToApi('/api/inspection/get-page-inspection', 'GET');
+
+            const allInspections = Array.isArray(allInspectionsResponse)
+                ? allInspectionsResponse
+                : (allInspectionsResponse.data || allInspectionsResponse.items || []);
+
+            if (allInspections.length === 0) {
+                rowsContainer.append(`
+                    <div class="no-data">
+                        Нет данных по инспекциям
+                    </div>
+                `);
+                return;
+            }
+
+            for (const inspection of allInspections) {
+                if (!inspection.violation || inspection.violation.length === 0) {
+                    try {
+                        inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${inspection.id}`, "GET");
+                    } catch (error) {
+                        console.error(`Ошибка загрузки нарушений для инспекции ${inspection.id}:`, error);
+                        inspection.violation = [];
+                    }
+                }
+            }
+
+            const violationsBySubDivision: {[key: string]: {
+                    [criteria: string]: number
+                }} = {};
+
+            const specialDivisions = ['ПДО', 'ОГМ', 'ОТиТБ', 'ОГТ'];
+
+            for (const inspection of allInspections) {
+                if (!inspection.violation || inspection.violation.length === 0) continue;
+
+                for (const violation of inspection.violation) {
+                    if (!violation || !violation.subDivision || !violation.criteria) continue;
+
+                    const subDivName = violation.subDivision.name;
+                    const criteria = violation.criteria;
+
+                    const isSpecial = specialDivisions.some(div =>
+                        subDivName && subDivName.toUpperCase().indexOf(div) !== -1
+                    );
+
+                    if (!isSpecial) continue;
+
+                    if (!violationsBySubDivision[subDivName]) {
+                        violationsBySubDivision[subDivName] = {};
+                    }
+
+                    if (!violationsBySubDivision[subDivName][criteria]) {
+                        violationsBySubDivision[subDivName][criteria] = 0;
+                    }
+
+                    violationsBySubDivision[subDivName][criteria] += violation.score || 0;
+                }
+            }
+
+            if (Object.keys(violationsBySubDivision).length === 0) {
+                rowsContainer.append(`
+                    <div class="no-data">
+                        Нет нарушений по специальным подразделениям (ПДО/ОГМ/ОТиТБ/ОГТ)
+                    </div>
+                `);
+                return;
+            }
+
+            let totalIndex = 0;
+            for (const subDivName in violationsBySubDivision) {
+                if (violationsBySubDivision.hasOwnProperty(subDivName)) {
+                    const criteriaScores = violationsBySubDivision[subDivName];
+
+                    rowsContainer.append(`
+                        <div class="subdivision-header" data-subdivision="${subDivName}">
+                            <strong>${subDivName}</strong>
+                        </div>
+                    `);
+
+                    for (const criteria in criteriaScores) {
+                        if (criteriaScores.hasOwnProperty(criteria)) {
+                            const totalScore = criteriaScores[criteria];
+                            const row = `
+                                <div class="report-row" data-index="${totalIndex}">
+                                    <div class="report-column">${subDivName}</div>
+                                    <div class="report-column">${criteria}</div>
+                                    <div class="report-column score-column">${totalScore}</div>
+                                </div>
+                            `;
+                            rowsContainer.append(row);
+                            totalIndex++;
+                        }
+                    }
+
+                    rowsContainer.append('<div class="subdivision-divider"></div>');
+                }
+            }
+
+            rowsContainer.find('.subdivision-divider').last().remove();
+            rowsContainer.append('<div class="report-divider"></div>');
+
+            for (const subDivName in violationsBySubDivision) {
+                if (violationsBySubDivision.hasOwnProperty(subDivName)) {
+                    const criteriaScores = violationsBySubDivision[subDivName];
+                    const baseBonus = 5.0;
+                    let totalPenalty = 0;
+                    const appliedPenalties: string[] = [];
+
+                    const safetyScore = criteriaScores['Безопасность и охрана труда'] || 0;
+                    const docsScore = criteriaScores['Документация'] || 0;
+
+                    if (safetyScore >= 6) {
+                        totalPenalty += 2.5;
+                        appliedPenalties.push('Безопасность и охрана труда: -2.5%');
+                    }
+                    if (docsScore >= 6) {
+                        totalPenalty += 2.5;
+                        appliedPenalties.push('Документация: -2.5%');
+                    }
+
+                    const finalBonus = Math.max(0, baseBonus - totalPenalty);
+
+                    let penaltiesHtml = '';
+                    if (appliedPenalties.length > 0) {
+                        appliedPenalties.forEach(penalty => {
+                            penaltiesHtml += `
+                            <div class="penalty-row">
+                                <span class="penalty-label">${penalty}</span>
+                            </div>
+                        `;
+                        });
+                    }
+
+                    const bonusRow = `
+                    <div class="bonus-calculation">
+                        <h4>Расчет премии для ${subDivName}</h4>
+                        <div class="bonus-row">
+                            <span class="bonus-label">Базовая премия:</span>
+                            <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
+                        </div>
+                        ${appliedPenalties.length > 0 ? `
+                            <div class="bonus-section">
+                                <div class="bonus-section-title">Примененные штрафы:</div>
+                                ${penaltiesHtml}
+                            </div>
+                        ` : `
+                            <div class="bonus-row">
+                                <span class="bonus-label">Штрафы не применены</span>
+                                <span class="bonus-value">-</span>
+                            </div>
+                        `}
+                        <div class="bonus-row final-bonus">
+                            <span class="bonus-label">Финальная премия:</span>
+                            <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
+                        </div>
+                    </div>
+                    <div style="height: 20px;"></div>
+                `;
+                    rowsContainer.append(bonusRow);
+                }
+            }
+
+        } catch (error) {
+            console.error('Ошибка при загрузке данных для специального отчета:', error);
+            rowsContainer.append(`
+                <div class="no-data error">
+                    Ошибка при загрузке данных: ${error.message || 'Неизвестная ошибка'}
+                </div>
+            `);
+        }
     }
 }
 

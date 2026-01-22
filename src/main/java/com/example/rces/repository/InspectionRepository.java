@@ -25,7 +25,7 @@ public interface InspectionRepository extends BaseAuditingRepository<Inspection,
     @Query("SELECT DISTINCT i FROM Inspection i " +
             "LEFT JOIN FETCH i.subDivision sd " +
             "LEFT JOIN FETCH i.primaryInspection " +
-            "ORDER BY sd.name, i.type")
+            "ORDER BY sd.name ASC, i.type ASC")
     List<Inspection> findAll();
 
     @Query("SELECT COUNT(i) > 0 FROM Inspection i LEFT JOIN i.subDivision s WHERE s.code = :subDivision AND YEAR(i.createdDate) = YEAR(CURRENT_DATE) AND MONTH(i.createdDate) = MONTH(CURRENT_DATE)")
