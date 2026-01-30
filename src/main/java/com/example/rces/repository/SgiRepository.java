@@ -18,4 +18,5 @@ public interface SgiRepository extends BaseAuditingRepository<SGI, UUID> {
     @EntityGraph(value = "SGI.withAssociations", type = EntityGraph.EntityGraphType.LOAD)
     @Query(value = "SELECT s FROM SGI s WHERE s.parentSGI is null ORDER BY s.requestNumber ASC")
     Page<SGI> findAllWithAssociations(Pageable pageable);
+
 }

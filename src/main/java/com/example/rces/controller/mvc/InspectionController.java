@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class InspectionController {
 
     @GetMapping
-    public String getSGIForm() {
+    public String getInspectionForm() {
         return "inspection";
     }
 

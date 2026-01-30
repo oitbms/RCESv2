@@ -1,12 +1,10 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.report.InspectionReportModel;
 import com.example.rces.dto.report.SpeFgisReportModel;
 import com.example.rces.dto.report.SpeReportModel;
 import com.example.rces.dto.report.SpeScheduleReportModel;
-import com.example.rces.models.Employee;
-import com.example.rces.models.Requests;
-import com.example.rces.models.SGI;
-import com.example.rces.models.SPE;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.Format;
 import com.example.rces.models.enums.Status;
 import com.example.rces.service.ReportService;
@@ -30,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
@@ -119,7 +118,9 @@ public class ReportServiceImpl implements ReportService {
                 row.createCell(0).setCellValue(reject.getRequestNumber());
                 row.createCell(1).setCellValue(reject.getTitle() != null ? reject.getTitle() : "");
                 row.createCell(2).setCellValue(reject.getCustomerOrder().getName());
-                row.createCell(3).setCellValue(reject.getUpdatedDate() != null ? LocalDateTime.from(reject.getUpdatedDate()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "");
+                row.createCell(3).setCellValue(reject.getUpdatedDate() != null
+                        ? LocalDateTime.from(reject.getUpdatedDate()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        : "");
             }
 
             for (int i = 0; i < 4; i++) {
@@ -153,6 +154,28 @@ public class ReportServiceImpl implements ReportService {
                 .setParameter("ids", numberList).getResultList();
         SpeScheduleReportModel model = new SpeScheduleReportModel(speList);
         return jasperReportExporter.generateJrxmlReport("SpeSchedule", null, List.of(model), format);
+    }
+
+    @Override
+    public byte[] createInspectionReport(Format format, Integer id, boolean services) {
+        Inspection inspection = entityManager.createQuery(
+                "SELECT e FROM Inspection e " +
+                        "LEFT JOIN e.createdBy " +
+                        "LEFT JOIN e.primaryInspection " +
+                        "LEFT JOIN e.subDivision " +
+                        "WHERE e.id = :id", Inspection.class)
+                .setParameter("id", id).getSingleResult();
+        entityManager.createQuery(
+                "SELECT e from InspectionViolation e " +
+                        "LEFT JOIN e.subDivision " +
+                        "LEFT JOIN e.images " +
+                        "LEFT JOIN e.createdBy c " +
+                        "LEFT JOIN c.subDivision " +
+                        "WHERE e.id in (:id)")
+                .setParameter("id", inspection.getViolation().stream().map(InspectionViolation::getId).toList());
+        InspectionReportModel model = new InspectionReportModel(inspection);
+        return jasperReportExporter.generateJrxmlReport(String.format("Inspection%s", !services ? "WorkShop" : "Services"),
+                    null, List.of(model), format);
     }
 
 }

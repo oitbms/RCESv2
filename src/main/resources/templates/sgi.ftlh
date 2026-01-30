@@ -84,7 +84,7 @@
                 </button>
                 <button class="btn btn-outline-secondary btn-action">
                     <i class="bi bi-list"></i>
-                    <a class="btn-text" href="/menu" style="color: black">Меню</a>
+                    <a class="btn-text" id="menuButton" href="/menu" style="color: black">Меню</a>
                 </button>
                 <div class="print-container" id="print-container-button">
                     <button class="btn btn-outline-secondary btn-action print-button">

@@ -67,6 +67,14 @@ dependencies {
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("com.codeborne:selenide:7.10.1")
+    testImplementation("io.rest-assured:rest-assured:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
+    testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:4.15.0")
+    testImplementation("io.qameta.allure:allure-maven:2.17.0")
+    testImplementation("io.qameta.allure:allure-selenide:2.30.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 
     //Скрипты Kotlin
     implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.22")
@@ -76,6 +84,7 @@ dependencies {
 }
 
 tasks.withType<JavaCompile> {
+
     options.compilerArgs.addAll(listOf("-parameters"))
 }
 

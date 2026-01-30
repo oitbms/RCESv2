@@ -42,6 +42,12 @@ public class InspectionRestController {
         return ResponseEntity.ok().body(imagesPayload);
     }
 
+    @GetMapping("/get-all-services-violation")
+    public ResponseEntity<List<InspectionViolationDTO>> getAllViolationServices() {
+        List<InspectionViolationDTO> violationDTOList = service.getAllViolationServices();
+        return ResponseEntity.ok(violationDTOList);
+    }
+
     @PostMapping("/create-inspection")
     public ResponseEntity<InspectionDTO> createInspection(@RequestBody InspectionCreateDTO dto) {
         var newInspection = service.createInspection(dto);

@@ -35,6 +35,7 @@ class Inspection extends Base {
             });
         });
         this.createHandler('click', '#report-btn', this.makeReport.bind(this), true);
+        this.createHandler('click', '#print-button', (event) => this.print(event), true);
     }
 
     public createRow(inspection: InspectionIn) {
@@ -45,17 +46,17 @@ class Inspection extends Base {
                        <h5>Инспекция №${inspection.id}</h5>
                    </div>
                        <p class="card-text">
-                           Дата: ${this.formatDate(inspection.dateInspection)}<br>
+                           Дата: ${this.formatDateTime(inspection.dateInspection)}<br>
                            Тип: ${inspection.type}<br>
                            Цех: <span data-inspection-id="${inspection.id}">${inspection.subDivision?.name}</span>
-                           ${inspection.primaryInspectionId != null ? 
-                                `<br> Первичная инспекция: <span data-inspection-id="${inspection.primaryInspectionId}">№${inspection.primaryInspectionId}</span>`
-                           : ''}       
+                           ${inspection.primaryInspectionId != null ?
+            `<br> Первичная инспекция: <span data-inspection-id="${inspection.primaryInspectionId}">№${inspection.primaryInspectionId}</span>`
+            : ''}       
                        </p>
                    <div class="buttons">
                        <button class="btn btn-outline-primary view-btn">Подробнее</button>
-                       ${inspection.primaryInspectionId!=null ? '' : '<button class="btn btn-warning" id="createSecondaryBtn">Создать повторную проверку</button>'}
-                       <button class="btn btn-success" id="report-btn">Отчеты</button>
+                       ${inspection.primaryInspectionId != null ? '' : '<button class="btn btn-warning" id="createSecondaryBtn">Создать повторную проверку</button>'}
+                       <button class="btn btn-success" data-inspectionId="${inspection.id}" id="report-btn">Отчеты</button>
                        <button class="btn btn-danger delete-inspection">Удалить</button>
                    </div>
                </div>     
@@ -174,7 +175,7 @@ class Inspection extends Base {
                             </div>
                             <div class="field-row">
                                 <div class="label">Дата обнаружения:</div>
-                                <div class="value">${this.formatDate(violation.createdDate)}</div>
+                                <div class="value">${this.formatDateTime(violation.createdDate)}</div>
                             </div>
                             <div class="field-row">
                                 <div class="label">Статус:</div>
@@ -404,7 +405,7 @@ class Inspection extends Base {
                         </div>
                         <div class="field-row">
                             <div class="label">Дата обнаружения:</div>
-                            <div class="value">${this.formatDate(newViolation.createdDate)}</div>
+                            <div class="value">${this.formatDateTime(newViolation.createdDate)}</div>
                         </div>
                         <div class="field-row">
                             <div class="label">Статус:</div>
@@ -690,10 +691,11 @@ class Inspection extends Base {
             dialog.find('.dialog-container-content').html(contentHtml);
         }
 
+        $('#print-button').data('inspectionId',inspection.id);
         await this.fillWorkshopReport(inspection);
         await this.fillSpecialReport();
 
-        dialog.find('.report-tab').off('click').on('click', function() {
+        dialog.find('.report-tab').off('click').on('click', function () {
             const tabId = $(this).data('tab');
             dialog.find('.report-tab').removeClass('active');
             $(this).addClass('active');
@@ -726,11 +728,13 @@ class Inspection extends Base {
         const rowsContainer = $('#reportDialog .workshop-rows');
         rowsContainer.empty();
 
-        const violationsByCriteria: {[key: string]: {
+        const violationsByCriteria: {
+            [key: string]: {
                 subDivisionName: string;
                 totalScore: number;
                 description: string;
-            }} = {};
+            }
+        } = {};
 
         inspection.violation.forEach((violation: InspectionViolationIn) => {
             if (violation.subDivision && violation.subDivision.name === inspection.subDivision.name) {
@@ -864,13 +868,9 @@ class Inspection extends Base {
         rowsContainer.empty();
 
         try {
-            const allInspectionsResponse = await this.requestToApi('/api/inspection/get-page-inspection', 'GET');
+            const allInspectionsViolation = (await this.requestToApi('/api/inspection/get-all-services-violation', 'GET')) as InspectionViolationIn[];
 
-            const allInspections = Array.isArray(allInspectionsResponse)
-                ? allInspectionsResponse
-                : (allInspectionsResponse.data || allInspectionsResponse.items || []);
-
-            if (allInspections.length === 0) {
+            if (allInspectionsViolation.length === 0) {
                 rowsContainer.append(`
                     <div class="no-data">
                         Нет данных по инспекциям
@@ -879,49 +879,37 @@ class Inspection extends Base {
                 return;
             }
 
-            for (const inspection of allInspections) {
-                if (!inspection.violation || inspection.violation.length === 0) {
-                    try {
-                        inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${inspection.id}`, "GET");
-                    } catch (error) {
-                        console.error(`Ошибка загрузки нарушений для инспекции ${inspection.id}:`, error);
-                        inspection.violation = [];
-                    }
-                }
-            }
-
-            const violationsBySubDivision: {[key: string]: {
+            const violationsBySubDivision: {
+                [key: string]: {
                     [criteria: string]: number
-                }} = {};
+                }
+            } = {};
 
             const specialDivisions = ['ПДО', 'ОГМ', 'ОТиТБ', 'ОГТ'];
 
-            for (const inspection of allInspections) {
-                if (!inspection.violation || inspection.violation.length === 0) continue;
+            for (const violation of allInspectionsViolation) {
+                if (!violation || !violation.subDivision || !violation.criteria) continue;
 
-                for (const violation of inspection.violation) {
-                    if (!violation || !violation.subDivision || !violation.criteria) continue;
+                const subDivName = violation.subDivision.name;
+                const criteria = violation.criteria;
 
-                    const subDivName = violation.subDivision.name;
-                    const criteria = violation.criteria;
+                const isSpecial = specialDivisions.some(div =>
+                    subDivName && subDivName.toUpperCase() === div.toUpperCase()
+                );
 
-                    const isSpecial = specialDivisions.some(div =>
-                        subDivName && subDivName.toUpperCase().indexOf(div) !== -1
-                    );
+                if (!isSpecial) continue;
 
-                    if (!isSpecial) continue;
-
-                    if (!violationsBySubDivision[subDivName]) {
-                        violationsBySubDivision[subDivName] = {};
-                    }
-
-                    if (!violationsBySubDivision[subDivName][criteria]) {
-                        violationsBySubDivision[subDivName][criteria] = 0;
-                    }
-
-                    violationsBySubDivision[subDivName][criteria] += violation.score || 0;
+                if (!violationsBySubDivision[subDivName]) {
+                    violationsBySubDivision[subDivName] = {};
                 }
+
+                if (!violationsBySubDivision[subDivName][criteria]) {
+                    violationsBySubDivision[subDivName][criteria] = 0;
+                }
+
+                violationsBySubDivision[subDivName][criteria] += violation.score || 0;
             }
+
 
             if (Object.keys(violationsBySubDivision).length === 0) {
                 rowsContainer.append(`
@@ -998,30 +986,30 @@ class Inspection extends Base {
                     }
 
                     const bonusRow = `
-                    <div class="bonus-calculation">
-                        <h4>Расчет премии для ${subDivName}</h4>
-                        <div class="bonus-row">
-                            <span class="bonus-label">Базовая премия:</span>
-                            <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
-                        </div>
-                        ${appliedPenalties.length > 0 ? `
-                            <div class="bonus-section">
-                                <div class="bonus-section-title">Примененные штрафы:</div>
-                                ${penaltiesHtml}
-                            </div>
-                        ` : `
+                        <div class="bonus-calculation">
+                            <h4>Расчет премии для ${subDivName}</h4>
                             <div class="bonus-row">
-                                <span class="bonus-label">Штрафы не применены</span>
-                                <span class="bonus-value">-</span>
+                                <span class="bonus-label">Базовая премия:</span>
+                                <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
                             </div>
-                        `}
-                        <div class="bonus-row final-bonus">
-                            <span class="bonus-label">Финальная премия:</span>
-                            <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
+                            ${appliedPenalties.length > 0 ? `
+                                <div class="bonus-section">
+                                    <div class="bonus-section-title">Примененные штрафы:</div>
+                                    ${penaltiesHtml}
+                                </div>
+                            ` : `
+                                <div class="bonus-row">
+                                    <span class="bonus-label">Штрафы не применены</span>
+                                    <span class="bonus-value">-</span>
+                                </div>
+                            `}
+                            <div class="bonus-row final-bonus">
+                                <span class="bonus-label">Финальная премия:</span>
+                                <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
+                            </div>
                         </div>
-                    </div>
-                    <div style="height: 20px;"></div>
-                `;
+                        <div style="height: 20px;"></div>
+                    `;
                     rowsContainer.append(bonusRow);
                 }
             }
@@ -1034,6 +1022,34 @@ class Inspection extends Base {
                 </div>
             `);
         }
+    }
+
+    public override async print(event: Event): Promise<void> {
+        const inspectionId = $(event.currentTarget).data('inspectionId');
+        this.reports = [
+            {
+                name: 'Отчет по участку',
+                api: '/api/report/print/inspection-workshop',
+                params: {
+                    'id' :inspectionId
+                }
+            },
+            {
+                name: 'Отчет по службам',
+                api: '/api/report/print/inspection-services',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
+                function: async (format: string) => {
+                    const allInspectionsViolation = (await this.requestToApi('/api/inspection/get-all-services-violation', 'GET')) as InspectionViolationIn[];
+                    const queryParams = new URLSearchParams();
+                    queryParams.set('format', format);
+                    queryParams.set('idList', allInspectionsViolation
+                        .map(v => `idList=${v.id}`)
+                        .join('&'));
+                    await this.downloadFile('/api/report/print/spe-schedule', queryParams);
+                }
+            }
+        ];
+        await super.print(event);
     }
 }
 

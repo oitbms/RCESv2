@@ -171,12 +171,12 @@ class Spe extends Base {
                             return map;
                         }, new Map<string, SpeIn[]>());
 
+                    if (nonOrganization.length > 0) {
+                        this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
+                    }
                     for (const [organization, speList] of Array.from(groupByOrganization)) {
                         const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
                         await this.downloadFile('/api/report/print/spe-schedule', params);
-                    }
-                    if (nonOrganization.length > 0) {
-                        this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
                     }
                 }
             }

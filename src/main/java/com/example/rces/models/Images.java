@@ -2,6 +2,7 @@ package com.example.rces.models;
 
 import jakarta.persistence.*;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
@@ -70,6 +71,10 @@ public class Images {
         return data != null ? "data:image/png;base64," + Base64.getEncoder().encodeToString(data) : "";
     }
 
+    public ByteArrayInputStream getInputStreamData() {
+        return data != null ? new ByteArrayInputStream(data) : null;
+    }
+
     public void setBase64Data(String base64Image) {
         if (base64Image == null || !base64Image.startsWith("data:")) {
             throw new IllegalArgumentException("Некорректный формат изображения");
@@ -95,6 +100,8 @@ public class Images {
             return sgim.getId();
         } else if (document != null) {
             return document.getId();
+        } else if (insVio!=null) {
+            return insVio.getId();
         }
         return null;
     }

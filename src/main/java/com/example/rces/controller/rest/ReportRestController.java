@@ -88,4 +88,28 @@ public class ReportRestController {
                 .body(fileDTO);
     }
 
+    @GetMapping("/print/inspection-workshop")
+    public ResponseEntity<FileDTO> printInspectionWorkshop(@RequestParam(name = "format") String formatString, @RequestParam Integer id) {
+        Format format = Format.valueOf(formatString);
+        byte[] report = service.createInspectionReport(format, id, false);
+        String fileName = String.format("Инспекция_от_%s.%s",
+                formatedDate(LocalDateTime.now()), format.getFileExtension());
+        FileDTO fileDTO = new FileDTO(fileName, report);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileDTO);
+    }
+
+//    @GetMapping("/print/inspection-services")
+//    public ResponseEntity<FileDTO> printInspectionServices(@RequestParam(name = "format") String formatString, @RequestParam List<Integer> idList) {
+//        Format format = Format.valueOf(formatString);
+//        byte[] report = service.createInspectionReport(format, idList);
+//        String fileName = String.format("Инспекция_от_%s.%s",
+//                formatedDate(LocalDateTime.now()), format.getFileExtension());
+//        FileDTO fileDTO = new FileDTO(fileName, report);
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .body(fileDTO);
+//    }
+
 }

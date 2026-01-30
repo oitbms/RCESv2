@@ -184,10 +184,11 @@ abstract class Base {
         });
     }
 
-    public async print(): Promise<void> {
+    public async print(param? :any): Promise<void> {
         if (!this.reports.length) return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
 
         const dialogId = 'printDialog';
+        $(`#${dialogId}`).remove();
         const $dialog = $(`
         <dialog id="${dialogId}" class="print-dialog">
             <div class="print-content">
@@ -210,7 +211,7 @@ abstract class Base {
     `);
 
         let format = "PDF";
-        $dialog.find('.format-btn').on('click', function () {
+        $dialog.find('.format-btn').off('click').on('click', function () {
             $dialog.find('.format-btn').removeClass('active');
             $(this).addClass('active');
             format = $(this).data('format') as string;
@@ -234,7 +235,9 @@ abstract class Base {
 
                 try {
                     if (report.function) {
-                        return await report.function(format);
+                        await report.function(format);
+                        resolve();
+                        return;
                     }
                     const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
                     await this.downloadFile(report.api, params);
@@ -426,6 +429,18 @@ abstract class Base {
         if (!dateString) return "";
         const date = new Date(dateString);
         return date.toLocaleDateString('ru-RU');
+    }
+
+    public readonly formatDateTime = (dateString: string): string => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     public readonly calculateColor = (color: Color): string => {

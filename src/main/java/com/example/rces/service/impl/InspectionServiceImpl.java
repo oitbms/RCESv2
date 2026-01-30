@@ -67,6 +67,12 @@ public class InspectionServiceImpl implements InspectionService {
     }
 
     @Override
+    public List<InspectionViolationDTO> getAllViolationServices() {
+        List<InspectionViolation> inspectionViolations = inspectionViolationRepository.findAllInspectionViolationServices();
+        return inspectionViolationMapper.toDTOList(inspectionViolations);
+    }
+
+    @Override
     public InspectionDTO createInspection(InspectionCreateDTO dto) {
         if (inspectionRepository.existsThisMonth(dto.getSubDivision())) {
             throw new ForbiddenExceptionBormash("Вы уже создали инспекцию за этот месяц", NotificationType.WARNING);

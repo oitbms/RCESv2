@@ -1,0 +1,117 @@
+package com.example.rces.dto.report;
+
+import com.example.rces.models.Inspection;
+import com.example.rces.models.InspectionViolation;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.example.rces.utils.DateUtil.formatedDate;
+
+public class InspectionReportModel {
+
+    private String now;
+
+    private String subDivision;
+
+    private List<Table> violation = new ArrayList<>();
+
+    public InspectionReportModel(Inspection inspection) {
+        this.now = formatedDate(LocalDateTime.now());
+        this.subDivision = inspection.getSubDivision().getName();
+        inspection.getViolation().forEach(violation ->{
+            this.violation.add(new Table(violation));
+        });
+    }
+
+    public static class Table {
+
+        private String criteria;
+
+        private String comment;
+
+        private String number;
+
+        private String subDivision;
+
+        private List<ImageReportModel> images = new ArrayList<>();
+
+        public Table(InspectionViolation violation) {
+            this.criteria = violation.getCriteria();
+            this.comment = violation.getDescription();
+            this.subDivision = violation.getSubDivision().getName();
+            violation.getImages().forEach(image ->
+                    images.add(new ImageReportModel(image.getName(),
+                            image.getInputStreamData()
+                    )));
+        }
+
+        public String getCriteria() {
+            return criteria;
+        }
+
+        public void setCriteria(String criteria) {
+            this.criteria = criteria;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+
+        public String getNumber() {
+            return number;
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+        }
+
+        public String getSubDivision() {
+            return subDivision;
+        }
+
+        public void setSubDivision(String subDivision) {
+            this.subDivision = subDivision;
+        }
+
+        public List<ImageReportModel> getImages() {
+            return images;
+        }
+
+        public void setImages(List<ImageReportModel> images) {
+            this.images = images;
+        }
+    }
+
+    public String getNow() {
+        return now;
+    }
+
+    public void setNow(String now) {
+        this.now = now;
+    }
+
+    public String getSubDivision() {
+        return subDivision;
+    }
+
+    public void setSubDivision(String subDivision) {
+        this.subDivision = subDivision;
+    }
+
+    public List<Table> getViolation() {
+        return violation;
+    }
+
+    public void setViolation(List<Table> violation) {
+        this.violation = violation;
+    }
+}

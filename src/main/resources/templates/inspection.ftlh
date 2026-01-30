@@ -44,7 +44,7 @@
             <div class="form-group">
                 <label class="form-label">Выберите Цех/Подразделение:</label>
                 <select class="form-control" name="subDivision" required>
-                    <option value="">Выберите организацию</option>
+                    <option value="">Выберите Цех/Подразделение</option>
                     <option value="WorkShop1">Цех №1</option>
                     <option value="WorkShop3">Цех №3</option>
                     <option value="WorkShop4">Цех №4</option>
@@ -238,6 +238,11 @@
             <button class="dialog-btn close">
                 <i class="fas fa-times"></i> Закрыть
             </button>
+            <div class="tool print tooltip-trigger" id="print-button" data-description="Печать отчета">
+                <button>
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
         </div>
     </div>
 </dialog>

@@ -24,6 +24,7 @@ public interface InspectionViolationRepository extends BaseAuditingRepository<In
             LEFT JOIN FETCH cb.subDivision
             LEFT JOIN FETCH i.inspection
             WHERE i.inspection.id = :id
+            ORDER BY i.createdDate
     """)
     List<InspectionViolation> findAllByInspectionId(@Param("id") Integer id);
 
@@ -38,5 +39,11 @@ public interface InspectionViolationRepository extends BaseAuditingRepository<In
             @Param("subDivision") String subDivision,
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate);
+
+    @Query("SELECT i " +
+            "FROM InspectionViolation i " +
+            "LEFT JOIN i.subDivision s " +
+            "WHERE s.code in ('PDO', 'OGM', 'OTTB', 'OGT') and i.status = 'status1'")
+    List<InspectionViolation> findAllInspectionViolationServices();
 
 }

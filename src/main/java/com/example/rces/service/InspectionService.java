@@ -15,6 +15,8 @@ public interface InspectionService {
 
     List<InspectionViolationDTO> getViolationsForInspectionId(Integer id);
 
+    List<InspectionViolationDTO> getAllViolationServices();
+
     InspectionDTO createInspection(InspectionCreateDTO dto);
 
     InspectionDTO createSecondaryInspection(Integer inspectionId);

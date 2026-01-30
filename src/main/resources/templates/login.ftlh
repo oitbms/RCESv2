@@ -107,7 +107,7 @@
                 >
             </div>
 
-            <button type="submit" class="btn btn-primary">Войти</button>
+            <button type="submit" id="loginButton" class="btn btn-primary">Войти</button>
         </form>
     </div>
 </div>

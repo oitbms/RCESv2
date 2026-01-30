@@ -125,7 +125,6 @@ public class RequestServiceImpl implements RequestsService {
         return requestMapper.toDTO((requests));
     }
 
-
     @Override
     public void save(Requests requests) {
         repository.save(requests);
@@ -151,7 +150,6 @@ public class RequestServiceImpl implements RequestsService {
         requests.setVersion(requests.getVersion() + 1);
         repository.save(requests);
     }
-
 
     @Override
     public void update(UUID id, Boolean sendMessage, Map<String, Object> updatedFields) {
