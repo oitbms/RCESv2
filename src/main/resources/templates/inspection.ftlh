@@ -76,53 +76,6 @@
         </div>
     </div>
 </dialog>
-<dialog id="addViolationDialog">
-    <div class="dialog-container">
-        <div class="dialog-container-header">
-            <div class="dialog-name">Добавление нарушения</div>
-        </div>
-        <form id="addViolationForm" enctype="multipart/form-data">
-            <div class="dialog-container-content">
-                <div class="form-group mb-3">
-                    <label class="form-label">Описание нарушения:</label>
-                    <textarea class="form-control" name="description" rows="3" required></textarea>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="form-label">Критерии:</label>
-                    <select class="form-control" name="criteria" id="criteriaSelect" required>
-                        <option value="">Выберите критерий</option>
-                        <option value="Безопасность и охрана труда">Безопасность и охрана труда</option>
-                        <option value="Технологическая дисциплина">Технологическая дисциплина</option>
-                        <option value="Организация рабочих мест">Организация рабочих мест</option>
-                        <option value="Документация">Документация</option>
-                    </select>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="form-label">Оценка:</label>
-                    <select class="form-control" name="score" id="scoreSelect" required>
-                        <option value="1">1 балл</option>
-                        <option value="2">2 балла</option>
-                        <option value="3">3 балла</option>
-                        <option value="4">4 балла</option>
-                        <option value="5">5 баллов</option>
-                    </select>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="form-label">Ответственное подразделение:</label>
-                    <input type="text" class="form-control modal-input-change" name="subDivision" readonly required>
-                </div>
-                <div class="form-group mb-3">
-                    <label class="form-label">Фотографии нарушений:</label>
-                    <input type="file" class="form-control" name="additionalFiles" multiple accept="image/*">
-                </div>
-            </div>
-            <div class="dialog-container-footer">
-                <button type="button" class="dialog-btn" id="cancelAddBtn">Отмена</button>
-                <button type="submit" class="dialog-btn btn-primary" id="createViolation">Создать</button>
-            </div>
-        </form>
-    </div>
-</dialog>
 <dialog id="subDivisionDialog">
     <div class="dialog-container">
         <div class="dialog-container-header">
@@ -195,8 +148,13 @@
                 </div>
                 <div class="form-group mb-3">
                     <label class="form-label">Оценка:</label>
-                    <input type="number" class="form-control" name="score" id="scoreInput"
-                           min="1" max="5" required>
+                    <select class="form-control" name="score" id="scoreSelect" required>
+                        <option value="1">1 балл</option>
+                        <option value="2">2 балла</option>
+                        <option value="3">3 балла</option>
+                        <option value="4">4 балла</option>
+                        <option value="5">5 баллов</option>
+                    </select>
                 </div>
                 <div class="form-group mb-3">
                     <label class="form-label">Ответственное подразделение:</label>

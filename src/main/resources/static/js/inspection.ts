@@ -191,7 +191,7 @@ class Inspection extends Base {
                             </div>
                             <div class="field-row">
                                 <div class="label">Фото:</div>
-                                <div class="value"><i class="fas fa-image photo-icon"></i></div>
+                                <button class="dialog-btn print photo-icon">Просмотр</button>
                             </div>
                         </div>
                         <div class="violation-card-footer">
@@ -421,7 +421,7 @@ class Inspection extends Base {
                         </div>
                         <div class="field-row">
                             <div class="label">Фото:</div>
-                            <div class="value"><i class="fas fa-image photo-icon"></i></div>
+                            <button class="dialog-btn print photo-icon">Просмотр</button>
                         </div>
                     </div>
                     <div class="violation-card-footer">
@@ -659,7 +659,7 @@ class Inspection extends Base {
         const tabsHtml = `
         <div class="report-tabs">
             <button class="report-tab active" data-tab="workshop">Отчет по цеху</button>
-            <button class="report-tab" data-tab="special">Отчет по ПДО/ОГМ/ОТиТБ/ОГТ</button>
+            <button class="report-tab" data-tab="special">Отчет по службам</button>
         </div>
     `;
 

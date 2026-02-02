@@ -2,7 +2,7 @@ let chartInstance;
 let customTooltip = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    const graf = document.getElementById("graf");
+    const graf = document.getElementById("graphButton");
     if (!graf) return;
 
     customTooltip = document.createElement('div');

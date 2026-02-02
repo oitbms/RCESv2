@@ -1052,3 +1052,268 @@ dialog {
         padding: 15px;
     }
 }
+/* Мобильная адаптация - исправление для видимости кнопок */
+@media (max-width: 768px) {
+    /* Все диалоги */
+    dialog {
+        width: 100vw !important;
+        height: 95vh !important;
+        max-width: 100vw !important;
+        max-height: 95vh !important;
+        margin: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        border-radius: 0;
+        padding: 0;
+        position: fixed !important;
+    }
+
+    /* Контейнеры всех диалогов */
+    .dialog-container {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+        max-height: -webkit-fill-available !important;
+    }
+
+    /* Исправление для iOS Safe Area */
+    @supports (padding-top: env(safe-area-inset-top)) {
+        .dialog-container {
+            padding-top: env(safe-area-inset-top) !important;
+            padding-bottom: env(safe-area-inset-bottom) !important;
+        }
+    }
+
+    /* Хедер диалогов */
+    .dialog-container-header {
+        padding: 16px !important;
+        padding-top: max(16px, env(safe-area-inset-top)) !important;
+        flex-shrink: 0 !important;
+        min-height: 60px !important;
+        background: white !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+
+    .report-tabs {
+        width: 50%;
+    }
+
+    /* Контентная часть */
+    .dialog-container-content {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        padding: 16px !important;
+        max-height: none !important;
+        height: auto !important;
+    }
+
+    /* Футер диалогов - ГЛАВНОЕ ИСПРАВЛЕНИЕ */
+    .dialog-container-footer {
+        padding: 16px !important;
+        padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+        flex-shrink: 0 !important;
+        background: white !important;
+        border-top: 1px solid #e0e0e0 !important;
+        display: flex !important;
+        gap: 12px !important;
+        align-items: center !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 20 !important;
+        min-height: 80px !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Кнопки в футере */
+    .dialog-btn {
+        flex: 1 !important;
+        min-width: 0 !important;
+        height: 50px !important;
+        padding: 0 16px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        border-radius: 8px !important;
+        margin: 0 !important;
+    }
+
+    /* Специально для viewInspectionDialog */
+    #viewInspectionDialog {
+        min-width: 100% !important;
+    }
+
+    #viewInspectionDialog .dialog-container {
+        grid-template-rows: auto 1fr auto !important;
+    }
+
+    #viewInspectionDialog .dialog-container-content {
+        padding: 12px !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    .violations-container {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        padding-bottom: 20px !important;
+    }
+
+    .violation-card {
+        min-height: auto !important;
+        padding: 12px !important;
+    }
+
+    .violation-card-footer {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        min-height: 50px !important;
+    }
+
+    .violation-card-footer .btn {
+        flex: 1 !important;
+        min-width: 140px !important;
+        height: 40px !important;
+    }
+
+    /* Специально для addViolationDialog */
+    #addViolationDialog {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #addViolationDialog .dialog-container-content {
+        padding: 16px !important;
+        overflow-y: auto !important;
+        max-height: none !important;
+    }
+
+    #addViolationDialog .form-control {
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+
+    /* Общие исправления */
+    .card-body .buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .card-body .buttons .btn {
+        flex: 1 !important;
+        min-width: 140px !important;
+    }
+
+    #confirmDialog {
+        height: 110px!important;
+        top: 25%!important
+    }
+
+    #createDialog {
+        height: 210px!important;
+        top: 25%!important
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .dialog-container-footer {
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 12px !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .dialog-btn {
+        width: 100% !important;
+        height: 44px !important;
+    }
+
+    .violation-card-footer {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .violation-card-footer .btn {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    .card-body .buttons .btn {
+        min-width: 100% !important;
+        margin-bottom: 8px !important;
+    }
+
+    .report-tab {
+        min-width: 100% !important;
+    }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 900px) and (orientation: landscape) {
+    .violations-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .dialog-container-header {
+        padding: 12px !important;
+        padding-top: max(12px, env(safe-area-inset-top)) !important;
+        min-height: 50px !important;
+    }
+
+    .dialog-container-footer {
+        padding: 12px !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        min-height: 70px !important;
+    }
+
+    .dialog-btn {
+        height: 44px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Для очень низких экранов */
+@media (max-height: 600px) {
+    .dialog-container-header {
+        padding: 12px !important;
+        padding-top: max(12px, env(safe-area-inset-top)) !important;
+        min-height: 50px !important;
+    }
+
+    .dialog-container-footer {
+        padding: 12px !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        min-height: 70px !important;
+    }
+
+    .dialog-btn {
+        height: 44px !important;
+        font-size: 14px !important;
+    }
+
+    .violation-card {
+        padding: 10px !important;
+        min-height: 240px !important;
+    }
+}
+
+/* Исправление для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+
+        .dialog-container-content {
+            overflow-y: scroll !important;
+        }
+    }
+}
+

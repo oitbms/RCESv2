@@ -96,9 +96,8 @@ abstract class Base {
     };
 
     public readonly createNotificationContainer = () => {
-        const notificationsContainer = document.createElement('div');
-        notificationsContainer.id = 'notifications-container';
-        document.body.appendChild(notificationsContainer);
+        const notificationsContainer = $(`<div id="notifications-container" popover="manual"></div>`);
+        $('body').append(notificationsContainer);
     }
 
     //Всегда должен возвращать jquery объект в виде any
@@ -295,22 +294,31 @@ abstract class Base {
     }
 
     //Создание уведомления в левом верхнем углу
-    public readonly createNotification = (message: string, type: NotificationType, params?: any, error?: Error): void => {
-        let container = document.getElementById('notifications-container');
+    public readonly createNotification = (
+        message: string, type: NotificationType,
+        params?: any, error?: Error): void => {
         try {
             const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
+            const container = document.getElementById('notifications-container');
+            const notification = document.createElement('div');
 
-            const $note = $(`
-            <div class="notification ${type}">
-                <div class="msg">${text}</div>
-            </div>`)
-                .appendTo(container);
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<div class="msg">${text}</div>`;
+            container.appendChild(notification);
+            if (!container.matches(':popover-open')) {
+                container.showPopover();
+            }
             if (error) console.error(error);
-
-            setTimeout(() => $note.addClass('show'), 10);
+            setTimeout(() => notification.classList.add('show'), 10);
             setTimeout(() => {
-                $note.removeClass('show').addClass('hiding');
-                setTimeout(() => $note.remove(), 350);
+                notification.classList.remove('show');
+                notification.classList.add('hiding');
+                setTimeout(() => {
+                    notification.remove();
+                    if (container.children.length === 0) {
+                        container.hidePopover();
+                    }
+                }, 350);
             }, 3000);
         } catch (error) {
             console.error(error);
@@ -367,10 +375,9 @@ abstract class Base {
     });
 
     //Контекстное меню
-    public readonly createContextMenu = (items: {
-        label: string,
-        action: () => void
-    }[], x: number, y: number): void => {
+    public readonly createContextMenu = (items: { label: string, action: () => void }[],
+                                         x: number,
+                                         y: number): void => {
         $('#context-menu').remove();
 
         const menu = $('<div id="context-menu" popover="manual"></div>');
