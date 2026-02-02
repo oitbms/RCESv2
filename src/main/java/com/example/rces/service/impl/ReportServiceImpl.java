@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
@@ -157,25 +156,34 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] createInspectionReport(Format format, Integer id, boolean services) {
-        Inspection inspection = entityManager.createQuery(
-                "SELECT e FROM Inspection e " +
-                        "LEFT JOIN e.createdBy " +
-                        "LEFT JOIN e.primaryInspection " +
-                        "LEFT JOIN e.subDivision " +
-                        "WHERE e.id = :id", Inspection.class)
-                .setParameter("id", id).getSingleResult();
-        entityManager.createQuery(
-                "SELECT e from InspectionViolation e " +
-                        "LEFT JOIN e.subDivision " +
-                        "LEFT JOIN e.images " +
-                        "LEFT JOIN e.createdBy c " +
-                        "LEFT JOIN c.subDivision " +
-                        "WHERE e.id in (:id)")
-                .setParameter("id", inspection.getViolation().stream().map(InspectionViolation::getId).toList());
-        InspectionReportModel model = new InspectionReportModel(inspection);
-        return jasperReportExporter.generateJrxmlReport(String.format("Inspection%s", !services ? "WorkShop" : "Services"),
-                    null, List.of(model), format);
+    public byte[] createInspectionReport(Format format, Integer id) {
+        InspectionReportModel model;
+        if (id != null) {
+            Inspection inspection = entityManager.createQuery(
+                            "SELECT e FROM Inspection e " +
+                                    "LEFT JOIN FETCH  e.createdBy cb " +
+                                    "LEFT JOIN FETCH  e.primaryInspection p " +
+                                    "LEFT JOIN FETCH  e.subDivision s " +
+                                    "WHERE e.id = :id", Inspection.class)
+                    .setParameter("id", id).getSingleResult();
+            entityManager.createQuery(
+                            "SELECT e from InspectionViolation e " +
+                                    "LEFT JOIN FETCH e.subDivision s " +
+                                    "LEFT JOIN FETCH e.images i " +
+                                    "LEFT JOIN FETCH e.createdBy cb " +
+                                    "LEFT JOIN FETCH cb.subDivision cbs " +
+                                    "WHERE e.id in (:id)")
+                    .setParameter("id", inspection.getViolation().stream().map(InspectionViolation::getId).toList());
+            model = new InspectionReportModel(inspection);
+        } else {
+            List<InspectionViolation> violation =
+                    entityManager.createNamedQuery("InspectionViolation.findAllNotFixed", InspectionViolation.class)
+                            .getResultList();
+            model = new InspectionReportModel(violation);
+        }
+        return jasperReportExporter.generateJrxmlReport(
+                "InspectionWorkShop", null, List.of(model), format
+        );
     }
 
 }

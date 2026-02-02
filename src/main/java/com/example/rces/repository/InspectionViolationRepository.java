@@ -3,6 +3,7 @@ package com.example.rces.repository;
 import com.example.rces.dto.InspectionViolationDTO;
 import com.example.rces.models.Inspection;
 import com.example.rces.models.InspectionViolation;
+import jakarta.persistence.NamedQuery;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,7 +31,7 @@ public interface InspectionViolationRepository extends BaseAuditingRepository<In
 
     @Query("SELECT i " +
             "FROM InspectionViolation i " +
-            "LEFT JOIN i.subDivision s " +
+            "LEFT JOIN FETCH i.subDivision s " +
             "WHERE s.code = :subDivision " +
             "AND i.createdDate >= :startDate " +
             "AND i.createdDate < :endDate " +
@@ -40,10 +41,7 @@ public interface InspectionViolationRepository extends BaseAuditingRepository<In
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate);
 
-    @Query("SELECT i " +
-            "FROM InspectionViolation i " +
-            "LEFT JOIN i.subDivision s " +
-            "WHERE s.code in ('PDO', 'OGM', 'OTTB', 'OGT') and i.status = 'status1'")
+    @Query( name = "InspectionViolation.findAllNotFixed")
     List<InspectionViolation> findAllInspectionViolationServices();
 
 }

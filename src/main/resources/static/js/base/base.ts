@@ -95,7 +95,7 @@ abstract class Base {
         });
     };
 
-    public readonly createNotificationContainer= () => {
+    public readonly createNotificationContainer = () => {
         const notificationsContainer = document.createElement('div');
         notificationsContainer.id = 'notifications-container';
         document.body.appendChild(notificationsContainer);
@@ -132,7 +132,7 @@ abstract class Base {
 
     public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
         if (this.currentPage > 1) {
-            param = { ...param, page: this.currentPage };
+            param = {...param, page: this.currentPage};
         }
         const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
 
@@ -184,7 +184,7 @@ abstract class Base {
         });
     }
 
-    public async print(param? :any): Promise<void> {
+    public async print(param?: any): Promise<void> {
         if (!this.reports.length) return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
 
         const dialogId = 'printDialog';
@@ -233,6 +233,7 @@ abstract class Base {
                 this.dialog.close(dialogId);
                 $dialog.remove();
 
+                const unlock = this.lockScreen('Формирование отчета');
                 try {
                     if (report.function) {
                         await report.function(format);
@@ -243,9 +244,10 @@ abstract class Base {
                     await this.downloadFile(report.api, params);
                 } catch (e) {
                     this.createNotification('Ошибка при печати', NotificationType.ERROR);
-                    console.error(e);
+                } finally {
+                    unlock()
+                    resolve();
                 }
-                resolve();
             });
         });
     }

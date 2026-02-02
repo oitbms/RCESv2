@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.rces.utils.DateUtil.formatedDate;
 
@@ -23,10 +24,21 @@ public class InspectionReportModel {
     public InspectionReportModel(Inspection inspection) {
         this.now = formatedDate(LocalDateTime.now());
         this.subDivision = inspection.getSubDivision().getName();
-        inspection.getViolation().forEach(violation ->{
-            this.violation.add(new Table(violation));
+        inspection.getViolation().forEach(violation -> {
+            if (violation.getSubDivision().equals(inspection.getSubDivision())) {
+                this.violation.add(new Table(violation));
+            }
         });
     }
+
+    public InspectionReportModel(List<InspectionViolation> violation) {
+        this.now = formatedDate(LocalDateTime.now());
+        this.subDivision = violation.stream().map(v -> v.getSubDivision().getName()).collect(Collectors.joining(","));
+        violation.forEach(v ->{
+            this.violation.add(new Table(v));
+        });
+    }
+
 
     public static class Table {
 

@@ -592,7 +592,6 @@ class Inspection extends Base {
             this.dialog.open('photosDialog');
         } catch (error) {
             this.createNotification('Ошибка загрузки фотографий', NotificationType.ERROR);
-            console.error(error);
         } finally {
             unlock()
         }
@@ -1037,16 +1036,7 @@ class Inspection extends Base {
             {
                 name: 'Отчет по службам',
                 api: '/api/report/print/inspection-services',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
-                function: async (format: string) => {
-                    const allInspectionsViolation = (await this.requestToApi('/api/inspection/get-all-services-violation', 'GET')) as InspectionViolationIn[];
-                    const queryParams = new URLSearchParams();
-                    queryParams.set('format', format);
-                    queryParams.set('idList', allInspectionsViolation
-                        .map(v => `idList=${v.id}`)
-                        .join('&'));
-                    await this.downloadFile('/api/report/print/spe-schedule', queryParams);
-                }
+                params: {}
             }
         ];
         await super.print(event);

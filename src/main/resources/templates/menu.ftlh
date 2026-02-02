@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-
     <script>
-
         const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
 
         const dailyCountConstructor = [<#list dailyCountsConstructor as item>${item}<#if item_has_next>, </#if></#list>];
@@ -67,7 +64,6 @@
         ];
     </script>
     <script src="js/menu.js"></script>
-
 </head>
 <body>
 <div class="container mb-1" id="menuContainer">
@@ -128,14 +124,13 @@
                     </button>
                 </#if>
                 <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
-                    <button id="graf" class="btn btn-primary mb-4">Показать график</button>
-                    <a class="btn btn-primary mb-4" href="/logs">Логирование ошибок</a>
+                    <button id="graphButton" class="btn btn-primary mb-4">Показать график</button>
+                    <a class="btn btn-primary mb-4" id="loggingButton" href="/logs">Логирование ошибок</a>
                 </#if>
             </div>
         </div>
     </div>
 </div>
-
 <div class="container mb-4 d-flex justify-content-between">
     <div>
         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>
@@ -168,7 +163,6 @@
         </#if>
     </div>
 </div>
-
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -202,7 +196,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModal1Label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -236,7 +229,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModal2Label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -270,7 +262,6 @@
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModal3Label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -304,7 +295,6 @@
         </div>
     </div>
 </div>
-
 <#if rejectedBid?size != 0>
     <#if user.getRole() == 'MASTER'>
         <div class="btn-counter-container pulse-div">
@@ -322,7 +312,6 @@
         </div>
     </#if>
 </#if>
-
 <#if requests?size != 0>
     <#if user.getRole() == 'OTK'>
         <div class="card">
@@ -358,7 +347,6 @@
         </div>
     </#if>
 </#if>
-
 <div class="collapse" id="tableCollapse">
     <div class="card">
         <h5 class="card-title text-center mt-3">Забракованная продукция: ${user.getSubDivision().getName()}</h5>
@@ -421,7 +409,6 @@
         <a href="/report/print/bid" class="btn btn-primary">Печать отчета: ${user.getSubDivision().getName()}</a>
     </div>
 </div>
-
 <div class="collapse" id="tableCollapseOtk">
     <div class="card">
         <h5 class="card-title text-center mt-3">Заявки ожидающие принятия в работу</h5>
@@ -494,12 +481,10 @@
         </div>
     </div>
 </div>
-
 <div class="container mt-5" id="chartContainer">
     <h1 class="text-center" id="chartTitle" style="display: none">График заявок</h1>
     <canvas id="myChart" width="400" height="200" style="display: none;"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/js/bootstrap.bundle.js"></script>
 </body>
 </html>

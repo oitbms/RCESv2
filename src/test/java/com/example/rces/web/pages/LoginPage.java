@@ -1,4 +1,4 @@
-package com.example.web.pages;
+package com.example.rces.web.pages;
 
 import com.codeborne.selenide.Selenide;
 import io.qameta.allure.Step;

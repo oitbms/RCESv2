@@ -13,6 +13,18 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "inspection_violation", catalog = "rces")
+@NamedQueries({
+        @NamedQuery(
+                name = "InspectionViolation.findAllNotFixed",
+                query = """
+                        SELECT i FROM InspectionViolation i
+                        LEFT JOIN FETCH i.subDivision s
+                        LEFT JOIN FETCH i.createdBy cb
+                        LEFT JOIN FETCH cb.subDivision cbs
+                        WHERE s.code in ('PDO', 'OGM', 'OTTB', 'OGT') and i.status = 'status1'
+                        """
+        )
+})
 public class InspectionViolation extends BaseAuditingEntity {
 
     public enum CriteriaInspection {

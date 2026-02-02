@@ -28,12 +28,6 @@
         <div class="inspection-list">
         </div>
     </div>
-    <#--    <div class="reports">-->
-    <#--        <div class="title">-->
-    <#--            Отчеты-->
-    <#--        </div>-->
-    <#--        <hr>-->
-    <#--    </div>-->
 </div>
 <dialog id="create-dialog">
     <div class="modal-header">
@@ -239,7 +233,7 @@
                 <i class="fas fa-times"></i> Закрыть
             </button>
             <div class="tool print tooltip-trigger" id="print-button" data-description="Печать отчета">
-                <button>
+                <button class="dialog-btn print">
                     <i class="fas fa-print"></i>
                 </button>
             </div>

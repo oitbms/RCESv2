@@ -1,8 +1,10 @@
-package com.example.web.pages;
+package com.example.rces.web.pages;
 
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -20,7 +22,9 @@ public class MainPage implements ILogout {
         CREATE_BID("#CreatebidPageButton"),
         REQUESTS_OTK("#requestListOtk"),
         EQUIPMENT("#equipmentPageButton"),
-        INSPECTION("#inspectionPageButton");
+        INSPECTION("#inspectionPageButton"),
+        LOGGING("#loggingButton"),
+        GRAPH("#graphButton");
 
         private final String selector;
 
@@ -34,10 +38,10 @@ public class MainPage implements ILogout {
     }
 
     public MainPage() {
-        $("#menuContainer").shouldBe(visible);
+        $("#menuContainer").shouldBe(visible, Duration.ofSeconds(5));
     }
 
-    @Step("Проверить доступность страницы")
+    @Step("Проверить доступность кнопки")
     public boolean isPageAvailable(PageButton pageButton) {
         try {
             SelenideElement button = $(pageButton.getSelector());
@@ -101,6 +105,16 @@ public class MainPage implements ILogout {
     @Step("Открыть страницу чек-листов")
     public Optional<InspectionPage> openInspectionPage() {
         return openPageIfAvailable(PageButton.INSPECTION, InspectionPage::new);
+    }
+
+    @Step("Открыть страницу логирования")
+    public Optional<LoggingPage> openLoggingPage() {
+        return openPageIfAvailable(PageButton.LOGGING, LoggingPage::new);
+    }
+
+    @Step("Показать график")
+    public void showGraph() {
+        openPageIfAvailable(PageButton.GRAPH, null);
     }
 
 
