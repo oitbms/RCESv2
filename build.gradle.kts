@@ -77,7 +77,9 @@ dependencies {
     testImplementation("io.rest-assured:rest-assured:5.5.0")
     testImplementation("io.qameta.allure:allure-junit5:2.28.0")
     testImplementation("io.qameta.allure:allure-selenide:2.28.0")
+    testImplementation("io.qameta.allure:allure-rest-assured:2.28.0")
     testImplementation("org.aeonbits.owner:owner:1.0.12")
+    testImplementation("net.datafaker:datafaker:2.3.0")
 
     //Скрипты Kotlin
     implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.22")

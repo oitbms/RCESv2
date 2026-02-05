@@ -5,7 +5,7 @@ import io.qameta.allure.Step;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
-public class LoginPage {
+public class LoginPage extends PageBase {
 
     private static final String loginField = "#username";
     private static final String loginButton = "#loginButton";
@@ -16,7 +16,7 @@ public class LoginPage {
 
     @Step("Открыть страницу авторизации")
     public static LoginPage openLoginPage() {
-        Selenide.open("/login");
+        Selenide.open("login");
         return new LoginPage();
     }
 
@@ -32,6 +32,5 @@ public class LoginPage {
         $(loginField).setValue("Не существующий ключ");
         $(loginButton).click();
     }
-
 
 }

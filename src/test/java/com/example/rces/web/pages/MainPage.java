@@ -8,10 +8,10 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Selenide.$;
 
-public class MainPage implements ILogout {
+public class MainPage extends PageBase  {
 
     public enum PageButton {
         SGI("#sgiPageButton"),
@@ -38,7 +38,8 @@ public class MainPage implements ILogout {
     }
 
     public MainPage() {
-        $("#menuContainer").shouldBe(visible, Duration.ofSeconds(5));
+        Selenide.open("menu");
+        $("#menuContainer").shouldBe(exist, Duration.ofSeconds(5));
     }
 
     @Step("Проверить доступность кнопки")
@@ -116,6 +117,4 @@ public class MainPage implements ILogout {
     public void showGraph() {
         openPageIfAvailable(PageButton.GRAPH, null);
     }
-
-
 }

@@ -46,7 +46,6 @@ public class WebSecurityConfig {
                         .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
                         .requestMatchers(new TypeBasedRequestMatcher(webSecurityService)).authenticated()
-                        .requestMatchers("/api/spe/test").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

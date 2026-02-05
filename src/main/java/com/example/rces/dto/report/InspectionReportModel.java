@@ -3,11 +3,8 @@ package com.example.rces.dto.report;
 import com.example.rces.models.Inspection;
 import com.example.rces.models.InspectionViolation;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,9 +31,7 @@ public class InspectionReportModel {
     public InspectionReportModel(List<InspectionViolation> violation) {
         this.now = formatedDate(LocalDateTime.now());
         this.subDivision = violation.stream().map(v -> v.getSubDivision().getName()).collect(Collectors.joining(","));
-        violation.forEach(v ->{
-            this.violation.add(new Table(v));
-        });
+        violation.forEach(v -> this.violation.add(new Table(v)));
     }
 
 
@@ -55,7 +50,8 @@ public class InspectionReportModel {
         public Table(InspectionViolation violation) {
             this.criteria = violation.getCriteria();
             this.comment = violation.getDescription();
-            this.subDivision = violation.getSubDivision().getName();
+            this.subDivision = String.format("%s (%s)", violation.getSubDivision().getName(),
+                    violation.getInspection().getSubDivision().getName());
             violation.getImages().forEach(image ->
                     images.add(new ImageReportModel(image.getName(),
                             image.getInputStreamData()

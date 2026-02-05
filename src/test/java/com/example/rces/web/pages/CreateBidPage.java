@@ -1,4 +1,4 @@
 package com.example.rces.web.pages;
 
-public class CreateBidPage {
+public class CreateBidPage extends PageBase {
 }

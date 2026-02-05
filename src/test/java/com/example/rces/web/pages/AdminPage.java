@@ -1,5 +1,5 @@
 package com.example.rces.web.pages;
 
-public class AdminPage {
+public class AdminPage extends PageBase {
 
 }

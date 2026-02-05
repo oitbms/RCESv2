@@ -136,7 +136,7 @@
         </div>
     </#if>
 
-    <a href="/" class="home-link">Вернуться на главную</a>
+    <a href="/" class="home-link" id="backToMain">Вернуться на главную</a>
 </div>
 </body>
 </html>

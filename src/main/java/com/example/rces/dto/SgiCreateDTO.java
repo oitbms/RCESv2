@@ -1,9 +1,10 @@
 package com.example.rces.dto;
 
-import org.springframework.web.multipart.MultipartFile;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
+@Builder
 public class SgiCreateDTO {
 
     private String workcenter;
@@ -14,6 +15,21 @@ public class SgiCreateDTO {
     private LocalDate desiredDate;
     private String note;
     private String parentId;
+
+    public SgiCreateDTO() {
+    }
+
+    public SgiCreateDTO(String workcenter, String event, String actions, String department, EmployeeDTO employee,
+                        LocalDate desiredDate, String note, String parentId) {
+        this.workcenter = workcenter;
+        this.event = event;
+        this.actions = actions;
+        this.department = department;
+        this.employee = employee;
+        this.desiredDate = desiredDate;
+        this.note = note;
+        this.parentId = parentId;
+    }
 
     public String getWorkcenter() {
         return workcenter;

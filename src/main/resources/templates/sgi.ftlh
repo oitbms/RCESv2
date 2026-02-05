@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +16,6 @@
     <script src="/js/base/base.js"></script>
     <script src="/js/sgi.js" defer></script>
 </head>
-
 <body>
 <main>
     <div class="table-wrapper">
@@ -71,7 +69,7 @@
 <footer>
     <div class="footer-wrapper">
         <div class="footer-content">
-            <div class="pagination">
+            <div class="pagination" id="paginationContainer">
             </div>
             <div class="buttons">
                 <button class="btn btn-primary btn-action" id="create-button">
@@ -147,6 +145,7 @@
             <div class="form-group">
                 <label class="form-label">Ответственный</label>
                 <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть модальное окно" data-field="employee" name="employee" readonly  required></textarea>
+                <input type="hidden" name="hiddenEmployee">
             </div>
 
             <div class="form-group">

@@ -375,14 +375,13 @@ abstract class Base {
     });
 
     //Контекстное меню
-    public readonly createContextMenu = (items: { label: string, action: () => void }[],
+    public readonly createContextMenu = (items: { label: string, idAction: string, action: () => void }[],
                                          x: number,
                                          y: number): void => {
         $('#context-menu').remove();
-
         const menu = $('<div id="context-menu" popover="manual"></div>');
         items.forEach(item => {
-            const $item = $(`<div>${item.label}</div>`);
+            const $item = $(`<div id="${item.idAction}">${item.label}</div>`);
             $item.on('click', () => {
                 item.action();
                 menu[0].hidePopover();
@@ -393,6 +392,7 @@ abstract class Base {
             left: x + 'px',
             top: y + 'px',
         }));
+        menu[0].showPopover();
         $(document).one('click', (e) => {
             if (!$(e.target).closest('#context-menu').length) {
                 menu[0].hidePopover();

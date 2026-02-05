@@ -1,40 +1,87 @@
 package com.example.rces.web.pages;
 
-import com.example.rces.web.data.Sgi;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
+import com.example.rces.dto.SgiCreateDTO;
 import io.qameta.allure.Step;
 
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.exist;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Selectors.by;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
+import static com.example.rces.utils.DateUtil.formatedDate;
 
-public class SgiPage implements IMenuButton, IBase {
+public class SgiPage extends PageBase {
 
-    private final String createButton = "#create-button";
-    private final String filterButton = "#filter-button";
-//    private
+    private final String createDialogButton = "#create-button";
+    private final String filterDialogButton = "#filter-button";
+    private final String createNewSgiButton = "#createBtn";
+    private final String deleteSgiButton = "#deleteSgiButton";
+    private final String printSgiButton = "#printSgiButton";
+
+
+    public SgiPage() {
+        $("#paginationContainer").shouldBe(exist, Duration.ofSeconds(5));
+    }
 
     @Step("Открыть диалог создания мероприятия")
     public SgiPage openCreateSgiDialog() {
-        $(createButton).click();
+        $(createDialogButton).click();
         return this;
     }
 
     @Step("Заполнение данных создания мероприятия")
-    public SgiPage fillSgi(Sgi sgi) {
-        $("[name]='workcenter'").setValue(sgi.getSubDivision());
-        $("[name]='event'").setValue(sgi.getEvent());
-        $("[name]='actions'").setValue(sgi.getActions());
-        $("[name='department']").selectOption("builder");
+    public SgiPage fillCreateDialogSgi(SgiCreateDTO sgi) {
+        $("[name='workcenter']").setValue(sgi.getWorkcenter());
+        $("[name='event']").setValue(sgi.getEvent());
+        $("[name='actions']").setValue(sgi.getActions());
+        $("[name='department']").selectOptionByValue("builder");
 
-        addToSaveMassive("employee", sgi.getEmployee());
-        $("[name]='employee'").setValue(sgi.getEmployee().getName());
+        Selenide.executeJavaScript(
+                "arguments[0].value = arguments[1]",
+                $("[name='employee']"),
+                sgi.getEmployee().getName()
+        );
+        Selenide.executeJavaScript(
+                "arguments[0].value = arguments[1]",
+                $("[name='hiddenEmployee']"),
+                gson.toJson(sgi.getEmployee())
+        );
+        $("[name='desiredDate']").setValue(formatedDate(sgi.getDesiredDate()));
+        $("[name='note']").setValue(sgi.getNote());
+        return this;
+    }
 
-        $("[name='desiredDate']").setValue(sgi.getDesiredDate().toString());
-        $("[name]='note'").setValue(sgi.getNote());
+    @Step("Проверка обязательных полей и нажать на кнопку создания мероприятие")
+    public SgiPage clickOnCreateNewSgiButton() {
+        $(createNewSgiButton).click();
+        checkRequiredFields("#sgiForm");
         return this;
     }
 
     @Step("Открыть диалог фильтров")
     public SgiPage openFilterDialog() {
-        $(filterButton).click();
+        $(filterDialogButton).click();
+        return this;
+    }
+
+    @Step("Поиск индекса строки по названию мероприятия")
+    public String findIndexSgiByEventName(String event) {
+        SelenideElement row = $$(by("data-field", "event")).findBy(text(event));
+        return row.parent() // div.row-items-row
+                .parent() // div.row-items
+                .getAttribute("data-index");
+    }
+
+    @Step("Удаление мероприятия по индексу строки")
+    public SgiPage deleteSgiByIndex(String index) {
+        findRowByIndexAndDoubleClick(index)
+                .findRowByIndexAndRightClick(index)
+                .clickOn(deleteSgiButton)
+                    .confirmAction();
         return this;
     }
 

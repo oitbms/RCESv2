@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <script>
         const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
 

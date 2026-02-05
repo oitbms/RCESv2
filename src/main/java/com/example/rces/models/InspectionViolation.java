@@ -21,6 +21,7 @@ import java.util.UUID;
                         LEFT JOIN FETCH i.subDivision s
                         LEFT JOIN FETCH i.createdBy cb
                         LEFT JOIN FETCH cb.subDivision cbs
+                        LEFT JOIN FETCH i.inspection ins
                         WHERE s.code in ('PDO', 'OGM', 'OTTB', 'OGT') and i.status = 'status1'
                         """
         )

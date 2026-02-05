@@ -251,12 +251,16 @@ class Sgi extends Base {
         button.prop('disabled', true);
 
         const formData = new FormData();
+
+        const employeeInput = dialog.find('input[name="hiddenEmployee"]').val() as string;
+        const employee = JSON.parse(employeeInput);
+
         const jsonData = {
             workcenter: dialog.find('input[name="workcenter"]').val(),
             event: dialog.find('textarea[name="event"]').val(),
             actions: dialog.find('textarea[name="actions"]').val(),
             department: dialog.find('select[name="department"]').val(),
-            employee: this.saveMassive['employee'],
+            employee: employee,
             desiredDate: dialog.find('input[name="desiredDate"]').val(),
             note: dialog.find('textarea[name="note"]').val(),
             parentId: dialog.find('input[name="parentId"]').val()
@@ -264,6 +268,7 @@ class Sgi extends Base {
 
         const jsonBlob = new Blob([JSON.stringify(jsonData)], {type: 'application/json'});
         formData.append('data', jsonBlob, 'data.json');
+
         const fileInput = dialog.find('input[name="additionalFiles"]')[0] as HTMLInputElement;
         if (fileInput?.files) {
             for (let i = 0; i < fileInput.files.length; i++) {
@@ -273,10 +278,11 @@ class Sgi extends Base {
 
         try {
             const newSgi: SgiIn = await this.createEntity('/api/sgi/create-sgi', formData);
-            this.saveMassive = {};
             this.dialog.close("create-dialog");
+
             const newRow = this.createRow(newSgi);
-            if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage && !dialog.find('[name="parentId"]').val().length) {
+            if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage &&
+                !dialog.find('[name="parentId"]').val().length) {
                 await $('#last-page').click();
                 $(`.table-content-rows`).append(newRow);
                 this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
@@ -294,8 +300,6 @@ class Sgi extends Base {
             this.localCache.set(newSgi.id, newSgi);
             button.prop('disabled', false);
         } catch (error) {
-            this.saveMassive = {};
-            form.reset();
             this.createNotification('Ошибка при создании SGI', NotificationType.ERROR);
             button.prop('disabled', false);
         }
@@ -357,6 +361,11 @@ class Sgi extends Base {
                 modalDiv.text(selected.name);
                 modalDiv.val(selected.name);
 
+                if (isEmployee) {
+                    const employeeJson = JSON.stringify(selected);
+                    $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
+                }
+                
                 if (currentId) {
                     this.saveMassive[currentId] = {
                         ...this.saveMassive[currentId],
@@ -914,6 +923,7 @@ class Sgi extends Base {
         this.createContextMenu([
             {
                 label: 'Удалить',
+                idAction : "deleteSgiButton",
                 action: () => {
                     const sgi: any =  this.localCache.get(rowId);
                     if (sgi.agree) {
@@ -945,6 +955,7 @@ class Sgi extends Base {
             },
             {
                 label: 'Печать',
+                idAction: "printSgiButton",
                 action: () => {
                     window.open(`/api/report/print/sgi?ids=${[...this.selectedRows].join(',')}`);
                 }
@@ -1118,6 +1129,7 @@ class Sgi extends Base {
             this.createContextMenu([
                 {
                     label: 'Удалить файл',
+                    idAction: "deleteFileDocumentButton",
                     action: () => {
                         this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
                             () => {

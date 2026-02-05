@@ -1,4 +1,4 @@
 package com.example.rces.web.pages;
 
-public class InspectionPage {
+public class InspectionPage extends PageBase {
 }
