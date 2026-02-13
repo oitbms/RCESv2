@@ -6,6 +6,7 @@ import com.example.rces.dto.SgiCreateDTO;
 import io.qameta.allure.Step;
 
 import java.time.Duration;
+import java.time.LocalDate;
 
 import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Condition.text;
@@ -18,7 +19,9 @@ public class SgiPage extends PageBase {
 
     private final String createDialogButton = "#create-button";
     private final String filterDialogButton = "#filter-button";
+    private final String executionNameDialogButton = "executionButton";
     private final String createNewSgiButton = "#createBtn";
+    private final String saveFactExecutionButton = "#saveBtn";
     private final String deleteSgiButton = "#deleteSgiButton";
     private final String printSgiButton = "#printSgiButton";
 
@@ -30,6 +33,13 @@ public class SgiPage extends PageBase {
     @Step("Открыть диалог создания мероприятия")
     public SgiPage openCreateSgiDialog() {
         $(createDialogButton).click();
+        return this;
+    }
+
+    @Step("Открыть диалог факта выполнения строки с индексом {index}")
+    public SgiPage openExecutionDialog(String index) {
+        SelenideElement row = $(by("data-index", index));
+        row.find(String.format("[name='%s']", executionNameDialogButton)).click();
         return this;
     }
 
@@ -55,6 +65,13 @@ public class SgiPage extends PageBase {
         return this;
     }
 
+    @Step("Заполнение данных факта выполнения")
+    public SgiPage fillExecutionDialog(LocalDate executionDate, String report) {
+        $(by("data-field", "executionDate")).setValue(formatedDate(executionDate));
+        $(by("data-field", "report")).setValue(report);
+        return this;
+    }
+
     @Step("Проверка обязательных полей и нажать на кнопку создания мероприятие")
     public SgiPage clickOnCreateNewSgiButton() {
         $(createNewSgiButton).click();
@@ -62,9 +79,9 @@ public class SgiPage extends PageBase {
         return this;
     }
 
-    @Step("Открыть диалог фильтров")
-    public SgiPage openFilterDialog() {
-        $(filterDialogButton).click();
+    @Step("Нажать на кнопку сохранить факт выполнения мероприятия")
+    public SgiPage clickOnCreateNewExecutionButton() {
+        $(saveFactExecutionButton).click();
         return this;
     }
 
@@ -81,7 +98,7 @@ public class SgiPage extends PageBase {
         findRowByIndexAndDoubleClick(index)
                 .findRowByIndexAndRightClick(index)
                 .clickOn(deleteSgiButton)
-                    .confirmAction();
+                .confirmAction();
         return this;
     }
 

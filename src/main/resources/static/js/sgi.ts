@@ -66,7 +66,7 @@ class Sgi extends Base {
                     </button>
                 </div>
                 <div class="row-item" style="width: var(--executions);">
-                    <button type="button" class="btn btn-info btn-sm execution-btn tooltip-trigger" data-description="Открыть окно факта выполнения">
+                    <button type="button" name="executionButton" class="btn btn-info btn-sm execution-btn tooltip-trigger" data-description="Открыть окно факта выполнения">
                         ✔
                     </button>
                 </div>

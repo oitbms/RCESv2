@@ -20,7 +20,6 @@ public abstract class PageBase {
     private final String confirmDialogOkId = "#confirmOk";
     private final String confirmDialogCancelId = "#confirmCancel";
 
-
     protected final Gson gson = new Gson();
 
     @Step("Выйти из учётной записи")

@@ -28,7 +28,7 @@ public class LoginTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Неуспешный логин и Logout")
+    @DisplayName("Неуспешный логин")
     @Owner("ByteCodeAPAA")
     @Severity(BLOCKER)
     public void test02() {

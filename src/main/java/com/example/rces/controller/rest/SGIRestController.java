@@ -20,7 +20,7 @@ import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
 @RestController
 @RequestMapping("/api/sgi")
-public class SGIRestController {
+public class    SGIRestController {
 
     private final SgiService sgiService;
     private final ImageService imageService;

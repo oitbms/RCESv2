@@ -141,7 +141,9 @@
             успешно обновлена.
         </#if>
         <div class="links-container">
-            <a href="/view/${requestNumber}">Редактировать</a>
+            <#if requestNumber??>
+                <a href="/view/${requestNumber?c}">Редактировать</a>
+            </#if>
             <a href="/">Меню</a>
         </div>
     </div>

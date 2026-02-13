@@ -142,7 +142,8 @@
                         <p class="card-text">
                             Количество заявок:${qtuRequestTechnologist}<br>
                         </p>
-                        <a href="requestslist/technologist" id="requestListOtk" class="btn btn-primary">Просмотр заявок</a>
+                        <a href="requestslist/technologist" id="requestListOtk" class="btn btn-primary">Просмотр
+                            заявок</a>
                     </div>
                 </div>
             </div>
@@ -188,7 +189,11 @@
                             <td>${request.requestNumber}</td>
                             <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
-                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                            <td>
+                                <#if request.getRequestNumber()??>
+                                    <a href="view/${request.getRequestNumber()?c}">Просмотр</a>
+                                </#if>
+                            </td>
                         </tr>
                     </#list>
                     </tbody>
@@ -221,7 +226,11 @@
                             <td>${request.requestNumber}</td>
                             <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
-                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                            <td>
+                                <#if request.getRequestNumber()??>
+                                    <a href="view/${request.getRequestNumber()?c}">Просмотр</a>
+                                </#if>
+                            </td>
                         </tr>
                     </#list>
                     </tbody>
@@ -254,7 +263,11 @@
                             <td>${request.requestNumber}</td>
                             <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
-                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                            <td>
+                                <#if request.getRequestNumber()??>
+                                    <a href="view/${request.getRequestNumber()?c}">Просмотр</a>
+                                </#if>
+                            </td>
                         </tr>
                     </#list>
                     </tbody>
@@ -287,7 +300,10 @@
                             <td>${request.requestNumber}</td>
                             <td>${(request.customerOrder.getName())!"Не указано"}</td>
                             <td>${request.status.getName()}</td>
-                            <td><a href="view/${request.requestNumber}">Просмотр</a></td>
+                            <td>  <#if request.getRequestNumber()??>
+                                    <a href="view/${request.getRequestNumber()?c}">Просмотр</a>
+                                </#if>
+                            </td>
                         </tr>
                     </#list>
                     </tbody>
@@ -370,7 +386,9 @@
                         <td class="text-center">${(reject.getTitle()!"")}</td>
                         <td class="text-center">${(reject.getCustomerOrder().getName())!"Не указано"}</td>
                         <td class="text-center">${(rejectedDate[rejIn])!""}</td>
-                        <td class="text-center"><a href="view/${reject.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a>
+                        <td class="text-center">  <#if reject.getRequestNumber()??>
+                                <a href="view/${reject.getRequestNumber()?c}" class="btn btn-info btn-sm">Перейти</a>
+                            </#if>
                         </td>
                     </tr>
                 </#list>
@@ -399,8 +417,11 @@
                             </div>
                             <div class="row mt-2">
                                 <div class="col-12">
-                                    <a href="view/${reject.getRequestNumber()}" class="btn btn-info btn-sm w-100">Перейти</a>
+
                                 </div>
+                                <#if reject.getRequestNumber()??>
+                                    <a href="view/${reject.getRequestNumber()?c}" class="btn btn-info btn-sm w-100">Перейти</a>
+                                </#if>
                             </div>
                         </div>
                     </div>
@@ -438,8 +459,11 @@
                         <#else >
                             <td class="text-center">${(bid.getReason().getName())!"Не указана"}</td>
                         </#if>
-                        <td class="text-center"><a href="view/${bid.getRequestNumber()}" class="btn btn-info btn-sm">Перейти</a>
-                        </td>
+                        <#if bid.getRequestNumber()??>
+                            <td class="text-center"><a href="view/${bid.getRequestNumber()?c}"
+                                                       class="btn btn-info btn-sm">Перейти</a></td>
+                        </#if>
+
                     </tr>
                 </#list>
                 </tbody>
@@ -471,8 +495,9 @@
                             </div>
                             <div class="row mt-2">
                                 <div class="col-12">
-                                    <a href="view/${bid.getRequestNumber()}"
-                                       class="btn btn-info btn-sm w-100">Перейти</a>
+                                    <#if bid.getRequestNumber()??>
+                                        <a class="btn btn-info ml-3" href="/view/${bid.getRequestNumber()?c}">Редактировать</a>
+                                    </#if>
                                 </div>
                             </div>
                         </div>
@@ -487,5 +512,6 @@
     <canvas id="myChart" width="400" height="200" style="display: none;"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/bootstrap.bundle.js"></script>
 </body>
 </html>

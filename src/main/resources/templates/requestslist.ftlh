@@ -100,13 +100,14 @@
         </#if>
         <td>
             <i class="history-icon bi bi-clock-history text-primary fs-4" data-id="${req.id}"></i>
-            <a class="btn btn-info ml-3" href="/view/${req.getRequestNumber()}">Редактировать</a>
+            <#if req.getRequestNumber()??>
+                <a class="btn btn-info ml-3" href="/view/${req.getRequestNumber()?c}">Редактировать</a>
+            </#if>
         </td>
         </tr>
     </#list>
     </tbody>
 </table>
-
 <div class="modal fade" id="viewRequestLogs" tabindex="-1" aria-labelledby="viewRequestLogsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-xl h-auto" style="max-height: 95vh;">
         <div class="modal-content rounded-4 h-100">
@@ -131,8 +132,6 @@
         </div>
     </div>
 </div>
-
-
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Popper.js -->

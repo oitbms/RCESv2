@@ -50,10 +50,26 @@ public class SgiTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Удаление мероприятия по индексу строки")
+    @DisplayName("Создания факта выполнения у мероприятия")
     @Owner("ByteCodeAPAA")
     @Severity(BLOCKER)
     public void test03() {
+        new MainPage()
+                .openSgiPage()
+                .ifPresent((sgi) -> sgi.openExecutionDialog(
+                        sgi.findIndexSgiByEventName("Тестовое мероприятие" + LocalDate.now()))
+                        .fillExecutionDialog(LocalDate.now(), "Тестовый отчет")
+                        .clickOnCreateNewExecutionButton()
+                        .haveNotification("Факт выполнения успешно сохранен")
+                        .logout()
+                );
+    }
+
+    @Test
+    @DisplayName("Удаление мероприятия по индексу строки")
+    @Owner("ByteCodeAPAA")
+    @Severity(BLOCKER)
+    public void test04() {
         new MainPage()
                 .openSgiPage()
                 .ifPresent((sgi) -> sgi.deleteSgiByIndex(

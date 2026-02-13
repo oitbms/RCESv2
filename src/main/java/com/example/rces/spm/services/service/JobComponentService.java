@@ -82,7 +82,6 @@ public class JobComponentService {
                 .setParameter("ids", jobOrderIds)
                 .getResultStream().collect(Collectors.toMap(JobOrder::getId, Function.identity()));
 
-
         Map<JobComponent, Boolean> map = results.stream()
                 .collect(Collectors.toMap(
                         result -> {
