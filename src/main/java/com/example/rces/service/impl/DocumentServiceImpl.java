@@ -39,7 +39,9 @@ public class DocumentServiceImpl implements DocumentService {
     private final FileMapper fileMapper;
 
     @Autowired
-    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository, DocumentMapper mapper, DocumentFileMapper documentFileMapper, FileMapper fileMapper) {
+    public DocumentServiceImpl(DocumentRepository repository, DocumentFilesRepository filesRepository,
+                               DocumentMapper mapper, DocumentFileMapper documentFileMapper,
+                               FileMapper fileMapper) {
         this.repository = repository;
         this.filesRepository = filesRepository;
         this.mapper = mapper;
@@ -155,6 +157,11 @@ public class DocumentServiceImpl implements DocumentService {
         Document document = repository.findById(documentId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Документ с id=%s не найден", documentId)));
         return document.getFiles().stream().map(fileMapper::toDTO).toList();
+    }
+
+    @Override
+    public DocumentFile getDocumentFileById(UUID id) {
+        return filesRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Document not found"));
     }
 
     private void setFileToDocument(Document document, Object data) {
