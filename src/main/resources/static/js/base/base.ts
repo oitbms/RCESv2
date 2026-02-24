@@ -121,7 +121,7 @@ abstract class Base {
         $(`[data-index="${rowIndex}"]`)[hide ? 'fadeOut' : 'fadeIn'](300);
     };
 
-    public readonly deleteRow = (rowIndex: string | number): void => {
+    public deleteRow (rowIndex: string | number): void {
         const $row = $(`#${rowIndex}`);
         $row.fadeOut(300, () => {
             $row.remove();
@@ -129,7 +129,7 @@ abstract class Base {
         });
     }
 
-    public readonly displayPage = this.lock(async (url: string, param?: object, ...callbacks: Function[]): Promise<void> => {
+    public async displayPage  (url: string, param?: object, ...callbacks: Function[]): Promise<void> {
         if (this.currentPage > 1) {
             param = {...param, page: this.currentPage};
         }
@@ -151,7 +151,7 @@ abstract class Base {
         });
 
         callbacks.forEach(callback => callback?.(request.data, request.count));
-    });
+    };
 
     public readonly save = async (url: string, ...items: any[]): Promise<any> => {
         const results = await Promise.all(items.map(item => {

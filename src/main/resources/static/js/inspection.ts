@@ -91,7 +91,7 @@ class Inspection extends Base {
             this.localCache.set(newInspection.id, newInspection);
             this.dialog.close("create-dialog");
             const newRow = this.createRow(newInspection);
-            $(`.inspection-list`).append(newRow);
+            this.addInspectionToGroup(newInspection); // вместо прямого добавления
             button.prop('disabled', false);
             this.createNotification('Инспекция успешно создана', NotificationType.SUCCESS);
         } catch (error) {
@@ -107,7 +107,7 @@ class Inspection extends Base {
         const newInspection: any = await this.createEntity(`/api/inspection/create-secondary-inspection/${inspectionId}`);
         this.localCache.set(newInspection.id, newInspection);
         const newRow = this.createRow(newInspection);
-        $(`.inspection-list`).append(newRow);
+        this.addInspectionToGroup(newInspection); // вместо прямого добавле
         primaryInspection.haveSecondInspection = true;
         this.localCache.set(primaryInspection.id, primaryInspection);
         this.createNotification('Вторичная инспекция успешно создана', NotificationType.SUCCESS);
@@ -1041,6 +1041,147 @@ class Inspection extends Base {
         ];
         await super.print(event);
     }
+
+
+    public override async displayPage(url: string, param?: object, ...callbacks: Function[]): Promise<void> {
+        const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
+        this.renderInspections(request.data);
+        callbacks.forEach(callback => callback?.(request.data, request.count));
+    }
+
+    // Группировка инспекций по месяцам
+    private groupByMonth(inspections: InspectionIn[]): Record<string, InspectionIn[]> {
+        const groups: Record<string, InspectionIn[]> = {};
+        inspections.forEach(insp => {
+            const date = new Date(insp.dateInspection);
+            const monthKey = date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+            const formattedKey = monthKey.charAt(0).toUpperCase() + monthKey.slice(1);
+            if (!groups[formattedKey]) groups[formattedKey] = [];
+            groups[formattedKey].push(insp);
+        });
+        return groups;
+    }
+
+    private parseMonthString(monthKey: string): Date {
+        const [monthName, year] = monthKey.split(' ');
+        const monthIndex = this.getMonthIndex(monthName);
+        return new Date(parseInt(year), monthIndex, 1);
+    }
+
+    private getMonthIndex(monthName: string): number {
+        const months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+            'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+        return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
+    }
+
+    // Основной метод отрисовки
+    private renderInspections(inspections: InspectionIn[]) {
+        const grouped = this.groupByMonth(inspections);
+        const container = this.rowContainer;
+        container.empty();
+
+        const sortedMonths = Object.keys(grouped).sort((a, b) => {
+            return this.parseMonthString(a).getTime() - this.parseMonthString(b).getTime();
+        });
+
+        for (const monthKey of sortedMonths) {
+            const monthInspections = grouped[monthKey];
+            const monthSection = $(`
+                <div class="month-section" data-month="${monthKey}">
+                    <div class="month-header">
+                        <span class="month-name">${monthKey}</span>
+                        <span class="month-toggle">▼</span>
+                    </div>
+                    <div class="month-cards"></div>
+                </div>
+            `);
+            const cardsContainer = monthSection.find('.month-cards');
+            monthInspections.forEach(inspection => {
+                const card = this.createRow(inspection);
+                cardsContainer.append(card);
+                this.localCache.set(inspection.id, inspection);
+            });
+            // По умолчанию скрываем карточки
+            cardsContainer.hide();
+            // Обработчик клика на заголовок
+            monthSection.find('.month-header').on('click', () => {
+                cardsContainer.slideToggle(200);
+                monthSection.find('.month-toggle').text(cardsContainer.is(':visible') ? '▼' : '▶');
+            });
+            container.append(monthSection);
+        }
+    }
+
+    // Вставка новой секции месяца в правильном порядке
+    private insertMonthSection($newSection: any) {
+        const container = this.rowContainer;
+        const newMonthKey = $newSection.data('month');
+        const newDate = this.parseMonthString(newMonthKey);
+        let inserted = false;
+
+        container.children('.month-section').each((_, el) => {
+            const $el = $(el);
+            const existingDate = this.parseMonthString($el.data('month'));
+            if (newDate < existingDate) {
+                $newSection.insertBefore($el);
+                inserted = true;
+                return false;
+            }
+        });
+
+        if (!inserted) {
+            container.append($newSection);
+        }
+
+        // Добавляем обработчик клика
+        $newSection.find('.month-header').on('click', () => {
+            const $cards = $newSection.find('.month-cards');
+            $cards.slideToggle(200);
+            $newSection.find('.month-toggle').text($cards.is(':visible') ? '▼' : '▶');
+        });
+    }
+
+    // Добавление одной инспекции в соответствующую группу
+    private addInspectionToGroup(inspection: InspectionIn) {
+        const date = new Date(inspection.dateInspection);
+        const monthKey = date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+        const formattedKey = monthKey.charAt(0).toUpperCase() + monthKey.slice(1);
+
+        let monthSection = $(`.month-section[data-month="${formattedKey}"]`);
+        if (monthSection.length === 0) {
+            monthSection = $(`
+                <div class="month-section" data-month="${formattedKey}">
+                    <div class="month-header">
+                        <span class="month-name">${formattedKey}</span>
+                        <span class="month-toggle">▼</span>
+                    </div>
+                    <div class="month-cards"></div>
+                </div>
+            `);
+            this.insertMonthSection(monthSection);
+        }
+
+        const cardsContainer = monthSection.find('.month-cards');
+        const card = this.createRow(inspection);
+        cardsContainer.append(card);
+        this.localCache.set(inspection.id, inspection);
+    }
+
+    public override deleteRow(rowIndex: string | number): Promise<void> {
+        return new Promise((resolve) => {
+            const $row = $(`#${rowIndex}`);
+            const $monthSection = $row.closest('.month-section');
+            $row.fadeOut(300, () => {
+                $row.remove();
+                this.localCache.delete(rowIndex);
+                if ($monthSection.find('.table-card').length === 0) {
+                    $monthSection.remove();
+                }
+                resolve();
+            });
+        });
+    }
+
 }
 
 $(document).ready(() => {

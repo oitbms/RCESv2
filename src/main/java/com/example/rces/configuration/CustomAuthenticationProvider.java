@@ -5,7 +5,6 @@ import com.example.rces.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -21,9 +20,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
         Employee userDetails = userDetailsService.loadUserByUsername(username);
-        if (!userDetails.isActive()) {
-            throw new DisabledException("Учетная запись отключена");
-        }
         try {
             return new UsernamePasswordAuthenticationToken(userDetails, userDetails, userDetails.getAuthorities());
         } catch (NullPointerException e) {

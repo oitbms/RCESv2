@@ -1317,3 +1317,49 @@ dialog {
     }
 }
 
+/* Секции месяцев */
+.month-section {
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.month-header {
+    padding: 12px 16px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 500;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.month-header:hover {
+    background-color: #e8e8e8;
+}
+
+.month-toggle {
+    font-size: 14px;
+    color: #666;
+    transition: transform 0.2s;
+}
+
+.month-cards {
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* Адаптация для мобильных (дополнение к существующему) */
+@media (max-width: 768px) {
+    .month-cards {
+        padding: 12px;
+        gap: 12px;
+    }
+}
