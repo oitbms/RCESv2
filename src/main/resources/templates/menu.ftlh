@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
-<#--    <link rel="stylesheet" href="css/notification.css">-->
+    <link rel="stylesheet" href="css/notification.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script>
         const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
@@ -67,9 +67,9 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/menu.js"></script>
-<#--    <script src="/js/sockjs-client-main/dist/sockjs.min.js"></script>-->
-<#--    <script src="/js/stomp-websocket-master/lib/stomp.min.js"></script>-->
-<#--    <script src="/js/notifications.js"></script>-->
+    <script src="/js/sockjs.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+    <script src="/js/notifications.js"></script>
 </head>
 <body>
 <div class="container mb-1" id="menuContainer">
@@ -116,18 +116,18 @@
                     </ul>
                 </nav>
                 <#if user.getRole() == 'MASTER'>
-<#--                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"-->
-<#--                            data-bs-target="#exampleModal1">-->
-<#--                        Созданные заявки для ОГТ-->
-<#--                    </button>-->
-<#--                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"-->
-<#--                            data-bs-target="#exampleModal2">-->
-<#--                        Созданные заявки для ОГК-->
-<#--                    </button>-->
-                        <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal3">
-                            Созданные заявки для ОТК
-                        </button>
+                <#--                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"-->
+                <#--                            data-bs-target="#exampleModal1">-->
+                <#--                        Созданные заявки для ОГТ-->
+                <#--                    </button>-->
+                <#--                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"-->
+                <#--                            data-bs-target="#exampleModal2">-->
+                <#--                        Созданные заявки для ОГК-->
+                <#--                    </button>-->
+                    <button type="button" class="btn btn-primary bottom-margin" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal3">
+                        Созданные заявки для ОТК
+                    </button>
                 </#if>
                 <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL'>
                     <button id="graphButton" class="btn btn-primary mb-4">Показать график</button>
@@ -138,22 +138,22 @@
     </div>
 </div>
 <div class="container mb-4 d-flex justify-content-center">
-<#--    <div>-->
-<#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>-->
-<#--            <div class="md-4">-->
-<#--                <div class="card text-center">-->
-<#--                    <div class="card-body">-->
-<#--                        <h5 class="card-title">Список заявок для ОГТ</h5>-->
-<#--                        <p class="card-text">-->
-<#--                            Количество заявок:${qtuRequestTechnologist}<br>-->
-<#--                        </p>-->
-<#--                        <a href="requestslist/technologist" id="requestListOtk" class="btn btn-primary">Просмотр-->
-<#--                            заявок</a>-->
-<#--                    </div>-->
-<#--                </div>-->
-<#--            </div>-->
-<#--        </#if>-->
-<#--    </div>-->
+    <#--    <div>-->
+    <#--        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'TECHNOLOGIST' || user.getRole() == 'CONTROL'>-->
+    <#--            <div class="md-4">-->
+    <#--                <div class="card text-center">-->
+    <#--                    <div class="card-body">-->
+    <#--                        <h5 class="card-title">Список заявок для ОГТ</h5>-->
+    <#--                        <p class="card-text">-->
+    <#--                            Количество заявок:${qtuRequestTechnologist}<br>-->
+    <#--                        </p>-->
+    <#--                        <a href="requestslist/technologist" id="requestListOtk" class="btn btn-primary">Просмотр-->
+    <#--                            заявок</a>-->
+    <#--                    </div>-->
+    <#--                </div>-->
+    <#--            </div>-->
+    <#--        </#if>-->
+    <#--    </div>-->
     <div>
         <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER' || user.getRole() == 'OTK' || user.getRole() == 'CONTROL'>
             <div class="md-4">
@@ -516,6 +516,7 @@
     <h1 class="text-center" id="chartTitle" style="display: none">График заявок</h1>
     <canvas id="myChart" width="400" height="200" style="display: none;"></canvas>
 </div>
+<div id="notification-toast-container"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/js/bootstrap.bundle.js"></script>
 </body>

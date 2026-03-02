@@ -86,6 +86,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:1.9.22")
 
     implementation("org.webjars.npm:bootstrap-table:1.24.1")
+
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 tasks.withType<JavaCompile> {

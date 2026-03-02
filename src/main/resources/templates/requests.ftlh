@@ -5,21 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
+    <link rel="stylesheet" href="/css/notification.css">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/js/bootstrap.bundle.js"></script>
-    <script>const bidType = "${type}";
-        const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;
-        <#if viewForm?? && viewForm && bid.typeRequest == "otk" && bid.getSubDivision().getName() != 'workShop1'>
-        <#if bid.getQty()??>
-        const bidQty = ${bid.getQty()?c};
-        </#if>
-        </#if>
-    </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/js/script.js" defer></script>
-    <script src="/js/list.js" defer></script>
+    <link rel="stylesheet" href="/css/sweetalert2.min.css">
 </head>
 <body>
 <#if createForm!false>
@@ -92,7 +81,8 @@
                     <#if mlmNodeEmployee.getName() == 'Цех №1'>
                         <input type="text" id="qty" name="qty" class="form-control">
                     <#else >
-                        <input type="number" id="qty" name="qty" class="form-control" required>
+                        <input type="number" id="qty" name="qty" class="form-control" required
+                               min="0" oninput="this.value = Math.abs(this.value)">
                     </#if>
                 </div>
             </#if>
@@ -109,7 +99,6 @@
                         </select>
                     <#else >
                         <select id="control" name="control" class="form-select" required>
-                            <option value="">Выберите тип контроля</option>
                             <option value="ВИК">ВИК</option>
                             <option value="ЛНК">ЛНК</option>
                         </select>
@@ -251,8 +240,8 @@
                         <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка
                             №${bid.requestNumber}</p>
                         <#break>
-                    <#case "Закрыта">
-                        <p class="card-header fs-5 fw-bold bg-danger text-center text-white">Заявка
+                    <#case "Закрыт">
+                        <p class="card-header fs-5 fw-bold btn-success text-center text-white">Заявка
                             №${bid.requestNumber}</p>
                         <#break>
                     <#case "На доработке">
@@ -268,7 +257,8 @@
                 <#if bid.typeRequest.name() != 'technologist'>
                     <p class="mb-2 m-lg-2"><strong>Тип ТМЦ:</strong> ${(bid.item.getName())!"Не указан"}</p>
                 </#if>
-                <p class="mb-2 m-lg-2"><strong>Заказ клиента:</strong> ${(bid.customerOrder.getName())!"Не указан"}</p>
+                <p class="mb-2 m-lg-2"><strong>Заказ клиента:</strong> ${(bid.getCustomerOrder().getName())!"Не указан"}
+                </p>
                 <p class="mb-2 m-lg-2"><strong>Обозначение/Наименование:</strong> ${(bid.getTitle())!"Не указан"}</p>
                 <#if bid.typeRequest == 'otk'>
                     <p class="mb-2 m-lg-2"><strong>Тип контроля:</strong> ${(bid.getControl())!"ВИК"}</p>
@@ -281,7 +271,6 @@
                         <p class="mb-2 m-lg-2"><strong>Количество деталей отклонено:</strong> ${(bid.qty)!0}</p>
                     </#if>
                     <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
-                    <p class="mb-2 m-lg-2"><strong>Дефект:</strong> ${(bid.getCommentAgreed())!"Не указан"}</p>
                 <#else >
                     <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
                 </#if>
@@ -376,18 +365,19 @@
                         <label for="employeeName" class="form-label">Ответственный:</label>
                         <div class="input-group">
                             <input type="text" id="employeeName"
-                                   value="<#if bid.employee??>${bid.employee.name?trim}<#else>Не назначен</#if>"
+                                   value="<#if bid.employee??>${bid.getEmployee().getName()?trim}<#else>Не назначен</#if>"
                                    readonly
                                    class="form-control">
                             <#if bid.employee??>
-                                <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                                <#assign employeeJson = '{"id":"${bid.getEmployee().getId()?c}", "name":"${bid.getEmployee().getName()?js_string}"}'>
                             <#else>
                                 <#assign employeeJson = '{"id":"", "name":""}'>
                             </#if>
                             <input type="hidden" id="employeeJson"
                                    value='${employeeJson}'
                                    name="employee">
-                            <#if canChangeEmployee || bid.typeRequest.name() == 'otk'>
+                            <#--                            canChangeEmployee ||-->
+                            <#if bid.typeRequest.name() == 'otk'>
                                 <button type="button"
                                         class="btn btn-outline-secondary openModal"
                                         data-endpoint="employees"
@@ -523,10 +513,10 @@
                     <label for="employeeName" class="form-label">Ответственный:</label>
                     <div class="input-group">
                         <input type="text" id="employeeName"
-                               value="${bid.employee.name?trim}"
+                               value="${bid.getEmployee().getName()?trim}"
                                readonly
                                class="form-control">
-                        <#assign employeeJson = '{"id":"${bid.employee.id?c}", "name":"${bid.employee.name?js_string}"}'>
+                        <#assign employeeJson = '{"id":"${bid.getEmployee().getId()?c}", "name":"${bid.getEmployee().getName()?js_string}"}'>
                         <input type="hidden" id="employeeJson"
                                value='${employeeJson}'
                                name="employee">
@@ -553,20 +543,19 @@
                     </textarea>
 
                     <#if role == 'MASTER'>
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between gap-3 mt-3">
                             <button type="button"
-                                    class="btn btn-success mt-3 work"
+                                    class="btn btn-success work"
                                     id="canceledBtn"
                                     data-param="${bid.getId()}"
-                                    data-status="update"
-                            >Отправить повторно
+                                    data-status="update">
+                                Отправить повторно
                             </button>
-                            <button type="button"
-                                    class="btn btn-danger mt-3 d-none"
-                                    id="invokeServiceButtonId"
+                            <button type="button" class="btn btn-secondary"
+                                    id="updateUserBtn"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#invokeServiceModalId"
-                            >Отправить на исправление
+                                    data-bs-target="#updateEmployeeModalId">
+                                Перенаправить на исправление
                             </button>
                         </div>
                     </#if>
@@ -1041,6 +1030,7 @@
                     </div>
                 </div>
             </div>
+        </div>
     </form>
     <div class="modal fade" id="invokeServiceModalId" tabindex="-1"
          aria-labelledby="invokeServiceModalLabel"
@@ -1087,6 +1077,32 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade " id="updateEmployeeModalId" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Список мастеров</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <select id="masterSelect" class="form-select">
+                        <option value="">-- Выберите --</option>
+                        <#list employeeMaster as emp>
+                            <option value="${emp.getName()}">${emp.getName()}</option>
+                        </#list>
+                    </select>
+                    <div class="mt-3 text-end">
+                        <button class="btn btn-success" id="updateUserModalSaveBtn"
+                                data-req="${bid.getId()}"
+                        >Сохранить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </#if>
 
 <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
@@ -1201,7 +1217,8 @@
 </div>
 
 <!-- Уведомления -->
-<div id="notification-container"></div>
+<div id="notification-toast-container"></div>
+
 <script>
     function validateOrderNumber(input) {
         const value = input.value;
@@ -1222,25 +1239,28 @@
 <script>
     let isSubmitting = false;
 
-    document.getElementById('createRequestForm').addEventListener('submit', function (e) {
+    const createRequestForm = document.getElementById('createRequestForm');
+    if (createRequestForm) {
+        createRequestForm.addEventListener('submit', function (e) {
 
-        if (isSubmitting) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
+            if (isSubmitting) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
 
-        if (!this.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.classList.add('was-validated');
-            return;
-        }
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
 
-        isSubmitting = true;
-        setButtonState(true);
+            isSubmitting = true;
+            setButtonState(true);
 
-    });
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         resetSubmitButton();
@@ -1254,6 +1274,9 @@
 
     function setButtonState(submitting) {
         const submitBtn = document.getElementById('submitBtn');
+        if (!submitBtn) {
+            return;
+        }
         const btnText = document.getElementById('btnText');
         const btnSpinner = document.getElementById('btnSpinner');
 
@@ -1275,12 +1298,15 @@
         setButtonState(false);
     }
 
-    document.getElementById('submitBtn').addEventListener('click', function (e) {
-        if (isSubmitting) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function (e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
 
     window.addEventListener('load', function () {
         const errorMessages = document.querySelector('.alert-danger, .error-message');
@@ -1289,6 +1315,43 @@
         }
     });
 </script>
+
+
+<script>
+    function toggleValue(button) {
+        button.value = button.value === 'true' ? 'false' : 'true';
+
+        if (button.value === 'true') {
+            button.classList.replace('btn-primary', 'btn-success');
+            button.textContent = '✅ Уведомлено';
+        } else {
+            button.classList.replace('btn-success', 'btn-primary');
+            button.textContent = 'Уведомить';
+        }
+        return false;
+    }
+</script>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.bundle.js"></script>
+<script src="/js/bootstrap-table.min.js"></script>
+<script src="/js/sweetalert2.min.js"></script>
+<script src="/js/sockjs.min.js"></script>
+<script src="/js/stomp.min.js"></script>
+
+<script>
+    const bidType = "${type}";
+    const viewForm = <#if viewForm??>${viewForm?c}<#else>false</#if>;
+    <#if viewForm?? && viewForm && bid.typeRequest == "otk" && bid.getSubDivision().getName() != 'workShop1'>
+    <#if bid.getQty()??>
+    const bidQty = ${bid.getQty()?c};
+    </#if>
+    </#if>
+</script>
+
+<script src="/js/notifications.js"></script>
+<script src="/js/script.js"></script>
+<script src="/js/list.js"></script>
 
 <script>
     $(document).ready(function () {
@@ -1328,19 +1391,6 @@
         });
     });
 </script>
-<script>
-    function toggleValue(button) {
-        button.value = button.value === 'true' ? 'false' : 'true';
 
-        if (button.value === 'true') {
-            button.classList.replace('btn-primary', 'btn-success');
-            button.textContent = '✅ Уведомлено';
-        } else {
-            button.classList.replace('btn-success', 'btn-primary');
-            button.textContent = 'Уведомить';
-        }
-        return false;
-    }
-</script>
 </body>
 </html>

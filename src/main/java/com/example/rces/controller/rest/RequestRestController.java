@@ -1,7 +1,7 @@
 package com.example.rces.controller.rest;
 
+import com.example.rces.dto.CreateByRequest;
 import com.example.rces.dto.ImagesDTO;
-import com.example.rces.dto.RequestDto;
 import com.example.rces.dto.RequestHistoryDTO;
 import com.example.rces.dto.RequestParamsDto;
 import com.example.rces.models.Employee;
@@ -119,6 +119,16 @@ public class RequestRestController {
             return ResponseEntity.ok(history);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/create-by")
+    public ResponseEntity<?> updateCreateBy(@RequestBody CreateByRequest request) {
+        try {
+            requestsService.updateCreateBy(request.getRequestId(), request.getUser());
+            return ResponseEntity.ok("Заявка успешно переадресована!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

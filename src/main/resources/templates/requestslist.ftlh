@@ -10,13 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet"
-          href="${springMacroRequestContext.contextPath}/webjars/bootstrap-table/1.24.1/src/bootstrap-table.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/webjars/bootstrap-table/1.24.1/src/bootstrap-table.css">
     <link rel="stylesheet" href="/css/stylesMain.css">
     <link rel="stylesheet" href="/css/requestlistmobile.css">
-<#--    <script src="/js/sockjs-client-main/dist/sockjs.min.js"></script>-->
-<#--    <script src="/js/stomp-websocket-master/lib/stomp.min.js"></script>-->
-<#--    <script src="/js/notifications.js"></script>-->
+    <script src="/js/sockjs.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+    <script src="/js/notifications.js"></script>
 </head>
 <body>
 <div id="toolbar" class="mb-2">
@@ -268,7 +267,7 @@
     </div>
 </div>
 
-<#--<div id="notification-toast-container"></div>-->
+<div id="notification-toast-container"></div>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Popper.js -->
