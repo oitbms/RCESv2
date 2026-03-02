@@ -680,6 +680,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const itemsPerPage = 10;
     let currentPage = 1;
     let filteredCards = [...cards];
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
 
     function updatePagination() {
         const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
@@ -697,15 +699,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const pageInfo = document.getElementById('pageInfo');
-        const prevBtn = document.getElementById('prevPage');
-        const nextBtn = document.getElementById('nextPage');
 
-        pageInfo.textContent = filteredCards.length > 0
-            ? `Страница ` + currentPage + ` из ` + totalPages
-            : 'Нет результатов';
+        if (pageInfo != null) {
+            pageInfo.textContent = filteredCards.length > 0
+                ? `Страница ` + currentPage + ` из ` + totalPages
+                : 'Нет результатов';
+        }
 
-        prevBtn.disabled = currentPage === 1 || filteredCards.length === 0;
-        nextBtn.disabled = currentPage === totalPages || filteredCards.length === 0;
+        if (prevBtn !== null && nextBtn !== null) {
+            prevBtn.disabled = currentPage === 1 || filteredCards.length === 0;
+            nextBtn.disabled = currentPage === totalPages || filteredCards.length === 0;
+        }
     }
 
     function filterCards() {
@@ -729,22 +733,26 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.addEventListener('input', filterCards);
     }
 
-    document.getElementById('prevPage').addEventListener('click', function () {
-        if (currentPage > 1) {
-            currentPage--;
-            updatePagination();
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    });
+    if (prevBtn !== null) {
+        prevBtn.addEventListener('click', function () {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        });
+    }
 
-    document.getElementById('nextPage').addEventListener('click', function () {
-        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            updatePagination();
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    });
+    if (nextBtn !== null) {
+        nextBtn.addEventListener('click', function () {
+            const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        });
+    }
 
     updatePagination();
 });
