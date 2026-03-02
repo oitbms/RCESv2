@@ -278,7 +278,7 @@ public class RequestServiceImpl implements RequestsService {
             notificationService.sendPrivateNotification(
                     employee.getUsername(),
                     "Вам переадресовали забракованную заявку с номером " + requests.getRequestNumber() + " для исправления.",
-                    "http://localhost:2520/view/" + requests.getRequestNumber(),
+                    "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                     Status.Closed.getName()
             );
         }
@@ -319,7 +319,6 @@ public class RequestServiceImpl implements RequestsService {
     private void handleStatusNull(RequestContext context) {
         Requests requests = context.getRequest();
         Employee updateEmployee = context.getEmployee();
-
         if (requests.getEmployee() != null) {
             if (requests.getEmployee().equals(updateEmployee)) {
                 if (requests.getStatus().equals(Status.New)) {
@@ -328,7 +327,7 @@ public class RequestServiceImpl implements RequestsService {
                     notificationService.sendPrivateNotification(
                             requests.getCreatedBy().getUsername(),
                             "Ваша заявка с номером - " + requests.getRequestNumber() + " успешно принята в работу!",
-                            "http://localhost:2520/view/" + requests.getRequestNumber(),
+                            "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                             requests.getStatus().getName()
                     );
 //                } else if (!requests.getInconsistencies().isEmpty() && (context.getNoticeOgc() || context.getNoticeOgt())) {
@@ -348,7 +347,7 @@ public class RequestServiceImpl implements RequestsService {
                                     .stream()
                                     .map(Inconsistency::getName)
                                     .collect(Collectors.joining(", "))),
-                            "http://localhost:2520/view/" + requests.getRequestNumber(),
+                            "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                             requests.getStatus().getName()
                     );
                 }
@@ -393,7 +392,7 @@ public class RequestServiceImpl implements RequestsService {
                 notificationService.sendPrivateNotification(
                         requests.getEmployee().getUsername(),
                         "Заявка с номером " + requests.getRequestNumber() + " была отправлена на повторное предъявление!",
-                        "http://localhost:2520/view/" + requests.getRequestNumber(),
+                        "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                         requests.getStatus().getName()
                 );
                 break;
@@ -431,7 +430,7 @@ public class RequestServiceImpl implements RequestsService {
             notificationService.sendPrivateNotification(
                     requests.getCreatedBy().getUsername(),
                     "Ваша заявка с № " + requests.getRequestNumber() + " была выполнена!",
-                    "http://localhost:2520/view/" + requests.getRequestNumber(),
+                    "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                     requests.getStatus().getName()
             );
             requests.setChatId(message != null ? message.getChatId() : -1);
@@ -445,7 +444,7 @@ public class RequestServiceImpl implements RequestsService {
             notificationService.sendPrivateNotification(
                     requests.getCreatedBy().getUsername(),
                     "Ваша заявка с № " + requests.getRequestNumber() + " была переведена в статус - 'Забракована'!",
-                    "http://localhost:2520/view/" + requests.getRequestNumber(),
+                    "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                     requests.getStatus().getName()
             );
         } else if (requests.getQty() > qty) {
@@ -474,7 +473,7 @@ public class RequestServiceImpl implements RequestsService {
                                 .map(Inconsistency::getName)
                                 .collect(Collectors.joining(", "))
                 ),
-                "http://localhost:2520/view/" + rejected.getRequestNumber(),
+                "http://192.168.30.80:2005/view/" + rejected.getRequestNumber(),
                 rejected.getStatus().getName()
         );
 
@@ -485,7 +484,7 @@ public class RequestServiceImpl implements RequestsService {
         notificationService.sendPrivateNotification(
                 rejected.getCreatedBy().getUsername(),
                 "Ваша заявка с № " + requests.getRequestNumber() + " была частично выполнена.",
-                "http://localhost:2520/view/" + requests.getRequestNumber(),
+                "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                 requests.getStatus().getName()
         );
 
