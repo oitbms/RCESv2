@@ -36,4 +36,6 @@ public interface RequestsService {
 
     String getTypeRequest(UUID id);
 
+    void updateCreateBy(UUID id, String user);
+
 }

@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import static com.example.rces.utils.FilesUtil.determineFileType;
+
 @Service
 public class MachineServiceImpl implements MachineService {
 
@@ -201,6 +203,7 @@ public class MachineServiceImpl implements MachineService {
                 documentFile.setBaseFileName(file.getOriginalFilename());
                 documentFile.setContent(file.getBytes());
                 documentFile.setDocument(document);
+                documentFile.setType(determineFileType(file.getOriginalFilename()));
 
                 document.getFiles().add(documentFile);
             } catch (IOException e) {
