@@ -23,6 +23,8 @@ public interface SgiService {
 
     Optional<SGI> findById(UUID id);
 
+    Optional<SGI> findByName(String eventName);
+
     List<SGI> findAll();
 
     List<SGI> findAllByIds(List<UUID> ids);

@@ -1,82 +1,78 @@
 package com.example.rces.web.test;
 
-import com.example.rces.data.Sgi;
+import com.example.rces.dto.SgiCreateDTO;
 import com.example.rces.web.pages.MainPage;
 import com.example.rces.web.pages.SgiPage;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Owner;
-import io.qameta.allure.Severity;
-import io.qameta.allure.Story;
-import org.junit.jupiter.api.*;
+import io.qameta.allure.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 
-import static com.example.rces.web.pages.LoginPage.openLoginPage;
-import static io.qameta.allure.SeverityLevel.BLOCKER;
+import static com.example.rces.data.Sgi.createTestSgiDto;
+import static io.qameta.allure.SeverityLevel.CRITICAL;
 
-@Feature("Web")
-@Story("Мероприятия")
-@Tags({@Tag("Sgi"), @Tag("Web")})
+@Epic("Web интерфейс")           // Самый верхний уровень
+@Feature("Мероприятия")           // Средний уровень
+@Story("Создание мероприятия")
+@Tags({@Tag("Sgi"), @Tag("ui")})
 public class SgiTest extends BaseTest {
 
-    private final String createText = "Создано новое мероприятие";
-
-    @BeforeEach
-    public void auth() {
-        openLoginPage().successAuth("admin");
-    }
-
-    @Test
-    @DisplayName("Открытие страницы мероприятий")
-    @Owner("ByteCodeAPAA")
-    @Severity(BLOCKER)
-    public void test01() {
-        new MainPage()
-                .openSgiPage().ifPresent(SgiPage::logout);
-    }
+    private static final String NOTIFICATION_CREATE = "Создано новое мероприятие";
+    private static final String NOTIFICATION_EDITING = "Мероприятие успешно отредактировано";
+    private static final String NOTIFICATION_EXECUTION = "Факт выполнения сохранен";
+    private static final String NOTIFICATION_AGREE = "Мероприятие согласовано";
+    private static final String NOTIFICATION_NOT_AGREE = "Согласование отменено";
+    private static final String NOTIFICATION_DELETE = "Мероприятие успешно удалено";
 
     @Test
-    @DisplayName("Создание тестового мероприятия")
+    @DisplayName("Полный ui цикл работы с мероприятием: создание → редактирование → выполнение → удаление")
     @Owner("ByteCodeAPAA")
-    @Severity(BLOCKER)
-    public void test02() {
-        new MainPage()
-                .openSgiPage()
-                .ifPresent((sgi) -> sgi.openCreateSgiDialog()
-                        .fillCreateDialogSgi(Sgi.createDTO)
-                        .clickOnCreateNewSgiButton()
-                        .haveNotification(createText)
-                        .logout());
-    }
+    @Severity(CRITICAL)
+    void shouldCompleteFullSgiLifecycle() {
+        String eventName = "Тестовое мероприятие " + UUID.randomUUID();
+        SgiCreateDTO testSgi = createTestSgiDto(eventName);
+        LocalDate executionDate = LocalDate.now();
+        String executionReport = "Тестовый отчет";
 
-    @Test
-    @DisplayName("Создания факта выполнения у мероприятия")
-    @Owner("ByteCodeAPAA")
-    @Severity(BLOCKER)
-    public void test03() {
-        new MainPage()
-                .openSgiPage()
-                .ifPresent((sgi) -> sgi.openExecutionDialog(
-                        sgi.findIndexSgiByEventName("Тестовое мероприятие" + LocalDate.now()))
-                        .fillExecutionDialog(LocalDate.now(), "Тестовый отчет")
-                        .clickOnCreateNewExecutionButton()
-                        .haveNotification("Факт выполнения успешно сохранен")
-                        .logout()
-                );
-    }
+        MainPage mainPage = new MainPage();
+        Optional<SgiPage> sgiPage = mainPage.openSgiPage();
 
-    @Test
-    @DisplayName("Удаление мероприятия по индексу строки")
-    @Owner("ByteCodeAPAA")
-    @Severity(BLOCKER)
-    public void test04() {
-        new MainPage()
-                .openSgiPage()
-                .ifPresent((sgi) -> sgi.deleteSgiByIndex(
-                                sgi.findIndexSgiByEventName("Тестовое мероприятие" + LocalDate.now())
-                        )
-                        .haveNotification("Мероприятие успешно удалено")
-                        .logout());
+        sgiPage.ifPresent((sgi) -> {
+            // 1. Создание мероприятия
+            sgi.openCreateSgiDialog()
+                    .fillCreateDialogSgi(testSgi)
+                    .clickOnCreateNewSgiButton()
+                    .haveNotification(NOTIFICATION_CREATE);
+
+            String eventIndex = sgi.findIndexSgiByEventName(eventName);
+
+            // 2. Добавление плановой даты
+            sgi.openEditSgiDialog(eventIndex)
+                    .fillEditingDialogSgiAndSave(LocalDate.now())
+                    .haveNotification(NOTIFICATION_EDITING);
+
+            // 3. Добавление факта выполнения
+            sgi.openExecutionDialog(eventIndex)
+                    .fillExecutionDialog(executionDate, executionReport)
+                    .clickOnCreateNewExecutionButton()
+                    .haveNotification(NOTIFICATION_EXECUTION);
+
+            // 4. Согласование
+            sgi.confirmAction(eventIndex)
+                    .haveNotification(NOTIFICATION_AGREE);
+            // 5. Отмена согласования
+            sgi.confirmAction(eventIndex)
+                    .haveNotification(NOTIFICATION_NOT_AGREE);
+
+            // 5. Удаление мероприятия
+            sgi.deleteSgiByIndex(eventIndex)
+                    .haveNotification(NOTIFICATION_DELETE);
+        });
     }
 
 }

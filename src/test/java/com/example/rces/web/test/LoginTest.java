@@ -4,37 +4,36 @@ import io.qameta.allure.Feature;
 import io.qameta.allure.Owner;
 import io.qameta.allure.Severity;
 import io.qameta.allure.Story;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static com.example.rces.web.pages.LoginPage.openLoginPage;
 import static io.qameta.allure.SeverityLevel.BLOCKER;
 
 @Feature("Web")
 @Story("Авторизация")
-@Tags({@Tag("Auth"), @Tag("Web")})
+@Tags({@Tag("Auth"), @Tag("ui")})
+@DisplayName("Авторизация")
 public class LoginTest extends BaseTest {
-
-    @Test
-    @DisplayName("Успешный логин и Logout")
-    @Owner("ByteCodeAPAA")
-    @Severity(BLOCKER)
-    public void test01() {
-        openLoginPage()
-                .successAuth("admin")
-                .logout();
-    }
 
     @Test
     @DisplayName("Неуспешный логин")
     @Owner("ByteCodeAPAA")
     @Severity(BLOCKER)
-    public void test02() {
+    @Order(1)
+    public void failedLogin() {
         openLoginPage()
-                .failedAuth();
+                .enterCredentials("Не существующий ключ");
     }
 
+    @Test
+    @DisplayName("Успешный логин и Logout")
+    @Owner("ByteCodeAPAA")
+    @Severity(BLOCKER)
+    @Order(2)
+    public void successLoginAndLogout() {
+        openLoginPage()
+                .enterCredentials("admin")
+                .logout();
+    }
 
 }

@@ -9,8 +9,16 @@ import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class Sgi {
 
-    public static final SgiCreateDTO createDTO = new SgiCreateDTO(
-            "Тестовый участок", "Тестовое мероприятие" + LocalDate.now(), "Тестовые действия",
-            "energy", Employee.admin_user, LocalDate.now(), formatedDate(LocalDateTime.now()) + " ТЕСТ", null);
+    public static SgiCreateDTO createTestSgiDto(String uniqueEventName) {
+        return new SgiCreateDTO(
+                "Тестовый участок",
+                uniqueEventName,
+                "Тестовые действия",
+                "energy",
+                Employee.admin_user,
+                LocalDate.now(),
+                formatedDate(LocalDateTime.now()) + " ТЕСТ",
+                "");
+    }
 
 }

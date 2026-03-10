@@ -35,6 +35,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
+    // JWT Dependencies
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
     // Database
     implementation("org.hibernate:hibernate-envers:6.6.8.Final")
     implementation("org.flywaydb:flyway-core:10.20.1")
@@ -80,6 +85,7 @@ dependencies {
     testImplementation("io.qameta.allure:allure-rest-assured:2.28.0")
     testImplementation("org.aeonbits.owner:owner:1.0.12")
     testImplementation("net.datafaker:datafaker:2.3.0")
+    testImplementation("org.testng:testng:7.10.0")
 
     //Скрипты Kotlin
     implementation("org.jetbrains.kotlin:kotlin-scripting-common:1.9.22")
@@ -90,21 +96,61 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
+tasks.register("runAllTests") {
+    dependsOn("apiTests", "uiTests")
+}
+
+tasks.register<Test>("apiTests") {
+    useJUnitPlatform {
+        includeTags("api")
+    }
+    doFirst {
+        file("build/tmp/test-token.txt").delete()
+    }
+}
+
+tasks.register<Test>("uiTests") {
+    useJUnitPlatform {
+        includeTags("ui")
+    }
+    mustRunAfter("apiTests")
+}
+
 tasks.withType<JavaCompile> {
+    options.isFork = true
     options.compilerArgs.addAll(listOf("-parameters"))
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
+}
+
+tasks.register("cleanAllure") {
+    group = "verification"
+    description = "Удаляет старые Allure results и report перед запуском тестов"
+    doLast {
+        delete(file("build/allure-results"))
+        delete(file("build/allure-report"))
+        file("build/allure-results").mkdirs()
+    }
+}
+
+tasks.register<Exec>("allureGenerate") {
+    group = "verification"
+    description = "Генерирует Allure report из build/allure-results (требуется Allure CLI)."
+    commandLine = listOf("cmd", "/c", "allure generate build/allure-results -o build/allure-report --clean")
+}
+
+tasks.register<Exec>("allureOpen"){
+    group = "verification"
+    commandLine("cmd", "/c", "allure open build/allure-report")
 }
 
 tasks.named<BootWar>("bootWar") {
     archiveFileName.set("RCES.war")
 }
 
-tasks.withType<JavaCompile> {
-    options.isFork = true
-}
 
 springBoot {
     buildInfo()

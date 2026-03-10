@@ -14,9 +14,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -25,12 +28,17 @@ public class WebSecurityConfig {
     private final WebSecurityService webSecurityService;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final AppUtil appUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
-    public WebSecurityConfig(WebSecurityService webSecurityService, CustomAuthenticationProvider customAuthenticationProvider, AppUtil appUtil) {
+    public WebSecurityConfig(WebSecurityService webSecurityService,
+                             CustomAuthenticationProvider customAuthenticationProvider,
+                             AppUtil appUtil,
+                             JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.webSecurityService = webSecurityService;
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.appUtil = appUtil;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -38,7 +46,7 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/get-data/**","/login", "/ws/**").permitAll()
+                        .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login").permitAll()
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")
@@ -50,14 +58,17 @@ public class WebSecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()
-                ).
-                logout(logout -> logout
+                )
+                .httpBasic(withDefaults())
+                .logout(logout -> logout
                         .addLogoutHandler(appUtil)
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll());
+                        .permitAll()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

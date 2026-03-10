@@ -20,17 +20,11 @@ public class LoginPage extends PageBase {
         return new LoginPage();
     }
 
-    @Step("Успешная авторизация")
-    public MainPage successAuth(String key) {
-        $(loginField).setValue(key);
+    @Step("Ввести учетные данные: {username}")
+    public LoginPage enterCredentials(String username) {
+        $(loginField).setValue(username);
         $(loginButton).click();
-        return new MainPage();
-    }
-
-    @Step("Не успешная авторизация")
-    public void failedAuth() {
-        $(loginField).setValue("Не существующий ключ");
-        $(loginButton).click();
+        return this;
     }
 
 }

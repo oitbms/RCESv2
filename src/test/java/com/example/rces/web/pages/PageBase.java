@@ -12,7 +12,7 @@ import static com.codeborne.selenide.Selenide.open;
 
 public abstract class PageBase {
 
-    private final String logoutButton = "#logoutButton";
+    private static final String logoutButton = "#logoutButton";
     private final String menuButton = "#menu-button";
     private final String notificationContainer = "#notifications-container";
 
@@ -23,7 +23,7 @@ public abstract class PageBase {
     protected final Gson gson = new Gson();
 
     @Step("Выйти из учётной записи")
-    public void logout() {
+    public static void logout() {
         if ($(logoutButton).isDisplayed()) {
             $(logoutButton).click();
         } else {
@@ -57,7 +57,7 @@ public abstract class PageBase {
     }
 
     @Step("Выполнить выход через URL logout")
-    private void performLogout() {
+    private static void performLogout() {
         open("logout");
     }
 
