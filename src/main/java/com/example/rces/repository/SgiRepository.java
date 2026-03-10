@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -19,4 +20,5 @@ public interface SgiRepository extends BaseAuditingRepository<SGI, UUID> {
     @Query(value = "SELECT s FROM SGI s WHERE s.parentSGI is null ORDER BY s.requestNumber ASC")
     Page<SGI> findAllWithAssociations(Pageable pageable);
 
+    Optional<SGI> findByEvent(String eventName);
 }

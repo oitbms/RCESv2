@@ -61,7 +61,7 @@ class Sgi extends Base {
                 </div>
                 <div class="row-item" data-field="comment" style="width: var(--comment);">${sgi.comment}</div>
                 <div class="row-item" style="width: var(--editing);">
-                    <button type="button" class="btn btn-info btn-sm editing-btn tooltip-trigger" data-description="Открыть окно редактирования">
+                    <button type="button" name="editingButton" class="btn btn-info btn-sm editing-btn tooltip-trigger" data-description="Открыть окно редактирования">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                 </div>
@@ -488,7 +488,7 @@ class Sgi extends Base {
         this.dialog.open('editing-dialog');
         await this.renderImages('#editing-dialog', 'edit', currentSGI, currentSGI.imagesSGI);
 
-        $('#editing-dialog #saveBtn').off('click').on('click', async (e) => {
+        $('#editing-dialog #saveEditBtn').off('click').on('click', async (e) => {
             if (currentSGI.agree) {
                 this.ccreateNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
                 return;
@@ -545,7 +545,7 @@ class Sgi extends Base {
             }
             this.dialog.close('editing-dialog');
             dialog.find('#createSubSGI').remove();
-            this.createNotification('Задача успешно отредактирована', NotificationType.SUCCESS);
+            this.createNotification('Мероприятие успешно отредактировано', NotificationType.SUCCESS);
         });
         $('#createSubSGI').off('click').on('click', async (e) => {
             if (currentSGI.agree) {
@@ -702,7 +702,7 @@ class Sgi extends Base {
         try {
             await $.ajax({
                 url: '/api/sgi/agree',
-                method: 'POST',
+                method: 'PATCH',
                 data: formData,
                 contentType: false,
                 processData: false

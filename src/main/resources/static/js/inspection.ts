@@ -1042,7 +1042,6 @@ class Inspection extends Base {
         await super.print(event);
     }
 
-
     public override async displayPage(url: string, param?: object, ...callbacks: Function[]): Promise<void> {
         const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
         this.renderInspections(request.data);

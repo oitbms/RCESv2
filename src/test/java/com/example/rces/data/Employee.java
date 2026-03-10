@@ -9,7 +9,7 @@ import java.util.Locale;
 public class Employee {
 
     public static final EmployeeDTO admin_user = new EmployeeDTO(
-            1L, "Гл.Админ(admin)", SubDivision.empty_subDivision, "ADMIN", true, -1L
+            1L, "admin", SubDivision.empty_subDivision, "ADMIN", true, -1L
     );
 
     private static final Faker faker = new Faker(new Locale("en"));

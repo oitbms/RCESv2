@@ -14,4 +14,6 @@ public interface EmployeeRepository extends BaseAuditingRepository<Employee, Lon
 
     @EntityGraph(attributePaths = {"subDivision"})
     Employee findByName(String name);
+
+    boolean existsEmployeeByName(String name);
 }

@@ -298,6 +298,7 @@ class NtDocuments extends Base {
             this.createContextMenu([
                 {
                     label: 'Удалить файл',
+                    idAction : "deleteNtdButton",
                     action: () => {
                         this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
                             () => {
@@ -526,6 +527,7 @@ class NtDocuments extends Base {
         this.createContextMenu([
             {
                 label: 'Удалить',
+                idAction : "deleteDocumentButton",
                 action: () => {
                     this.createConfirmationDialog("Подтвердите удаление документации: {name}", {name: rowName}).then((confirmed) => {
                         // @ts-ignore

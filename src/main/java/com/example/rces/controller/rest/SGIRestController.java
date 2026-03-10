@@ -20,7 +20,7 @@ import static com.example.rces.utils.ServiceUtil.colorCalculate;
 
 @RestController
 @RequestMapping("/api/sgi")
-public class    SGIRestController {
+public class SGIRestController {
 
     private final SgiService sgiService;
     private final ImageService imageService;
@@ -59,12 +59,12 @@ public class    SGIRestController {
         return ResponseEntity.ok(updateSGI);
     }
 
-    @PostMapping("/agree")
-    public ResponseEntity<Void> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
+    @PatchMapping("/agree")
+    public ResponseEntity<?> coordination(@RequestParam UUID id, @RequestParam Boolean agreed) {
         SGI sgi = sgiService.findById(id).orElseThrow(() -> new ApplicationContextException("Передан null в id SGI на согласование"));
         try {
-            sgiService.save(sgi, agreed);
-            return ResponseEntity.ok().build();
+            sgi = sgiService.save(sgi, agreed);
+            return ResponseEntity.ok(sgi.getAgreed());
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -83,7 +83,7 @@ public class    SGIRestController {
 
     @GetMapping("/get-page-sgi")
     public ResponseEntity<RequestDataDTO> getPageSGI(@RequestParam(required = false, defaultValue = "1") int page,
-                                                   @RequestParam(required = false, defaultValue = "16") int size) {
+                                                     @RequestParam(required = false, defaultValue = "16") int size) {
         Page<SgiDTO> pageSgiPayload = sgiService.getPage(page, size);
         return ResponseEntity.ok().body(new RequestDataDTO(pageSgiPayload.getContent(), pageSgiPayload.getTotalElements()));
     }
@@ -107,9 +107,10 @@ public class    SGIRestController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteSGI(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteSGI(@PathVariable UUID id) {
         sgiService.delete(sgiService.findById(id).orElseThrow(
                 () -> new ApplicationContextException("Передан null в списке на удаление SGI")));
+        return ResponseEntity.noContent().build();
     }
 
 }
