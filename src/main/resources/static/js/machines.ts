@@ -446,7 +446,7 @@ class MachineManager {
             return;
         }
 
-        const machineLink = `http://192.168.0.69:2520/machines/${machineNumber}`;
+        const machineLink = `http://192.168.30.80:2005/machines/${machineNumber}`;
 
         QRCode.toCanvas(qrCodeCanvas, machineLink, {width: 200, margin: 1}, (error: Error | null) => {
             if (error) {
