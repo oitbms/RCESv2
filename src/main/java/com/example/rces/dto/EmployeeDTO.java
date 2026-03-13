@@ -16,16 +16,15 @@ public class EmployeeDTO {
     private String name;
     private SubDivisionDTO subDivision;
     private String role;
-    @JsonProperty("isActive")
-    private boolean isActive;
+    private boolean active;
     private Long chatId;
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.active = active;
     }
 
 }
