@@ -261,7 +261,7 @@ abstract class Base {
 
             for (const file of files) {
                 // @ts-ignore
-                //Тут может быть какая то ошибка
+                //Тут может быть какая-то ошибка
                 const binaryString = atob(file.data);
                 const uint8Array = new Uint8Array(binaryString.length);
                 for (let i = 0; i < binaryString.length; i++) {

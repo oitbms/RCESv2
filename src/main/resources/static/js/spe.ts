@@ -505,6 +505,7 @@ class Spe extends Base {
             this.createContextMenu([
                 {
                     label: 'Удалить файл',
+                    idAction: 'contextMenu',
                     action: () => {
                         this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(
                             () => {
@@ -512,7 +513,7 @@ class Spe extends Base {
                                 this.deleteRow(fileId)
                             });
                     }
-                }
+                },
             ], mouseEvent.clientX, mouseEvent.clientY);
         });
 
@@ -821,6 +822,7 @@ class Spe extends Base {
         this.createContextMenu([
             {
                 label: 'Удалить',
+                idAction: 'deleteButton',
                 action: () => {
                     this.createConfirmationDialog("Подтвердите удаление оборудования: {outNumber}", {outNumber: rowName}).then((confirmed) => {
                         // @ts-ignore
