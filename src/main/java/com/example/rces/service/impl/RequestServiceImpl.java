@@ -11,8 +11,6 @@ import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.Status;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
-import com.example.rces.utils.telegram.MessageType;
-import com.example.rces.utils.telegram.event.TelegramRequestEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
@@ -24,7 +22,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,7 +40,7 @@ public class RequestServiceImpl implements RequestsService {
 
     private final RequestsRepository repository;
     private final ObjectMapper objectMapper;
-    private final TelegramService telegramService;
+    //    private final TelegramService telegramService;
     private final CustomerOrderService customerOrderService;
     private final ImageService imageService;
     private final EmployeeService employeeService;
@@ -53,17 +50,18 @@ public class RequestServiceImpl implements RequestsService {
     private final ReasonService reasonService;
     private final JdbcTemplate jdbcTemplate;
     private final NotificationService notificationService;
+//    private final VkNotificationService vkNotificationService;
 
     @Autowired
     public RequestServiceImpl(RequestsRepository repository, ObjectMapper objectMapper,
-                              TelegramService telegramService, CustomerOrderService customerOrderService,
+                              CustomerOrderService customerOrderService,
                               ImageService imageService, EmployeeService employeeService,
                               InconsistenciesService inconsistenciesService, RequestMapper requestMapper,
                               SubDivisionService subDivisionService, ReasonService reasonService,
-                              JdbcTemplate jdbcTemplate, NotificationService notificationService) {
+                              JdbcTemplate jdbcTemplate, NotificationService notificationService
+                              ) {
         this.repository = repository;
         this.objectMapper = objectMapper;
-        this.telegramService = telegramService;
         this.customerOrderService = customerOrderService;
         this.imageService = imageService;
         this.employeeService = employeeService;
@@ -125,11 +123,12 @@ public class RequestServiceImpl implements RequestsService {
             reasonService.createOrUpdateReason(reasonText, createRequestDto.getType());
         }
 
-        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getEmployee(), MessageType.CREATE));
+//        notificationService.sendMessage(requests);
+
         notificationService.sendPrivateNotification(
                 requests.getEmployee().getUsername(),
                 "Заявка с номером - " + requests.getRequestNumber() + " была успешно создана для вас!",
-                "http://localhost:2520/view/" + requests.getRequestNumber(),
+                "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                 requests.getStatus().getName()
         );
 
@@ -231,7 +230,7 @@ public class RequestServiceImpl implements RequestsService {
         repository.save(request);
         if (!request.getEmployee().equals(oldRequest.getEmployee())) {
             if (!updaterEmployee.getId().equals(request.getEmployee().getId())) {
-                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, request, request.getEmployee(), MessageType.REDIRECT));
+//                notificationService.sendMessageRedirect(request);
             }
         }
     }
@@ -323,7 +322,7 @@ public class RequestServiceImpl implements RequestsService {
             if (requests.getEmployee().equals(updateEmployee)) {
                 if (requests.getStatus().equals(Status.New)) {
                     requests.setStatus(Status.InWork);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.WORK));
+//                    notificationService.sendMessage(requests);
                     notificationService.sendPrivateNotification(
                             requests.getCreatedBy().getUsername(),
                             "Ваша заявка с номером - " + requests.getRequestNumber() + " успешно принята в работу!",
@@ -340,7 +339,7 @@ public class RequestServiceImpl implements RequestsService {
                     requests.setStatus(Status.Rejected);
                     requests.setDescription(context.getDescription());
                     requests.setQtyRejected(requests.getQtyRejected() + 1);
-                    telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
+//                    notificationService.sendMessage(requests);
                     notificationService.sendPrivateNotification(
                             requests.getCreatedBy().getUsername(),
                             String.format("Заявка %d забракована по причине: (%s)", requests.getRequestNumber(), requests.getInconsistencies()
@@ -388,7 +387,7 @@ public class RequestServiceImpl implements RequestsService {
             case "update":
                 requests.setStatus(Status.New);
                 requests.getInconsistencies().clear();
-                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getEmployee(), MessageType.UPDATE));
+//                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getEmployee(), MessageType.UPDATE));
                 notificationService.sendPrivateNotification(
                         requests.getEmployee().getUsername(),
                         "Заявка с номером " + requests.getRequestNumber() + " была отправлена на повторное предъявление!",
@@ -403,7 +402,7 @@ public class RequestServiceImpl implements RequestsService {
                 requests.setStatus(Status.Closed);
                 requests.setCloseDate(LocalDateTime.now());
                 requests.setDescription(description);
-                telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+                notificationService.sendMessage(requests);
                 break;
             case "underRework":
                 requests.setStatus(Status.UnderRework);
@@ -426,21 +425,21 @@ public class RequestServiceImpl implements RequestsService {
             requests.setCloseDate(LocalDateTime.now());
             requests.setDescription(context.getDescriptionsCompleted());
             requests.setClosedEmployee(updaterEmployee);
-            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+//            Message message = telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
             notificationService.sendPrivateNotification(
                     requests.getCreatedBy().getUsername(),
                     "Ваша заявка с № " + requests.getRequestNumber() + " была выполнена!",
                     "http://192.168.30.80:2005/view/" + requests.getRequestNumber(),
                     requests.getStatus().getName()
             );
-            requests.setChatId(message != null ? message.getChatId() : -1);
-            requests.setMessageId(message != null ? message.getMessageId() : -1);
+//            requests.setChatId(message != null ? message.getChatId() : -1);
+//            requests.setMessageId(message != null ? message.getMessageId() : -1);
         } else if (qty == 0) {
             requests.setStatus(Status.Rejected);
             requests.setDescription(description);
             requests.setInconsistencies(inconsistencyData);
             requests.setQtyRejected(requests.getQtyRejected() + 1);
-            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
+//            telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CANCEL));
             notificationService.sendPrivateNotification(
                     requests.getCreatedBy().getUsername(),
                     "Ваша заявка с № " + requests.getRequestNumber() + " была переведена в статус - 'Забракована'!",
@@ -460,7 +459,7 @@ public class RequestServiceImpl implements RequestsService {
 
         Requests rejected = createChildRejectedRequest(requests, qty, description, inconsistencyData);
 
-        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, rejected, rejected.getCreatedBy(), MessageType.REJECTED));
+//        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, rejected, rejected.getCreatedBy(), MessageType.REJECTED));
         notificationService.sendPrivateNotification(
                 rejected.getCreatedBy().getUsername(), """
                         Ваша заявка с № %d была частично забракована, \
@@ -480,7 +479,7 @@ public class RequestServiceImpl implements RequestsService {
         requests.setStatus(Status.Closed);
         requests.setQty(qty);
 
-        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
+//        telegramService.sendMessageForRequest(new TelegramRequestEvent(this, requests, requests.getCreatedBy(), MessageType.CLOSE));
         notificationService.sendPrivateNotification(
                 rejected.getCreatedBy().getUsername(),
                 "Ваша заявка с № " + requests.getRequestNumber() + " была частично выполнена.",
