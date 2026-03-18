@@ -4,6 +4,7 @@ import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
+import com.example.rces.models.enums.NotificationApp;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.example.rces.service.EmployeeService;
@@ -53,6 +54,7 @@ public class RegistrationsController {
         model.addAttribute("users", employees);
         model.addAttribute("user", currentUser);
         model.addAttribute("mlmNodes", mlmNodes);
+        model.addAttribute("notificationApp", List.of(NotificationApp.values()));
         model.addAttribute("roles", roles);
         return "admin";
     }
@@ -151,13 +153,13 @@ public class RegistrationsController {
 
 
     @PostMapping("/update")
-    public String updateUser(@RequestParam Long id,
-                             @RequestParam(required = false) String userName,
+    public String updateUser(@RequestParam(required = false) String userName,
                              @RequestParam(required = false) String mlmNodeName,
+                             @RequestParam(required = false) String notificationAppName,
                              @RequestParam(required = false) String roleName,
                              @RequestParam(required = false) Long chatName,
                              @RequestParam(required = false) Boolean active) {
-        employeeService.update(id, userName, mlmNodeName, roleName, chatName, active);
+        employeeService.update(userName, mlmNodeName, notificationAppName,roleName, chatName, active);
         return "redirect:/admin";
     }
 

@@ -4,12 +4,12 @@ import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.SubDivision;
+import com.example.rces.models.enums.NotificationApp;
 import com.example.rces.models.enums.Role;
 import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -57,11 +57,16 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     }
 
     @Override
-    public void update(Long id, String userName, String mlmNodeName, String roleName, Long chatId, Boolean active) {
-        Employee employee = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Пользователь не найден"));
+    public void update(String userName, String mlmNodeName, String notificationAppName, String roleName, Long chatId, Boolean active) {
+        Employee employee = repository.findByName(userName);
         SubDivision subDivision = subDivisionService.getByName(mlmNodeName);
         employee.setName(userName);
-        employee.setSubDivision(subDivision);
+        if (subDivision != null) {
+            employee.setSubDivision(subDivision);
+        }
+        if (notificationAppName != null) {
+            employee.setNotificationApp(NotificationApp.valueOf(notificationAppName));
+        }
         employee.setRole(roleName);
         employee.setChatId(chatId != -1 ? chatId : null);
         employee.setActive(active);
@@ -84,12 +89,16 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
 
     @Override
     public List<EmployeeDTO> findAll() {
-        return repository.findAll().stream().map(mapper::toDTO).toList();
+        return repository.findAll().stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     @Override
     public List<EmployeeDTO> findAllByRole(String role) {
-        return repository.findAllByRole(role).stream().map(mapper::toDTO).toList();
+        return repository.findAllByRole(role).stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 
     public static Optional<Employee> currentUser() {

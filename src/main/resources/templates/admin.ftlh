@@ -166,6 +166,14 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="notificationApp" class="d-flex justify-content-center form-label">Приложение для уведомлений</label>
+                            <select id="notificationAppId" name="notificationAppName" class="d-flex justify-content-center form-control" required>
+                                <#list notificationApp as notification>
+                                    <option value="${notification}">${notification.name()}</option>
+                                </#list>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="shop" class="d-flex justify-content-center form-label">Статус</label>
                             <select id="activeId" name="active" class="form-control">
                                 <option value="true">Активный</option>
