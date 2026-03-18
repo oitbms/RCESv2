@@ -94,6 +94,9 @@ dependencies {
     implementation("org.webjars.npm:bootstrap-table:1.24.1")
 
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+
+    //VK messenger
+    implementation ("com.vk.api:sdk:1.0.15")
 }
 
 tasks.register("runAllTests") {

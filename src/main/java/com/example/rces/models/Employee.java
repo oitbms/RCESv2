@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.models.enums.NotificationApp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -54,6 +55,11 @@ public class Employee extends BaseAuditingEntity implements UserDetails {
     @Column(name = "chat_id")
     @NotNull(message = "Идентификатор чата не может быть пустым")
     private Long chatId;
+
+    @Column(name = "notification_app")
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Приложение для отправки уведомлений не может быть пустым")
+    private NotificationApp notificationApp;
 
     @Override
     @JsonIgnore
@@ -146,6 +152,14 @@ public class Employee extends BaseAuditingEntity implements UserDetails {
 
     public void setChatId(Long chatId) {
         this.chatId = chatId;
+    }
+
+    public NotificationApp getNotificationApp() {
+        return notificationApp;
+    }
+
+    public void setNotificationApp(NotificationApp notificationApp) {
+        this.notificationApp = notificationApp;
     }
 
     @Override

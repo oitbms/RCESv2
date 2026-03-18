@@ -1,6 +1,5 @@
 package com.example.rces.dto;
 
-import com.example.rces.models.enums.Item;
 import org.springframework.web.multipart.MultipartFile;
 
 public class CreateRequestDto {
@@ -9,7 +8,7 @@ public class CreateRequestDto {
     private String employeeJson;
     private String mlmNodeJson;
     private String titleJson;
-    private String itemNameJson;
+    private ItemDto itemNameJson;
     private Integer qty;
     private String control;
     private String customerOrderString;
@@ -59,11 +58,11 @@ public class CreateRequestDto {
         this.titleJson = titleJson;
     }
 
-    public String getItemNameJson() {
+    public ItemDto getItemNameJson() {
         return itemNameJson;
     }
 
-    public void setItemNameJson(String itemNameJson) {
+    public void setItemNameJson(ItemDto itemNameJson) {
         this.itemNameJson = itemNameJson;
     }
 

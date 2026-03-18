@@ -24,14 +24,15 @@ public interface RequestsRepository extends BaseAuditingRepository<Requests, UUI
     @Query(value = "SELECT COALESCE(MAX(requestNumber) + 1, 1) FROM Requests ")
     int findNextRequestNumber();
 
+    @EntityGraph(attributePaths = {"employee", "customerOrder", "subDivision"})
     Requests findByRequestNumber(Integer requestNumber);
 
-    @EntityGraph(attributePaths = {"createdBy", "customerOrder", "employee", "subDivision"})
+    @EntityGraph(attributePaths = {"createdBy", "customerOrder", "employee", "subDivision", "updatedBy"})
     List<Requests> findAllByTypeRequest(Requests.Type type);
 
     @Override
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
-    @EntityGraph(attributePaths = {"employee"})
+    @EntityGraph(attributePaths = {"employee", "createdBy"})
     @NonNull
     Optional<Requests> findById(@Nullable UUID id);
 }
