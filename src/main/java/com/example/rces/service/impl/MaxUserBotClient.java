@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -33,12 +34,16 @@ public class MaxUserBotClient {
 
         HttpEntity<MaxMessageRequest> entity = new HttpEntity<>(request, headers);
 
-        restTemplate.postForEntity(
-                baseUrl + "/send",
-                entity,
-                MaxMessageResponse.class
-        );
+        try {
+            restTemplate.postForEntity(
+                    baseUrl + "/send",
+                    entity,
+                    MaxMessageResponse.class
+            );
 
+        } catch (ResourceAccessException e) {
+            log.error("MAX-bot не доступен message - {}", e.getMessage());
+        }
     }
 
     public boolean healthCheck() {
