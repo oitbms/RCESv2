@@ -1,5 +1,6 @@
 package com.example.rces.dto;
 
+import com.example.rces.models.enums.NotificationApp;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ public class EmployeeDTO {
     private String role;
     private boolean active;
     private Long chatId;
+    private NotificationApp notificationApp;
 
     public boolean isActive() {
         return active;
