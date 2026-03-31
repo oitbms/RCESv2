@@ -43,7 +43,7 @@ public class VkNotificationServiceImpl implements VkNotificationService {
                                 Перейти к заявке -> http://web.bormash.ru:2005/view/%d
                                 """, requests.getRequestNumber(), requests.getEmployee().getName(),
                         requests.getSubDivision().getName(), requests.getItem() == null ? "не указан" : requests.getItem().getName(), requests.getCustomerOrder().getName(),
-                        requests.getReason() == null ? "не указана" : requests.getReason(),requests.getRequestNumber());
+                        requests.getReason() == null ? "не указана" : requests.getReason(), requests.getRequestNumber());
                 sendMessage(requests.getEmployee().getChatId(), message);
             }
             case InWork -> {
@@ -70,9 +70,11 @@ public class VkNotificationServiceImpl implements VkNotificationService {
     public void sendRedirectNotification(Requests requests) {
         Long chatId = requests.getEmployee().getChatId();
         String message = String.format(
-                "Заявка #%d перенаправлена на %s",
+                "Заявка #%d перенаправлена на %s %n" +
+                        "Перейти к заявке -> http://web.bormash.ru:2005/view/%d",
                 requests.getRequestNumber(),
-                requests.getEmployee().getName()
+                requests.getEmployee().getName(),
+                requests.getRequestNumber()
         );
 
         sendMessage(chatId, message);

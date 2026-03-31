@@ -889,3 +889,234 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// Глобальная переменная для отслеживания состояния сохранения
+let isSaving = false;
+
+// Функция для переключения режима редактирования
+function toggleCommentEdit() {
+    const viewMode = document.getElementById('viewMode');
+    const editMode = document.getElementById('editMode');
+
+    if (viewMode && editMode) {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    }
+}
+
+// Отмена редактирования
+function cancelEdit() {
+    const viewMode = document.getElementById('viewMode');
+    const editMode = document.getElementById('editMode');
+    const commentText = document.getElementById('commentText');
+    const commentInput = document.getElementById('commentInput');
+
+    if (viewMode && editMode && commentText && commentInput) {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        // Восстанавливаем исходный текст
+        commentInput.value = commentText.textContent;
+    }
+}
+
+function saveComment() {
+    if (isSaving) return;
+
+    const commentInput = document.getElementById('commentInput');
+    const newComment = commentInput ? commentInput.value.trim() : '';
+    const bidId = document.getElementById('bidId');
+
+    if (!newComment) {
+        showNotification('Пожалуйста, введите комментарий', 'warning');
+        return;
+    }
+
+    if (!bidId) {
+        showNotification('Ошибка: ID заявки не найден', 'danger');
+        return;
+    }
+
+    isSaving = true;
+    const saveBtn = document.getElementById('saveCommentBtn');
+    const saveText = document.getElementById('saveCommentText');
+    const saveSpinner = document.getElementById('saveCommentSpinner');
+
+    if (saveBtn) saveBtn.disabled = true;
+    if (saveText) saveText.textContent = 'Сохранение...';
+    if (saveSpinner) saveSpinner.classList.remove('d-none');
+
+    fetch(`/api/request/comment-bid?id=${bidId.value}&comment=${encodeURIComponent(newComment)}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Ошибка при сохранении');
+            }
+        })
+        .then(() => {
+            const commentText = document.getElementById('commentText');
+            const viewMode = document.getElementById('viewMode');
+            const editMode = document.getElementById('editMode');
+
+            if (commentText) commentText.textContent = newComment;
+            if (viewMode) viewMode.style.display = 'block';
+            if (editMode) editMode.style.display = 'none';
+
+            showNotification('Комментарий успешно сохранен', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при сохранении комментария', 'danger');
+        })
+        .finally(() => {
+            isSaving = false;
+            if (saveBtn) saveBtn.disabled = false;
+            if (saveText) saveText.textContent = 'Сохранить';
+            if (saveSpinner) saveSpinner.classList.add('d-none');
+        });
+}
+
+function showAddCommentForm() {
+    const emptyCommentBlock = document.getElementById('emptyCommentBlock');
+    const addCommentForm = document.getElementById('addCommentForm');
+
+    if (emptyCommentBlock) emptyCommentBlock.style.display = 'none';
+    if (addCommentForm) addCommentForm.style.display = 'block';
+}
+
+function cancelAddComment() {
+    const emptyCommentBlock = document.getElementById('emptyCommentBlock');
+    const addCommentForm = document.getElementById('addCommentForm');
+    const newCommentInput = document.getElementById('newCommentInput');
+
+    if (emptyCommentBlock) emptyCommentBlock.style.display = 'block';
+    if (addCommentForm) addCommentForm.style.display = 'none';
+    if (newCommentInput) newCommentInput.value = '';
+}
+
+function addNewComment() {
+    if (isSaving) return;
+
+    const commentInput = document.getElementById('newCommentInput');
+    const newComment = commentInput ? commentInput.value.trim() : '';
+    const bidId = document.getElementById('bidId');
+
+    if (!newComment) {
+        showNotification('Пожалуйста, введите комментарий', 'warning');
+        return;
+    }
+
+    if (!bidId) {
+        showNotification('Ошибка: ID заявки не найден', 'danger');
+        return;
+    }
+
+    isSaving = true;
+    const addBtn = document.getElementById('addCommentBtn');
+    const addText = document.getElementById('addCommentText');
+    const addSpinner = document.getElementById('addCommentSpinner');
+
+    if (addBtn) addBtn.disabled = true;
+    if (addText) addText.textContent = 'Добавление...';
+    if (addSpinner) addSpinner.classList.remove('d-none');
+
+    fetch(`/api/request/comment-bid?id=${bidId.value}&comment=${encodeURIComponent(newComment)}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Ошибка при добавлении');
+            }
+        })
+        .then(() => {
+            const wrapper = document.querySelector('.comment-wrapper');
+            if (wrapper) {
+                const escapedComment = escapeHtml(newComment);
+                wrapper.innerHTML = `
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fw-semibold">Комментарий</span>
+                    <span class="text-muted small">•</span>
+                    <span class="text-muted small">Дополнительная информация</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-auto" onclick="toggleCommentEdit()">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </button>
+                </div>
+                <div id="viewMode" class="comment-text p-4 rounded-3"
+                     style="background: #fff; border-left: 4px solid #0d6efd; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <p id="commentText" class="mb-0" style="color: #374151; line-height: 1.7;">
+                        ${escapedComment}
+                    </p>
+                </div>
+                <div id="editMode" class="comment-edit p-4 rounded-3" style="display: none; background: #fff; border-left: 4px solid #0d6efd; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <textarea id="commentInput" class="form-control mb-3" rows="4" placeholder="Введите комментарий..." style="resize: vertical;">${escapedComment}</textarea>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">Отмена</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveComment()" id="saveCommentBtn">
+                            <span id="saveCommentText">Сохранить</span>
+                            <span id="saveCommentSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            }
+            showNotification('Комментарий успешно добавлен', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при добавлении комментария', 'danger');
+        })
+        .finally(() => {
+            isSaving = false;
+            if (addBtn) addBtn.disabled = false;
+            if (addText) addText.textContent = 'Добавить';
+            if (addSpinner) addSpinner.classList.add('d-none');
+        });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'info') {
+    let container = document.getElementById('notificationContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.style.marginBottom = '10px';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    container.appendChild(notification);
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}

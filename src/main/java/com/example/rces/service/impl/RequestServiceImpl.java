@@ -11,8 +11,6 @@ import com.example.rces.models.enums.Item;
 import com.example.rces.models.enums.Status;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
-import com.example.rces.utils.telegram.MessageType;
-import com.example.rces.utils.telegram.event.TelegramRequestEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Entity;
@@ -99,8 +97,13 @@ public class RequestServiceImpl implements RequestsService {
             item = objectMapper.readValue(createRequestDto.getItemNameJson().getName(), Item.class);
         }
         SubDivision mlmNode = null;
-        if (!createRequestDto.getMlmNodeJson().isBlank()) {
-            mlmNode = subDivisionService.getByName(createRequestDto.getMlmNodeJson());
+        if (createRequestDto.getMlmNodeJson() != null) {
+            if (createRequestDto.getMlmNodeJson().startsWith("{") && createRequestDto.getMlmNodeJson().endsWith("}")) {
+                mlmNode = objectMapper.readValue(createRequestDto.getMlmNodeJson(), SubDivision.class);
+                mlmNode = subDivisionService.getByName(mlmNode.getName());
+            } else {
+                mlmNode = subDivisionService.getByName(createRequestDto.getMlmNodeJson());
+            }
         }
 
 
@@ -237,7 +240,7 @@ public class RequestServiceImpl implements RequestsService {
     @Override
     public void createComment(UUID id, String comment) {
         Requests requests = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
-        requests.setCommentAgreed(comment);
+        requests.setDescription(comment);
         repository.save(requests);
     }
 

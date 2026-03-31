@@ -38,14 +38,20 @@
                 </div>
             </#if>
 
-
             <!-- Цех -->
-            <div class="mb-3" id="mlmNodeCreateField">
+            <div class="mb-3">
                 <label class="form-label">Цех</label>
                 <div class="input-group">
                     <input type="text" id="mlmNodeName" class="form-control" placeholder="Цех"
-                           value="${mlmNodeEmployee.getName()}" required>
+                           value="${mlmNodeEmployee.getName()}">
                     <input type="hidden" id="mlmNodeJson" name="mlmNodeJson" value="${mlmNodeEmployee.getName()}">
+                    <button type="button" class="btn btn-outline-primary openModal"
+                            data-endpoint="sub-divisions"
+                            data-input-id="mlmNodeName"
+                            data-hidden-entity="mlmNodeJson"
+                            data-modal-id="mlmNodeModal">
+                        Выбрать
+                    </button>
                 </div>
             </div>
 
@@ -57,22 +63,22 @@
             </div>
 
             <!-- ТМЦ -->
-            <#if type != 'technologist'>
-                <div class="mb-3">
-                    <label class="form-label">Тип ТМЦ</label>
-                    <div class="input-group">
-                        <input type="text" id="itemName" class="form-control" placeholder="ТМЦ">
-                        <input type="hidden" id="itemNameJson" name="itemNameJson">
-                        <button type="button" class="btn btn-outline-primary openModal"
-                                data-endpoint="item"
-                                data-input-id="itemName"
-                                data-hidden-entity="itemNameJson"
-                                data-modal-id="itemModal">
-                            Выбрать
-                        </button>
-                    </div>
+
+            <div class="mb-3">
+                <label class="form-label">Тип ТМЦ</label>
+                <div class="input-group">
+                    <input type="text" id="itemName" class="form-control" placeholder="ТМЦ">
+                    <input type="hidden" id="itemNameJson" name="itemNameJson">
+                    <button type="button" class="btn btn-outline-primary openModal"
+                            data-endpoint="item"
+                            data-input-id="itemName"
+                            data-hidden-entity="itemNameJson"
+                            data-modal-id="itemModal">
+                        Выбрать
+                    </button>
                 </div>
-            </#if>
+            </div>
+
 
             <!-- Кол-во деталей -->
             <#if type == 'otk'>
@@ -407,7 +413,10 @@
                                     class="btn btn-success mb-3 work"
                                     id="workId"
                                     data-param="${bid.getId()}">
-                                Взять в работу
+                                <span id="workBtnText">Взять в работу</span>
+                                <div id="workBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                    <span class="visually-hidden">Загрузка...</span>
+                                </div>
                             </button>
                         </div>
                     </#if>
@@ -470,43 +479,128 @@
 
                 <#if bid.getStatus().getName() == 'Закрыт'>
                     <p class="text-success fs-3 fw-bold">Заявка закрыта!</p>
-                    <#if bid.typeRequest.name() == 'technologist'>
-                        <p class="text fw-bold">Описание решения поставленной
-                            задачи:${(bid.getDescription())!"Описание решения заявки отсутствует!"}</p>
-                    <#elseif bid.typeRequest.name() == 'otk'>
-                        <#if bid.getDescription()?? && bid.getDescription()?has_content>
-                            <div class="comment-minimalist mt-4" data-theme="light">
-                                <div class="comment-header d-flex align-items-center gap-2 mb-3">
-            <span class="comment-badge d-inline-flex align-items-center gap-1 px-3 py-1 rounded-pill"
-                  style="background: rgba(13, 110, 253, 0.1); color: #0d6efd;">
-                <i class="bi bi-pencil-square"></i>
-                <span class="fw-semibold">Комментарий</span>
-            </span>
-                                    <span class="text-muted small">•</span>
-                                    <span class="text-muted small">Дополнительная информация</span>
-                                </div>
-                                <div class="comment-text p-4 rounded-3"
-                                     style="background: #fff;
-                    border-left: 4px solid #0d6efd;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                                    <p class="mb-0"
-                                       style="color: #374151; line-height: 1.7;">${bid.getDescription()}</p>
+                    <div class="comment-wrapper">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="fw-semibold">Комментарий</span>
+                            <span class="text-muted small">•</span>
+                            <span class="text-muted small">Дополнительная информация</span>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary ms-auto"
+                                    id="editCommentBtn"
+                                    onclick="toggleCommentEdit()"
+                                    style="display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="bi bi-pencil" style="font-size: clamp(0.7rem, 2vw, 0.9rem);"></i>
+                                <span class="d-none d-sm-inline" style="font-size: clamp(0.7rem, 2vw, 0.875rem);">Редактировать</span>
+                            </button>
+                        </div>
+
+                        <#if bid.getDescription()?? && bid.getDescription()?trim != "">
+                            <div id="viewMode" class="comment-text p-4 rounded-3"
+                                 style="background: #fff; border-left: 4px solid #0d6efd; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                                <p id="commentText" class="mb-0" style="color: #374151; line-height: 1.7;">
+                                    ${bid.getDescription()}
+                                </p>
+                            </div>
+
+                            <div id="editMode" class="comment-edit p-4 rounded-3" style="display: none; background: #fff; border-left: 4px solid #0d6efd; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <textarea id="commentInput"
+                          class="form-control mb-3"
+                          rows="4"
+                          placeholder="Введите комментарий..."
+                          style="resize: vertical;">${bid.getDescription()}</textarea>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit()">
+                                        Отмена
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="saveComment()" id="saveCommentBtn">
+                                        <span id="saveCommentText">Сохранить</span>
+                                        <span id="saveCommentSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </span>
+                                    </button>
                                 </div>
                             </div>
                         <#else>
-                            <div class="empty-comment-minimalist mt-4 p-4 rounded-3 text-center"
-                                 style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="empty-comment-minimalist p-4 rounded-3 text-center"
+                                 style="background: #f8fafc; border: 1px solid #e2e8f0;"
+                                 id="emptyCommentBlock">
                                 <div class="empty-icon-wrapper mb-3">
                                     <div class="d-inline-flex p-3 rounded-circle" style="background: #e2e8f0;">
                                         <i class="bi bi-chat-dots fs-4" style="color: #94a3b8;"></i>
                                     </div>
                                 </div>
-                                <p class="fw-medium mb-1" style="color: #64748b;">Нет комментариев</p>
-                                <p class="small text-muted mb-0">Комментарий не был добавлен к выполнению</p>
+                                <p class="fw-medium mb-2" style="color: #64748b;">Нет комментариев</p>
+                                <p class="small text-muted mb-3">Комментарий не был добавлен к выполнению</p>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="showAddCommentForm()">
+                                    <i class="bi bi-plus-lg"></i> Добавить комментарий
+                                </button>
+                            </div>
+
+                            <div id="addCommentForm" style="display: none;">
+                                <div class="comment-edit p-4 rounded-3" style="background: #fff; border-left: 4px solid #0d6efd; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <textarea id="newCommentInput"
+                              class="form-control mb-3"
+                              rows="4"
+                              placeholder="Введите комментарий..."
+                              style="resize: vertical;"></textarea>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelAddComment()">
+                                            Отмена
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addNewComment()" id="addCommentBtn">
+                                            <span id="addCommentText">Добавить</span>
+                                            <span id="addCommentSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </#if>
-                    </#if>
+                    </div>
+
+                    <input type="hidden" id="bidId" value="${bid.getId()}">
                 </#if>
+
+
+<#--                <#if bid.typeRequest.name() == 'technologist'>-->
+<#--                    <p class="text fw-bold">Описание решения поставленной-->
+<#--                        задачи:${(bid.getDescription())!"Описание решения заявки отсутствует!"}</p>-->
+<#--                <#elseif bid.typeRequest.name() == 'otk'>-->
+<#--                    <#if bid.getDescription()?? && bid.getDescription()?has_content>-->
+<#--                        <div class="comment-minimalist mt-4" data-theme="light">-->
+<#--                            <div class="comment-header d-flex align-items-center gap-2 mb-3">-->
+<#--            <span class="comment-badge d-inline-flex align-items-center gap-1 px-3 py-1 rounded-pill"-->
+<#--                  style="background: rgba(13, 110, 253, 0.1); color: #0d6efd;">-->
+<#--                <i class="bi bi-pencil-square"></i>-->
+<#--                <span class="fw-semibold">Комментарий</span>-->
+<#--            </span>-->
+<#--                                <span class="text-muted small">•</span>-->
+<#--                                <span class="text-muted small">Дополнительная информация</span>-->
+<#--                            </div>-->
+<#--                            <div class="comment-text p-4 rounded-3"-->
+<#--                                 style="background: #fff;-->
+<#--                    border-left: 4px solid #0d6efd;-->
+<#--                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);">-->
+<#--                                <p class="mb-0" style="color: #374151; line-height: 1.7;">${bid.getDescription()}</p>-->
+<#--                                <input type="text" id="descriptionBid" class="form-control hidden" placeholder="Описание заявки"-->
+<#--                                       value="${bid.getDescription()}">-->
+<#--                            </div>-->
+<#--                        </div>-->
+<#--                    <#else>-->
+<#--                        <div class="empty-comment-minimalist mt-4 p-4 rounded-3 text-center"-->
+<#--                             style="background: #f8fafc; border: 1px solid #e2e8f0;">-->
+<#--                            <div class="empty-icon-wrapper mb-3">-->
+<#--                                <div class="d-inline-flex p-3 rounded-circle" style="background: #e2e8f0;">-->
+<#--                                    <i class="bi bi-chat-dots fs-4" style="color: #94a3b8;"></i>-->
+<#--                                </div>-->
+<#--                            </div>-->
+<#--                            <p class="fw-medium mb-1" style="color: #64748b;">Нет комментариев</p>-->
+<#--                            <p class="small text-muted mb-0">Комментарий не был добавлен к выполнению</p>-->
+<#--                        </div>-->
+<#--                    </#if>-->
+<#--                </#if>-->
 
                 <#if bid.getStatus().getName() == 'Забракована'>
                     <p class="text-danger fs-3 fw-bold">Заявка забракована!</p>

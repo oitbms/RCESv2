@@ -10,6 +10,7 @@ import com.example.rces.models.Requests;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.RequestHistoryService;
 import com.example.rces.service.RequestsService;
+import com.example.rces.service.SubDivisionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,15 +36,17 @@ public class RequestController {
     private final SubDivisionMapper subDivisionMapper;
     private final RequestHistoryService requestHistoryService;
     private final EmployeeService employeeService;
+    private final SubDivisionService subDivisionService;
 
     @Autowired
     public RequestController(RequestsService requestsService,
                              SubDivisionMapper subDivisionMapper, RequestHistoryService requestHistoryService,
-                             EmployeeService employeeService) {
+                             EmployeeService employeeService, SubDivisionService subDivisionService) {
         this.requestsService = requestsService;
         this.subDivisionMapper = subDivisionMapper;
         this.requestHistoryService = requestHistoryService;
         this.employeeService = employeeService;
+        this.subDivisionService = subDivisionService;
     }
 
     @GetMapping("/create")
@@ -59,6 +62,7 @@ public class RequestController {
         model.addAttribute(type, true);
         model.addAttribute("employeeName", currentUser.getName());
         model.addAttribute("mlmNodeEmployee", subDivisionDTO);
+        model.addAttribute("subDivision", subDivisionService.getAll());
         return "/requests";
     }
 
