@@ -402,7 +402,6 @@ public class RequestServiceImpl implements RequestsService {
                 break;
             case "underRework":
                 requests.setStatus(Status.UnderRework);
-                System.out.println("Отправляем сообщения в телеграмм");
                 break;
             default:
                 throw new IllegalArgumentException("Неизвестный статус: " + status);
@@ -520,7 +519,7 @@ public class RequestServiceImpl implements RequestsService {
                     parent.getControl(),
                     parent.getSubDivision() != null ? parent.getSubDivision().getId() : null,
                     parent.getCreatedBy().getId(),
-                    parent.getCreatedDate() != null ? parent.getCreatedDate() : Instant.now(),
+                    Instant.now(),
                     parent.getUpdatedBy() != null ? parent.getUpdatedBy().getId() : parent.getCreatedBy().getId(),
                     Instant.now(),
                     1,

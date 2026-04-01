@@ -10,8 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 
 @Service
 public class MaxUserBotClient {
@@ -43,6 +42,11 @@ public class MaxUserBotClient {
 
         } catch (ResourceAccessException e) {
             log.error("MAX-bot не доступен message - {}", e.getMessage());
+        } catch (HttpServerErrorException e) {
+            log.error("MAX-bot вернул ошибку сервера: статус={}, тело={}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            log.error("Ошибка при вызове MAX-bot: {}", e.getMessage());
         }
     }
 
