@@ -19,6 +19,8 @@ public interface ReportService {
 
     byte[] createSpeReport(Format format, List<Integer> numberList);
 
+    byte[] unloadSpeReport(List<Integer> numberList);
+
     byte[] createSpeFgisReport(JsonNode data);
 
     byte[] createSpeSchedule(Format format, List<Integer> numberList);

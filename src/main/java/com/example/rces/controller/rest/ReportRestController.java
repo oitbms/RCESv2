@@ -112,4 +112,15 @@ public class ReportRestController {
                 .body(fileDTO);
     }
 
+    @GetMapping("print/spe-unload")
+    public ResponseEntity<FileDTO> unloadSPE(@RequestParam List<Integer> idList) {
+        byte[] report = service.unloadSpeReport(idList);
+        String fileName = String.format("Выгрузка_от_%s.%s",
+                formatedDate(LocalDate.now()), Format.XLSX);
+        FileDTO fileDTO = new FileDTO(fileName, report);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileDTO);
+    }
+
 }

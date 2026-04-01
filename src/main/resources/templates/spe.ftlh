@@ -49,6 +49,11 @@
                     <i class="fas fa-print"></i>
                 </button>
             </div>
+            <div class="tool print tooltip-trigger" id="unload-button" data-description="Выгрузить в excel">
+                <button>
+                    <i class="fas fa-file-excel"></i>
+                </button>
+            </div>
         </div>
     </header>
 

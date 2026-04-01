@@ -1,9 +1,6 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.dto.report.InspectionReportModel;
-import com.example.rces.dto.report.SpeFgisReportModel;
-import com.example.rces.dto.report.SpeReportModel;
-import com.example.rces.dto.report.SpeScheduleReportModel;
+import com.example.rces.dto.report.*;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Format;
 import com.example.rces.models.enums.Status;
@@ -138,6 +135,15 @@ public class ReportServiceImpl implements ReportService {
                 .setParameter("ids", numberList).getResultList();
         SpeReportModel model = new SpeReportModel(speList);
         return jasperReportExporter.generateJrxmlReport("Spe", null, List.of(model), format);
+    }
+
+    @Override
+    public byte[] unloadSpeReport(List<Integer> numberList) {
+        List<SPE> speList = entityManager.createQuery(
+                "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
+                .setParameter("ids", numberList).getResultList();
+        UnloadSpeReportModel model = new UnloadSpeReportModel(speList);
+        return jasperReportExporter.generateJrxmlReport("UnloadSpe", null, List.of(model), Format.XLSX);
     }
 
     @Override
