@@ -398,7 +398,7 @@ public class RequestServiceImpl implements RequestsService {
                 requests.setStatus(Status.Closed);
                 requests.setCloseDate(LocalDateTime.now());
                 requests.setDescription(description);
-//                notificationService.sendMessage(requests);
+                notificationService.sendMessage(requests);
                 break;
             case "underRework":
                 requests.setStatus(Status.UnderRework);
