@@ -15,6 +15,7 @@ class Spe extends Base {
             } else this.disableEditMode();
         }, true);
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
+        this.createHandler('click', '#unload-button',() => this.unload(), true);
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
@@ -182,6 +183,14 @@ class Spe extends Base {
             }
         ];
         return super.print();
+    }
+
+    public async unload(): Promise<void> {
+        if (!this.selectedRows || this.selectedRows.size === 0) {
+            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+        }
+        const param = Array.from(this.selectedRows).map(id => `idList=${id}`).join('&');
+        await this.downloadFile('/api/report/print/spe-unload', param);
     }
 
     private saveSpe() {
