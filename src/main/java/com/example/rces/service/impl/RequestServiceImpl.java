@@ -240,6 +240,10 @@ public class RequestServiceImpl implements RequestsService {
     @Override
     public void createComment(UUID id, String comment) {
         Requests requests = repository.findById(id).orElseThrow(() -> new ApplicationContextException("Не существует заявки с id: " + id));
+        Long userCreateComment = currentUser().get().getId();
+        if (!requests.getEmployee().getId().equals(userCreateComment)) {
+            throw new ForbiddenException("Пользователь не может создавать(изменять) комментарий!");
+        }
         requests.setDescription(comment);
         repository.save(requests);
     }
