@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +21,14 @@ import java.util.List;
 public class CustomerOrderServiceImpl implements CustomerOrderService {
 
     private final CustomerOrderRepository repository;
-    private final ObjectMapper objectMapper;
     private final CustomerOrderMapper mapper;
+    private final ApplicationContext applicationContext;
 
     @Autowired
-    public CustomerOrderServiceImpl(CustomerOrderRepository repository, ObjectMapper objectMapper, CustomerOrderMapper mapper) {
+    public CustomerOrderServiceImpl(CustomerOrderRepository repository, CustomerOrderMapper mapper, ApplicationContext applicationContext) {
         this.repository = repository;
-        this.objectMapper = objectMapper;
         this.mapper = mapper;
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -39,6 +40,8 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     public CustomerOrder createOrGetCustomerOrder(Employee createdEmployee, String customerOrderName, String customerOrderJson) {
         try {
+            ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper.class);
+
             String orderNameToUse = customerOrderName;
 
             if (customerOrderJson != null && !customerOrderJson.isBlank()) {

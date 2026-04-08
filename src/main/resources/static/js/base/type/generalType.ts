@@ -45,3 +45,10 @@ type Image = {
     mainlink: string;
 }
 
+type CustomerOrder = {
+    id: string;
+    name: string;
+    createdDate: string;
+    employeeName: string;
+}
+

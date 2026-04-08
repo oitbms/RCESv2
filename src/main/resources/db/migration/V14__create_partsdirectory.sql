@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS rces.parts_directory
+(
+    id                BIGINT(16) PRIMARY KEY AUTO_INCREMENT,
+    version           BIGINT    NOT NULL DEFAULT 0,
+    customer_order_id BINARY(16),
+    employee_id       BIGINT,
+    name              VARCHAR(255),
+    scheme            VARCHAR(255),
+    thickness         VARCHAR(255),
+    steel             VARCHAR(255),
+    qty               INT       NOT NULL,
+    qty_completed     INT       NOT NULL,
+    measurements      VARCHAR(255),
+    program           VARCHAR(255),
+    machine           VARCHAR(255),
+    status            VARCHAR(50),
+    comment           VARCHAR(255),
+    color             VARCHAR(50),
+    date_completion    DATETIME,
+    created_date      TIMESTAMP,
+    updated_date      TIMESTAMP NULL,
+    created_by        BIGINT    NOT NULL DEFAULT 1,
+    updated_by        BIGINT    NULL,
+
+
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
+    FOREIGN KEY (customer_order_id) REFERENCES rces.customerorder (id)
+);

@@ -345,32 +345,32 @@
         <button class="btn btn-primary" id="filtered">Применить</button>
     </div>
 </dialog>
-<dialog id="employeeDialog">
-    <div class="dialog-container">
-        <div class="dialog-container-header">
-            <div class="dialog-name">Окно выбора сотрудника</div>
-            <div class="choice-field">
-                <input type="text" placeholder="Введите фамилию сотрудника">
+    <dialog id="employeeDialog">
+        <div class="dialog-container">
+            <div class="dialog-container-header">
+                <div class="dialog-name">Окно выбора сотрудника</div>
+                <div class="choice-field">
+                    <input type="text" placeholder="Введите фамилию сотрудника">
+                </div>
+            </div>
+            <div class="dialog-container-content">
+                <div class="dialog-content-header">
+                    <div class="dialog-content-header-column col-250">Имя</div>
+                    <div class="dialog-content-header-column col-250">Подразделение</div>
+                </div>
+                <div class="dialog-content-rows">
+                </div>
+            </div>
+            <div class="dialog-container-footer">
+                <button class="dialog-btn" onclick="document.getElementById('employeeDialog').close()">
+                    Отмена
+                </button>
+                <button class="dialog-btn primary" id="changeEmployee">
+                    Выбрать
+                </button>
             </div>
         </div>
-        <div class="dialog-container-content">
-            <div class="dialog-content-header">
-                <div class="dialog-content-header-column col-250">Имя</div>
-                <div class="dialog-content-header-column col-250">Подразделение</div>
-            </div>
-            <div class="dialog-content-rows">
-            </div>
-        </div>
-        <div class="dialog-container-footer">
-            <button class="dialog-btn" onclick="document.getElementById('employeeDialog').close()">
-                Отмена
-            </button>
-            <button class="dialog-btn primary" id="changeEmployee">
-                Выбрать
-            </button>
-        </div>
-    </div>
-</dialog>
+    </dialog>
 <dialog id="documentDialog">
     <div class="dialog-container">
         <div class="dialog-container-header">

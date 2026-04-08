@@ -70,7 +70,6 @@
         </div>
     </div>
 </div>
-
 <dialog id="create-dialog">
     <div class="modal-header">
         <h2 class="modal-title">Создание документации</h2>

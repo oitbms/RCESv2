@@ -1,5 +1,6 @@
 package com.example.rces.utils;
 
+import com.example.rces.models.PartsDirectory;
 import com.example.rces.models.Requests;
 import com.example.rces.models.SGI;
 import com.example.rces.models.SPE;
@@ -42,6 +43,15 @@ public class ServiceUtil {
             case VERIFICATION_REQUIRED -> Color.YELLOW;
             case EXPIRED -> Color.RED;
             default -> Color.NONE;
+        };
+    }
+
+    public static Color colorCalculate(PartsDirectory pdi) {
+        return switch (pdi.getStatus()) {
+            case NEW -> Color.NONE;
+            case WORK -> Color.YELLOW;
+            case REQUIRED -> Color.BLUE;
+            case COMPLETE -> Color.GREEN;
         };
     }
 

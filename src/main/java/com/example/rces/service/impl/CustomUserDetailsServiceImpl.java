@@ -113,6 +113,11 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     }
 
     @Override
+    public Employee getCurrentUser() {
+        return currentUser().orElseThrow();
+    }
+
+    @Override
     public Boolean currentUserHaveControlRoles() {
         return controlRoles.contains(currentUser().orElseThrow().getRole());
     }

@@ -466,6 +466,14 @@ body.locked {
     transition: all 0.3s;
 }
 
+.status-indicator {
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
 @keyframes slideDown {
     0% {
         opacity: 0;

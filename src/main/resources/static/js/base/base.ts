@@ -60,6 +60,10 @@ abstract class Base {
     private init(...callbacks: Function[]) {
         $(() => {
             this.createHandler('mouseenter', '.tooltip-trigger', this.showToolTip.bind(this), true);
+            this.createHandler('click', '[name="closeDialog"]', (e) => {
+                const dialogId = $(e.currentTarget).closest('dialog').attr('id');
+                this.dialog.close(dialogId);
+            });
             $(this.rowContainer).on('scroll', this.onScroll.bind(this));
             this.createNotificationContainer();
             this.initializeHandlers();
