@@ -31,7 +31,8 @@ public class LoginController {
     }
 
     @PostMapping("/perform-login")
-    public String login(@RequestParam String username, Model model) {
+    public String login(@RequestParam String username,
+                        Model model) {
         try {
             UserDetails user = employeeService.loadUserByUsername(username);
             var authRequest = new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());

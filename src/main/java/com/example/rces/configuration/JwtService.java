@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +38,22 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes = decodeJwtSecret(secretKey);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret must be at least 32 bytes");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private byte[] decodeJwtSecret(String rawSecret) {
+        if (rawSecret == null || rawSecret.isBlank()) {
+            throw new IllegalStateException("JWT secret is not configured");
+        }
+        try {
+            return Decoders.BASE64.decode(rawSecret);
+        } catch (IllegalArgumentException ignored) {
+            return rawSecret.getBytes(StandardCharsets.UTF_8);
+        }
     }
 
     public String extractUsername(String token) {

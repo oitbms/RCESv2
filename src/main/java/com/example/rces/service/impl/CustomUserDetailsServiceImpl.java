@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +37,17 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     private final EmployeeRepository repository;
     private final EmployeeMapper mapper;
     private final SubDivisionService subDivisionService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(EmployeeRepository repository, EmployeeMapper mapper, SubDivisionService subDivisionService) {
+    public CustomUserDetailsServiceImpl(EmployeeRepository repository,
+                                        EmployeeMapper mapper,
+                                        SubDivisionService subDivisionService,
+                                        PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.mapper = mapper;
         this.subDivisionService = subDivisionService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -51,7 +57,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         employee.setName(username);
         employee.setSubDivision(subDivision);
         employee.setRole(role);
-        employee.setPassword(password);
+        employee.setPassword(passwordEncoder.encode(password));
         employee.setChatId(chatId != -1 ? chatId : null);
         repository.save(employee);
     }

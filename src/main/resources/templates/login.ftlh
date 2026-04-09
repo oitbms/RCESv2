@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация</title>
+    <title>Authorization</title>
     <style>
         :root {
             --primary: #4361ee;
@@ -44,6 +44,7 @@
             padding: 2rem;
             width: 100%;
         }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -89,13 +90,21 @@
         .btn-primary:hover {
             background-color: var(--primary-dark);
         }
+
+        .error-message {
+            margin-bottom: 1rem;
+            color: #b42318;
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 <body>
 <div class="login-container">
     <div class="login-card">
-
         <form method="POST" action="/login">
+            <#if error??>
+                <div class="error-message">${error}</div>
+            </#if>
             <div class="form-group">
                 <label for="username" class="form-label">Ключ</label>
                 <input

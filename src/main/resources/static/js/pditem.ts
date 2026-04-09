@@ -18,6 +18,7 @@ class PdItem extends Base {
             } else this.disableEditMode();
         }, true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
+        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
     }
 
@@ -40,7 +41,7 @@ class PdItem extends Base {
             <div class="table-row" id="${pdi.id}" data-index="${pdi.id}">
                 <div class="table-cell" style="width: var(--customerOrder); position: relative">
                     <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
-                    <div class="field-container" data-name="customerOrder" contenteditable="false">
+                    <div class="field-container center" data-name="customerOrder" contenteditable="false">
                         ${pdi.customerOrder.name}
                     </div>
                 </div>
@@ -65,17 +66,17 @@ class PdItem extends Base {
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qty);">
-                    <div class="field-container" data-name="qty" contenteditable="false">
+                    <div class="field-container left" data-name="qty" contenteditable="false">
                         ${pdi.qty}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qtyCompleted);">
-                    <div class="field-container" data-name="qtyCompleted" contenteditable="false">
+                    <div class="field-container right" data-name="qtyCompleted" contenteditable="false">
                         ${pdi.qtyCompleted}
                     </div>
                 </div>
                  <div class="table-cell" style="width: var(--measurements);">
-                    <div class="field-container" data-name="measurements" contenteditable="false">
+                    <div class="field-container center" data-name="measurements" contenteditable="false">
                         ${pdi.measurements}
                     </div>
                 </div>
@@ -92,13 +93,29 @@ class PdItem extends Base {
                 <div class="table-cell" style="width: var(--status);">
                     <span class="status-indicator" style="background-color: ${this.calculateColor(pdi.color)}" data-status="${pdi.status}">
                         ${status}
-                    </span>
+                    </span> 
                 </div>
             </div>`;
         return $(row);
     }
 
     public onScroll(): void {
+    }
+
+    public override async print() {
+        if (!this.selectedRows || this.selectedRows.size === 0) {
+            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+        }
+
+        this.reports = [
+            {
+                name: 'Акт-наряд',
+                api: '/api/report/print/pdi-act',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
+            }
+        ];
+
+        return super.print();
     }
 
     private createPdi = async (event: Event) => {
@@ -117,6 +134,14 @@ class PdItem extends Base {
 
         const employeeInput = dialog.find('input[name="hiddenEmployee"]').val() as string;
         const employee = JSON.parse(employeeInput);
+        const validatedFields = this.validateIntegerFields([
+            {key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество'},
+            {key: 'qtyCompleted', value: dialog.find('input[name="qtyCompleted"]').val(), min: 0, label: 'Выполненное количество', defaultValue: 0}
+        ]);
+        if (!validatedFields) {
+            button.prop('disabled', false);
+            return;
+        }
 
         const formData = {
             customerOrder: dialog.find('input[name="customerOrder"]').val(),
@@ -125,8 +150,8 @@ class PdItem extends Base {
             measurements: dialog.find('input[name="measurements"]').val(),
             steel: dialog.find('input[name="steel"]').val(),
             scheme: dialog.find('input[name="scheme"]').val(),
-            qty: dialog.find('input[name="qty"]').val(),
-            qtyCompleted: dialog.find('input[name="qtyCompleted"]').val(),
+            qty: validatedFields.qty,
+            qtyCompleted: validatedFields.qtyCompleted,
             comment: dialog.find('textarea[name="comment"]').val(),
             machine: dialog.find('input[name="machine"]').val(),
             program: dialog.find('input[name="program"]').val(),
@@ -377,6 +402,27 @@ class PdItem extends Base {
         if (Object.keys(this.saveMassive).length === 0) {
             return;
         }
+        for (const id of Object.keys(this.saveMassive)) {
+            const cacheData = this.localCache.get(Number(id)) as pdItemIn;
+            const changes = this.saveMassive[id] || {};
+            const qtyValue = changes.qty ?? cacheData.qty;
+            const qtyCompletedValue = changes.qtyCompleted ?? cacheData.qtyCompleted;
+            const validatedFields = this.validateIntegerFields([
+                {key: 'qty', value: qtyValue, min: 1, label: 'Количество'},
+                {key: 'qtyCompleted', value: qtyCompletedValue, min: 0, label: 'Выполненное количество', defaultValue: 0}
+            ]);
+
+            if (!validatedFields) {
+                return;
+            }
+
+            this.saveMassive[id] = {
+                ...changes,
+                qty: validatedFields.qty,
+                qtyCompleted: validatedFields.qtyCompleted
+            };
+        }
+
         const itemsArray = Object.keys(this.saveMassive).map(id => {
             const cacheData = this.localCache.get(Number(id)) as SpeIn;
             return {

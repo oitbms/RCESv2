@@ -15,6 +15,14 @@ interface RequestDataDTO {
     count: number
 }
 
+interface IntegerFieldValidationConfig {
+    key: string;
+    value: any;
+    min: number;
+    label: string;
+    defaultValue?: number;
+}
+
 enum NotificationType {
     SUCCESS = 'success',
     ERROR = 'error',
@@ -454,6 +462,40 @@ abstract class Base {
             hour: '2-digit',
             minute: '2-digit'
         });
+    }
+
+    protected parseInteger(value: any): number | null {
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+        const normalized = String(value).trim();
+        if (!/^-?\d+$/.test(normalized)) {
+            return null;
+        }
+        return Number(normalized);
+    }
+
+    protected validateIntegerFields(fields: IntegerFieldValidationConfig[]): Record<string, number> | null {
+        const result: Record<string, number> = {};
+
+        for (const field of fields) {
+            const rawValue = field.value === '' || field.value === null || field.value === undefined
+                ? field.defaultValue
+                : field.value;
+            const parsedValue = this.parseInteger(rawValue);
+
+            if (parsedValue === null || parsedValue < field.min) {
+                this.createNotification(
+                    `${field.label} должно быть целым числом не меньше ${field.min}`,
+                    NotificationType.WARNING
+                );
+                return null;
+            }
+
+            result[field.key] = parsedValue;
+        }
+
+        return result;
     }
 
     public readonly calculateColor = (color: Color): string => {

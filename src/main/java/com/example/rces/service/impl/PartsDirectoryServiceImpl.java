@@ -5,8 +5,6 @@ import com.example.rces.dto.PartsDirectoryDTO;
 import com.example.rces.mapper.PartsDirectoryMapper;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.PartsDirectory;
-import com.example.rces.models.SPE;
-import com.example.rces.models.enums.StatusSPE;
 import com.example.rces.repository.PartsDirectoryRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
@@ -19,10 +17,7 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +54,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(employeeService.getCurrentUser(),
                 dto.getCustomerOrder(), null);
         pdi.setCustomerOrder(customerOrder);
+        pdi.setStatus(calculateStatus(pdi));
         pdi.setColor(colorCalculate(pdi));
         PartsDirectory savedPdi = repository.save(pdi);
         return mapper.toDTO(savedPdi);
@@ -85,13 +81,16 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     }
 
     private PartsDirectory.Status calculateStatus(PartsDirectory pdi) {
+        LocalDate today = LocalDate.now();
+        LocalDate requiredUntil = today.plusDays(3);
+
         if (pdi.getStatus().equals(PartsDirectory.Status.COMPLETE)) {
             return PartsDirectory.Status.COMPLETE;
         } else if (pdi.getDateCompletion() != null &&
-                pdi.getDateCompletion().equals(new Date(System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000))) {
+                !pdi.getDateCompletion().toLocalDate().isBefore(today) &&
+                !pdi.getDateCompletion().toLocalDate().isAfter(requiredUntil)) {
             return PartsDirectory.Status.REQUIRED;
-        }
-        else if (pdi.getProgram()!=null) {
+        } else if (pdi.getProgram() != null) {
             return PartsDirectory.Status.WORK;
         } else return pdi.getStatus();
     }

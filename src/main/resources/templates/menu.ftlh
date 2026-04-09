@@ -6,7 +6,7 @@
     <title>Меню пользователя</title>
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/notification.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css">
     <script>
         const dailyCounts = [<#list dailyCounts as item>${item}<#if item_has_next>, </#if></#list>];
 
@@ -65,7 +65,7 @@
             </#list>
         ];
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
     <script src="/js/menu.js"></script>
     <script src="/js/sockjs.min.js"></script>
     <script src="/js/stomp.min.js"></script>
@@ -518,6 +518,6 @@
 </div>
 <div id="notification-toast-container"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/js/bootstrap.bundle.js"></script>
+<script src="/js/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>

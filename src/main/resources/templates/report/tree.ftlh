@@ -230,7 +230,7 @@
         </div>
     </div>
 </dialog>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/js/jquery.min.js"></script>
 <script src="/js/report.js" defer></script>
 </body>
 </html>

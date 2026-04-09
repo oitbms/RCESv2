@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/notification.css">
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
     <link rel="stylesheet" href="/css/sweetalert2.min.css">
 </head>
@@ -1427,7 +1427,7 @@
 </script>
 
 <script src="/js/jquery.min.js"></script>
-<script src="/js/bootstrap.bundle.js"></script>
+<script src="/js/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="/js/bootstrap-table.min.js"></script>
 <script src="/js/sweetalert2.min.js"></script>
 <script src="/js/sockjs.min.js"></script>

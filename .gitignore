@@ -8,9 +8,8 @@ target/
 !**/src/test/**/target/
 
 ### GRADLE ###
-.gradle
-8.8
-build
+.gradle/
+build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -57,3 +56,23 @@ logs/
 ### Local config files ###
 application-local.properties
 application-dev.properties
+
+### Editor backups / temp files ###
+*~
+*.tmp
+*.temp
+*.bak
+*.orig
+
+### IntelliJ local artifacts ###
+.idea/
+*.shelf
+
+### Generated / local runtime artifacts ###
+target/
+out/
+tmp/
+temp/
+
+### Test local assets ###
+src/test/resources/images/

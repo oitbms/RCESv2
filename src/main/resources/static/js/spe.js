@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 class Spe extends Base {
-    constructor(itemsPerPage = Infinity) {
-        super($(`.table-body`), itemsPerPage, () => {
+    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
+        super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data) => this.fullData(data)).catch(console.error);
         });
         this.currentStatus = 'NONE';
@@ -78,13 +78,14 @@ class Spe extends Base {
                 periodicity: dialog.find('textarea[name="periodicity"]').val(),
                 datePreparation: dialog.find('input[name="datePreparation"]').val(),
                 dateVerification: dialog.find('input[name="dateVerification"]').val(),
-                certificateNumber: dialog.find('textarea[name="certificateNumber"]').val()
+                certificateNumber: dialog.find('textarea[name="certificateNumber"]').val(),
+                organization: dialog.find('select[name="organization"]').val()
             };
             try {
                 const newSPE = yield this.createEntity('/api/spe/create-spe', formData);
                 this.saveMassive = {};
                 this.localCache.set(newSPE.id, newSPE);
-                this.dialog.close("create-dialog'");
+                this.dialog.close("create-dialog");
                 const newRow = this.createRow(newSPE);
                 $(`.table-body`).append(newRow);
                 button.prop('disabled', false);
@@ -104,6 +105,7 @@ class Spe extends Base {
             $('.table-row').each((_, element) => {
                 const row = $(element);
                 row.removeClass('selected');
+                row.find('.circle-row').removeClass('active-critical');
                 const rowId = row.attr('id');
                 this.selectedRows.delete(rowId);
                 const statusMatch = this.currentStatus === 'NONE' ||
@@ -134,6 +136,7 @@ class Spe extends Base {
             this.createContextMenu([
                 {
                     label: 'Удалить',
+                    idAction: 'deleteButton',
                     action: () => {
                         this.createConfirmationDialog("Подтвердите удаление оборудования: {outNumber}", { outNumber: rowName }).then((confirmed) => {
                             // @ts-ignore
@@ -159,7 +162,8 @@ class Spe extends Base {
             else
                 this.disableEditMode();
         }, true);
-        this.createHandler('click', '#print-button', () => this.print(`/api/report/print/spe`, Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')), true);
+        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
+        this.createHandler('click', '#unload-button', () => this.unload(), true);
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
@@ -203,7 +207,7 @@ class Spe extends Base {
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
                             <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
-                            <div data-name="name" contenteditable="false">
+                            <div data-name="name" contenteditable="false" padding-left="18px">
                                 ${spe.name}
                             </div>
                             <div class="equipments">
@@ -275,6 +279,62 @@ class Spe extends Base {
                     </div>
                 </div>`;
         return $(row);
+    }
+    onScroll() {
+    }
+    print() {
+        const _super = Object.create(null, {
+            print: { get: () => super.print }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.selectedRows || this.selectedRows.size === 0) {
+                return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+            }
+            this.reports = [
+                {
+                    name: 'Извещения о предъявлении СИ на поверку/калибровку',
+                    api: '/api/report/print/spe',
+                    params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
+                },
+                {
+                    name: 'Графики поверки (калибровки) средств измерений',
+                    api: '/api/report/print/spe-schedule',
+                    params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
+                    function: (format) => __awaiter(this, void 0, void 0, function* () {
+                        const nonOrganization = [];
+                        const groupByOrganization = Array.from(this.selectedRows)
+                            .reduce((map, id) => {
+                            const item = this.localCache.get(Number(id));
+                            const org = item.organization;
+                            if (org == null) {
+                                nonOrganization.push(item.outNumber);
+                            }
+                            else {
+                                map.set(org, [...(map.get(org) || []), item]);
+                            }
+                            return map;
+                        }, new Map());
+                        if (nonOrganization.length > 0) {
+                            this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
+                        }
+                        for (const [organization, speList] of Array.from(groupByOrganization)) {
+                            const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
+                            yield this.downloadFile('/api/report/print/spe-schedule', params);
+                        }
+                    })
+                }
+            ];
+            return _super.print.call(this);
+        });
+    }
+    unload() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.selectedRows || this.selectedRows.size === 0) {
+                return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+            }
+            const param = Array.from(this.selectedRows).map(id => `idList=${id}`).join('&');
+            yield this.downloadFile('/api/report/print/spe-unload', param);
+        });
     }
     saveSpe() {
         if (Object.keys(this.saveMassive).length === 0) {
@@ -394,14 +454,20 @@ class Spe extends Base {
             if (circle.hasClass('active')) {
                 this.selectedRows.clear();
                 allRows.removeClass('selected');
+                allRows.each((_, row) => {
+                    const circle = $(row).find('.circle-row');
+                    circle.removeClass('active-critical');
+                });
                 circle.removeClass('active');
             }
             else {
                 this.selectedRows.clear();
                 allRows.each((_, row) => {
+                    const circle = $(row).find('.circle-row');
                     const rowId = $(row).attr('id');
                     this.selectedRows.add(rowId);
                     $(row).addClass('selected');
+                    circle.addClass('active-critical');
                 });
                 circle.addClass('active');
             }
@@ -520,14 +586,32 @@ class Spe extends Base {
                 });
             }
             rowContainer.append(`
-        <div class="dialog-content-rows-row">
-            <div class="content-row-column col-450"></div>
-            <div class="content-row-column col-100"></div>
-            <div class="content-row-column col-100">
-                <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
-                <input type="file" id="fileInput" style="display: none;"/>
-            </div>
-        </div>`);
+            <div class="dialog-content-rows-row">
+                <div class="content-row-column col-450"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`);
+            const organizationSelect = $(`
+            <select class="organization-select form-control">
+                <option value="">Выберите организацию</option>
+                <option value="organization1">Борисоглебский филиал ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
+                <option value="organization3">ООО "СТАНДАРТ"</option>
+            </select>
+        `);
+            if (spe.organization) {
+                organizationSelect.find('option[value=""]').remove();
+                organizationSelect.val(spe.organization);
+            }
+            dialog.find('.organization-row').empty().append(organizationSelect);
+            $(document).off('change', '.organization-select').on('change', '.organization-select', (event) => {
+                const value = $(event.currentTarget).val();
+                this.saveMassive[currentSpeId] = Object.assign(Object.assign({}, this.saveMassive[currentSpeId]), { organization: value });
+                this.saveSpe();
+            });
             $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
             $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
                 const $row = $(event.currentTarget);
@@ -540,13 +624,14 @@ class Spe extends Base {
                 this.createContextMenu([
                     {
                         label: 'Удалить файл',
+                        idAction: 'contextMenu',
                         action: () => {
                             this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
                                 this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
                                 this.deleteRow(fileId);
                             });
                         }
-                    }
+                    },
                 ], mouseEvent.clientX, mouseEvent.clientY);
             });
             this.dialog.open('documentDialog');
@@ -562,7 +647,7 @@ class Spe extends Base {
             });
         }
         const url = spe.documentId
-            ? `/api/document/add-file-to-document/${spe.documentId}`
+            ? `/api/document/add-file-to-document-and-get/${spe.documentId}`
             : `/api/spe/create-document/${spe.id}`;
         const requestType = spe.documentId ? 'PATCH' : 'POST';
         this.requestToApi(url, requestType, formData).then((document) => {
@@ -586,6 +671,8 @@ class Spe extends Base {
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
             </div>`);
+            spe.documentId = document.id;
+            this.localCache.set(spe.id, spe);
             this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
         }).catch(console.error);
         currentInput.value = '';

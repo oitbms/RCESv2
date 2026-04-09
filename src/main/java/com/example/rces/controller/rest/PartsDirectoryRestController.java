@@ -4,6 +4,7 @@ import com.example.rces.dto.PartsDirectoryCreateDTO;
 import com.example.rces.dto.PartsDirectoryDTO;
 import com.example.rces.dto.RequestDataDTO;
 import com.example.rces.service.PartsDirectoryService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class PartsDirectoryRestController {
     }
 
     @PostMapping("/create-item")
-    public ResponseEntity<PartsDirectoryDTO> createItem(@RequestBody PartsDirectoryCreateDTO dto) {
+    public ResponseEntity<PartsDirectoryDTO> createItem(@Valid @RequestBody PartsDirectoryCreateDTO dto) {
         var newPartsDirectory = service.createItem(dto);
         return ResponseEntity.ok(newPartsDirectory);
     }

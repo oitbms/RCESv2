@@ -1,5 +1,8 @@
 package com.example.rces.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public class PartsDirectoryCreateDTO {
@@ -16,8 +19,11 @@ public class PartsDirectoryCreateDTO {
 
     private String scheme;
 
+    @NotNull
+    @Min(1)
     private Integer qty;
 
+    @Min(0)
     private Integer qtyCompleted;
 
     private String comment;

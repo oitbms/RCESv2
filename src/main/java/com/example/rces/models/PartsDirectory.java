@@ -1,7 +1,19 @@
 package com.example.rces.models;
 
 import com.example.rces.models.enums.Color;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -48,11 +60,15 @@ public class PartsDirectory extends BaseAuditingEntity {
     @Column(name = "steel")
     private String steel;
 
-    @Column(name = "qty")
+    @NotNull
+    @Min(1)
+    @Column(name = "qty", nullable = false)
     private Integer qty;
 
-    @Column(name = "qty_completed")
-    private Integer qtyCompleted;
+    @NotNull
+    @Min(0)
+    @Column(name = "qty_completed", nullable = false)
+    private Integer qtyCompleted = 0;
 
     @Column(name = "measurements")
     private String measurements;

@@ -13,18 +13,29 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
+    private final EmployeeService userDetailsService;
+
     @Autowired
-    private EmployeeService userDetailsService;
+    public CustomAuthenticationProvider(EmployeeService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
-        Employee userDetails = userDetailsService.loadUserByUsername(username);
-        try {
-            return new UsernamePasswordAuthenticationToken(userDetails, userDetails, userDetails.getAuthorities());
-        } catch (NullPointerException e) {
-            throw new BadCredentialsException(e.getMessage());
+        if (username == null || username.isBlank()) {
+            throw new BadCredentialsException("Username is required");
         }
+
+        Employee userDetails = userDetailsService.loadUserByUsername(username);
+        if (userDetails == null) {
+            throw new BadCredentialsException("Invalid username");
+        }
+        if (!userDetails.isEnabled()) {
+            throw new BadCredentialsException("User is disabled");
+        }
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     @Override

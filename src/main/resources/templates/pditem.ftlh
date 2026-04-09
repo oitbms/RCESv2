@@ -6,11 +6,10 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
     <script src="/js/base/dialog.js"></script>
     <script src="/js/base/cache.js"></script>
     <script src="/js/base/base.js"></script>
@@ -38,6 +37,11 @@
                     <i class="fas fa-floppy-disk"></i>
                 </button>
             </div>
+            <div class="tool print tooltip-trigger" id="print-button" data-description="Печать отчета">
+                <button>
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
             <div class="tool create tooltip-trigger" id="create-button" data-description="Добавить запись">
                 <button>
                     <i class="fas fa-plus"></i>
@@ -48,6 +52,7 @@
     <div class="data-container">
         <div class="table-header">
             <div class="table-header-cell" style="width: var(--customerorder);">
+                <div class="circle circle-header tooltip-trigger" data-description="Выделить все строки"></div>
                 Номер заказа
             </div>
             <div class="table-header-cell" style="width: var(--name);">
@@ -123,17 +128,17 @@
 
             <div class="form-group">
                 <label class="form-label">Количество</label>
-                <input type="text" class="form-control" name="qty" required>
+                <input type="number" class="form-control" name="qty" min="1" step="1" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Выполненное количество</label>
-                <input type="text" class="form-control" name="qtyCompleted" required>
+                <input type="number" class="form-control" name="qtyCompleted" min="0" step="1" value="0">
             </div>
 
             <div class="form-group">
                 <label class="form-label">Комментарий</label>
-                <textarea class="form-control" name="comment" required></textarea>
+                <textarea class="form-control" name="comment"></textarea>
             </div>
 
             <div class="form-group">
@@ -143,7 +148,7 @@
 
             <div class="form-group">
                 <label class="form-label">Программа</label>
-                <input type="text" class="form-control" name="program" required>
+                <input type="text" class="form-control" name="program">
             </div>
 
             <div class="form-group">
@@ -155,8 +160,7 @@
 
             <div class="form-group">
                 <label class="form-label">Статус</label>
-                <select class="form-control" name="status" required>
-                    <option value="">Выберите статус</option>
+                <select class="form-control" name="status">
                     <option value="NEW">Новый</option>
                     <option value="WORK">В работе</option>
                     <option value="REQUIRED">Требуется в строк</option>

@@ -1,11 +1,11 @@
 package com.example.rces.api.test;
 
-import com.example.rces.data.Employee;
 import io.restassured.specification.RequestSpecification;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static com.example.rces.api.Specs.request;
 import static io.restassured.RestAssured.given;
@@ -13,6 +13,8 @@ import static io.restassured.RestAssured.given;
 public class BaseApiTest {
     private static final Path TOKEN_FILE = Paths.get("build/tmp/test-token.txt");
     private static String token;
+    private static final String API_AUTH_USERNAME = System.getProperty("api.auth.username", System.getenv().getOrDefault("API_AUTH_USERNAME", "admin"));
+    private static final String API_AUTH_PASSWORD = System.getProperty("api.auth.password", System.getenv().getOrDefault("API_AUTH_PASSWORD", "admin"));
 
     public static synchronized String getJwtToken() {
         if (token != null) return token;
@@ -22,7 +24,10 @@ public class BaseApiTest {
         token = given()
                 .spec(request())
                 .basePath("/api/auth/login")
-                .body(Employee.admin_user)
+                .body(Map.of(
+                        "username", API_AUTH_USERNAME,
+                        "password", API_AUTH_PASSWORD
+                ))
                 .post()
                 .then()
                 .statusCode(200)

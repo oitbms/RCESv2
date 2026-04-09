@@ -9,20 +9,24 @@ CREATE TABLE IF NOT EXISTS rces.parts_directory
     thickness         VARCHAR(255),
     steel             VARCHAR(255),
     qty               INT       NOT NULL,
-    qty_completed     INT       NOT NULL,
+    qty_completed     INT       NOT NULL DEFAULT 0,
     measurements      VARCHAR(255),
     program           VARCHAR(255),
     machine           VARCHAR(255),
     status            VARCHAR(50),
     comment           VARCHAR(255),
     color             VARCHAR(50),
-    date_completion    DATETIME,
+    date_completion   DATETIME,
     created_date      TIMESTAMP,
     updated_date      TIMESTAMP NULL,
     created_by        BIGINT    NOT NULL DEFAULT 1,
     updated_by        BIGINT    NULL,
 
 
+    CONSTRAINT chk_parts_directory_qty_min
+        CHECK (qty >= 1),
+    CONSTRAINT chk_parts_directory_qty_completed_min
+        CHECK (qty_completed >= 0),
     FOREIGN KEY (created_by) REFERENCES rces.employees (id),
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
     FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
