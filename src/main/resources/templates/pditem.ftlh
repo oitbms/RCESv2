@@ -12,6 +12,7 @@
     <script src="/js/jquery.min.js"></script>
     <script src="/js/base/dialog.js"></script>
     <script src="/js/base/cache.js"></script>
+    <script src="/js/base/type/generalType.js"></script>
     <script src="/js/base/base.js"></script>
     <script src="/js/pditem.js"></script>
     <title>Справочник</title>

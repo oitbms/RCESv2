@@ -1,19 +1,9 @@
 interface Dialog {
     open(dialogId: string, options?: DialogOptions): void;
-
     close(dialogId: string): void;
-
     clearDialog(dialogId: string): void;
-
     isOpen(dialogId: string): boolean;
-
     closeAll(): void;
-}
-
-interface DialogOptions {
-    clearFields?: boolean;
-    onClose?: () => void;
-    onOpen?: () => void;
 }
 
 class DialogImpl implements Dialog {

@@ -1,43 +1,4 @@
-interface FileDTO {
-    name: string;
-    data: [];
-}
-
-interface ReportItem {
-    api: string;
-    name: string;
-    params: any;
-    function?: Function;
-}
-
-interface RequestDataDTO {
-    data: any;
-    count: number
-}
-
-interface IntegerFieldValidationConfig {
-    key: string;
-    value: any;
-    min: number;
-    label: string;
-    defaultValue?: number;
-}
-
-enum NotificationType {
-    SUCCESS = 'success',
-    ERROR = 'error',
-    WARNING = 'warning',
-    INFO = 'info'
-}
-
-enum Color {
-    NONE = 'NONE',
-    RED = 'RED',
-    GREEN = 'GREEN',
-    YELLOW = "YELLOW",
-    GREY = 'GREY',
-    BLUE = 'BLUE'
-}
+/// <reference path="type/generalType.ts" />
 
 abstract class Base {
     private locks = new Map<string, boolean>();

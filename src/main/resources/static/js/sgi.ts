@@ -490,7 +490,7 @@ class Sgi extends Base {
 
         $('#editing-dialog #saveEditBtn').off('click').on('click', async (e) => {
             if (currentSGI.agree) {
-                this.ccreateNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
+                this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
                 return;
             }
             e.preventDefault;
