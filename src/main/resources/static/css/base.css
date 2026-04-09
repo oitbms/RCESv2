@@ -34,10 +34,6 @@ dialog {
     bottom: 25%;
     left: 25%;
     transition: var(--dialog-open-transition);
-
-    &::backdrop {
-        display: none !important;
-    }
 }
 
 dialog[open] {

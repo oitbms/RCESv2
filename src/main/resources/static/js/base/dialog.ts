@@ -39,23 +39,24 @@ class DialogImpl implements Dialog {
             return;
         }
 
-        dialogElement.style.zIndex = this.currentZIndex.toString();
-
         if (options.clearFields !== false) {
             this.clearDialog(dialogId);
         }
+
+        dialogElement.style.zIndex = this.currentZIndex.toString();
 
         if (this.activeDialogs.size === 0) {
             document.body.classList.add('no-scroll');
             this.addBackdrop();
         } else {
-            this.activeDialogs.forEach((_, dialogId) => {
-                const el = document.getElementById(dialogId);
+            this.activeDialogs.forEach((_, id) => {
+                const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
         }
 
-        dialogElement.showModal();
+        // Используем show() вместо showModal() — backdrop управляется вручную
+        dialogElement.show();
         this.activeDialogs.set(dialogId, this.currentZIndex);
         this.currentZIndex++;
         document.documentElement.style.setProperty('--dialog-z-index', this.currentZIndex.toString());
@@ -68,38 +69,34 @@ class DialogImpl implements Dialog {
 
     close(dialogId: string): void {
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
-        if (dialogElement) {
-            if (dialogElement.close) {
-                dialogElement.close();
-            } else {
-                dialogElement.style.display = 'none';
-                dialogElement.removeAttribute('open');
-            }
+        if (!dialogElement) return;
 
-            this.activeDialogs.delete(dialogId);
+        dialogElement.close?.();
+        dialogElement.style.display = '';
 
-            if (this.activeDialogs.size === 0) {
-                document.body.classList.remove('no-scroll');
-                this.removeBackdrop();
+        this.activeDialogs.delete(dialogId);
 
-                const rootStyle = getComputedStyle(document.documentElement);
-                const cssZIndex = rootStyle.getPropertyValue('--dialog-z-index');
-                this.currentZIndex = cssZIndex ? parseInt(cssZIndex) : this.BASE_Z_INDEX;
-            } else {
-                const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
-                this.currentZIndex = maxZIndex + 1;
-                document.documentElement.style.setProperty('--dialog-z-index', this.currentZIndex.toString());
+        if (this.activeDialogs.size === 0) {
+            document.body.classList.remove('no-scroll');
+            this.removeBackdrop();
 
-                let topDialogId = '';
-                this.activeDialogs.forEach((zIndex, id) => {
-                    if (zIndex === maxZIndex) topDialogId = id;
-                });
+            const rootStyle = getComputedStyle(document.documentElement);
+            const cssZIndex = rootStyle.getPropertyValue('--dialog-z-index');
+            this.currentZIndex = cssZIndex ? parseInt(cssZIndex) : this.BASE_Z_INDEX;
+        } else {
+            const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
+            this.currentZIndex = maxZIndex + 1;
+            document.documentElement.style.setProperty('--dialog-z-index', this.currentZIndex.toString());
 
-                if (topDialogId) {
-                    const topDialog = document.getElementById(topDialogId);
-                    if (topDialog) {
-                        topDialog.style.removeProperty('display');
-                    }
+            let topDialogId = '';
+            this.activeDialogs.forEach((zIndex, id) => {
+                if (zIndex === maxZIndex) topDialogId = id;
+            });
+
+            if (topDialogId) {
+                const topDialog = document.getElementById(topDialogId);
+                if (topDialog) {
+                    topDialog.style.removeProperty('display');
                 }
             }
         }
@@ -136,6 +133,7 @@ class DialogImpl implements Dialog {
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
         if (!dialogElement) return;
 
+        // Клик по backdrop закрывает диалог
         const handleBackdropClick = (e: MouseEvent) => {
             const rect = dialogElement.getBoundingClientRect();
             const isInDialog = (
@@ -151,36 +149,44 @@ class DialogImpl implements Dialog {
             }
         };
 
+        // Escape закрывает верхний диалог
         const handleKeyDown = (e: KeyboardEvent) => {
-            const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
-            const currentDialogZIndex = this.activeDialogs.get(dialogId);
-
-            if (e.key === 'Escape' &&
-                currentDialogZIndex === maxZIndex &&
-                this.isOpen(dialogId)) {
-                e.preventDefault();
-                this.close(dialogId);
-                if (onCloseCallback) onCloseCallback();
+            if (e.key === 'Escape' && this.isOpen(dialogId)) {
+                const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
+                const currentZIndex = this.activeDialogs.get(dialogId);
+                if (currentZIndex === maxZIndex) {
+                    e.preventDefault();
+                    this.close(dialogId);
+                    if (onCloseCallback) onCloseCallback();
+                }
             }
         };
 
-        dialogElement.removeEventListener('click', handleBackdropClick);
-        document.removeEventListener('keydown', handleKeyDown);
+        // Удаляем старые обработчики (по новым ссылкам)
+        const oldBackdropClick = (dialogElement as any)._dialogBackdropClick;
+        const oldKeyDown = (dialogElement as any)._dialogKeyDown;
+        if (oldBackdropClick) dialogElement.removeEventListener('click', oldBackdropClick);
+        if (oldKeyDown) document.removeEventListener('keydown', oldKeyDown);
 
-        if (!dialogElement.showModal) {
-            dialogElement.addEventListener('click', handleBackdropClick);
-        }
+        dialogElement.addEventListener('click', handleBackdropClick);
         document.addEventListener('keydown', handleKeyDown);
 
-        const cancelBtn = dialogElement.querySelector('#cancelButton') as HTMLButtonElement;
+        // Сохраняем ссылки для последующего удаления
+        (dialogElement as any)._dialogBackdropClick = handleBackdropClick;
+        (dialogElement as any)._dialogKeyDown = handleKeyDown;
+
+        // Кнопка отмены
+        const cancelBtn = dialogElement.querySelector('[name="closeDialog"], #cancelButton') as HTMLElement;
         if (cancelBtn) {
-            const handleCancelClick = () => {
+            const oldCancel = (cancelBtn as any)._dialogCancelClick;
+            if (oldCancel) cancelBtn.removeEventListener('click', oldCancel);
+
+            const handleCancel = () => {
                 this.close(dialogId);
                 if (onCloseCallback) onCloseCallback();
             };
-
-            cancelBtn.removeEventListener('click', handleCancelClick);
-            cancelBtn.addEventListener('click', handleCancelClick);
+            cancelBtn.addEventListener('click', handleCancel);
+            (cancelBtn as any)._dialogCancelClick = handleCancel;
         }
     }
 
@@ -188,11 +194,8 @@ class DialogImpl implements Dialog {
         if (!document.querySelector('.backdrop')) {
             const backdrop = document.createElement('div');
             backdrop.className = 'backdrop';
+            backdrop.style.zIndex = this.BACKDROP_Z_INDEX.toString();
             document.body.appendChild(backdrop);
-
-            backdrop.addEventListener('click', () => {
-                this.closeAll();
-            });
         }
     }
 
@@ -206,30 +209,16 @@ class DialogImpl implements Dialog {
     isOpen(dialogId: string): boolean {
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
         if (!dialogElement) return false;
-
-        if (dialogElement.open !== undefined) {
-            return dialogElement.open;
-        }
-
-        if (dialogElement.hasAttribute('open')) {
-            return true;
-        }
-
         return this.activeDialogs.has(dialogId);
     }
 
     closeAll(): void {
         const dialogIds = Array.from(this.activeDialogs.keys());
-
         dialogIds.forEach(dialogId => {
             const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
             if (dialogElement) {
-                if (dialogElement.close) {
-                    dialogElement.close();
-                } else {
-                    dialogElement.style.display = 'none';
-                    dialogElement.removeAttribute('open');
-                }
+                dialogElement.close?.();
+                dialogElement.style.display = '';
             }
         });
 

@@ -523,4 +523,565 @@ abstract class Base {
         };
     };
 
+    // ============================================================
+    // УНИВЕРСАЛЬНЫЕ МЕТОДЫ ДЛЯ НАСЛЕДНИКОВ
+    // ============================================================
+
+    // --- Поиск / фильтрация ---
+
+    public searchText: string = '';
+
+    public readonly bindSearchInput = (selector: string, onSearch?: (text: string) => void): void => {
+        this.createHandler('input', selector, (event: Event) => {
+            this.searchText = $(event.target).val().toString().toLowerCase().trim();
+            if (onSearch) {
+                onSearch(this.searchText);
+            } else {
+                this.applyFilters();
+            }
+        }, true);
+    };
+
+    // Переопределяется в наследниках для конкретной логики фильтрации
+    protected applyFilters(): void {
+        // По умолчанию — no-op; наследники переопределяют
+    }
+
+    // --- Режим редактирования ---
+
+    public editMode: boolean = false;
+
+    /**
+     * Включает режим редактирования для выбранных строк или конкретной строки.
+     * @param dateTimeFields — массив имён полей, которые должны стать <input type="date">
+     * @param row — конкретная строка (jQuery-объект), если null — все выбранные строки
+     * @param specialFields — объекты {name: string, transform: ($div: any) => any} для кастомных полей
+     */
+    public readonly enableEditMode = (
+        dateTimeFields: string[] = [],
+        row?: any,
+        specialFields: { name: string, transform: ($div: any) => any }[] = []
+    ): void => {
+        const processElement = ($div: any) => {
+            const dataName: string = $div.attr('data-name');
+            const special = specialFields.find(f => f.name === dataName);
+            if (special) {
+                $div.replaceWith(special.transform($div));
+                return;
+            }
+            if (dateTimeFields.indexOf(dataName) !== -1) {
+                const rowId = row ? row.attr('id') : $div.closest('.table-row').attr('id');
+                const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
+                const value = this.localCache.get(cacheKey)?.[dataName];
+                const element = $(`<input type="date" data-name="${dataName}">`).val(value);
+                $div.replaceWith(element);
+            } else {
+                $div.attr('contenteditable', 'true');
+            }
+        };
+
+        if (row) {
+            row.find('div[contenteditable="false"]').each(function () {
+                processElement($(this));
+            });
+            this.editMode = true;
+            return;
+        }
+
+        for (const rowId of this.selectedRows) {
+            const $row = $(`.table-row[id="${rowId}"]`);
+            $row.find('div[contenteditable="false"]').each(function () {
+                processElement($(this));
+            });
+        }
+        this.editMode = true;
+    };
+
+    /**
+     * Выключает режим редактирования.
+     * @param dateTimeFields — массив имён полей с датами
+     * @param protectedFields — поля, которые не трогаем (document, references и т.п.)
+     * @param row — конкретная строка, если null — все выбранные
+     * @param extraCenterFields — поля, которые должны быть с классом center
+     */
+    public readonly disableEditMode = (
+        dateTimeFields: string[] = [],
+        protectedFields: string[] = [],
+        row?: any,
+        extraCenterFields: string[] = []
+    ): void => {
+        if (this.editMode &&
+            Object.keys(this.saveMassive).length > 0 &&
+            ((row && row.find('.change').length > 0) || !row && $('.table-row .change').length > 0)) {
+            this.createNotification("Сохраните изменения", NotificationType.WARNING);
+            return;
+        }
+
+        const centerFields = new Set([...dateTimeFields, ...extraCenterFields]);
+
+        const processElement = ($field: any) => {
+            const dataName = $field.attr("data-name");
+            if (protectedFields.indexOf(dataName) !== -1) return;
+
+            let value: string;
+            if (dateTimeFields.indexOf(dataName) !== -1) {
+                value = this.formatDate($field.val());
+            } else {
+                value = $field.is('select') ? $field.find('option:selected').text() : $field.text();
+            }
+            const centerClass = centerFields.has(dataName) ? ' center' : '';
+            $field.replaceWith(`<div class="field-container${centerClass}" data-name="${dataName}" contenteditable="false">${value}</div>`);
+        };
+
+        if (row) {
+            row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
+                processElement($(this));
+            });
+            return;
+        }
+
+        for (const rowId of this.selectedRows) {
+            const $row = $(`.table-row[id="${rowId}"]`);
+            $row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
+                processElement($(this));
+            });
+        }
+        this.editMode = false;
+    };
+
+    /**
+     * Универсальный toggle выбора строки (для circle-row клика).
+     * @param event — событие клика
+     * @param checkEditChanges — проверять несохранённые изменения перед снятием выделения
+     */
+    public readonly toggleRowSelection = (event: Event, checkEditChanges: boolean = true): void => {
+        const circle = $(event.currentTarget);
+        const currentRow = circle.closest('.table-row, .row-items-row');
+        const currentRowId: string = currentRow.attr('id');
+        const changes = checkEditChanges ? currentRow.find('.change').length : 0;
+
+        if (this.editMode && changes > 0) {
+            this.createNotification("Сохраните изменения", NotificationType.WARNING);
+            return;
+        }
+
+        if (!this.selectedRows.has(currentRowId)) {
+            this.selectedRows.add(currentRowId);
+            currentRow.addClass('selected');
+            circle.addClass('active-critical');
+        } else {
+            this.selectedRows.delete(currentRowId);
+            currentRow.removeClass('selected');
+            circle.removeClass('active-critical');
+            // Снимаем выделение с header-circle если нет выбранных строк
+            if (this.selectedRows.size === 0) {
+                $('.circle-header').removeClass('active');
+            }
+        }
+    };
+
+    /**
+     * Выбрать/снять все видимые строки (для circle-header).
+     * @param event — событие
+     * @param rowSelector — селектор строки (по умолчанию '.table-row')
+     * @param circleRowSelector — селектор кружка в строке
+     */
+    public readonly toggleAllRowsSelection = (
+        event: Event,
+        rowSelector: string = '.table-row',
+        circleRowSelector: string = '.circle-row'
+    ): void => {
+        if (this.editMode) {
+            this.createNotification('Выключите режим редактирования', NotificationType.INFO);
+            return;
+        }
+        const circle = $(event.currentTarget);
+        const allRows = $(`${rowSelector}:visible`);
+
+        if (circle.hasClass('active')) {
+            this.selectedRows.clear();
+            allRows.removeClass('selected');
+            allRows.each((_, row) => {
+                $(row).find(circleRowSelector).removeClass('active-critical');
+            });
+            circle.removeClass('active');
+        } else {
+            this.selectedRows.clear();
+            allRows.each((_, row) => {
+                const $row = $(row);
+                const rowId = $row.attr('id');
+                this.selectedRows.add(rowId);
+                $row.addClass('selected');
+                $row.find(circleRowSelector).addClass('active-critical');
+            });
+            circle.addClass('active');
+        }
+    };
+
+    /**
+     * Привязывает обработчик input для отслеживания изменений в полях строки.
+     * Автоматически сохраняет в saveMassive[id][name] = value.
+     */
+    public readonly bindFieldChanges = (
+        fieldSelector: string = '[data-name]',
+        rowSelector: string = '.table-row'
+    ): void => {
+        this.createHandler('input', fieldSelector, (event: Event) => {
+            const $el = $(event.target);
+            const id = $el.closest(rowSelector).attr('id');
+            const name = $el.attr('data-name');
+            const value = $el.is('div') ? $el.text().trim() : $el.val();
+            this.saveMassive[id] = {...this.saveMassive[id], [name]: value};
+            $el.addClass('change');
+        }, true);
+    };
+
+    /**
+     * Универсальный диалог выбора элемента из списка с поиском.
+     * @param fieldName — имя поля ('employee' / 'subDivision')
+     * @param dialogId — ID диалога
+     * @param modalDiv — jQuery-элемент, куда вставить результат
+     * @param currentId — ID текущей строки (для saveMassive)
+     * @param dataFilter — опциональный фильтр данных
+     * @param columns — колонки для рендера [{key, label}]
+     */
+    public readonly openSelectionDialog = async (
+        fieldName: string,
+        dialogId: string,
+        modalDiv: any,
+        currentId?: string | number,
+        dataFilter?: (items: any[]) => any[],
+        columns: { key: string, label: string, width?: string }[] = [{ key: 'name', label: 'Наименование', width: '250' }]
+    ): Promise<void> => {
+        const dialog = $(`#${dialogId}`);
+        const rowContainer = dialog.find('.dialog-content-rows');
+        const searchInput = dialog.find('.choice-field input');
+        const changeButton = dialog.find('[id^="change"]').first();
+        let selected: any;
+
+        const rawData: any[] = await this.cache.get(fieldName);
+        const data = dataFilter ? dataFilter(rawData) : rawData;
+
+        const renderRows = (items: any[]) => {
+            rowContainer.empty();
+            items.forEach(item => {
+                let colsHtml = columns.map(col =>
+                    `<div class="content-row-column col-${col.width || '250'}">${item[col.key] || (item[col.key + 'Name'] ? item[col.key + 'Name'] : '')}</div>`
+                ).join('');
+                rowContainer.append(`<div class="dialog-content-rows-row" data-id="${item.id}">${colsHtml}</div>`);
+            });
+        };
+
+        renderRows(data);
+
+        searchInput.off('input').on('input', function () {
+            const searchText = $(this).val().toString().toLowerCase().trim();
+            const filtered = data.filter((e: any) =>
+                columns.some(col => (e[col.key] || '').toString().toLowerCase().indexOf(searchText) !== -1)
+            );
+            renderRows(filtered);
+        });
+
+        this.dialog.open(dialogId);
+
+        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
+            const id = $(this).data('id');
+            selected = data.find((e: any) => e.id === id);
+            $('.dialog-content-rows-row').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
+        changeButton.off('click').on('click', () => {
+            if (!selected) {
+                const label = fieldName === 'employee' ? 'сотрудника' : 'подразделение';
+                this.createNotification(`Выберите ${label} из списка`, NotificationType.WARNING);
+                return;
+            }
+            modalDiv.text(selected.name);
+            modalDiv.val(selected.name);
+
+            if (currentId) {
+                this.saveMassive[currentId] = {...this.saveMassive[currentId], [fieldName]: selected};
+            } else {
+                this.saveMassive[fieldName] = selected;
+            }
+
+            modalDiv.addClass('change-textarea');
+            this.dialog.close(dialogId);
+        });
+
+        modalDiv.addClass('change');
+    };
+
+    // --- Диалог документов ---
+
+    /**
+     * Универсальный диалог просмотра/загрузки файлов документа.
+     * @param event — событие клика на иконку документа
+     * @param documentId — ID документа (или поле в кэше)
+     * @param getDocumentUrl — URL для получения документа
+     * @param uploadUrlBase — базовый URL для загрузки (с условием PATCH/POST)
+     * @param deleteUrlBase — базовый URL для удаления
+     * @param onFileAdded — колбэк после добавления файла
+     */
+    public readonly openDocumentDialog = async (
+        event: Event,
+        documentId: number | null,
+        getDocumentUrl: string,
+        uploadUrlBase: string,
+        deleteUrlBase: string,
+        onFileAdded?: (files: any) => void
+    ): Promise<void> => {
+        const dialog = $('#documentDialog');
+        const currentRow = $(event.currentTarget).closest('.table-row, .table-card, .row-items-row');
+        const rowId = currentRow.attr('id');
+        const rowContainer = dialog.find('.dialog-content-rows');
+
+        rowContainer.empty();
+
+        if (documentId !== null) {
+            const document: any = await this.requestToApi(getDocumentUrl, "GET");
+            this.localCache.set('document', document);
+            document.files?.forEach((file: any) => {
+                this.createDocumentFileRow(file, rowContainer, deleteUrlBase);
+            });
+        }
+
+        rowContainer.append(`
+            <div class="dialog-content-rows-row" id="newFileRow" style="height: 50px">
+                <div class="content-row-column col-450" style="border: none;"></div>
+                <div class="content-row-column col-100"></div>
+                <div class="content-row-column col-100 center" style="padding: 0;border-bottom: 1px solid var(--border-color);">
+                    <i style="float: right" class="uploadIcon upload-file fas fa-file-upload tooltip-trigger" data-description="Добавить документацию" onclick="$('#fileInput').click()"></i>
+                    <input type="file" id="fileInput" style="display: none;"/>
+                </div>
+            </div>`
+        );
+
+        dialog.off('change', '#fileInput').on('change', '#fileInput', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                Array.from(e.target.files).forEach((file: File) => {
+                    const fileName = file.name;
+                    if (rowContainer.find(`.col-450:contains("${fileName}")`).length > 0) {
+                        this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
+                        return;
+                    }
+                    this.uploadDocumentFile(e, rowId, documentId, uploadUrlBase, (files) => {
+                        rowContainer.find('#newFileRow').remove();
+                        const fileList = files.files || files;
+                        for (const f of fileList) {
+                            this.createDocumentFileRow(f, rowContainer, deleteUrlBase);
+                        }
+                        if (onFileAdded) onFileAdded(files);
+                    });
+                });
+            }
+        });
+
+        // Контекстное меню удаления файла
+        dialog.off('contextmenu', '.dialog-content-rows-row').on('contextmenu', '.dialog-content-rows-row', (ev: Event) => {
+            const $row = $(ev.currentTarget);
+            const fileId = $row.attr('id');
+            if (!fileId || fileId === 'newFileRow') return;
+            ev.preventDefault();
+            const mouseEv = ev as MouseEvent;
+            this.createContextMenu([
+                {
+                    label: 'Удалить файл',
+                    idAction: "deleteFileButton",
+                    action: () => {
+                        this.deleteEntity(`${deleteUrlBase}/${fileId}`).then(() => {
+                            this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
+                            this.deleteRow(fileId);
+                        });
+                    }
+                }
+            ], mouseEv.clientX, mouseEv.clientY);
+        });
+
+        this.dialog.open('documentDialog');
+    };
+
+    /**
+     * Создаёт строку файла в диалоге документов.
+     */
+    public readonly createDocumentFileRow = (file: any, rowContainer: any, deleteUrlBase: string): void => {
+        const rowHtml = `
+            <div class="dialog-content-rows-row" id="${file.id}">
+                <div class="content-row-column col-450">${file.baseFileName}</div>
+                <div class="content-row-column col-100 center">${file.type}</div>
+                <div class="content-row-column col-100 file-items">
+                    <i class="fas fa-arrows-rotate reload-icon tooltip-trigger" data-description="Обновить документацию" data-file-id="${file.id}" onclick="$('#reloadFileInput').click()"></i>
+                    <input type="file" id="reloadFileInput" class="reload-file-input" style="display: none;"/>
+                    <i style="float: right" class="download fas fa-download tooltip-trigger" data-description="Скачать документацию" data-file-id="${file.id}"></i>
+                </div>
+            </div>`;
+        rowContainer.append(rowHtml);
+    };
+
+    /**
+     * Загрузка файла в документ.
+     */
+    public readonly uploadDocumentFile = async (
+        event: Event,
+        rowId: string,
+        documentId: number | null,
+        uploadUrlBase: string,
+        onSuccess: (files: any) => void
+    ): Promise<void> => {
+        const formData = new FormData();
+        const currentInput = event.currentTarget as HTMLInputElement;
+        if (currentInput.files) {
+            Array.from(currentInput.files).forEach(file => formData.append('files', file));
+        }
+
+        const url = documentId
+            ? `${uploadUrlBase}/${documentId}`
+            : uploadUrlBase;
+        const requestType = documentId ? 'PATCH' : 'POST';
+        const unlock = this.lockScreen();
+
+        this.requestToApi(url, requestType, formData)
+            .then(onSuccess)
+            .catch(console.error)
+            .then(() => unlock());
+
+        currentInput.value = '';
+    };
+
+    /**
+     * Обработчик клика на иконку скачивания в диалоге.
+     * @param event — событие
+     * @param baseUrl — базовый URL для скачивания (без ID файла)
+     */
+    public readonly handleDownloadFileFromDialog = (event: Event, baseUrl: string): void => {
+        const fileId = $(event.target).closest('.dialog-content-rows-row').attr('id');
+        if (fileId) {
+            this.downloadFile(`${baseUrl}/${fileId}`).catch(console.error);
+        } else {
+            this.createNotification("Файл не найден", NotificationType.INFO);
+        }
+    };
+
+    // --- Контекстное меню удаления строки ---
+
+    /**
+     * Создаёт контекстное меню с пунктом «Удалить» для строки.
+     * @param event — событие contextmenu
+     * @param deleteUrl — URL удаления (с ID строки)
+     * @param entityName — название сущности для сообщения
+     * @param nameSelector — селектор для получения имени (по умолчанию '[data-name="name"]')
+     * @param onAfterDelete — колбэк после удаления
+     */
+    public readonly createRowDeleteContextMenu = (
+        event: Event,
+        deleteUrl: string,
+        entityName: string = 'запись',
+        nameSelector: string = '[data-name="name"]',
+        onAfterDelete?: () => void
+    ): void => {
+        if ($(event.target).is('div[contenteditable="true"]') || $(event.target).closest('div[contenteditable="true"]').length > 0) {
+            return;
+        }
+        event.preventDefault();
+        const mouseEvent = event as MouseEvent;
+        const $row = $(event.currentTarget);
+        const rowName = $row.find(nameSelector).text().trim();
+        const rowId = $row.attr('id');
+
+        this.createContextMenu([
+            {
+                label: 'Удалить',
+                idAction: "deleteEntityButton",
+                action: () => {
+                    this.createConfirmationDialog(`Подтвердите удаление ${entityName}: {name}`, {name: rowName}).then((confirmed) => {
+                        // @ts-ignore
+                        if (confirmed) {
+                            this.deleteEntity(`${deleteUrl}/${rowId}`).then(() => {
+                                this.deleteRow(rowId);
+                                this.createNotification(`${entityName} успешно удалён(а)`, NotificationType.SUCCESS);
+                                if (onAfterDelete) onAfterDelete();
+                            }).catch(() => {
+                                this.createNotification(`Ошибка при удалении ${entityName}`, NotificationType.ERROR);
+                            });
+                        }
+                    });
+                }
+            }
+        ], mouseEvent.clientX, mouseEvent.clientY);
+    };
+
+    /**
+     * Универсальный обработчик формы создания сущности.
+     * @param event — событие
+     * @param url — URL для POST
+     * @param dialogId — ID диалога с формой
+     * @param extractData — функция извлечения данных из формы {fieldName: $dialog => value}
+     * @param onSuccess — колбэк (newItem) => void
+     * @param useFormData — использовать FormData (true) или JSON (false)
+     */
+    public readonly handleCreateForm = async (
+        event: Event,
+        url: string,
+        dialogId: string,
+        extractData: ($dialog: any) => any,
+        onSuccess: (newItem: any) => void,
+        useFormData: boolean = false
+    ): Promise<void> => {
+        event.preventDefault();
+        const button = $(event.target);
+        const dialog = $(`#${dialogId}`);
+        const form = button.closest('form').get(0);
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        button.prop('disabled', true);
+
+        let payload: any;
+        if (useFormData) {
+            payload = new FormData(form);
+        } else {
+            const data = extractData(dialog);
+            payload = data instanceof FormData ? data : JSON.stringify(data);
+        }
+
+        try {
+            const newItem = await this.createEntity(url, payload);
+            this.saveMassive = {};
+            this.localCache.set(newItem.id, newItem);
+            this.dialog.close(dialogId);
+            onSuccess(newItem);
+            this.createNotification('Успешно создано', NotificationType.SUCCESS);
+        } catch (error) {
+            this.saveMassive = {};
+            form?.reset?.();
+            this.createNotification('Ошибка при создании', NotificationType.ERROR);
+        } finally {
+            button.prop('disabled', false);
+        }
+    };
+
+    /**
+     * Универсальное сохранение изменений из saveMassive.
+     * @param updateUrl — URL обновления
+     * @param getItemVersionAndChanges — функция для маппинга из кэша
+     */
+    public readonly saveMassiveChanges = async (
+        updateUrl: string,
+        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => { id: string | number, version: any, changes: any }
+    ): Promise<void> => {
+        if (Object.keys(this.saveMassive).length === 0) return;
+
+        const itemsArray = Object.keys(this.saveMassive).map(id => {
+            const cacheData = this.localCache.get(id);
+            return getItemVersionAndChanges(id, cacheData, this.saveMassive[id]);
+        });
+
+        await this.save(updateUrl, ...itemsArray);
+        this.selectedRows.forEach(id => this.selectedRows.delete(id));
+    };
+
 }

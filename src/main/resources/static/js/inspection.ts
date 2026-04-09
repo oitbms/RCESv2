@@ -447,112 +447,26 @@ class Inspection extends Base {
 
     private async changeSubDivision(event: Event) {
         event.preventDefault();
-
         const modalDiv = $(event.currentTarget);
-        const dialog = $('#subDivisionDialog');
-        const rowContainer = dialog.find('.dialog-content-rows');
-        const searchInput = dialog.find('.choice-field input');
-        const changeButton = $('#changeSubDivision');
         const currentId = modalDiv.closest('#addViolationDialog').data('inspection-id');
-        let selected: any;
-
-        const allSubDivisions: SubDivision[] = (await this.cache.get('subDivision')) as SubDivision[];
-
-        let currentInspection = null;
-        if (currentId) {
-            currentInspection = this.localCache.get(Number(currentId)) as InspectionIn;
-        }
-
-        // Фильтруем только нужные подразделения
-        const allowedNames = ['ОГТ', 'ОГМ', 'ОТиТБ', 'ПДО'];
+        const currentInspection = currentId ? this.localCache.get(Number(currentId)) as InspectionIn : null;
         const currentSubDivisionName = currentInspection?.subDivision?.name;
+        const allowedNames = ['ОГТ', 'ОГМ', 'ОТиТБ', 'ПДО'];
 
-        const filteredData = allSubDivisions.filter((item: SubDivision) => {
-            const itemName = item.name;
-
-            // Включаем текущее подразделение инспекции
-            if (currentSubDivisionName && itemName === currentSubDivisionName) {
-                return true;
-            }
-
-            // Включаем только разрешенные имена
-            for (const allowedName of allowedNames) {
-                if (itemName.includes(allowedName)) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        // Если текущее подразделение уже есть в списке разрешенных, убедимся, что оно не дублируется
-        const uniqueData = [];
-        const seenNames = new Set();
-
-        for (const item of filteredData) {
-            if (!seenNames.has(item.name)) {
-                seenNames.add(item.name);
-                uniqueData.push(item);
-            }
-        }
-
-        const data = uniqueData;
-
-        const renderRows = (items: any[]) => {
-            rowContainer.empty();
-            items.forEach(item => {
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${item.id}">
-                    <div class="content-row-column col-250">${item.name}</div>
-                </div>`
-                );
+        const dataFilter = (items: SubDivision[]) => {
+            const filtered = items.filter((item: SubDivision) => {
+                if (currentSubDivisionName && item.name === currentSubDivisionName) return true;
+                return allowedNames.some(name => item.name.includes(name));
             });
+            const unique: SubDivision[] = [];
+            const seen = new Set<string>();
+            for (const item of filtered) {
+                if (!seen.has(item.name)) { seen.add(item.name); unique.push(item); }
+            }
+            return unique;
         };
 
-        renderRows(data);
-
-        searchInput.off('input').on('input', function () {
-            const searchText = $(this).val().toString().toLowerCase().trim();
-            const filtered = data.filter((e: any) => e.name.toLowerCase().includes(searchText));
-            renderRows(filtered);
-        });
-
-        this.dialog.open("subDivisionDialog");
-
-        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
-            const id = $(this).data('id');
-            selected = data.find((e: any) => e.id === id);
-            $('.dialog-content-rows-row').removeClass('selected');
-            $(this).addClass('selected');
-        });
-
-        changeButton.off('click').on('click', () => {
-            if (!selected) {
-                this.createNotification(`Выберите подразделение из списка`, NotificationType.WARNING);
-                return;
-            }
-
-            modalDiv.text(selected.name);
-            modalDiv.val(selected.name);
-
-            if (currentId) {
-                this.saveMassive[currentId] = {
-                    ...this.saveMassive[currentId],
-                    ['subDivision']: selected
-                };
-            } else {
-                this.saveMassive['subDivision'] = selected;
-            }
-
-            modalDiv.addClass('change-textarea');
-            this.dialog.close('subDivisionDialog');
-        });
-
-        dialog.off('click', '.close').on('click', '.close', (event: Event) => {
-            this.dialog.close('subDivisionDialog');
-        });
-
-        modalDiv.addClass('change');
+        await this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, dataFilter);
     }
 
     private openImagesDialog = async (event: Event) => {
