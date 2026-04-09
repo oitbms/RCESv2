@@ -7,8 +7,8 @@ class Spe extends Base {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
-        this.createHandler('click', '.circle-header', this.selecteRows.bind(this),true);
-        this.createHandler('click', '.circle-row', this.selecteRow.bind(this), true);
+        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this),true);
+        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
                 this.enableEditMode(['datePreparation', 'dateVerification'], undefined, this.speSpecialFields);
@@ -252,7 +252,7 @@ class Spe extends Base {
         $('#no-document').text(data.filter(s => s.documentId === null).length);
     }
 
-    private async selecteRows(event: Event): Promise<void> {
+    private async selectAllRows(event: Event): Promise<void> {
         if (this.editMode) {
             this.createNotification('Выключите режим редактирования', NotificationType.INFO);
             return;
@@ -281,7 +281,7 @@ class Spe extends Base {
         }
     }
 
-    private async selecteRow(event: Event): Promise<void> {
+    private async selectRow(event: Event): Promise<void> {
         const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
         this.toggleRowSelection(event, true);
         const circle = $(event.currentTarget);
@@ -314,14 +314,10 @@ class Spe extends Base {
 
         if (fieldName === 'subDivision' || fieldName === 'employee') {
             const isEmployee = fieldName === 'employee';
-            const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
-            const rowContainer = dialog.find('.dialog-content-rows');
-            const searchInput = dialog.find('.choice-field input');
-            const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
-
             const data: any = await this.cache.get(fieldName);
-
             const renderRows = (items: any[]) => {
+                const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
+                const rowContainer = dialog.find('.dialog-content-rows');
                 rowContainer.empty();
                 items.forEach(item => {
                     rowContainer.append(`
@@ -335,6 +331,7 @@ class Spe extends Base {
 
             renderRows(data);
 
+            const searchInput = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog').find('.choice-field input');
             searchInput.off('input').on('input', function () {
                 const searchText = $(this).val().toString().toLowerCase().trim();
                 const filtered = data.filter((e: any) => e.name.toLowerCase().includes(searchText));
@@ -343,6 +340,10 @@ class Spe extends Base {
 
             this.dialog.open(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
 
+            const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
+            let selected: any;
             rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
                 const id = $(this).data('id');
                 selected = data.find((e: any) => e.id === id);
@@ -355,19 +356,13 @@ class Spe extends Base {
                     this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
                     return;
                 }
-
                 modalDiv.text(selected.name);
                 modalDiv.val(selected.name);
-
                 if (currentId) {
-                    this.saveMassive[currentId] = {
-                        ...this.saveMassive[currentId],
-                        [fieldName]: selected
-                    };
+                    this.saveMassive[currentId] = { ...this.saveMassive[currentId], [fieldName]: selected };
                 } else {
                     this.saveMassive[fieldName] = selected;
                 }
-
                 modalDiv.addClass('change-textarea');
                 this.dialog.close(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
             });

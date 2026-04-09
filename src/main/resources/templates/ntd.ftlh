@@ -14,6 +14,7 @@
     <script src="/js/base/dialog.js"></script>
     <script src="/js/base/cache.js"></script>
     <script src="/js/base/type/generalType.js"></script>
+    <script src="/js/base/type/ntdConstants.js"></script>
     <script src="/js/base/base.js"></script>
     <script src="/js/ntd.js"></script>
 </head>

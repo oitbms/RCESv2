@@ -1,7 +1,7 @@
 type SgiIn = {
     id: string;
-    number: number;
-    color: string;
+    number: string;
+    color: Color;
     workcenter: string;
     event: string;
     actions: string;
@@ -14,23 +14,23 @@ type SgiIn = {
     comment: string;
     agree: boolean;
     subSGI: SubSgiIn[];
-    factExecution: FactExecutionSGIIn;
+    factExecution: FactExecutionSGIIn | null;
     parent?: string;
-    documentId: string;
+    documentId: string | null;
     imagesSGI: any;
 }
 
 type FactExecutionSGIIn = {
     id: string;
-    executionDate: string;
-    report: string;
+    executionDate: string | null;
+    report: string | null;
     imagesFactSGI: any;
 }
 
 type SubSgiIn = {
     id: string;
     number: string;
-    color: string;
+    color: Color;
     workcenter: string;
     event: string;
     actions: string;
@@ -42,9 +42,9 @@ type SubSgiIn = {
     note: string;
     comment: string;
     agree: boolean;
-    factExecution: FactExecutionSGIIn;
+    factExecution: FactExecutionSGIIn | null;
     parent?: string;
-    documentId: string;
+    documentId: string | null;
     imagesSGI: any;
 }
 

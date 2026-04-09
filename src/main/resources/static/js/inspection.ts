@@ -104,13 +104,17 @@ class Inspection extends Base {
     private async createSecondaryInspection(event: Event) {
         const inspectionId = $(event.target).closest('.table-card').attr('id');
         const primaryInspection = this.localCache.get(Number(inspectionId)) as InspectionIn;
-        const newInspection: any = await this.createEntity(`/api/inspection/create-secondary-inspection/${inspectionId}`);
-        this.localCache.set(newInspection.id, newInspection);
-        const newRow = this.createRow(newInspection);
-        this.addInspectionToGroup(newInspection); // вместо прямого добавле
-        primaryInspection.haveSecondInspection = true;
-        this.localCache.set(primaryInspection.id, primaryInspection);
-        this.createNotification('Вторичная инспекция успешно создана', NotificationType.SUCCESS);
+        try {
+            const newInspection: any = await this.createEntity(`/api/inspection/create-secondary-inspection/${inspectionId}`);
+            this.localCache.set(newInspection.id, newInspection);
+            const newRow = this.createRow(newInspection);
+            this.addInspectionToGroup(newInspection);
+            primaryInspection.haveSecondInspection = true;
+            this.localCache.set(primaryInspection.id, primaryInspection);
+            this.createNotification('Вторичная инспекция успешно создана', NotificationType.SUCCESS);
+        } catch (error) {
+            this.createNotification('Ошибка при создании вторичной инспекции', NotificationType.ERROR);
+        }
     }
 
     private viewInspection = async (event: Event) => {
@@ -208,7 +212,7 @@ class Inspection extends Base {
             });
         }
 
-        dialog.on('click', '.btn-delete', (event: Event) => {
+        dialog.off('click', '.btn-delete').on('click', '.btn-delete', (event: Event) => {
             const button = $(event.currentTarget);
             if (inspection.haveSecondInspection) {
                 this.createNotification("Нельзя удалять нарушение у инспекции, если есть вторичная инспекция", NotificationType.WARNING)
@@ -236,7 +240,7 @@ class Inspection extends Base {
 
         })
 
-        dialog.on('click', '.btn-fixed', (event: Event) => {
+        dialog.off('click', '.btn-fixed').on('click', '.btn-fixed', (event: Event) => {
             const button = $(event.currentTarget);
             if (inspection.haveSecondInspection) {
                 this.createNotification("У инспекции есть вторичная инспекция", NotificationType.WARNING);
@@ -253,7 +257,7 @@ class Inspection extends Base {
             });
         });
 
-        dialog.on('click', '.photo-icon', this.openImagesDialog.bind(this));
+        dialog.off('click', '.photo-icon').on('click', '.photo-icon', this.openImagesDialog.bind(this));
 
         this.dialog.open('viewInspectionDialog');
     };
@@ -316,11 +320,6 @@ class Inspection extends Base {
         addDialog.find('#cancelAddBtn').off('click').on('click', () => {
             this.dialog.close('addViolationDialog');
         });
-
-        form.onsubmit = (e) => {
-            e.preventDefault();
-
-        };
 
         this.dialog.open('addViolationDialog');
     }
@@ -549,7 +548,7 @@ class Inspection extends Base {
 
         updateNavigation();
 
-        dialog.on('dialog:open', () => {
+        dialog.off('dialog:open').on('dialog:open', () => {
             dialog.find('#closePhotosBtn').focus();
         });
     }

@@ -17,7 +17,7 @@ class Sgi extends Base {
         this.createHandler('click', '#toggleAgreement', this.agree.bind(this), true);
         this.createHandler('click', 'dialog img', this.zoomImageOnClick.bind(this), true);
         this.createHandler('contextmenu', 'img', this.imageContextMenu.bind(this), true);
-        this.createHandler('dblclick', '.row-items-row', this.selecteRow.bind(this), false);
+        this.createHandler('dblclick', '.row-items-row', this.selectRow.bind(this), false);
         this.createHandler('contextmenu', '.selected-row', this.showRowContextMenu.bind(this), true);
         this.createHandler('click', '.pagination .page-btn', this.enterPage.bind(this), true);
         this.createHandler('click', '#filter-button', this.filterDialog.bind(this), true);
@@ -52,7 +52,7 @@ class Sgi extends Base {
                 <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${sgi.workcenter}</div>
                 <div class="row-item" data-field="event" style="width: var(--event);">${sgi.event}</div>
                 <div class="row-item" data-field="actions" style="width: var(--action);">${sgi.actions}</div>
-                <div class="row-item" data-field="departament" style="width: var(--department);">${sgi.departmentName}</div>
+                <div class="row-item" data-field="department" style="width: var(--department);">${sgi.departmentName}</div>
                 <div class="row-item" data-field="employee" style="width: var(--employee);">${sgi.employee.name}</div>
                 <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(sgi.desiredDate)}</div>
                 <div class="row-item" data-field="note" style="width: var(--note);">${sgi.note}</div>
@@ -111,7 +111,7 @@ class Sgi extends Base {
                 <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${sgi.workcenter}</div>
                 <div class="row-item" data-field="event" style="width: var(--event);">${sgi.event}</div>
                 <div class="row-item" data-field="actions" style="width: var(--action);">${sgi.actions}</div>
-                <div class="row-item" data-field="departament" style="width: var(--department);">${sgi.departmentName}</div>
+                <div class="row-item" data-field="department" style="width: var(--department);">${sgi.departmentName}</div>
                 <div class="row-item" data-field="employee" style="width: var(--employee);">${sgi.employee.name}</div>
                 <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(sgi.desiredDate)}</div>
                 <div class="row-item" data-field="note" style="width: var(--note);">${sgi.note}</div>
@@ -142,7 +142,7 @@ class Sgi extends Base {
             </div>`
         const parentRow = $(`.row-items-row[id="${inner}"]`);
         // parentRow.closest('.row-items').children('.row-items-inner-row').append(row);
-        if (parentRow.find('.hamburder').length === 0) {
+        if (parentRow.find('.hamburger').length === 0) {
             parentRow.find('.row-item').first().append(hamburger)
         }
         return row;
@@ -290,11 +290,13 @@ class Sgi extends Base {
                 $(`.table-content-rows`).append(newRow);
                 this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
             } else {
-                const parentSgi: any = this.localCache.get(newSgi.parent);
-                parentSgi.subSGI.push(newSgi);
-                this.localCache.set(parentSgi.id, parentSgi);
-                await this.updateRow(parentSgi, parentSgi.id);
-                this.createNotification('Создана новая подзадача для мероприятия под номером ' + parentSgi.number, NotificationType.SUCCESS);
+                const parentSgi = this.localCache.get(newSgi.parent) as SgiIn | undefined;
+                if (parentSgi) {
+                    parentSgi.subSGI.push(newSgi);
+                    this.localCache.set(parentSgi.id, parentSgi);
+                    await this.updateRow(parentSgi, parentSgi.id);
+                    this.createNotification('Создана новая подзадача для мероприятия под номером ' + parentSgi.number, NotificationType.SUCCESS);
+                }
             }
 
             this.localCache.set(newSgi.id, newSgi);
@@ -383,7 +385,7 @@ class Sgi extends Base {
         modalDiv.addClass('change');
     }
 
-    private uploadImages = async function (event: Event) {
+    private uploadImages = async (event: Event) => {
         const $this = $(event.target as HTMLElement);
         $this.prop('disabled', true);
 
@@ -451,15 +453,16 @@ class Sgi extends Base {
 
         inputFiles.trigger('click');
 
-        $(document).on('click', () => $('.context-menu').remove());
+        $(document).off('click.closeContextMenu').on('click.closeContextMenu', () => $('.context-menu').remove());
 
         $this.prop('disabled', false);
     };
 
-    private edit = async function (event: Event) {
+    private edit = async (event: Event) => {
         const currentRow = $(event.target as HTMLElement).closest('.row-items-row');
         const currentId = $(currentRow).attr('id');
-        const currentSGI: SgiIn = this.localCache.get(currentId);
+        const currentSGI = this.localCache.get(currentId) as SgiIn | undefined;
+        if (!currentSGI) return;
         const dialog = $('#editing-dialog');
 
         const isParentSGI = (currentSGI as any).parent===null;
@@ -493,7 +496,7 @@ class Sgi extends Base {
                 this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
                 return;
             }
-            e.preventDefault;
+            e.preventDefault();
 
             const formData = new FormData();
             formData.append('id', currentId);
@@ -523,10 +526,12 @@ class Sgi extends Base {
             this.localCache.set(currentId, updateSGI);
             this.localCache.delete('validFileMap');
             if (updateSGI.parent!=null) {
-                const parentSGI = this.localCache.get(updateSGI.parent);
-                parentSGI.subSGI = parentSGI.subSGI.filter((sub) => sub.id !== updateSGI.id);
-                parentSGI.subSGI.push(updateSGI);
-                await this.updateRow(parentSGI, parentSGI.id);
+                const parentSGI = this.localCache.get(updateSGI.parent) as SgiIn | undefined;
+                if (parentSGI) {
+                    parentSGI.subSGI = parentSGI.subSGI.filter((sub) => sub.id !== updateSGI.id);
+                    parentSGI.subSGI.push(updateSGI);
+                    await this.updateRow(parentSGI, parentSGI.id);
+                }
                 const parentRow = $(`.row-items-row[id="${parentSGI.id}"]`);
                 const hamburger = parentRow.find('.hamburger');
 
@@ -570,34 +575,36 @@ class Sgi extends Base {
 
         const currentRow = $(event.target).closest('.row-items-row');
         const currentId = $(currentRow).attr('id');
-        // @ts-ignore
-        const currentSGI: SgiIn = this.localCache.get(currentId);
+        const currentSGI = this.localCache.get(currentId) as SgiIn | undefined;
+        if (!currentSGI) return;
         const dialog = $('#execution-dialog');
 
         const executionDialog = document.getElementById('execution-dialog');
 
-        Object.keys(currentSGI.factExecution).forEach(key => {
-            const value = (currentSGI.factExecution as any)[key];
-            const field = executionDialog?.querySelector(`[data-field="${key}"]`) as HTMLInputElement | HTMLTextAreaElement;
+        const factExec = currentSGI.factExecution;
+        if (factExec) {
+            Object.keys(factExec).forEach(key => {
+                const value = (factExec as any)[key];
+                const field = executionDialog?.querySelector(`[data-field="${key}"]`) as HTMLInputElement | HTMLTextAreaElement;
 
-            if (!field || key === 'imagesFactSGI') return;
+                if (!field || key === 'imagesFactSGI') return;
 
-            if (key === 'executionDate') {
-                field.value = value ? value.split('.').reverse().join('-') : '';
-            } else if (field) {
-                field.value = value || '';
-            }
-        });
+                if (key === 'executionDate') {
+                    field.value = value ? value.split('.').reverse().join('-') : '';
+                } else if (field) {
+                    field.value = value || '';
+                }
+            });
+        }
 
         const self = this;
-
         $(document).off('click', '#execution-dialog #saveBtn').on('click', '#execution-dialog #saveBtn', async function () {
             if (currentSGI.agree) {
-                this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.INFO);
+                self.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.INFO);
                 return;
             }
             if (dialog.find(`[data-field="executionDate"]`).val() === '') {
-                this.createNotification('Не заполнена дата выполнения', NotificationType.INFO);
+                self.createNotification('Не заполнена дата выполнения', NotificationType.INFO);
                 return;
             }
 
@@ -627,7 +634,7 @@ class Sgi extends Base {
 
                 self.localCache.set(currentId, updateSGI);
                 self.localCache.delete('validFileMap');
-                await self.updateRow(updateSGI, null);
+                await self.updateRow(updateSGI, currentId);
                 self.createNotification('Факт выполнения сохранен', NotificationType.SUCCESS);
                 self.dialog.close('execution-dialog');
 
@@ -639,7 +646,7 @@ class Sgi extends Base {
         });
 
         this.dialog.open('execution-dialog');
-        await this.renderImages(dialog, 'fact', currentSGI, currentSGI.factExecution.imagesFactSGI);
+        await this.renderImages(dialog, 'fact', currentSGI, currentSGI.factExecution?.imagesFactSGI);
 
         // Клик на крестик
         dialog.find('#cancelButton').off('click').on('click', () => {
@@ -674,8 +681,8 @@ class Sgi extends Base {
         const isChecked = checkbox.checked;
         const currentRow = $(checkbox).closest('.row-items-row');
         const currentId = $(currentRow).attr('id');
-        // @ts-ignore
-        const currentSGI: SgiIn = this.localCache.get(currentId);
+        const currentSGI = this.localCache.get(currentId) as SgiIn | undefined;
+        if (!currentSGI) return;
         const self = this;
         const formData = new FormData();
         formData.append("id", currentId);
@@ -693,7 +700,7 @@ class Sgi extends Base {
             return;
         }
 
-        if (!isChecked && currentSGI?.parent && (this.localCache.get(currentSGI.parent) as SgiIn).agree) {
+        if (!isChecked && currentSGI?.parent && (this.localCache.get(currentSGI.parent) as SgiIn | undefined)?.agree) {
             this.createNotification('Нельзя отменить согласование подзадачи, если родительская задача согласована!', NotificationType.ERROR);
             checkbox.checked = !isChecked;
             return;
@@ -766,7 +773,7 @@ class Sgi extends Base {
             </div>`;
             imageContainer.append(imgHtml);
 
-            this.localCache.set(image.name, null);
+            this.localCache.set(image.name, {} as object);
             validFileMap.set(image.name, base64ToFile(image.data, image.name));
         }
         this.localCache.set('validFileMap', validFileMap);
@@ -798,14 +805,14 @@ class Sgi extends Base {
             `);
 
             // Обработчики для закрытия модального окна
-            $(document).on('click', '#imagePreviewModal .close, #imagePreviewModal', function (e) {
+            $(document).on('click', '#imagePreviewModal .close, #imagePreviewModal', (e) => {
                 if (e.target.id === 'imagePreviewModal' || e.target.className === 'close') {
                     $('#imagePreviewModal').hide();
                 }
             });
 
             // Закрытие по ESC
-            $(document).on('keydown', function (e) {
+            $(document).on('keydown', (e) => {
                 if (e.key === 'Escape' && $('#imagePreviewModal').is(':visible')) {
                     $('#imagePreviewModal').hide();
                 }
@@ -900,7 +907,7 @@ class Sgi extends Base {
         }, 0);
     }
 
-    private selecteRow(event: Event) {
+    private selectRow(event: Event) {
         const row = $(event.target).closest('.row-items-row');
         const rowId = $(row).attr('id');
 
@@ -990,13 +997,13 @@ class Sgi extends Base {
         const self = this;
 
         // Обработчик применения фильтров
-        $(document).off('click', '#filtered').on('click', '#filtered', function () {
+        $(document).off('click', '#filtered').on('click', '#filtered', () => {
             self.filters = {
                 number: dialog.find('[data-field="number"]').val()?.toString().trim() || '',
                 workcenter: dialog.find('[data-field="workcenter"]').val()?.toString().trim() || '',
                 event: dialog.find('[data-field="event"]').val()?.toString().trim() || '',
                 actions: dialog.find('[data-field="actions"]').val()?.toString().trim() || '',
-                departament: (dialog.find('[data-field="departament"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="departament"] option:selected').text().trim(),
+                departament: (dialog.find('[data-field="department"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="department"] option:selected').text().trim(),
                 employee: dialog.find('[data-field="employee"]').val()?.toString() || '',
                 desiredDate: dialog.find('[data-field="desiredDate"]').val()?.toString() || '',
                 planDate: dialog.find('[data-field="planDate"]').val()?.toString() || '',
@@ -1009,10 +1016,10 @@ class Sgi extends Base {
         });
 
         // Обработчик сброса фильтров
-        dialog.find('#default-filter').off('click').on('click', function () {
+        dialog.find('#default-filter').off('click').on('click', () => {
             dialog.find('input, textarea, select').val('');
             $('.row-items').show();
-            this.dialog('filter-dialog').close();
+            this.dialog.close('filter-dialog');
         });
 
         // Клик на крестик
@@ -1046,7 +1053,7 @@ class Sgi extends Base {
             const rows = document.querySelectorAll('.row-items');
 
             rows.forEach(row => {
-                let notMatch = null;
+                let notMatch: boolean | null = null;
 
                 for (const key of Object.keys(this.filters)) {
                     const value = this.filters[key];
@@ -1087,7 +1094,8 @@ class Sgi extends Base {
     private async openDocument(event: Event): Promise<void> {
         const dialog = $('#documentDialog');
         const currentSGIId = $(event.currentTarget).attr('id');
-        const sgi = this.localCache.get(currentSGIId) as SgiIn;
+        const sgi = this.localCache.get(currentSGIId) as SgiIn | undefined;
+        if (!sgi) return;
         const rowContainer = dialog.find('.dialog-content-rows');
 
         rowContainer.empty();
@@ -1147,7 +1155,8 @@ class Sgi extends Base {
     private addFileToDocument(event: Event, sgiId: string): void {
         const formData = new FormData();
         const currentInput = event.currentTarget as HTMLInputElement;
-        const sgi = this.localCache.get(sgiId) as SgiIn;
+        const sgi = this.localCache.get(sgiId) as SgiIn | undefined;
+        if (!sgi) return;
 
         if (currentInput.files) {
             Array.from(currentInput.files).forEach(file => {

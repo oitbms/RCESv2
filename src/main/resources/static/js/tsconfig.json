@@ -1,6 +1,13 @@
 {
   "compilerOptions": {
     "module": "none",
-    "target": "ES6"
-  }
+    "target": "ES6",
+    "strict": true,
+    "noImplicitAny": false,
+    "outDir": "./dist",
+    "sourceMap": true
+  },
+  "include": [
+    "./**/*.ts"
+  ]
 }

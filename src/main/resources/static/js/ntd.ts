@@ -7,7 +7,7 @@ class NtDocuments extends Base {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/ntd/get-page-ntd', undefined).catch(console.error);
         });
-        this.createHandler('click', '.circle-row', this.selecteRow.bind(this), true);
+        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
                 this.enableEditMode(['dateVerification'], undefined, [
@@ -111,7 +111,7 @@ class NtDocuments extends Base {
         );
     }
 
-    private selecteRow = async (event: Event): Promise<void> => {
+    private selectRow = async (event: Event): Promise<void> => {
         this.toggleRowSelection(event, true);
         const circle = $(event.currentTarget);
         const currentRow = circle.closest('.table-row');

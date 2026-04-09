@@ -14,6 +14,7 @@
     <script src="/js/base/dialog.js"></script>
     <script src="/js/base/cache.js"></script>
     <script src="/js/base/type/generalType.js"></script>
+    <script src="/js/base/type/inspectionConstants.js"></script>
     <script src="/js/base/base.js"></script>
     <script src="/js/inspection.js"></script>
 </head>

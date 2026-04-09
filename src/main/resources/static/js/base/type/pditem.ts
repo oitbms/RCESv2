@@ -9,10 +9,10 @@ type pdItemIn = {
     steel: string;
     qty: number;
     qtyCompleted: number;
-    measurements: number;
-    program: number;
-    machine: number;
+    measurements: string;
+    program: string;
+    machine: string;
     status: string;
-    comment: number;
+    comment: string;
     color: Color;
 }

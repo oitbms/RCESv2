@@ -17,6 +17,32 @@ class Spe extends Base {
         this.currentEmployee = '';
         this.searchText = '';
         this.editMode = false;
+        this.speSpecialFields = [
+            {
+                name: 'mark',
+                transform: ($div) => {
+                    const text = $div.text().trim();
+                    const element = $(`<select data-name="mark"></select>`);
+                    const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
+                    if (text === '' || text === null) {
+                        element.append($(`<option selected value=""></option>`));
+                    }
+                    statuses.forEach(status => {
+                        const isSelected = text !== '' && text !== null && status === text;
+                        element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
+                    });
+                    return element;
+                }
+            },
+            {
+                name: 'employee',
+                transform: ($div) => $div.addClass('area-modal').attr('contenteditable', 'false')
+            },
+            {
+                name: 'subDivision',
+                transform: ($div) => $div.addClass('area-modal').attr('contenteditable', 'false')
+            }
+        ];
         this.createFgisSpe = (event) => __awaiter(this, void 0, void 0, function* () {
             event.preventDefault();
             const button = $(event.target);
@@ -153,14 +179,18 @@ class Spe extends Base {
                 }
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
-        this.createHandler('click', '.circle-header', this.selecteRows.bind(this), true);
-        this.createHandler('click', '.circle-row', this.selecteRow.bind(this), true);
+        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this), true);
+        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
-                this.enableEditMode();
+                this.enableEditMode(['datePreparation', 'dateVerification'], undefined, this.speSpecialFields);
+                $('#edit-button').addClass('active');
             }
-            else
-                this.disableEditMode();
+            else {
+                this.disableEditMode(['datePreparation', 'dateVerification'], []);
+                if (!this.editMode)
+                    $('#edit-button').removeClass('active');
+            }
         }, true);
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#unload-button', () => this.unload(), true);
@@ -349,8 +379,9 @@ class Spe extends Base {
             };
         });
         this.save('/api/spe/update', ...itemsArray).then(() => {
-            this.disableEditMode();
+            this.disableEditMode(['datePreparation', 'dateVerification'], []);
             itemsArray.forEach((id) => this.selectedRows.delete(Number(id)));
+            $('#edit-button').removeClass('active');
         });
     }
     fullData(data) {
@@ -362,88 +393,7 @@ class Spe extends Base {
         $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
         $('#no-document').text(data.filter(s => s.documentId === null).length);
     }
-    enableEditMode(row) {
-        const dateTime = ['datePreparation', 'dateVerification'];
-        const processElement = ($div) => {
-            const text = $div.text().trim();
-            const dataName = $div.attr('data-name');
-            let element;
-            if (dataName === 'mark') {
-                element = $(`<select data-name="${dataName}"></select>`);
-                const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
-                if (text === '' || text === null) {
-                    element.append($(`<option selected value=""></option>`));
-                }
-                statuses.forEach(status => {
-                    const isSelected = text !== '' && text !== null && status === text;
-                    element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
-                });
-            }
-            else if (dateTime.indexOf(dataName) !== -1) {
-                const rowId = Number($(row).attr('id'));
-                const value = this.localCache.get(rowId)[dataName];
-                element = $(`<input type="date" data-name="${dataName}">`).val(value);
-            }
-            else {
-                element = $div;
-                element.attr('contenteditable', 'true');
-            }
-            if (dataName === 'employee' || dataName === 'subDivision') {
-                element.addClass('area-modal').attr('contenteditable', 'false');
-            }
-            $div.replaceWith(element);
-        };
-        if (row) {
-            $(row).find('div[contenteditable="false"]').each(function () {
-                processElement($(this));
-            });
-            this.editMode = true;
-            return;
-        }
-        for (const rowId of this.selectedRows) {
-            row = $(`.table-row[id="${rowId}"]`);
-            row.find('div[contenteditable="false"]').each(function () {
-                processElement($(this));
-            });
-        }
-        this.editMode = true;
-        $('#edit-button').addClass('active');
-    }
-    disableEditMode(row) {
-        if (this.editMode &&
-            Object.keys(this.saveMassive).length > 0 &&
-            ((row && row.find('.change').length > 0) || $('.table-row .change').length > 0)) {
-            this.createNotification("Сохраните изменения", NotificationType.WARNING);
-            return;
-        }
-        const dateTime = ['datePreparation', 'dateVerification'];
-        const processElement = ($field) => {
-            const dataName = $field.attr("data-name");
-            let value;
-            if (dateTime.indexOf(dataName) !== -1) {
-                value = this.formatDate($field.val());
-            }
-            else {
-                value = $field.is('select') ? $field.find('option:selected').text() : $field.text();
-            }
-            $field.replaceWith(`<div data-name="${dataName}" contenteditable="false">${value}</div>`);
-        };
-        if (row) {
-            $(row).find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
-            return;
-        }
-        for (const rowId of this.selectedRows) {
-            const $row = $(`.table-row[id="${rowId}"]`);
-            $row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
-        }
-        this.editMode = false;
-        $('#edit-button').removeClass('active');
-    }
-    selecteRows(event) {
+    selectAllRows(event) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.editMode) {
                 this.createNotification('Выключите режим редактирования', NotificationType.INFO);
@@ -473,30 +423,20 @@ class Spe extends Base {
             }
         });
     }
-    selecteRow(event) {
+    selectRow(event) {
         return __awaiter(this, void 0, void 0, function* () {
+            const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
+            this.toggleRowSelection(event, true);
             const circle = $(event.currentTarget);
             const currentRow = circle.closest('.table-row');
-            const currentRowId = currentRow.attr('id');
-            const changes = currentRow.find('.change').length;
-            if (this.editMode && changes > 0) {
-                this.createNotification("Сохраните изменения", NotificationType.WARNING);
-                return;
+            const rowId = currentRow.attr('id');
+            if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
+                this.enableEditMode(['datePreparation', 'dateVerification'], currentRow, this.speSpecialFields);
             }
-            if (!this.selectedRows.has(currentRowId)) {
-                this.selectedRows.add(currentRowId);
-                currentRow.addClass('selected');
-                circle.addClass('active-critical');
-                if (this.editMode) {
-                    this.enableEditMode(currentRow);
-                }
-            }
-            else {
-                this.selectedRows.delete(currentRowId);
-                this.disableEditMode(currentRow);
-                currentRow.removeClass('selected');
-                $('.circle-header').removeClass('active');
-                circle.removeClass('active-critical');
+            else if (!this.selectedRows.has(rowId)) {
+                this.disableEditMode(['datePreparation', 'dateVerification'], [], currentRow);
+                if (!this.editMode)
+                    $('#edit-button').removeClass('active');
             }
         });
     }
@@ -538,7 +478,7 @@ class Spe extends Base {
                     const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
                     renderRows(filtered);
                 });
-                dialog[0].showModal();
+                this.dialog.open(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
                 rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
                     const id = $(this).data('id');
                     selected = data.find((e) => e.id === id);
@@ -559,7 +499,7 @@ class Spe extends Base {
                         this.saveMassive[fieldName] = selected;
                     }
                     modalDiv.addClass('change-textarea');
-                    dialog[0].close();
+                    this.dialog.close(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
                 });
             }
             modalDiv.addClass('change');
@@ -678,8 +618,7 @@ class Spe extends Base {
         currentInput.value = '';
     }
     handleDownloadFile(event) {
-        const fileId = $(event.target).closest('.dialog-content-rows-row').attr('id');
-        this.downloadFile(`/api/document/download-document-file/${fileId}`).catch(console.error);
+        this.handleDownloadFileFromDialog(event, '/api/document/download-document-file');
     }
     employeeHandler(event) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -714,18 +653,19 @@ class Spe extends Base {
                     this.currentEmployee = selectedName;
                     this.applyFilters();
                     button.css('border-color', 'red');
-                    dialog[0].close();
+                    this.dialog.close('employeeDialog');
                 });
                 $('.close').on('click', () => {
                     this.currentEmployee = '';
                     button.css('border-color', '#e2e8f0');
                     this.applyFilters();
+                    this.dialog.close('employeeDialog');
                 });
                 dialog.on('close', function () {
                     cancelBtn.text('Отмена');
                     dialogName.text('Окно выбора сотрудника');
                 });
-                dialog[0].showModal();
+                this.dialog.open('employeeDialog');
             }
             catch (error) {
                 this.createNotification('Ошибка при загрузке сотрудников', NotificationType.ERROR);
@@ -761,18 +701,19 @@ class Spe extends Base {
                     this.currentSubDivision = selectedName;
                     this.applyFilters();
                     button.css('border-color', 'red');
-                    dialog[0].close();
+                    this.dialog.close('subDivisionDialog');
                 });
                 $('.close').on('click', () => {
                     this.currentSubDivision = '';
                     button.css('border-color', '#e2e8f0');
                     this.applyFilters();
+                    this.dialog.close('subDivisionDialog');
                 });
                 dialog.on('close', function () {
                     cancelBtn.text('Отмена');
                     dialogName.text('Окно выбора подразделения');
                 });
-                dialog[0].showModal();
+                this.dialog.open('subDivisionDialog');
             }
             catch (error) {
                 this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR);

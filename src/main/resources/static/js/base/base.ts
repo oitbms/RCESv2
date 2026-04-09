@@ -9,7 +9,7 @@ abstract class Base {
     private readonly visibleRow: number;
     public currentPage: number = 1;
     public saveMassive: object = {};
-    public reports: ReportItem[];
+    public reports: ReportItem[] = [];
 
     public readonly rowContainer: any;
 
@@ -153,7 +153,19 @@ abstract class Base {
         }).catch((xhr) => {
             const errorResponse: ErrorResponse = xhr.responseJSON;
             this.createNotification(errorResponse.message, errorResponse.notificationType);
+            throw xhr;
         });
+    }
+
+    // Экранирование HTML для защиты от XSS
+    public readonly escapeHtml = (unsafe: string): string => {
+        if (unsafe == null) return '';
+        return String(unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     public async print(param?: any): Promise<void> {
@@ -202,6 +214,7 @@ abstract class Base {
             $('#printOk').on('click', async () => {
                 const api = $('#reportSelect').val() as string;
                 const report = this.reports.find(r => r.api === api);
+                if (!report) { resolve(); return; }
                 this.dialog.close(dialogId);
                 $dialog.remove();
 
@@ -214,10 +227,10 @@ abstract class Base {
                     }
                     const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
                     await this.downloadFile(report.api, params);
-                } catch (e) {
+                } catch {
                     this.createNotification('Ошибка при печати', NotificationType.ERROR);
                 } finally {
-                    unlock()
+                    unlock();
                     resolve();
                 }
             });
@@ -273,6 +286,7 @@ abstract class Base {
         try {
             const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
             const container = document.getElementById('notifications-container');
+            if (!container) return;
             const notification = document.createElement('div');
 
             notification.className = `notification ${type}`;
@@ -471,6 +485,8 @@ abstract class Base {
                 return 'var(--warning-color, #f59e0b)';
             case Color.BLUE:
                 return 'var(--info-color, #3b82f6)';
+            case Color.GREY:
+                return 'var(--grey-color, #9ca3af)';
         }
     }
 
