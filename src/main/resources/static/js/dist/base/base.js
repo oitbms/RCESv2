@@ -18,6 +18,8 @@ class Base {
         this.currentPage = 1;
         this.saveMassive = {};
         this.reports = [];
+        this.searchText = '';
+        this.editMode = false;
         this.cache = new CacheBormashImpl();
         this.dialog = new DialogImpl();
         //Блокировка параллельного выполнения
@@ -300,11 +302,6 @@ class Base {
                 $(document.body).removeClass('locked');
             };
         };
-        // ============================================================
-        // УНИВЕРСАЛЬНЫЕ МЕТОДЫ ДЛЯ НАСЛЕДНИКОВ
-        // ============================================================
-        // --- Поиск / фильтрация ---
-        this.searchText = '';
         this.bindSearchInput = (selector, onSearch) => {
             this.createHandler('input', selector, (event) => {
                 this.searchText = $(event.target).val().toString().toLowerCase().trim();
@@ -316,8 +313,6 @@ class Base {
                 }
             }, true);
         };
-        // --- Режим редактирования ---
-        this.editMode = false;
         /**
          * Включает режим редактирования для выбранных строк или конкретной строки.
          * @param dateTimeFields — массив имён полей, которые должны стать <input type="date">
@@ -389,14 +384,16 @@ class Base {
                 $field.replaceWith(`<div class="field-container${centerClass}" data-name="${dataName}" contenteditable="false">${value}</div>`);
             };
             if (row) {
-                row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
+                row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                    .each(function () {
                     processElement($(this));
                 });
                 return;
             }
             for (const rowId of this.selectedRows) {
                 const $row = $(`.table-row[id="${rowId}"]`);
-                $row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
+                $row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                    .each(function () {
                     processElement($(this));
                 });
             }
@@ -505,7 +502,7 @@ class Base {
             renderRows(data);
             searchInput.off('input').on('input', function () {
                 const searchText = $(this).val().toString().toLowerCase().trim();
-                const filtered = data.filter((e) => columns.some(col => (e[col.key] || '').toString().toLowerCase().indexOf(searchText) !== -1));
+                const filtered = data.filter((e) => columns.some(col => (e[col.key] || '').toString().toLowerCase().includes(searchText)));
                 renderRows(filtered);
             });
             this.dialog.open(dialogId);
@@ -534,7 +531,6 @@ class Base {
             });
             modalDiv.addClass('change');
         });
-        // --- Диалог документов ---
         /**
          * Универсальный диалог просмотра/загрузки файлов документа.
          * @param event — событие клика на иконку документа
@@ -568,8 +564,9 @@ class Base {
                 </div>
             </div>`);
             dialog.off('change', '#fileInput').on('change', '#fileInput', (e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                    Array.from(e.target.files).forEach((file) => {
+                const input = e.target;
+                if (input.files && input.files.length > 0) {
+                    Array.from(input.files).forEach((file) => {
                         const fileName = file.name;
                         if (rowContainer.find(`.col-450:contains("${fileName}")`).length > 0) {
                             this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
@@ -660,7 +657,6 @@ class Base {
                 this.createNotification("Файл не найден", NotificationType.INFO);
             }
         };
-        // --- Контекстное меню удаления строки ---
         /**
          * Создаёт контекстное меню с пунктом «Удалить» для строки.
          * @param event — событие contextmenu
@@ -907,9 +903,7 @@ class Base {
         }
         return result;
     }
-    // Переопределяется в наследниках для конкретной логики фильтрации
     applyFilters() {
-        // По умолчанию — no-op; наследники переопределяют
     }
 }
 //# sourceMappingURL=base.js.map

@@ -27,7 +27,13 @@ class PdItem extends Base {
             const employee = JSON.parse(employeeInput);
             const validatedFields = this.validateIntegerFields([
                 { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
-                { key: 'qtyCompleted', value: dialog.find('input[name="qtyCompleted"]').val(), min: 0, label: 'Выполненное количество', defaultValue: 0 }
+                {
+                    key: 'qtyCompleted',
+                    value: dialog.find('input[name="qtyCompleted"]').val(),
+                    min: 0,
+                    label: 'Выполненное количество',
+                    defaultValue: 0
+                }
             ]);
             if (!validatedFields) {
                 button.prop('disabled', false);
@@ -114,10 +120,14 @@ class PdItem extends Base {
     createRow(pdi) {
         const status = (() => {
             switch (pdi.status) {
-                case 'NEW': return 'Новый';
-                case 'WORK': return 'В работе';
-                case 'REQUIRED': return 'Требуется в срок';
-                case 'COMPLETE': return 'Готов';
+                case 'NEW':
+                    return 'Новый';
+                case 'WORK':
+                    return 'В работе';
+                case 'REQUIRED':
+                    return 'Требуется в срок';
+                case 'COMPLETE':
+                    return 'Готов';
             }
         })();
         const row = `
@@ -181,7 +191,8 @@ class PdItem extends Base {
             </div>`;
         return $(row);
     }
-    onScroll() { }
+    onScroll() {
+    }
     print() {
         const _super = Object.create(null, {
             print: { get: () => super.print }
@@ -213,7 +224,13 @@ class PdItem extends Base {
             const qtyCompletedValue = (_b = changes.qtyCompleted) !== null && _b !== void 0 ? _b : cacheData.qtyCompleted;
             const validatedFields = this.validateIntegerFields([
                 { key: 'qty', value: qtyValue, min: 1, label: 'Количество' },
-                { key: 'qtyCompleted', value: qtyCompletedValue, min: 0, label: 'Выполненное количество', defaultValue: 0 }
+                {
+                    key: 'qtyCompleted',
+                    value: qtyCompletedValue,
+                    min: 0,
+                    label: 'Выполненное количество',
+                    defaultValue: 0
+                }
             ]);
             if (!validatedFields)
                 return;
@@ -238,5 +255,7 @@ class PdItem extends Base {
         $el.addClass('change');
     }
 }
-$(document).ready(() => { new PdItem(); });
+$(document).ready(() => {
+    new PdItem();
+});
 //# sourceMappingURL=pditem.js.map

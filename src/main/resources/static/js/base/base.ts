@@ -10,6 +10,8 @@ abstract class Base {
     public currentPage: number = 1;
     public saveMassive: object = {};
     public reports: ReportItem[] = [];
+    public searchText: string = '';
+    public editMode: boolean = false;
 
     public readonly rowContainer: any;
 
@@ -94,7 +96,7 @@ abstract class Base {
         $(`[data-index="${rowIndex}"]`)[hide ? 'fadeOut' : 'fadeIn'](300);
     };
 
-    public deleteRow (rowIndex: string | number): void {
+    public deleteRow(rowIndex: string | number): void {
         const $row = $(`#${rowIndex}`);
         $row.fadeOut(300, () => {
             $row.remove();
@@ -102,7 +104,7 @@ abstract class Base {
         });
     }
 
-    public async displayPage  (url: string, param?: object, ...callbacks: Function[]): Promise<void> {
+    public async displayPage(url: string, param?: object, ...callbacks: Function[]): Promise<void> {
         if (this.currentPage > 1) {
             param = {...param, page: this.currentPage};
         }
@@ -195,7 +197,7 @@ abstract class Base {
     `);
 
         let format = "PDF";
-        $dialog.find('.format-btn').off('click').on('click', function () {
+        $dialog.find('.format-btn').off('click').on('click', function (this: HTMLElement) {
             $dialog.find('.format-btn').removeClass('active');
             $(this).addClass('active');
             format = $(this).data('format') as string;
@@ -214,7 +216,10 @@ abstract class Base {
             $('#printOk').on('click', async () => {
                 const api = $('#reportSelect').val() as string;
                 const report = this.reports.find(r => r.api === api);
-                if (!report) { resolve(); return; }
+                if (!report) {
+                    resolve();
+                    return;
+                }
                 this.dialog.close(dialogId);
                 $dialog.remove();
 
@@ -500,14 +505,6 @@ abstract class Base {
         };
     };
 
-    // ============================================================
-    // УНИВЕРСАЛЬНЫЕ МЕТОДЫ ДЛЯ НАСЛЕДНИКОВ
-    // ============================================================
-
-    // --- Поиск / фильтрация ---
-
-    public searchText: string = '';
-
     public readonly bindSearchInput = (selector: string, onSearch?: (text: string) => void): void => {
         this.createHandler('input', selector, (event: Event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
@@ -519,15 +516,8 @@ abstract class Base {
         }, true);
     };
 
-    // Переопределяется в наследниках для конкретной логики фильтрации
     protected applyFilters(): void {
-        // По умолчанию — no-op; наследники переопределяют
     }
-
-    // --- Режим редактирования ---
-
-    public editMode: boolean = false;
-
     /**
      * Включает режим редактирования для выбранных строк или конкретной строки.
      * @param dateTimeFields — массив имён полей, которые должны стать <input type="date">
@@ -558,7 +548,7 @@ abstract class Base {
         };
 
         if (row) {
-            row.find('div[contenteditable="false"]').each(function () {
+            row.find('div[contenteditable="false"]').each(function (this: HTMLElement) {
                 processElement($(this));
             });
             this.editMode = true;
@@ -567,7 +557,7 @@ abstract class Base {
 
         for (const rowId of this.selectedRows) {
             const $row = $(`.table-row[id="${rowId}"]`);
-            $row.find('div[contenteditable="false"]').each(function () {
+            $row.find('div[contenteditable="false"]').each(function (this: HTMLElement) {
                 processElement($(this));
             });
         }
@@ -611,17 +601,19 @@ abstract class Base {
         };
 
         if (row) {
-            row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
+            row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                .each(function (this: HTMLElement) {
+                    processElement($(this));
+                });
             return;
         }
 
         for (const rowId of this.selectedRows) {
             const $row = $(`.table-row[id="${rowId}"]`);
-            $row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
+            $row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                .each(function (this: HTMLElement) {
+                    processElement($(this));
+                });
         }
         this.editMode = false;
     };
@@ -728,7 +720,7 @@ abstract class Base {
         modalDiv: any,
         currentId?: string | number,
         dataFilter?: (items: any[]) => any[],
-        columns: { key: string, label: string, width?: string }[] = [{ key: 'name', label: 'Наименование', width: '250' }]
+        columns: { key: string, label: string, width?: string }[] = [{key: 'name', label: 'Наименование', width: '250'}]
     ): Promise<void> => {
         const dialog = $(`#${dialogId}`);
         const rowContainer = dialog.find('.dialog-content-rows');
@@ -751,22 +743,26 @@ abstract class Base {
 
         renderRows(data);
 
-        searchInput.off('input').on('input', function () {
-            const searchText = $(this).val().toString().toLowerCase().trim();
+        searchInput.off('input').on('input', function (this: HTMLInputElement) {
+            const searchText = $(this).val()!.toString().toLowerCase().trim();
             const filtered = data.filter((e: any) =>
-                columns.some(col => (e[col.key] || '').toString().toLowerCase().indexOf(searchText) !== -1)
+                columns.some(col =>
+                    (e[col.key] || '').toString().toLowerCase().includes(searchText)
+                )
             );
+
             renderRows(filtered);
         });
 
         this.dialog.open(dialogId);
 
-        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
-            const id = $(this).data('id');
-            selected = data.find((e: any) => e.id === id);
-            $('.dialog-content-rows-row').removeClass('selected');
-            $(this).addClass('selected');
-        });
+        rowContainer.off('click').on('click', '.dialog-content-rows-row', function (this: HTMLElement) {
+                const id = $(this).data('id');
+                selected = data.find((e: any) => e.id === id);
+                $('.dialog-content-rows-row').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        );
 
         changeButton.off('click').on('click', () => {
             if (!selected) {
@@ -789,8 +785,6 @@ abstract class Base {
 
         modalDiv.addClass('change');
     };
-
-    // --- Диалог документов ---
 
     /**
      * Универсальный диалог просмотра/загрузки файлов документа.
@@ -836,8 +830,9 @@ abstract class Base {
         );
 
         dialog.off('change', '#fileInput').on('change', '#fileInput', (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                Array.from(e.target.files).forEach((file: File) => {
+            const input = e.target as HTMLInputElement;
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach((file) => {
                     const fileName = file.name;
                     if (rowContainer.find(`.col-450:contains("${fileName}")`).length > 0) {
                         this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
@@ -939,9 +934,6 @@ abstract class Base {
             this.createNotification("Файл не найден", NotificationType.INFO);
         }
     };
-
-    // --- Контекстное меню удаления строки ---
-
     /**
      * Создаёт контекстное меню с пунктом «Удалить» для строки.
      * @param event — событие contextmenu
@@ -1048,7 +1040,11 @@ abstract class Base {
      */
     public readonly saveMassiveChanges = async (
         updateUrl: string,
-        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => { id: string | number, version: any, changes: any }
+        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => {
+            id: string | number,
+            version: any,
+            changes: any
+        }
     ): Promise<void> => {
         if (Object.keys(this.saveMassive).length === 0) return;
 

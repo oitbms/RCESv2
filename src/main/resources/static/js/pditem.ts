@@ -29,10 +29,14 @@ class PdItem extends Base {
     public createRow(pdi: pdItemIn) {
         const status = (() => {
             switch (pdi.status) {
-                case 'NEW': return 'Новый';
-                case 'WORK': return 'В работе';
-                case 'REQUIRED': return 'Требуется в срок';
-                case 'COMPLETE': return 'Готов';
+                case 'NEW':
+                    return 'Новый';
+                case 'WORK':
+                    return 'В работе';
+                case 'REQUIRED':
+                    return 'Требуется в срок';
+                case 'COMPLETE':
+                    return 'Готов';
             }
         })();
         const row = `
@@ -97,7 +101,8 @@ class PdItem extends Base {
         return $(row);
     }
 
-    public onScroll(): void {}
+    public onScroll(): void {
+    }
 
     public override async print(): Promise<void> {
         if (!this.selectedRows || this.selectedRows.size === 0) {
@@ -123,17 +128,23 @@ class PdItem extends Base {
             const qtyValue = changes.qty ?? cacheData.qty;
             const qtyCompletedValue = changes.qtyCompleted ?? cacheData.qtyCompleted;
             const validatedFields = this.validateIntegerFields([
-                { key: 'qty', value: qtyValue, min: 1, label: 'Количество' },
-                { key: 'qtyCompleted', value: qtyCompletedValue, min: 0, label: 'Выполненное количество', defaultValue: 0 }
+                {key: 'qty', value: qtyValue, min: 1, label: 'Количество'},
+                {
+                    key: 'qtyCompleted',
+                    value: qtyCompletedValue,
+                    min: 0,
+                    label: 'Выполненное количество',
+                    defaultValue: 0
+                }
             ]);
             if (!validatedFields) return;
 
-            this.saveMassive[id] = { ...changes, qty: validatedFields.qty, qtyCompleted: validatedFields.qtyCompleted };
+            this.saveMassive[id] = {...changes, qty: validatedFields.qty, qtyCompleted: validatedFields.qtyCompleted};
         }
 
         const itemsArray = Object.keys(this.saveMassive).map(id => {
             const cacheData = this.localCache.get(id) as pdItemIn | undefined;
-            return { id: id, version: cacheData?.version, changes: this.saveMassive[id] };
+            return {id: id, version: cacheData?.version, changes: this.saveMassive[id]};
         });
 
         this.save('/api/parts-directory/update', ...itemsArray).then(() => {
@@ -149,16 +160,28 @@ class PdItem extends Base {
         const form = button.closest('form').get(0);
         const dialog = $('#create-dialog');
 
-        if (!form.checkValidity()) { form.reportValidity(); return; }
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
         button.prop('disabled', true);
 
         const employeeInput = dialog.find('input[name="hiddenEmployee"]').val() as string;
         const employee = JSON.parse(employeeInput);
         const validatedFields = this.validateIntegerFields([
-            { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
-            { key: 'qtyCompleted', value: dialog.find('input[name="qtyCompleted"]').val(), min: 0, label: 'Выполненное количество', defaultValue: 0 }
+            {key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество'},
+            {
+                key: 'qtyCompleted',
+                value: dialog.find('input[name="qtyCompleted"]').val(),
+                min: 0,
+                label: 'Выполненное количество',
+                defaultValue: 0
+            }
         ]);
-        if (!validatedFields) { button.prop('disabled', false); return; }
+        if (!validatedFields) {
+            button.prop('disabled', false);
+            return;
+        }
 
         const formData = {
             customerOrder: dialog.find('input[name="customerOrder"]').val(),
@@ -199,7 +222,7 @@ class PdItem extends Base {
 
         if (fieldName === 'employee') {
             await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, currentId, undefined,
-                [{ key: 'name', label: 'Имя', width: '250' }]);
+                [{key: 'name', label: 'Имя', width: '250'}]);
         }
         modalDiv.addClass('change');
     };
@@ -224,9 +247,11 @@ class PdItem extends Base {
         const id = $el.closest('.table-row').attr('id');
         const name = $el.attr('data-name');
         const value = $el.is('div') ? $el.text().trim() : $el.val();
-        this.saveMassive[id] = { ...this.saveMassive[id], [name]: value };
+        this.saveMassive[id] = {...this.saveMassive[id], [name]: value};
         $el.addClass('change');
     }
 }
 
-$(document).ready(() => { new PdItem(); });
+$(document).ready(() => {
+    new PdItem();
+});
