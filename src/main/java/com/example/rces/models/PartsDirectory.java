@@ -1,21 +1,13 @@
 package com.example.rces.models;
 
 import com.example.rces.models.enums.Color;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "parts_directory", catalog = "rces")
@@ -35,6 +27,20 @@ public class PartsDirectory extends BaseAuditingEntity {
 
         public String getName() {
             return name;
+        }
+    }
+
+    public enum Operation {
+        thermal, locksmith;
+
+        public static List<Operation> fromString(List<String> values) {
+            return values.stream()
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .map(Operation::valueOf)
+                    .distinct()
+                    .toList();
         }
     }
 
@@ -92,6 +98,20 @@ public class PartsDirectory extends BaseAuditingEntity {
 
     @Column(name = "date_completion")
     private LocalDateTime dateCompletion;
+
+    @Column(name = "ready")
+    private Boolean ready = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
+    @ElementCollection(targetClass = Operation.class)
+    @CollectionTable(name = "parts_directory_operation",
+            joinColumns = @JoinColumn(name = "parts_directory_id"))
+    @Column(name = "operation")
+    @Enumerated(EnumType.STRING)
+    private List<Operation> operation;
 
     public Long getId() {
         return id;
@@ -219,5 +239,30 @@ public class PartsDirectory extends BaseAuditingEntity {
 
     public void setDateCompletion(LocalDateTime dateCompletion) {
         this.dateCompletion = dateCompletion;
+    }
+
+    public Boolean getReady() {
+        return ready;
+    }
+
+    public void setReady(Boolean ready) {
+        this.ready = ready;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+    }
+
+
+    public List<Operation> getOperation() {
+        return operation;
+    }
+
+    public void setOperation(List<Operation> operation) {
+        this.operation = operation;
     }
 }

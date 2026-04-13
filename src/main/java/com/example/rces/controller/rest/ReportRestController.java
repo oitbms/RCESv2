@@ -123,4 +123,17 @@ public class ReportRestController {
                 .body(fileDTO);
     }
 
+    @GetMapping("print/pdi-act")
+    public ResponseEntity<FileDTO> printPdItem(@RequestParam(name = "format") String formatString,
+                                               @RequestParam List<Long> idList) {
+        Format format = Format.valueOf(formatString);
+        byte[] report = service.createPdItemReport(format, idList);
+        String fileName = String.format("Отчет_%s.%s",
+                formatedDate(LocalDateTime.now()), format.getFileExtension());
+        FileDTO fileDTO = new FileDTO(fileName, report);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileDTO);
+    }
+
 }

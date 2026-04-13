@@ -142,11 +142,13 @@ class NtDocuments extends Base {
             }
             const references = yield this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
             renderReference(references, false);
-            dialog.off('input', '.search-input').on('input', '.search-input', function () {
-                const searchText = $(this).val().toString().toLowerCase();
-                $('.dialog-content-rows-row').each(function () {
-                    const rowName = $(this).find('.content-row-column').first().text().toLowerCase();
-                    $(this).toggle(rowName.includes(searchText));
+            dialog.off('input', '.search-input').on('input', '.search-input', (e) => {
+                const input = e.currentTarget;
+                const searchText = input.value.toLowerCase();
+                $('.dialog-content-rows-row').each((_, el) => {
+                    const row = $(el);
+                    const rowName = row.find('.content-row-column').first().text().toLowerCase();
+                    row.toggle(rowName.includes(searchText));
                 });
             });
             dialog.off('click', '.container-checkbox').on('click', '.container-checkbox', (e) => __awaiter(this, void 0, void 0, function* () {
@@ -273,14 +275,15 @@ class NtDocuments extends Base {
     }
     // Фильтрация — переопределяется для конкретного поведения
     applyFilters() {
-        // Здесь можно добавить логику фильтрации строк по searchText
-        $('.table-row').each(function () {
-            const name = $(this).find('[data-name="name"]').text().toLowerCase();
-            const type = $(this).find('[data-name="type"]').text().toLowerCase();
-            const comment = $(this).find('[data-name="comment"]').text().toLowerCase();
-            const match = name.includes(this.searchText) || type.includes(this.searchText) || comment.includes(this.searchText);
-            $(this).toggle(match);
-        }.bind(this));
+        const searchText = this.searchText.toLowerCase();
+        $('.table-row').each((_, el) => {
+            const row = $(el);
+            const name = row.find('[data-name="name"]').text().toLowerCase();
+            const type = row.find('[data-name="type"]').text().toLowerCase();
+            const comment = row.find('[data-name="comment"]').text().toLowerCase();
+            const match = name.includes(searchText) || type.includes(searchText) || comment.includes(searchText);
+            row.toggle(match);
+        });
     }
 }
 $(document).ready(() => {

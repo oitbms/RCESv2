@@ -192,7 +192,7 @@ class Inspection extends Base {
                 images.forEach((image, index) => {
                     gallery.append(`
                     <div class="photo-item ${index === 0 ? 'active' : ''}">
-                        <img src="${image.data}" id="${image.id}" 
+                        <img src="${image.data}" id="${image.id}"
                              alt="${image.name || 'Фото нарушения'} ${index + 1}"
                              loading="lazy">
                     </div>
@@ -254,7 +254,7 @@ class Inspection extends Base {
                            Цех: <span data-inspection-id="${inspection.id}">${(_a = inspection.subDivision) === null || _a === void 0 ? void 0 : _a.name}</span>
                            ${inspection.primaryInspectionId != null ?
             `<br> Первичная инспекция: <span data-inspection-id="${inspection.primaryInspectionId}">№${inspection.primaryInspectionId}</span>`
-            : ''}       
+            : ''}
                        </p>
                    <div class="buttons">
                        <button class="btn btn-outline-primary view-btn">Подробнее</button>
@@ -262,7 +262,7 @@ class Inspection extends Base {
                        <button class="btn btn-success" data-inspectionId="${inspection.id}" id="report-btn">Отчеты</button>
                        <button class="btn btn-danger delete-inspection">Удалить</button>
                    </div>
-               </div>     
+               </div>
             </div>`;
         return $(card);
     }

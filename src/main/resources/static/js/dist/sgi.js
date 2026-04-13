@@ -215,14 +215,17 @@ class Sgi extends Base {
                         parentSGI.subSGI.push(updateSGI);
                         yield this.updateRow(parentSGI, parentSGI.id);
                     }
+                    // @ts-ignore
                     const parentRow = $(`.row-items-row[id="${parentSGI.id}"]`);
                     const hamburger = parentRow.find('.hamburger');
                     if (hamburger.length > 0) {
                         const fakeEvent = {
                             currentTarget: hamburger[0],
                             target: hamburger[0],
-                            preventDefault: () => { },
-                            stopPropagation: () => { }
+                            preventDefault: () => {
+                            },
+                            stopPropagation: () => {
+                            }
                         };
                         yield this.openSubSgi(fakeEvent);
                     }
@@ -252,6 +255,7 @@ class Sgi extends Base {
             });
         });
         this.renderImages = (currentDialog, type, currentSGI, images) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const base64ToFile = (base64, name) => {
                 const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
                 for (let i = 0; i < n; i++)
@@ -268,7 +272,7 @@ class Sgi extends Base {
                     images = yield $.ajax({
                         url: url,
                         type: 'GET',
-                        data: { id: type === 'fact' ? currentSGI.factExecution.id : currentSGI.id }
+                        data: { id: type === 'fact' ? (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.id : currentSGI.id }
                     });
                 }
                 catch (error) {
@@ -276,7 +280,9 @@ class Sgi extends Base {
                 }
                 const processedImages = Array.isArray(images) ? images : [];
                 if (type === 'fact') {
-                    currentSGI.factExecution.imagesFactSGI = processedImages;
+                    if (currentSGI.factExecution != null) {
+                        currentSGI.factExecution.imagesFactSGI = processedImages;
+                    }
                 }
                 else {
                     currentSGI.imagesSGI = processedImages;
@@ -581,8 +587,7 @@ class Sgi extends Base {
     buildPagination(data, count) {
         const $p = $('.pagination');
         $p.empty();
-        const totalElement = count;
-        const totalPages = Math.ceil(totalElement / this.itemsPerPage);
+        const totalPages = Math.ceil(count / this.itemsPerPage);
         if (totalPages <= 1)
             return;
         const createBtn = (label, page, extraClass = '') => {
@@ -690,11 +695,12 @@ class Sgi extends Base {
                     renderRows(filtered);
                 });
                 this.dialog.open('employeeDialog');
-                rowContainer.off('click').on('click', '.dialog-content-rows-row', function (e) {
-                    const id = $(e.currentTarget).attr('id');
-                    selected = data.find((e) => e.id === Number(id));
-                    $('.dialog-content-rows-row').removeClass('selected');
-                    $(this).addClass('selected');
+                rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                    const target = e.currentTarget;
+                    const id = target.id;
+                    selected = data.find((item) => item.id === Number(id));
+                    rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                    $(target).addClass('selected');
                 });
                 changeButton.off('click').on('click', () => {
                     if (!selected) {
@@ -761,13 +767,11 @@ class Sgi extends Base {
                     formData.append('id', currentId);
                     formData.append('factExecutionSGIBool', 'true');
                     $(dialog).find('[data-field]').each((_, el) => {
-                        if (el.type !== 'file') {
-                            formData.append(el.dataset.field, el.value);
-                        }
-                        else {
-                            for (let file of el.files || []) {
-                                formData.append(el.dataset.field, file);
-                            }
+                        var _a;
+                        const input = el;
+                        const files = Array.from((_a = input.files) !== null && _a !== void 0 ? _a : []);
+                        for (const file of files) {
+                            formData.append(input.dataset.field, file);
                         }
                     });
                     try {

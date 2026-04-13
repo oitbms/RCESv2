@@ -44,4 +44,8 @@ public class PartsDirectoryDTO {
 
     private LocalDateTime dateCompletion;
 
+    private Boolean ready;
+
+    private TeamDTO team;
+
 }

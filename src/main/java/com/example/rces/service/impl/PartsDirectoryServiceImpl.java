@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,6 +94,26 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         } else if (pdi.getProgram() != null) {
             return PartsDirectory.Status.WORK;
         } else return pdi.getStatus();
+    }
+
+    @Override
+    public void deletePdi(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public Boolean readyOrNot(Long id, Boolean ready, List<String> operations) {
+        PartsDirectory pdiEntity = repository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
+        if (ready) {
+            List<PartsDirectory.Operation> operationList = PartsDirectory.Operation.fromString(operations);
+            pdiEntity.setOperation(operationList);
+        } else {
+            pdiEntity.setOperation(new ArrayList<>());
+        }
+        pdiEntity.setReady(ready);
+        repository.save(pdiEntity);
+        return ready;
     }
 
 }

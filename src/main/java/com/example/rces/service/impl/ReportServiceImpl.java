@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
@@ -140,7 +143,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public byte[] unloadSpeReport(List<Integer> numberList) {
         List<SPE> speList = entityManager.createQuery(
-                "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
+                        "SELECT e FROM SPE e WHERE e.id IN (:ids) ORDER BY e.number ASC")
                 .setParameter("ids", numberList).getResultList();
         UnloadSpeReportModel model = new UnloadSpeReportModel(speList);
         return jasperReportExporter.generateJrxmlReport("UnloadSpe", null, List.of(model), Format.XLSX);
@@ -190,6 +193,26 @@ public class ReportServiceImpl implements ReportService {
         return jasperReportExporter.generateJrxmlReport(
                 "InspectionWorkShop", null, List.of(model), format
         );
+    }
+
+    @Override
+    public byte[] createPdItemReport(Format format, List<Long> ids) {
+        String query = "SELECT e FROM PartsDirectory e where e.id in (:ids) and e.operation in(:operation)";
+        List<PartsDirectory> thermal = entityManager.createQuery(query)
+                .setParameter("ids", ids)
+                .setParameter("operation", List.of(PartsDirectory.Operation.thermal))
+                .getResultList();
+        List<PartsDirectory> locksmith = entityManager.createQuery(query)
+                .setParameter("ids", ids)
+                .setParameter("operation", List.of(PartsDirectory.Operation.locksmith))
+                .getResultList();
+        String employee = Stream.concat(thermal.stream(), locksmith.stream())
+                .map(p -> p.getEmployee().getName())
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.joining(", "));
+        PdItem model = new PdItem(employee, thermal, locksmith);
+        return jasperReportExporter.generateJrxmlReport("PdItem", null, List.of(model), format);
     }
 
 }
