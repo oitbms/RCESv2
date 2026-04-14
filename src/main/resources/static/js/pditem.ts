@@ -199,7 +199,7 @@ class PdItem extends Base {
         button.prop('disabled', true);
 
         const employeeInput = dialog.find('input[name="hiddenEmployee"]').val() as string;
-        const employee = JSON.parse(employeeInput);
+        const employee = employeeInput ? JSON.parse(employeeInput) : null;
         const validatedFields = this.validateIntegerFields([
             {key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество'},
             {
@@ -257,8 +257,67 @@ class PdItem extends Base {
         const currentId = modalDiv.closest('.table-row')?.attr('id');
 
         if (fieldName === 'employee') {
-            await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, currentId, undefined,
-                [{key: 'name', label: 'Имя', width: '250'}]);
+            const dialog = $('#employeeDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            const searchInput = dialog.find('.choice-field input');
+            const changeButton = $('#changeEmployee');
+            let selected: any;
+
+            const data: any = await this.cache.get('employee');
+
+            const renderRows = (items: any[]) => {
+                rowContainer.empty();
+                items.forEach(item => {
+                    rowContainer.append(`
+                        <div class="dialog-content-rows-row" id="${item.id}">
+                            <div class="content-row-column col-250">${item.name}</div>
+                            <div class="content-row-column col-250">${item.subDivision?.name || ''}</div>
+                        </div>`
+                    );
+                });
+            };
+
+            renderRows(data);
+
+            searchInput.off('input').on('input', function (this: HTMLInputElement) {
+                const searchText = $(this).val()!.toString().toLowerCase().trim();
+                const filtered = data.filter((e: any) =>
+                    e.name.toLowerCase().includes(searchText)
+                );
+                renderRows(filtered);
+            });
+
+            this.dialog.open('employeeDialog');
+
+            rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const id = target.id;
+                selected = data.find((item: any) => item.id === Number(id));
+                rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                $(target).addClass('selected');
+            });
+
+            changeButton.off('click').on('click', () => {
+                if (!selected) {
+                    this.createNotification('Выберите сотрудника из списка', NotificationType.WARNING);
+                    return;
+                }
+
+                // Записываем имя в видимое поле
+                modalDiv.text(selected.name);
+                modalDiv.val(selected.name);
+
+                // Записываем объект сотрудника в скрытое поле для отправки на API
+                const employeeJson = JSON.stringify(selected);
+                $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
+
+                if (currentId) {
+                    this.saveMassive[currentId] = {...this.saveMassive[currentId], employee: selected};
+                }
+
+                modalDiv.addClass('change-textarea');
+                this.dialog.close('employeeDialog');
+            });
         } else if (fieldName === 'team') {
             await this.openTeamSelectionDialog(modalDiv, currentId);
         }
@@ -511,8 +570,7 @@ class PdItem extends Base {
         const teamsResponse: any = await this.requestToApi('/api/team/get-page', 'GET');
         this.allTeamsCache = teamsResponse.data || [];
 
-        const employeesResponse: any = await this.cache.get("employee");
-        this.allEmployeesCache = employeesResponse.data || [];
+        this.allEmployeesCache = await this.cache.get("employee");
 
         // Сбрасываем состояние
         this.selectedTeamForEdit = null;

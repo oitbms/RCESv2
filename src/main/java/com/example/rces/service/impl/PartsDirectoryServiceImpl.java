@@ -107,7 +107,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
                 () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
         if (ready) {
             List<PartsDirectory.Operation> operationList = PartsDirectory.Operation.fromString(operations);
-            pdiEntity.setOperation(operationList);
+            pdiEntity.setOperation(new ArrayList<>(operationList));
         } else {
             pdiEntity.setOperation(new ArrayList<>());
         }

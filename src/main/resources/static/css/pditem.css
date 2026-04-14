@@ -515,6 +515,8 @@ dialog::backdrop {
 
 #create-dialog {
 
+    height: 774px !important;
+
     & .modal-title {
         margin: 0;
         font-size: 1.25rem;
@@ -548,7 +550,7 @@ dialog::backdrop {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 12px;
-        max-height: 605px;
+        max-height: 646px;
         overflow-y: auto;
 
         & .form-group {

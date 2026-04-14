@@ -3,18 +3,15 @@ package com.example.rces.controller.rest;
 import com.example.rces.dto.PartsDirectoryCreateDTO;
 import com.example.rces.dto.PartsDirectoryDTO;
 import com.example.rces.dto.RequestDataDTO;
-import com.example.rces.models.SGI;
 import com.example.rces.service.PartsDirectoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/parts-directory")
@@ -54,9 +51,10 @@ public class PartsDirectoryRestController {
     }
 
     @PatchMapping("/ready")
-    public ResponseEntity<Boolean> coordination(@RequestParam Long id, @RequestParam(name = "ready") Boolean readyBoolean,
+    public ResponseEntity<Boolean> coordination(@RequestParam Long id,
+                                                @RequestParam(name = "ready") Boolean readyBoolean,
                                                 @RequestParam List<String> operations) {
-        Boolean ready = service.readyOrNot(id,readyBoolean, operations);
+        Boolean ready = service.readyOrNot(id, readyBoolean, operations);
         return ResponseEntity.ok(ready);
     }
 

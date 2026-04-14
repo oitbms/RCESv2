@@ -17,7 +17,15 @@
       "Bash(where *)",
       "Bash(copy *)",
       "Bash(del *)",
-      "Bash(gradlew *)"
+      "Bash(gradlew *)",
+      "Bash(c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe *)",
+      "Bash(select-object *)",
+      "Bash(get-content *)",
+      "Bash(.length\\\")",
+      "Bash($lines[699..819] *)",
+      "Bash(c:\\windows\\system32\\find *)",
+      "Bash(699..748)",
+      "Bash(dir *)"
     ]
   },
   "$version": 3

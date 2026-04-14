@@ -30,7 +30,7 @@ class PdItem extends Base {
             }
             button.prop('disabled', true);
             const employeeInput = dialog.find('input[name="hiddenEmployee"]').val();
-            const employee = JSON.parse(employeeInput);
+            const employee = employeeInput ? JSON.parse(employeeInput) : null;
             const validatedFields = this.validateIntegerFields([
                 { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
                 {
@@ -86,7 +86,54 @@ class PdItem extends Base {
             const fieldName = modalDiv.attr('data-field') || modalDiv.attr('data-name');
             const currentId = (_a = modalDiv.closest('.table-row')) === null || _a === void 0 ? void 0 : _a.attr('id');
             if (fieldName === 'employee') {
-                yield this.openSelectionDialog('employee', 'employeeDialog', modalDiv, currentId, undefined, [{ key: 'name', label: 'Имя', width: '250' }]);
+                const dialog = $('#employeeDialog');
+                const rowContainer = dialog.find('.dialog-content-rows');
+                const searchInput = dialog.find('.choice-field input');
+                const changeButton = $('#changeEmployee');
+                let selected;
+                const data = yield this.cache.get('employee');
+                const renderRows = (items) => {
+                    rowContainer.empty();
+                    items.forEach(item => {
+                        var _a;
+                        rowContainer.append(`
+                        <div class="dialog-content-rows-row" id="${item.id}">
+                            <div class="content-row-column col-250">${item.name}</div>
+                            <div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>
+                        </div>`);
+                    });
+                };
+                renderRows(data);
+                searchInput.off('input').on('input', function () {
+                    const searchText = $(this).val().toString().toLowerCase().trim();
+                    const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
+                    renderRows(filtered);
+                });
+                this.dialog.open('employeeDialog');
+                rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                    const target = e.currentTarget;
+                    const id = target.id;
+                    selected = data.find((item) => item.id === Number(id));
+                    rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                    $(target).addClass('selected');
+                });
+                changeButton.off('click').on('click', () => {
+                    if (!selected) {
+                        this.createNotification('Выберите сотрудника из списка', NotificationType.WARNING);
+                        return;
+                    }
+                    // Записываем имя в видимое поле
+                    modalDiv.text(selected.name);
+                    modalDiv.val(selected.name);
+                    // Записываем объект сотрудника в скрытое поле для отправки на API
+                    const employeeJson = JSON.stringify(selected);
+                    $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
+                    if (currentId) {
+                        this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { employee: selected });
+                    }
+                    modalDiv.addClass('change-textarea');
+                    this.dialog.close('employeeDialog');
+                });
             }
             else if (fieldName === 'team') {
                 yield this.openTeamSelectionDialog(modalDiv, currentId);
@@ -250,8 +297,7 @@ class PdItem extends Base {
             // Загружаем данные
             const teamsResponse = yield this.requestToApi('/api/team/get-page', 'GET');
             this.allTeamsCache = teamsResponse.data || [];
-            const employeesResponse = yield this.cache.get("employee");
-            this.allEmployeesCache = employeesResponse.data || [];
+            this.allEmployeesCache = yield this.cache.get("employee");
             // Сбрасываем состояние
             this.selectedTeamForEdit = null;
             this.selectedEmployeeIds = [];

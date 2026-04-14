@@ -63,7 +63,7 @@ public class PdItem {
         this.locksmith = locksmith;
     }
 
-    private static class Thermal {
+    public static class Thermal {
 
         private String customerOrder;
 
@@ -124,7 +124,7 @@ public class PdItem {
         }
     }
 
-    private static class Locksmith {
+    public static class Locksmith {
 
         private String customerOrder;
 

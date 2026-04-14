@@ -197,14 +197,14 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public byte[] createPdItemReport(Format format, List<Long> ids) {
-        String query = "SELECT e FROM PartsDirectory e where e.id in (:ids) and e.operation in(:operation)";
-        List<PartsDirectory> thermal = entityManager.createQuery(query)
+        String query = "SELECT e FROM PartsDirectory e WHERE e.id IN (:ids) AND :operation MEMBER OF e.operation";
+        List<PartsDirectory> thermal = entityManager.createQuery(query, PartsDirectory.class)
                 .setParameter("ids", ids)
-                .setParameter("operation", List.of(PartsDirectory.Operation.thermal))
+                .setParameter("operation", PartsDirectory.Operation.thermal)
                 .getResultList();
-        List<PartsDirectory> locksmith = entityManager.createQuery(query)
+        List<PartsDirectory> locksmith = entityManager.createQuery(query, PartsDirectory.class)
                 .setParameter("ids", ids)
-                .setParameter("operation", List.of(PartsDirectory.Operation.locksmith))
+                .setParameter("operation", PartsDirectory.Operation.locksmith)
                 .getResultList();
         String employee = Stream.concat(thermal.stream(), locksmith.stream())
                 .map(p -> p.getEmployee().getName())
@@ -212,7 +212,7 @@ public class ReportServiceImpl implements ReportService {
                 .distinct()
                 .collect(Collectors.joining(", "));
         PdItem model = new PdItem(employee, thermal, locksmith);
-        return jasperReportExporter.generateJrxmlReport("PdItem", null, List.of(model), format);
+        return jasperReportExporter.generateJrxmlReport("Pditem", null, List.of(model), format);
     }
 
 }
