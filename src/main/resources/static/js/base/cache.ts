@@ -4,7 +4,6 @@ interface CacheBormash {
     set(key: string, data: any): this;
 }
 
-// @ts-ignore
 class CacheBormashImpl implements CacheBormash {
     endpoints: { [key: string]: string } = {
         employee: '/api/employees',

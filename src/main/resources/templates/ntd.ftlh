@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/ntd.css">
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/base/dialog.js"></script>
-    <script src="/js/base/cache.js"></script>
-    <script src="/js/base/type/generalType.js"></script>
-    <script src="/js/base/type/ntdConstants.js"></script>
-    <script src="/js/base/base.js"></script>
-    <script src="/js/ntd.js"></script>
+    <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/cache.js"></script>
+    <script src="/js/dist/base/type/generalType.js"></script>
+    <script src="/js/dist/base/type/ntdConstants.js"></script>
+    <script src="/js/dist/base/base.js"></script>
+    <script src="/js/dist/ntd.js"></script>
 </head>
 <body>
 <div class="container">

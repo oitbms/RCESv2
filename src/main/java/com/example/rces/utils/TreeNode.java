@@ -11,6 +11,10 @@ import java.util.List;
 import static com.example.rces.utils.DateUtil.formatedDate;
 
 public class TreeNode {
+    public static final String TYPE_PD = "pd";
+    public static final String TYPE_JC = "jc";
+    public static final String TYPE_JS = "js";
+
     public Long id;
     public Long parentId;
     public String primaryDemand;
@@ -47,7 +51,7 @@ public class TreeNode {
         this.dateCalcEnd = "";
         this.id = pd.jobComponent().id();
         this.parentId = -1L;
-        this.type = "pd";
+        this.type = TYPE_PD;
     }
 
     public TreeNode(JobComponentPayload jc, Long parentId) {
@@ -64,7 +68,7 @@ public class TreeNode {
         this.dateCalcEnd = formatedDate(jc.dateCalcEnd());
         this.id = jc.id();
         this.parentId = parentId;
-        this.type = "jc";
+        this.type = TYPE_JC;
     }
 
     public TreeNode(JobStepPayload js, String pdName, Long parentId) {
@@ -81,7 +85,7 @@ public class TreeNode {
         this.dateCalcEnd = formatedDate(js.dateCalcEnd());
         this.id = js.id();
         this.parentId = parentId;
-        this.type = "js";
+        this.type = TYPE_JS;
     }
 
 }

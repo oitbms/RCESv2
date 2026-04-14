@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/team.css">
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/base/dialog.js"></script>
-    <script src="/js/base/cache.js"></script>
-    <script src="/js/base/type/generalType.js"></script>
-    <script src="/js/base/type/teamConstants.js"></script>
-    <script src="/js/base/base.js"></script>
-    <script src="/js/team.js"></script>
+    <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/cache.js"></script>
+    <script src="/js/dist/base/type/generalType.js"></script>
+    <script src="/js/dist/base/type/teamConstants.js"></script>
+    <script src="/js/dist/base/base.js"></script>
+    <script src="/js/dist/team.js"></script>
     <title>Бригады</title>
 </head>
 <body>

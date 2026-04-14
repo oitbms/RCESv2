@@ -155,6 +155,20 @@ tasks.named<BootWar>("bootWar") {
 }
 
 
+tasks.register<Exec>("npmBuild") {
+    group = "build"
+    description = "Build frontend assets if package.json exists"
+    workingDir = file("src/main/resources/static/js")
+    // Windows-friendly command; npm scripts should support "build"
+    commandLine = listOf("cmd", "/c", "npm ci && npm run build")
+    onlyIf {
+        file("src/main/resources/static/js/package.json").exists()
+    }
+}
+tasks.named("processResources") {
+    dependsOn("npmBuild")
+}
+
 springBoot {
     buildInfo()
 }

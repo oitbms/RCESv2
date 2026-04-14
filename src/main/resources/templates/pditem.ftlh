@@ -10,10 +10,10 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/base/dialog.js?v=2"></script>
-    <script src="/js/base/cache.js?v=2"></script>
-    <script src="/js/base/type/generalType.js?v=2"></script>
-    <script src="/js/base/base.js?v=2"></script>
+    <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/cache.js"></script>
+    <script src="/js/dist/base/type/generalType.js"></script>
+    <script src="/js/dist/base/base.js"></script>
     <script src="/js/dist/pditem.js"></script>
     <title>Справочник</title>
 </head>
