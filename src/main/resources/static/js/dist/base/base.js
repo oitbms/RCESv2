@@ -484,47 +484,98 @@ class Base {
          * @param dataFilter — опциональный фильтр данных
          * @param columns — колонки для рендера [{key, label}]
          */
-        this.openSelectionDialog = (fieldName_1, dialogId_1, modalDiv_1, currentId_1, dataFilter_1, ...args_1) => __awaiter(this, [fieldName_1, dialogId_1, modalDiv_1, currentId_1, dataFilter_1, ...args_1], void 0, function* (fieldName, dialogId, modalDiv, currentId, dataFilter, columns = [{ key: 'name', label: 'Наименование', width: '250' }]) {
+        this.openSelectionDialog = (fieldName_1, dialogId_1, modalDiv_1, currentId_1, rawData_1, dataFilter_1, ...args_1) => __awaiter(this, [fieldName_1, dialogId_1, modalDiv_1, currentId_1, rawData_1, dataFilter_1, ...args_1], void 0, function* (fieldName, dialogId, modalDiv, currentId, rawData, dataFilter, columns = [{ key: 'name', label: 'Наименование', width: '250' }], multiSelect = false) {
             const dialog = $(`#${dialogId}`);
             const rowContainer = dialog.find('.dialog-content-rows');
             const searchInput = dialog.find('.choice-field input');
             const changeButton = dialog.find('[id^="change"]').first();
             let selected;
-            const rawData = yield this.cache.get(fieldName);
-            const data = dataFilter ? dataFilter(rawData) : rawData;
+            const raw = rawData ? rawData : yield this.cache.get(fieldName);
+            const data = dataFilter ? dataFilter(raw) : raw || [];
+            const getValue = (item, col) => {
+                if (col.renderer)
+                    return col.renderer(item);
+                if (col.key && col.key.indexOf('.') !== -1) {
+                    return col.key.split('.').reduce((acc, p) => acc ? acc[p] : '', item) || '';
+                }
+                return col.key ? (item[col.key] || item[col.key + 'Name'] || '') : '';
+            };
             const renderRows = (items) => {
                 rowContainer.empty();
                 items.forEach(item => {
-                    let colsHtml = columns.map(col => `<div class="content-row-column col-${col.width || '250'}">${item[col.key] || (item[col.key + 'Name'] ? item[col.key + 'Name'] : '')}</div>`).join('');
+                    let colsHtml = columns.map(col => `<div class="content-row-column col-${col.width || '250'}">${this.escapeHtml(String(getValue(item, col) || ''))}</div>`).join('');
+                    if (multiSelect) {
+                        colsHtml = `<div class="content-row-column col-40"><input type="checkbox" class="selection-checkbox" data-id="${item.id}"></div>` + colsHtml;
+                    }
                     rowContainer.append(`<div class="dialog-content-rows-row" data-id="${item.id}">${colsHtml}</div>`);
                 });
             };
             renderRows(data);
             searchInput.off('input').on('input', function () {
                 const searchText = $(this).val().toString().toLowerCase().trim();
-                const filtered = data.filter((e) => columns.some(col => (e[col.key] || '').toString().toLowerCase().includes(searchText)));
+                const filtered = data.filter((e) => columns.some(col => (getValue(e, col) || '').toString().toLowerCase().includes(searchText)));
                 renderRows(filtered);
             });
             this.dialog.open(dialogId);
-            rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
-                const id = $(this).data('id');
-                selected = data.find((e) => e.id === id);
-                $('.dialog-content-rows-row').removeClass('selected');
-                $(this).addClass('selected');
-            });
+            if (!multiSelect) {
+                rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
+                    const id = $(this).data('id');
+                    selected = data.find((e) => e.id === id);
+                    $('.dialog-content-rows-row').removeClass('selected');
+                    $(this).addClass('selected');
+                });
+            }
+            else {
+                // Handle checkbox toggling
+                rowContainer.off('change', '.selection-checkbox').on('change', '.selection-checkbox', function () {
+                    const id = $(this).data('id');
+                    // toggle selected array stored in closure variable selected (as array)
+                    if (!Array.isArray(selected))
+                        selected = [];
+                    const idx = selected.findIndex((s) => s.id == id);
+                    if (this.checked) {
+                        if (idx === -1)
+                            selected.push(data.find((e) => e.id == id));
+                    }
+                    else {
+                        if (idx !== -1)
+                            selected.splice(idx, 1);
+                    }
+                });
+            }
             changeButton.off('click').on('click', () => {
-                if (!selected) {
-                    const label = fieldName === 'employee' ? 'сотрудника' : 'подразделение';
+                if (!selected || (Array.isArray(selected) && selected.length === 0)) {
+                    const label = fieldName === 'employee' ? 'сотрудника' : 'элемент';
                     this.createNotification(`Выберите ${label} из списка`, NotificationType.WARNING);
                     return;
                 }
-                modalDiv.text(selected.name);
-                modalDiv.val(selected.name);
+                if (!multiSelect) {
+                    modalDiv.text(selected.name);
+                    modalDiv.val(selected.name);
+                }
+                else {
+                    const selectedItems = Array.isArray(selected) ? selected : [];
+                    const names = selectedItems.map((s) => s.name).join(', ');
+                    modalDiv.val(names);
+                    modalDiv.text(names);
+                }
                 if (currentId) {
                     this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
                 }
                 else {
                     this.saveMassive[fieldName] = selected;
+                }
+                // If there is a hidden input in a containing form, set its value (useful for older create dialogs)
+                try {
+                    const form = modalDiv.closest('form');
+                    if (form.length) {
+                        const hidden = form.find(`input[name="hidden${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}"]`);
+                        if (hidden.length)
+                            hidden.val(JSON.stringify(selected));
+                    }
+                }
+                catch (e) {
+                    // ignore
                 }
                 modalDiv.addClass('change-textarea');
                 this.dialog.close(dialogId);

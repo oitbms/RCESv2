@@ -13,7 +13,8 @@ class CacheBormashImpl {
     constructor() {
         this.endpoints = {
             employee: '/api/employees',
-            subDivision: '/api/sub-divisions'
+            subDivision: '/api/sub-divisions',
+            team: '/api/team/get-page',
         };
     }
     get(key) {

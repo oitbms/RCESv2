@@ -679,7 +679,21 @@ class PdItem extends Base {
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#teams-button', () => this.openTeamEditDialog(), true);
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
-        this.createHandler('click', '.ready-checkbox', this.openReadinessDialog.bind(this), true);
+        this.createHandler('click', '.ready-checkbox', (event) => {
+            const $row = $(event.currentTarget).closest('.table-row');
+            const rowId = $row.attr('id');
+            if (!rowId) return;
+            
+            const cacheData = this.localCache.get(rowId);
+            
+            if (cacheData && cacheData.ready) {
+                // Если уже ready - просто отправляем false на API
+                this.requestToApi("/api/parts-directory/ready", "PATCH", {id: rowId, ready: false});
+            } else {
+                // Если не ready - открываем диалог
+                this.openReadinessDialog(event);
+            }
+        }, true);
         this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
         this.createHandler('click', '#cancelReadiness', this.closeReadinessDialog.bind(this), true);
         this.createHandler('click', '#closeReadinessDialog', this.closeReadinessDialog.bind(this), true);

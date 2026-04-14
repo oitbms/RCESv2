@@ -29,8 +29,7 @@ class PdItem extends Base {
                 return;
             }
             button.prop('disabled', true);
-            const employeeInput = dialog.find('input[name="hiddenEmployee"]').val();
-            const employee = employeeInput ? JSON.parse(employeeInput) : null;
+            const employee = this.saveMassive['employee'] || (dialog.find('input[name="hiddenEmployee"]').val() ? JSON.parse(dialog.find('input[name="hiddenEmployee"]').val()) : null);
             const validatedFields = this.validateIntegerFields([
                 { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
                 {
@@ -141,59 +140,12 @@ class PdItem extends Base {
             modalDiv.addClass('change');
         });
         this.openTeamSelectionDialog = (modalDiv, currentId) => __awaiter(this, void 0, void 0, function* () {
-            const dialog = $('#teamDialog');
-            const rowContainer = dialog.find('.dialog-content-rows');
-            const searchInput = dialog.find('.choice-field input');
             const allTeams = yield this.requestToApi('/api/team/get-page', 'GET');
             const teamsList = allTeams.data || [];
-            let selectedTeamId;
-            const renderRows = (teams) => {
-                rowContainer.empty();
-                teams.forEach(team => {
-                    var _a;
-                    const employeesText = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.name).join(', ')) || '';
-                    const isSelected = selectedTeamId === team.id ? 'selected' : '';
-                    rowContainer.append(`
-                    <div class="dialog-content-rows-row" data-id="${team.id}" class="${isSelected}">
-                        <div class="content-row-column col-50">${team.name}</div>
-                        <div class="content-row-column col-50">${employeesText}</div>
-                    </div>`);
-                });
-            };
-            renderRows(teamsList);
-            searchInput.off('input').on('input', (e) => {
-                const input = e.currentTarget;
-                const searchText = input.value.toLowerCase().trim();
-                const filtered = teamsList.filter((t) => t.name.toLowerCase().includes(searchText));
-                renderRows(filtered);
-            });
-            this.dialog.open('teamDialog');
-            rowContainer.off('click').on('click', '.dialog-content-rows-row', function (e) {
-                const target = e.currentTarget;
-                selectedTeamId = $(target).data('id');
-                dialog.find('.dialog-content-rows-row').removeClass('selected');
-                $(target).addClass('selected');
-            });
-            dialog.find('#changeTeam').off('click').on('click', () => {
-                if (!selectedTeamId) {
-                    this.createNotification('Выберите бригаду из списка', NotificationType.WARNING);
-                    return;
-                }
-                const selectedTeam = teamsList.find((t) => t.id == selectedTeamId);
-                if (!selectedTeam)
-                    return;
-                modalDiv.text(selectedTeam.name);
-                modalDiv.val(selectedTeam.name);
-                if (currentId) {
-                    this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { team: selectedTeam });
-                }
-                else {
-                    const createDialog = $('#create-dialog');
-                    createDialog.find('input[name="hiddenTeam"]').val(JSON.stringify(selectedTeam));
-                }
-                modalDiv.addClass('change-textarea');
-                this.dialog.close('teamDialog');
-            });
+            yield this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
+                { key: 'name', label: 'Название', width: '160' },
+                { label: 'Сотрудники', width: '500', renderer: (t) => (t.employees || []).map((e) => e.name).join(', ') }
+            ]);
         });
         this.selectRow = (event) => __awaiter(this, void 0, void 0, function* () {
             const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
@@ -291,7 +243,6 @@ class PdItem extends Base {
                 this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
             }
         });
-        // ========== TEAM MANAGEMENT ==========
         this.openTeamEditDialog = () => __awaiter(this, void 0, void 0, function* () {
             const dialog = $('#teamEditDialog');
             // Загружаем данные
@@ -451,8 +402,8 @@ class PdItem extends Base {
                 const isSelected = ((_b = this.selectedTeamForEdit) === null || _b === void 0 ? void 0 : _b.id) === team.id ? 'selected' : '';
                 rowContainer.append(`
                 <div class="dialog-content-rows-row ${isSelected}" data-id="${team.id}">
-                    <div class="content-row-column col-50">${this.escapeHtml(team.name)}</div>
-                    <div class="content-row-column col-50">${this.escapeHtml(employeesText)}</div>
+                    <div class="content-row-column" style="width: 160px">${this.escapeHtml(team.name)}</div>
+                    <div class="content-row-column" style="width: 500px">${this.escapeHtml(employeesText)}</div>
                 </div>
             `);
             });
@@ -531,10 +482,8 @@ class PdItem extends Base {
             var _a;
             const dialog = $('#teamEditDialog');
             dialog.find('#editTeamName').val(team.name);
-            // Заполняем выбранных сотрудников
             this.selectedEmployeeIds = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.id)) || [];
             this.renderEmployeeListForEdit();
-            // Обновляем select all
             const allCheckboxes = dialog.find('#employeeRows .employee-checkbox');
             const checkedBoxes = dialog.find('#employeeRows .employee-checkbox:checked');
             dialog.find('#selectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
@@ -665,7 +614,7 @@ class PdItem extends Base {
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createPdi, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this), true);
+        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -681,8 +630,22 @@ class PdItem extends Base {
         this.createHandler('click', '#save-button', () => this.savePdi(), true);
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#teams-button', () => this.openTeamEditDialog(), true);
-        this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
-        this.createHandler('click', '.ready-checkbox', this.openReadinessDialog.bind(this), true);
+        this.bindFieldChanges();
+        this.createHandler('click', '.ready-checkbox', (event) => {
+            const $row = $(event.currentTarget).closest('.table-row');
+            const rowId = $row.attr('id');
+            if (!rowId)
+                return;
+            const cacheData = this.localCache.get(rowId);
+            if (cacheData === null || cacheData === void 0 ? void 0 : cacheData.ready) {
+                // Если уже ready - просто отправляем false на API
+                this.requestToApi("/api/parts-directory/ready", "PATCH", { id: rowId, ready: false });
+            }
+            else {
+                // Если не ready - открываем диалог
+                this.openReadinessDialog(event);
+            }
+        }, true);
         this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
         this.createHandler('click', '#cancelReadiness', this.closeReadinessDialog.bind(this), true);
         this.createHandler('click', '#closeReadinessDialog', this.closeReadinessDialog.bind(this), true);
@@ -735,12 +698,12 @@ class PdItem extends Base {
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qty);">
-                    <div class="field-container left" data-name="qty" contenteditable="false">
+                    <div class="field-container center" data-name="qty" contenteditable="false">
                         ${pdi.qty}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qtyCompleted);">
-                    <div class="field-container right" data-name="qtyCompleted" contenteditable="false">
+                    <div class="field-container center" data-name="qtyCompleted" contenteditable="false">
                         ${pdi.qtyCompleted}
                     </div>
                 </div>
@@ -827,23 +790,14 @@ class PdItem extends Base {
                 return;
             this.saveMassive[id] = Object.assign(Object.assign({}, changes), { qty: validatedFields.qty, qtyCompleted: validatedFields.qtyCompleted });
         }
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id);
-            return { id: id, version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version, changes: this.saveMassive[id] };
-        });
-        this.save('/api/parts-directory/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/parts-directory/update', (id, cacheData, changes) => ({
+            id: id,
+            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode();
-            itemsArray.forEach((item) => this.selectedRows.delete(item.id));
             $('#edit-button').removeClass('active');
-        });
-    }
-    inputChanges(event) {
-        const $el = $(event.target);
-        const id = $el.closest('.table-row').attr('id');
-        const name = $el.attr('data-name');
-        const value = $el.is('div') ? $el.text().trim() : $el.val();
-        this.saveMassive[id] = Object.assign(Object.assign({}, this.saveMassive[id]), { [name]: value });
-        $el.addClass('change');
+        }).catch(console.error);
     }
     openReadinessDialog(event) {
         const $row = $(event.currentTarget).closest('.table-row');
@@ -859,34 +813,6 @@ class PdItem extends Base {
         dialog.find('#operationThermal').prop('checked', operations.indexOf('thermal') !== -1);
         dialog.find('#operationLocksmith').prop('checked', operations.indexOf('locksmith') !== -1);
         this.dialog.open('readiness-dialog');
-    }
-    selectAllRows(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.editMode) {
-                this.createNotification('Выключите режим редактирования', NotificationType.INFO);
-                return;
-            }
-            const circle = $(event.currentTarget);
-            const allRows = $('.table-row:visible');
-            if (circle.hasClass('active')) {
-                this.selectedRows.clear();
-                allRows.removeClass('selected');
-                allRows.each((_, row) => {
-                    $(row).find('.circle-row').removeClass('active-critical');
-                });
-                circle.removeClass('active');
-            }
-            else {
-                this.selectedRows.clear();
-                allRows.each((_, row) => {
-                    const rowId = $(row).attr('id');
-                    this.selectedRows.add(rowId);
-                    $(row).addClass('selected');
-                    $(row).find('.circle-row').addClass('active-critical');
-                });
-                circle.addClass('active');
-            }
-        });
     }
     applyFilters() {
         if (!this.searchText) {

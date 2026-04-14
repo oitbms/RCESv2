@@ -53,7 +53,7 @@ public class PartsDirectoryRestController {
     @PatchMapping("/ready")
     public ResponseEntity<Boolean> coordination(@RequestParam Long id,
                                                 @RequestParam(name = "ready") Boolean readyBoolean,
-                                                @RequestParam List<String> operations) {
+                                                @RequestParam(required = false) List<String> operations) {
         Boolean ready = service.readyOrNot(id, readyBoolean, operations);
         return ResponseEntity.ok(ready);
     }

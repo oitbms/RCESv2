@@ -62,7 +62,7 @@ class NtDocuments extends Base {
                     formData.append('file', multipartFile);
                     return this.requestToApi(`/api/document/add-file-2-document/${ntd.documentId}`, "PATCH", formData);
                 }).then((file) => {
-                    this.createRowOnDocument(file, fileId);
+                    this.createDocumentFileRow(file, $('#documentDialog').find('.dialog-content-rows'), '/api/document/delete-file-from-document');
                     return this.requestToApi(`/api/ntd/calculate-references?id=${currentNtdId}`, 'POST');
                 }).then(() => {
                     this.createNotification('Файл успешно перезагружен', NotificationType.SUCCESS);
@@ -78,26 +78,6 @@ class NtDocuments extends Base {
                 });
             });
         });
-        this.createRowOnDocument = (file, index) => {
-            const rowContainer = $('#documentDialog').find('.dialog-content-rows');
-            const rowHtml = `
-                <div class="dialog-content-rows-row" id="${file.id}">
-                    <div class="content-row-column col-450">${file.baseFileName}</div>
-                    <div class="content-row-column col-100 center">
-                        ${file.type}</div>
-                    <div class="content-row-column col-100 file-items">
-                        <i class="fas fa-arrows-rotate reload-icon tooltip-trigger" data-description="Обновить документацию" data-file-id="${file.id}" onclick="$('#reloadFileInput').click()"></i>
-                        <input type="file" id="reloadFileInput" class="reload-file-input" style="display: none;"/>
-                        <i style="float: right" class="download fas fa-download tooltip-trigger" data-description="Скачать документацию" data-file-id="${file.id}"></i>
-                    </div>
-                </div>`;
-            if (index) {
-                rowContainer.find(`#${index}`).replaceWith(rowHtml);
-            }
-            else {
-                rowContainer.append(rowHtml);
-            }
-        };
         this.openReferences = (event) => __awaiter(this, void 0, void 0, function* () {
             const dialog = $('#referencesDialog');
             const currentRow = $(event.currentTarget).closest('.table-row');
@@ -254,21 +234,13 @@ class NtDocuments extends Base {
     onScroll() {
     }
     saveNtd() {
-        if (Object.keys(this.saveMassive).length === 0) {
-            return;
-        }
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id);
-            return {
-                id: id,
-                version: cacheData.version,
-                changes: this.saveMassive[id]
-            };
-        });
-        this.save('/api/ntd/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/ntd/update', (id, cacheData, changes) => ({
+            id: id,
+            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode(['dateVerification'], ['document', 'references']);
-            itemsArray.forEach((id) => this.selectedRows.delete(id.toString()));
-        });
+        }).catch(console.error);
     }
     handleDownloadFile(event) {
         this.handleDownloadFileFromDialog(event, '/api/document/download-document-file');

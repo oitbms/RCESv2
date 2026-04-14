@@ -10,7 +10,7 @@ class Team extends Base {
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createTeam, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this), true);
+        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -22,7 +22,7 @@ class Team extends Base {
             }
         }, true);
         this.createHandler('click', '#save-button', () => this.saveTeam(), true);
-        this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
+        this.bindFieldChanges();
         this.createHandler('input', '#searchInput', (event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
             this.applyFilters();
@@ -58,18 +58,14 @@ class Team extends Base {
     }
 
     private saveTeam(): void {
-        if (Object.keys(this.saveMassive).length === 0) return;
-
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id) as TeamIn | undefined;
-            return {id: id, version: cacheData?.version, changes: this.saveMassive[id]};
-        });
-
-        this.save('/api/team/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/team/update', (id: string | number, cacheData: any, changes: any) => ({
+            id: id,
+            version: cacheData?.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode();
-            itemsArray.forEach((item) => this.selectedRows.delete(item.id));
             $('#edit-button').removeClass('active');
-        });
+        }).catch(console.error);
     }
 
     private createTeam = async (event: Event): Promise<void> => {
@@ -118,93 +114,18 @@ class Team extends Base {
     };
 
     private openEmployeeSelectionDialog = async (modalDiv: any): Promise<void> => {
-        const dialog = $('#employeeDialog');
-        const rowContainer = dialog.find('.dialog-content-rows');
-        const searchInput = dialog.find('.choice-field input');
-
-        const allEmployees: Employee[] = await this.cache.get('employee');
-        const selectedEmployeeIds: number[] = [];
-
-        const renderRows = (employees: Employee[]) => {
-            rowContainer.empty();
-            employees.forEach(emp => {
-                const subDivisionName = emp.subDivision?.name || '';
-                const isChecked = selectedEmployeeIds.includes(emp.id) ? 'checked' : '';
-                rowContainer.append(`
-                    <div class="dialog-content-rows-row" data-id="${emp.id}">
-                        <div class="content-row-column col-250">
-                            <input type="checkbox" class="employee-checkbox" data-id="${emp.id}" ${isChecked}>
-                        </div>
-                        <div class="content-row-column col-250">${emp.name}</div>
-                        <div class="content-row-column col-250">${subDivisionName}</div>
-                    </div>`
-                );
-            });
-        };
-
-        renderRows(allEmployees);
-
-        // Select all
-        dialog.find('#selectAllEmployees').off('change').on('change', (e) => {
-                const isChecked = (e.currentTarget as HTMLInputElement).checked;
-                rowContainer.find('.employee-checkbox').each((_, el) => {
-                    const checkbox = el as HTMLInputElement;
-                    checkbox.checked = isChecked;
-                    const empId = Number($(checkbox).data('id'));
-                    if (isChecked) {
-                        if (!selectedEmployeeIds.includes(empId)) {
-                            selectedEmployeeIds.push(empId);
-                        }
-                    } else {
-                        const idx = selectedEmployeeIds.indexOf(empId);
-                        if (idx > -1) selectedEmployeeIds.splice(idx, 1);
-                    }
-                });
-            });
-
-        // Individual checkboxes
-        rowContainer.off('change', '.employee-checkbox').on('change', '.employee-checkbox', (e) => {
-                const el = e.currentTarget as HTMLInputElement;
-                const empId = Number($(el).data('id'));
-                if (el.checked) {
-                    if (!selectedEmployeeIds.includes(empId)) {
-                        selectedEmployeeIds.push(empId);
-                    }
-                } else {
-                    const idx = selectedEmployeeIds.indexOf(empId);
-                    if (idx > -1) selectedEmployeeIds.splice(idx, 1);
-                }
-                const all = rowContainer.find('.employee-checkbox').length;
-                const checked = rowContainer.find('.employee-checkbox:checked').length;
-                dialog.find('#selectAllEmployees').prop('checked', all === checked);
-            });
-
-        // Search
-        searchInput.off('input').on('input', (e) => {
-            const input = e.currentTarget as HTMLInputElement;
-            const searchText = input.value.toLowerCase().trim();
-            const filtered = allEmployees.filter(e =>
-                e.name.toLowerCase().includes(searchText)
-            );
-            renderRows(filtered);
-        });
-
-        this.dialog.open('employeeDialog');
-
-        // Confirm button
-        dialog.find('#changeEmployee').off('click').on('click', () => {
-            const selectedEmployees = allEmployees.filter(e => selectedEmployeeIds.includes(e.id));
-            const names = selectedEmployees.map(e => e.name).join(', ');
-
-            modalDiv.val(names);
-            modalDiv.text(names);
-
-            const dialog = $('#create-dialog');
-            dialog.find('input[name="hiddenEmployees"]').val(JSON.stringify(selectedEmployeeIds));
-
-            modalDiv.addClass('change-textarea');
-            this.dialog.close('employeeDialog');
-        });
+        await this.openSelectionDialog(
+            'employee',
+            'employeeDialog',
+            modalDiv,
+            undefined,
+            undefined,
+            [
+                { key: 'name', label: 'Имя', width: '250' },
+                { label: 'Подразделение', width: '250', renderer: (e: any) => e.subDivision?.name || '' }
+            ],
+            true
+        );
     };
 
     private selectRow = async (event: Event): Promise<void> => {
@@ -259,41 +180,7 @@ class Team extends Base {
         }
     };
 
-    private inputChanges(event: Event): void {
-        const $el = $(event.target);
-        const id = $el.closest('.table-row').attr('id');
-        const name = $el.attr('data-name');
-        const value = $el.is('div') ? $el.text().trim() : $el.val();
-        this.saveMassive[id] = {...this.saveMassive[id], [name]: value};
-        $el.addClass('change');
-    }
 
-    private async selectAllRows(event: Event): Promise<void> {
-        if (this.editMode) {
-            this.createNotification('Выключите режим редактирования', NotificationType.INFO);
-            return;
-        }
-        const circle = $(event.currentTarget);
-        const allRows = $('.table-row:visible');
-
-        if (circle.hasClass('active')) {
-            this.selectedRows.clear();
-            allRows.removeClass('selected');
-            allRows.each((_, row) => {
-                $(row).find('.circle-row').removeClass('active-critical');
-            });
-            circle.removeClass('active');
-        } else {
-            this.selectedRows.clear();
-            allRows.each((_, row) => {
-                const rowId = $(row).attr('id');
-                this.selectedRows.add(rowId);
-                $(row).addClass('selected');
-                $(row).find('.circle-row').addClass('active-critical');
-            });
-            circle.addClass('active');
-        }
-    }
 
     protected override applyFilters(): void {
         if (!this.searchText) {

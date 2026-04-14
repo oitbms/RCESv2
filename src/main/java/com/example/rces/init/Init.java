@@ -97,13 +97,6 @@ public class Init {
         }
     }
 
-//    private void test() {
-//        List<SPE> speList = em.createQuery(
-//                "SELECT e FROM SPE e WHERE e.id = ''",
-//                SPE.class
-//        ).getResultList();
-//    }
-
     private void setOrganizationOnSPE() {
         List<SPE> speList = em.createQuery(
                 "SELECT e FROM SPE e WHERE e.organization IS NULL",

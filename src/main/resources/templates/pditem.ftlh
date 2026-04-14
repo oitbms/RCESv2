@@ -234,8 +234,8 @@
         </div>
         <div class="dialog-container-content">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column col-50">Название бригады</div>
-                <div class="dialog-content-header-column col-50">Сотрудники</div>
+                <div class="dialog-content-header-column" style="width: 160px">Название бригады</div>
+                <div class="dialog-content-header-column" style="width: 500px">Сотрудники</div>
             </div>
             <div class="dialog-content-rows">
             </div>
@@ -267,8 +267,8 @@
                     <input type="text" id="teamSearchInput" placeholder="Введите название бригады">
                 </div>
                 <div class="dialog-content-header">
-                    <div class="dialog-content-header-column col-50">Название бригады</div>
-                    <div class="dialog-content-header-column col-50">Сотрудники</div>
+                    <div class="dialog-content-header-column" style="width: 160px">Название бригады</div>
+                    <div class="dialog-content-header-column" style="width: 500px">Сотрудники</div>
                 </div>
                 <div class="dialog-content-rows" id="teamListRows"></div>
             </div>

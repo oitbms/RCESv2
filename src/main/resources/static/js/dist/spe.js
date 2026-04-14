@@ -180,7 +180,7 @@ class Spe extends Base {
                 }
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
-        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this), true);
+        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -198,7 +198,7 @@ class Spe extends Base {
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
-        this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
+        this.bindFieldChanges();
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
         this.createHandler('change', '#fileInput', this.addFileToDocument.bind(this), true);
@@ -368,22 +368,14 @@ class Spe extends Base {
         });
     }
     saveSpe() {
-        if (Object.keys(this.saveMassive).length === 0) {
-            return;
-        }
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(Number(id));
-            return {
-                id: id,
-                version: cacheData.version,
-                changes: this.saveMassive[id]
-            };
-        });
-        this.save('/api/spe/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/spe/update', (id, cacheData, changes) => ({
+            id: id,
+            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode(['datePreparation', 'dateVerification'], []);
-            itemsArray.forEach((id) => this.selectedRows.delete(Number(id)));
             $('#edit-button').removeClass('active');
-        });
+        }).catch(console.error);
     }
     fullData(data) {
         $('#total-units').text(data.length);
@@ -393,36 +385,6 @@ class Spe extends Base {
         $('#at-inspection').text(data.filter(s => s.status === 'AT_INSPECTION').length);
         $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
         $('#no-document').text(data.filter(s => s.documentId === null).length);
-    }
-    selectAllRows(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.editMode) {
-                this.createNotification('Выключите режим редактирования', NotificationType.INFO);
-                return;
-            }
-            const circle = $(event.currentTarget);
-            const allRows = $('.table-row:visible');
-            if (circle.hasClass('active')) {
-                this.selectedRows.clear();
-                allRows.removeClass('selected');
-                allRows.each((_, row) => {
-                    const circle = $(row).find('.circle-row');
-                    circle.removeClass('active-critical');
-                });
-                circle.removeClass('active');
-            }
-            else {
-                this.selectedRows.clear();
-                allRows.each((_, row) => {
-                    const circle = $(row).find('.circle-row');
-                    const rowId = $(row).attr('id');
-                    this.selectedRows.add(rowId);
-                    $(row).addClass('selected');
-                    circle.addClass('active-critical');
-                });
-                circle.addClass('active');
-            }
-        });
     }
     selectRow(event) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -440,14 +402,6 @@ class Spe extends Base {
                     $('#edit-button').removeClass('active');
             }
         });
-    }
-    inputChanges(event) {
-        const $el = $(event.target);
-        const id = $el.closest('.table-row').attr('id');
-        const name = $el.attr('data-name');
-        const value = $el.is('div') ? $el.text().trim() : $el.val();
-        this.saveMassive[id] = Object.assign(Object.assign({}, this.saveMassive[id]), { [name]: value });
-        $el.addClass('change');
     }
     workWithModal(event) {
         return __awaiter(this, void 0, void 0, function* () {

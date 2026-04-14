@@ -8,7 +8,8 @@ interface CacheBormash {
 class CacheBormashImpl implements CacheBormash {
     endpoints: { [key: string]: string } = {
         employee: '/api/employees',
-        subDivision: '/api/sub-divisions'
+        subDivision: '/api/sub-divisions',
+        team: '/api/team/get-page',
     };
 
     async get<T>(key: string): Promise<T> {
