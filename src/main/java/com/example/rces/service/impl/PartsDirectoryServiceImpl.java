@@ -14,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,6 +115,17 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         pdiEntity.setReady(ready);
         repository.save(pdiEntity);
         return ready;
+    }
+
+    @Scheduled(cron = "0 0 9 * * *")
+    @Transactional
+    public void notifyExpiredDeviations() {
+        List<PartsDirectory> partsDirectories = repository.findAll();
+        partsDirectories.forEach(p -> {
+            p.setStatus(calculateStatus(p));
+            p.setColor(colorCalculate(p));
+            repository.save(p);
+        });
     }
 
 }

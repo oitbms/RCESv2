@@ -7,18 +7,19 @@
     --accent-light: #60a5fa;
     --accent-hover: #2563eb;
 
-    --customerorder: minmax(55px, 0.9fr);
-    --name: minmax(130px, 1.3fr);
-    --schema: minmax(90px, 0.8fr);
-    --thickness: minmax(70px, 0.55fr);
-    --steel: minmax(90px, 0.75fr);
-    --qty: minmax(55px, 0.35fr);
+    --customerorder: minmax(55px, 0.6fr);
+    --name: minmax(130px, 1fr);
+    --schema: minmax(90px, 0.9fr);
+    --thickness: minmax(70px, 0.35fr);
+    --steel: minmax(90px, 0.55fr);
+    --qty: minmax(55px, 0.5fr);
     --qtyCompleted: minmax(80px, 0.5fr);
     --dimensions: minmax(70px, 0.5fr);
-    --program: minmax(140px, 1.2fr);
-    --comment: minmax(140px, 1fr);
+    --program: minmax(120px, 0.78fr);
+    --comment: minmax(140px, 0.85fr);
     --status: 100px;
     --team: 140px;
+    --dateCompletion: 150px;
     --ready: 80px;
 }
 
@@ -118,6 +119,7 @@ header {
         var(--comment)
         var(--status)
         var(--team)
+        var(--dateCompletion)
         var(--ready);
     min-width: 0;
     background: var(--accent);
@@ -172,6 +174,7 @@ header {
         var(--comment)
         var(--status)
         var(--team)
+        var(--dateCompletion)
         var(--ready);
     border-bottom: 1px solid var(--border-color);
     border-left: 1px solid var(--default-color);
@@ -776,7 +779,7 @@ dialog::backdrop {
 /* Модальное окно готовности */
 #readiness-dialog {
     width: 40%;
-    height: 250px;
+    height: 230px;
 
     & .modal-title {
         margin: 0;
@@ -819,7 +822,7 @@ dialog::backdrop {
         background: #f8f9fa;
         border-top: 1px solid #dee2e6;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         gap: 8px;
     }
 }

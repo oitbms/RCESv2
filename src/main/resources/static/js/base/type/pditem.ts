@@ -17,6 +17,7 @@ type pdItemIn = {
     color: Color;
     ready: boolean;
     team: TeamIn;
+    dateCompletion: string;
     operation: string[];
 }
 

@@ -1057,16 +1057,12 @@ abstract class Base {
      */
     public readonly saveMassiveChanges = async (
         updateUrl: string,
-        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => {
-            id: string | number,
-            version: any,
-            changes: any
-        }
+        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => { id: string | number, version: number, changes: any }
     ): Promise<void> => {
         if (Object.keys(this.saveMassive).length === 0) return;
 
         const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id);
+            const cacheData = this.localCache.get(id) ?? this.localCache.get(Number(id));
             return getItemVersionAndChanges(id, cacheData, this.saveMassive[id]);
         });
 

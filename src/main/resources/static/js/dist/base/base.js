@@ -789,7 +789,8 @@ class Base {
             if (Object.keys(this.saveMassive).length === 0)
                 return;
             const itemsArray = Object.keys(this.saveMassive).map(id => {
-                const cacheData = this.localCache.get(id);
+                var _a;
+                const cacheData = (_a = this.localCache.get(id)) !== null && _a !== void 0 ? _a : this.localCache.get(Number(id));
                 return getItemVersionAndChanges(id, cacheData, this.saveMassive[id]);
             });
             yield this.save(updateUrl, ...itemsArray);

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/pditem.css">
     <script src="/js/jquery.min.js"></script>
     <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/dialogTemplates.js"></script>
     <script src="/js/dist/base/cache.js"></script>
     <script src="/js/dist/base/type/generalType.js"></script>
     <script src="/js/dist/base/base.js"></script>
@@ -76,7 +77,7 @@
             <div class="table-header-cell" style="width: var(--qty);">
                 Количество
             </div>
-            <div class="table-header-cell" style="width: var(--qtyCompleted);">
+            <div class="table-header-cell center" style="width: var(--qtyCompleted);">
                 Выполненное количество
             </div>
             <div class="table-header-cell" style="width: var(--dimensions);">
@@ -93,6 +94,9 @@
             </div>
             <div class="table-header-cell" style="width: var(--team);">
                 Бригада
+            </div>
+            <div class="table-header-cell" style="width: var(--dateCompletion);">
+                Дата готовности
             </div>
             <div class="table-header-cell last-child" style="width: var(--ready);">
                 Готовность

@@ -3,6 +3,23 @@ declare const $: any;
 
 class PdItem extends Base {
 
+    private readonly pdSpecialFields: { name: string, transform: ($div: any) => any }[] = [
+        {
+            name: 'dateCompletion',
+            transform: ($div: any) => {
+                const dataName = $div.attr('data-name');
+                const rowId = $div.closest('.table-row').attr('id');
+                const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
+                const value = (this.localCache.get(cacheKey) || {})[dataName];
+                if (!value) return $(`<input type="datetime-local" data-name="${dataName}">`);
+                const date = new Date(value);
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const val = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+                return $(`<input type="datetime-local" data-name="${dataName}">`).val(val);
+            }
+        }
+    ];
+
     private selectedTeamForEdit: any = null;
     private selectedEmployeeIds: number[] = [];
     private createSelectedEmployeeIds: number[] = [];
@@ -21,10 +38,10 @@ class PdItem extends Base {
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
-                this.enableEditMode();
+                this.enableEditMode(['dateCompletion'], undefined, this.pdSpecialFields);
                 $('#edit-button').addClass('active');
             } else {
-                this.disableEditMode();
+                this.disableEditMode(['dateCompletion'], []);
                 if (!this.editMode) $('#edit-button').removeClass('active');
             }
         }, true);
@@ -32,19 +49,18 @@ class PdItem extends Base {
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#teams-button', () => this.openTeamEditDialog(), true);
         this.bindFieldChanges();
-        this.createHandler('click', '.ready-checkbox', (event) => {
-            const $row = $(event.currentTarget).closest('.table-row');
-            const rowId = $row.attr('id');
-            if (!rowId) return;
-            
-            const cacheData = this.localCache.get(rowId) as pdItemIn | undefined;
-            
-            if (cacheData?.ready) {
-                // Если уже ready - просто отправляем false на API
-                this.requestToApi("/api/parts-directory/ready", "PATCH", {id: rowId, ready: false});
+        this.createHandler('click', '.ready-checkbox', (e) => {
+            const $row = $(e.currentTarget).closest('.table-row');
+            const rowId = Number($row.attr('id'));
+            const pdItem = this.localCache.get(rowId) as pdItemIn;
+
+            if (pdItem.ready) {
+                const params = new URLSearchParams();
+                params.set('id', String(rowId));
+                params.set('ready', 'false');
+                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH");
             } else {
-                // Если не ready - открываем диалог
-                this.openReadinessDialog(event);
+                this.openReadinessDialog(e);
             }
         }, true);
         this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
@@ -133,6 +149,11 @@ class PdItem extends Base {
                         ${this.escapeHtml(pdi.team?.name || '')}
                     </div>
                 </div>
+                <div class="table-cell" style="width: var(--preparationDate);">
+                    <div contenteditable="false" data-name="dateCompletion">
+                        ${this.formatDate(pdi.dateCompletion)}
+                    </div>
+                </div>
                 <div class="table-cell center" style="width: var(--ready);">
                     <div class="checkbox-wrapper-ready">
                         <input type="checkbox" class="ready-checkbox" id="toggleReady-${pdi.id}" ${pdi.ready ? 'checked' : ''}>
@@ -168,11 +189,11 @@ class PdItem extends Base {
         if (Object.keys(this.saveMassive).length === 0) return;
 
         for (const id of Object.keys(this.saveMassive)) {
-            const cacheData = this.localCache.get(id) as pdItemIn | undefined;
-            if (!cacheData) return;
+            const pdItem = this.localCache.get(Number(id)) as pdItemIn;
+
             const changes = this.saveMassive[id] || {};
-            const qtyValue = changes.qty ?? cacheData.qty;
-            const qtyCompletedValue = changes.qtyCompleted ?? cacheData.qtyCompleted;
+            const qtyValue = changes.qty ?? pdItem.qty;
+            const qtyCompletedValue = changes.qtyCompleted ?? pdItem.qtyCompleted;
             const validatedFields = this.validateIntegerFields([
                 {key: 'qty', value: qtyValue, min: 1, label: 'Количество'},
                 {
@@ -360,7 +381,6 @@ class PdItem extends Base {
         }
     };
 
-
     private openReadinessDialog(event: Event): void {
         const $row = $(event.currentTarget).closest('.table-row');
         const rowId = $row.attr('id');
@@ -433,7 +453,6 @@ class PdItem extends Base {
         }
     };
 
-
     protected override applyFilters(): void {
         if (!this.searchText) {
             $('.table-row').show();
@@ -454,6 +473,13 @@ class PdItem extends Base {
 
         const mouseEvent = event as MouseEvent;
         this.createContextMenu([
+            {
+                label: 'Подробнее' ,
+                idAction: 'Detail' ,
+                action: () => {
+
+                }
+            },
             {
                 label: 'Удалить запись',
                 idAction: 'deletePdi',
@@ -480,6 +506,10 @@ class PdItem extends Base {
             this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
         }
     };
+
+    private openDetailDialog = (event: Event): void => {
+
+    }
 
     private openTeamEditDialog = async (): Promise<void> => {
         const dialog = $('#teamEditDialog');

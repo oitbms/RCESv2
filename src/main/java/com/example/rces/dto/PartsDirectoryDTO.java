@@ -2,6 +2,7 @@ package com.example.rces.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PartsDirectoryDTO {
@@ -38,7 +39,7 @@ public class PartsDirectoryDTO {
 
     private String color;
 
-    private LocalDateTime dateCompletion;
+    private LocalDate dateCompletion;
 
     private Boolean ready;
 
@@ -172,11 +173,11 @@ public class PartsDirectoryDTO {
         this.color = color;
     }
 
-    public LocalDateTime getDateCompletion() {
+    public LocalDate getDateCompletion() {
         return dateCompletion;
     }
 
-    public void setDateCompletion(LocalDateTime dateCompletion) {
+    public void setDateCompletion(LocalDate dateCompletion) {
         this.dateCompletion = dateCompletion;
     }
 
