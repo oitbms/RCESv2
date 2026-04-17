@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
+    <link rel="stylesheet" href="/css/pditem-overrides.css">
     <script src="/js/jquery.min.js"></script>
     <script src="/js/dist/base/dialog.js"></script>
     <script src="/js/dist/base/dialogTemplates.js"></script>

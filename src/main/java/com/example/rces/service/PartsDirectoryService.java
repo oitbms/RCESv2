@@ -16,6 +16,6 @@ public interface PartsDirectoryService {
 
     void deletePdi(Long id);
 
-    Boolean readyOrNot(Long id, Boolean ready, List<String> operations);
+    PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations);
 
 }

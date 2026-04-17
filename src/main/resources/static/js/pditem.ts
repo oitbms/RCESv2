@@ -11,11 +11,20 @@ class PdItem extends Base {
                 const rowId = $div.closest('.table-row').attr('id');
                 const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
                 const value = (this.localCache.get(cacheKey) || {})[dataName];
-                if (!value) return $(`<input type="datetime-local" data-name="${dataName}">`);
+                if (!value) return $(`<div class="date-field"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`);
                 const date = new Date(value);
                 const pad = (n: number) => n.toString().padStart(2, '0');
-                const val = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                return $(`<input type="datetime-local" data-name="${dataName}">`).val(val);
+                const val = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+
+                return $(`<div class="field-container"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`).find('input').val(val).end();
+            }
+        },
+        {
+            name: 'team',
+            transform: ($div: any) => {
+                const dataName = $div.attr('data-name');
+                const value = $div.text() || '';
+                return $(`<div class="field-container team-field area-modal center" data-name="${dataName}" contenteditable="false">${this.escapeHtml(value)}</div>`);
             }
         }
     ];
@@ -58,7 +67,9 @@ class PdItem extends Base {
                 const params = new URLSearchParams();
                 params.set('id', String(rowId));
                 params.set('ready', 'false');
-                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH");
+                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH").then((pdi: pdItemIn) => {
+                    this.updateRow(pdi, rowId);
+                });
             } else {
                 this.openReadinessDialog(e);
             }
@@ -360,8 +371,12 @@ class PdItem extends Base {
         const allTeams: any = await this.requestToApi('/api/team/get-page', 'GET');
         const teamsList = allTeams.data || [];
         await this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
-            { key: 'name', label: 'Название', width: '160' },
-            { label: 'Сотрудники', width: '500', renderer: (t: any) => (t.employees || []).map((e: any) => e.name).join(', ') }
+            {key: 'name', label: 'Название', width: '160'},
+            {
+                label: 'Сотрудники',
+                width: '500',
+                renderer: (t: any) => (t.employees || []).map((e: any) => e.name).join(', ')
+            }
         ]);
     };
 
@@ -374,7 +389,7 @@ class PdItem extends Base {
         if (!rowId) return;
 
         if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
-            this.enableEditMode(currentRow);
+            this.enableEditMode(['dateCompletion'], currentRow, this.pdSpecialFields);
         } else if (!this.selectedRows.has(rowId)) {
             this.disableEditMode();
             if (!this.editMode) $('#edit-button').removeClass('active');
@@ -427,10 +442,10 @@ class PdItem extends Base {
             params.set('ready', String(ready));
             operations.forEach(op => params.append('operations', op));
 
-            await this.requestToApi(
-                `/api/parts-directory/ready?${params.toString()}`,
-                'PATCH'
-            );
+            await this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi: pdItemIn) => {
+                // @ts-ignore
+                this.updateRow(pdi, this.selectedReadinessRowId);
+            });
 
             // Обновляем кэш и UI
             const cacheData = this.localCache.get(this.selectedReadinessRowId) as pdItemIn | undefined;
@@ -474,8 +489,8 @@ class PdItem extends Base {
         const mouseEvent = event as MouseEvent;
         this.createContextMenu([
             {
-                label: 'Подробнее' ,
-                idAction: 'Detail' ,
+                label: 'Подробнее',
+                idAction: 'Detail',
                 action: () => {
 
                 }

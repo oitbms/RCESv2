@@ -86,7 +86,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         LocalDate today = LocalDate.now();
         LocalDate requiredUntil = today.plusDays(3);
 
-        if (pdi.getStatus().equals(PartsDirectory.Status.COMPLETE)) {
+        if (pdi.getReady()) {
             return PartsDirectory.Status.COMPLETE;
         } else if (pdi.getDateCompletion() != null &&
                 !pdi.getDateCompletion().toLocalDate().isBefore(today) &&
@@ -103,7 +103,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     }
 
     @Override
-    public Boolean readyOrNot(Long id, Boolean ready, List<String> operations) {
+    public PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations) {
         PartsDirectory pdiEntity = repository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
         if (ready) {
@@ -113,8 +113,10 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
             pdiEntity.setOperation(new ArrayList<>());
         }
         pdiEntity.setReady(ready);
+        pdiEntity.setStatus(calculateStatus(pdiEntity));
+        pdiEntity.setColor(colorCalculate(pdiEntity));
         repository.save(pdiEntity);
-        return ready;
+        return mapper.toDTO(pdiEntity);
     }
 
     @Scheduled(cron = "0 0 9 * * *")

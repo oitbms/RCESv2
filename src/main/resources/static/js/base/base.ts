@@ -496,11 +496,8 @@ abstract class Base {
      * @param row — конкретная строка (jQuery-объект), если null — все выбранные строки
      * @param specialFields — объекты {name: string, transform: ($div: any) => any} для кастомных полей
      */
-    public readonly enableEditMode = (
-        dateTimeFields: string[] = [],
-        row?: any,
-        specialFields: { name: string, transform: ($div: any) => any }[] = []
-    ): void => {
+    public readonly enableEditMode = (dateTimeFields: string[] = [], row?: any,
+        specialFields: { name: string, transform: ($div: any) => any }[] = []): void => {
         const processElement = ($div: any) => {
             const dataName: string = $div.attr('data-name');
             const special = specialFields.find(f => f.name === dataName);

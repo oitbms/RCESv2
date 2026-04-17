@@ -51,11 +51,11 @@ public class PartsDirectoryRestController {
     }
 
     @PatchMapping("/ready")
-    public ResponseEntity<Boolean> coordination(@RequestParam Long id,
+    public ResponseEntity<PartsDirectoryDTO> coordination(@RequestParam Long id,
                                                 @RequestParam(name = "ready") Boolean readyBoolean,
                                                 @RequestParam(required = false) List<String> operations) {
-        Boolean ready = service.readyOrNot(id, readyBoolean, operations);
-        return ResponseEntity.ok(ready);
+        PartsDirectoryDTO dto = service.readyOrNot(id, readyBoolean, operations);
+        return ResponseEntity.ok(dto);
     }
 
 }

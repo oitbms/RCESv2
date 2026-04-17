@@ -20,7 +20,7 @@ public class PdItem {
 
     public PdItem(String employee, List<PartsDirectory> thermal, List<PartsDirectory> locksmith) {
         setEmployee(employee);
-        setDate(formatedDate(LocalDate.now()) + "г.");
+        setDate(formatedDate(LocalDate.now()) + " г.");
         thermal.forEach(t -> {
             Thermal model = new Thermal(t);
             this.thermal.add(model);

@@ -22,11 +22,19 @@ class PdItem extends Base {
                     const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
                     const value = (this.localCache.get(cacheKey) || {})[dataName];
                     if (!value)
-                        return $(`<input type="datetime-local" data-name="${dataName}">`);
+                        return $(`<div class="date-field"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`);
                     const date = new Date(value);
                     const pad = (n) => n.toString().padStart(2, '0');
                     const val = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                    return $(`<input type="datetime-local" data-name="${dataName}">`).val(val);
+                    return $(`<div class="field-container"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`).find('input').val(val).end();
+                }
+            },
+            {
+                name: 'team',
+                transform: ($div) => {
+                    const dataName = $div.attr('data-name');
+                    const value = $div.text() || '';
+                    return $(`<div class="field-container team-field area-modal center" data-name="${dataName}" contenteditable="false">${this.escapeHtml(value)}</div>`);
                 }
             }
         ];
@@ -161,7 +169,11 @@ class PdItem extends Base {
             const teamsList = allTeams.data || [];
             yield this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
                 { key: 'name', label: 'Название', width: '160' },
-                { label: 'Сотрудники', width: '500', renderer: (t) => (t.employees || []).map((e) => e.name).join(', ') }
+                {
+                    label: 'Сотрудники',
+                    width: '500',
+                    renderer: (t) => (t.employees || []).map((e) => e.name).join(', ')
+                }
             ]);
         });
         this.selectRow = (event) => __awaiter(this, void 0, void 0, function* () {
@@ -173,7 +185,7 @@ class PdItem extends Base {
             if (!rowId)
                 return;
             if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
-                this.enableEditMode(currentRow);
+                this.enableEditMode(['dateCompletion'], currentRow, this.pdSpecialFields);
             }
             else if (!this.selectedRows.has(rowId)) {
                 this.disableEditMode();
@@ -205,7 +217,10 @@ class PdItem extends Base {
                 params.set('id', this.selectedReadinessRowId);
                 params.set('ready', String(ready));
                 operations.forEach(op => params.append('operations', op));
-                yield this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH');
+                yield this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi) => {
+                    // @ts-ignore
+                    this.updateRow(pdi, this.selectedReadinessRowId);
+                });
                 // Обновляем кэш и UI
                 const cacheData = this.localCache.get(this.selectedReadinessRowId);
                 if (cacheData) {
@@ -664,7 +679,9 @@ class PdItem extends Base {
                 const params = new URLSearchParams();
                 params.set('id', String(rowId));
                 params.set('ready', 'false');
-                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH");
+                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH").then((pdi) => {
+                    this.updateRow(pdi, rowId);
+                });
             }
             else {
                 this.openReadinessDialog(e);
