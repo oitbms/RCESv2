@@ -490,6 +490,7 @@ abstract class Base {
 
     protected applyFilters(): void {
     }
+
     /**
      * Включает режим редактирования для выбранных строк или конкретной строки.
      * @param dateTimeFields — массив имён полей, которые должны стать <input type="date">
@@ -497,7 +498,7 @@ abstract class Base {
      * @param specialFields — объекты {name: string, transform: ($div: any) => any} для кастомных полей
      */
     public readonly enableEditMode = (dateTimeFields: string[] = [], row?: any,
-        specialFields: { name: string, transform: ($div: any) => any }[] = []): void => {
+                                      specialFields: { name: string, transform: ($div: any) => any }[] = []): void => {
         const processElement = ($div: any) => {
             const dataName: string = $div.attr('data-name');
             const special = specialFields.find(f => f.name === dataName);
@@ -629,12 +630,12 @@ abstract class Base {
         rowSelector: string = '.table-row',
         circleRowSelector: string = '.circle-row'
     ): void => {
+        const circle = $(event.currentTarget);
+        const allRows = $(`${rowSelector}:visible`);
         if (this.editMode) {
             this.createNotification('Выключите режим редактирования', NotificationType.INFO);
             return;
         }
-        const circle = $(event.currentTarget);
-        const allRows = $(`${rowSelector}:visible`);
 
         if (circle.hasClass('active')) {
             this.selectedRows.clear();
@@ -690,7 +691,11 @@ abstract class Base {
         currentId?: string | number,
         rawData?: any[],
         dataFilter?: (items: any[]) => any[],
-        columns: ({ key?: string, label: string, width?: string, renderer?: (item:any)=>string }[]) = [{key: 'name', label: 'Наименование', width: '250'}],
+        columns: ({ key?: string, label: string, width?: string, renderer?: (item: any) => string }[]) = [{
+            key: 'name',
+            label: 'Наименование',
+            width: '250'
+        }],
         multiSelect: boolean = false
     ): Promise<void> => {
         const dialog = $(`#${dialogId}`);
@@ -786,7 +791,7 @@ abstract class Base {
             try {
                 const form = modalDiv.closest('form');
                 if (form.length) {
-                    const hidden = form.find(`input[name="hidden${fieldName.charAt(0).toUpperCase()+fieldName.slice(1)}"]`);
+                    const hidden = form.find(`input[name="hidden${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}"]`);
                     if (hidden.length) hidden.val(JSON.stringify(selected));
                 }
             } catch (e) {
@@ -1054,7 +1059,11 @@ abstract class Base {
      */
     public readonly saveMassiveChanges = async (
         updateUrl: string,
-        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => { id: string | number, version: number, changes: any }
+        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => {
+            id: string | number,
+            version: number,
+            changes: any
+        }
     ): Promise<void> => {
         if (Object.keys(this.saveMassive).length === 0) return;
 

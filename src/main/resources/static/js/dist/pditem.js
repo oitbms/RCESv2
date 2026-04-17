@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class PdItem extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
@@ -22,11 +13,16 @@ class PdItem extends Base {
                     const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
                     const value = (this.localCache.get(cacheKey) || {})[dataName];
                     if (!value)
-                        return $(`<div class="date-field"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`);
+                        return $(`<div class="field-container" style="width: 95%">
+                                        <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
+                                       </div>`);
                     const date = new Date(value);
                     const pad = (n) => n.toString().padStart(2, '0');
                     const val = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                    return $(`<div class="field-container"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`).find('input').val(val).end();
+                    return $(`<div class="field-container" style="width: 95%">
+                            <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
+                          </div>`)
+                        .find('input').val(val).end();
                 }
             },
             {
@@ -44,7 +40,7 @@ class PdItem extends Base {
         this.allTeamsCache = [];
         this.allEmployeesCache = [];
         this.selectedReadinessRowId = null;
-        this.createPdi = (event) => __awaiter(this, void 0, void 0, function* () {
+        this.createPdi = async (event) => {
             event.preventDefault();
             const button = $(event.target);
             const form = button.closest('form').get(0);
@@ -89,7 +85,7 @@ class PdItem extends Base {
                 dateCompletion: dialog.find('input[name="dateCompletion"]').val()
             };
             try {
-                const newPdi = yield this.createEntity('/api/parts-directory/create-item', formData);
+                const newPdi = await this.createEntity('/api/parts-directory/create-item', formData);
                 this.saveMassive = {};
                 this.localCache.set(newPdi.id, newPdi);
                 this.dialog.close("create-dialog");
@@ -103,8 +99,8 @@ class PdItem extends Base {
             finally {
                 button.prop('disabled', false);
             }
-        });
-        this.workWithModal = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.workWithModal = async (event) => {
             var _a;
             const modalDiv = $(event.currentTarget);
             const fieldName = modalDiv.attr('data-field') || modalDiv.attr('data-name');
@@ -115,7 +111,7 @@ class PdItem extends Base {
                 const searchInput = dialog.find('.choice-field input');
                 const changeButton = $('#changeEmployee');
                 let selected;
-                const data = yield this.cache.get('employee');
+                const data = await this.cache.get('employee');
                 const renderRows = (items) => {
                     rowContainer.empty();
                     items.forEach(item => {
@@ -160,14 +156,14 @@ class PdItem extends Base {
                 });
             }
             else if (fieldName === 'team') {
-                yield this.openTeamSelectionDialog(modalDiv, currentId);
+                await this.openTeamSelectionDialog(modalDiv, currentId);
             }
             modalDiv.addClass('change');
-        });
-        this.openTeamSelectionDialog = (modalDiv, currentId) => __awaiter(this, void 0, void 0, function* () {
-            const allTeams = yield this.requestToApi('/api/team/get-page', 'GET');
+        };
+        this.openTeamSelectionDialog = async (modalDiv, currentId) => {
+            const allTeams = await this.requestToApi('/api/team/get-page', 'GET');
             const teamsList = allTeams.data || [];
-            yield this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
+            await this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
                 { key: 'name', label: 'Название', width: '160' },
                 {
                     label: 'Сотрудники',
@@ -175,8 +171,8 @@ class PdItem extends Base {
                     renderer: (t) => (t.employees || []).map((e) => e.name).join(', ')
                 }
             ]);
-        });
-        this.selectRow = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.selectRow = async (event) => {
             const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
             this.toggleRowSelection(event, true);
             const circle = $(event.currentTarget);
@@ -188,16 +184,16 @@ class PdItem extends Base {
                 this.enableEditMode(['dateCompletion'], currentRow, this.pdSpecialFields);
             }
             else if (!this.selectedRows.has(rowId)) {
-                this.disableEditMode();
+                this.disableEditMode(['dateCompletion'], []);
                 if (!this.editMode)
                     $('#edit-button').removeClass('active');
             }
-        });
+        };
         this.closeReadinessDialog = () => {
             this.dialog.close('readiness-dialog');
             this.selectedReadinessRowId = null;
         };
-        this.saveReadinessHandler = () => __awaiter(this, void 0, void 0, function* () {
+        this.saveReadinessHandler = async () => {
             if (!this.selectedReadinessRowId)
                 return;
             const dialog = $('#readiness-dialog');
@@ -217,7 +213,7 @@ class PdItem extends Base {
                 params.set('id', this.selectedReadinessRowId);
                 params.set('ready', String(ready));
                 operations.forEach(op => params.append('operations', op));
-                yield this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi) => {
+                await this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi) => {
                     // @ts-ignore
                     this.updateRow(pdi, this.selectedReadinessRowId);
                 });
@@ -240,7 +236,7 @@ class PdItem extends Base {
             finally {
                 unlock();
             }
-        });
+        };
         this.showRowContextMenu = (event) => {
             event.preventDefault();
             const $row = $(event.currentTarget);
@@ -264,7 +260,7 @@ class PdItem extends Base {
                 },
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
-        this.deletePdiHandler = (id) => __awaiter(this, void 0, void 0, function* () {
+        this.deletePdiHandler = async (id) => {
             try {
                 this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
                     // @ts-ignore
@@ -280,15 +276,15 @@ class PdItem extends Base {
             catch (_a) {
                 this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
             }
-        });
+        };
         this.openDetailDialog = (event) => {
         };
-        this.openTeamEditDialog = () => __awaiter(this, void 0, void 0, function* () {
+        this.openTeamEditDialog = async () => {
             const dialog = $('#teamEditDialog');
             // Загружаем данные
-            const teamsResponse = yield this.requestToApi('/api/team/get-page', 'GET');
+            const teamsResponse = await this.requestToApi('/api/team/get-page', 'GET');
             this.allTeamsCache = teamsResponse.data || [];
-            this.allEmployeesCache = yield this.cache.get("employee");
+            this.allEmployeesCache = await this.cache.get("employee");
             // Сбрасываем состояние
             this.selectedTeamForEdit = null;
             this.selectedEmployeeIds = [];
@@ -430,7 +426,7 @@ class PdItem extends Base {
                 dialog.find('#createSelectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
             });
             this.dialog.open('teamEditDialog');
-        });
+        };
         this.renderTeamList = (searchText = '') => {
             const dialog = $('#teamEditDialog');
             const rowContainer = dialog.find('#teamListRows');
@@ -535,7 +531,7 @@ class PdItem extends Base {
             this.renderEmployeeListForCreate();
             dialog.find('#createSelectAllEmployees').prop('checked', false);
         };
-        this.saveTeamHandler = () => __awaiter(this, void 0, void 0, function* () {
+        this.saveTeamHandler = async () => {
             if (!this.selectedTeamForEdit) {
                 this.createNotification('Выберите бригаду для редактирования', NotificationType.WARNING);
                 return;
@@ -557,7 +553,7 @@ class PdItem extends Base {
             }
             const unlock = this.lockScreen('Сохранение бригады...');
             try {
-                const updatedTeam = yield this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
+                const updatedTeam = await this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
                 // Обновляем кэш
                 const idx = this.allTeamsCache.findIndex((t) => t.id === updatedTeam.id);
                 if (idx !== -1) {
@@ -583,8 +579,8 @@ class PdItem extends Base {
             finally {
                 unlock();
             }
-        });
-        this.createTeamHandler = () => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.createTeamHandler = async () => {
             const dialog = $('#teamEditDialog');
             const name = dialog.find('#createTeamName').val().toString().trim();
             if (!name) {
@@ -600,7 +596,7 @@ class PdItem extends Base {
             console.log('DTO being sent:', dto);
             const unlock = this.lockScreen('Создание бригады...');
             try {
-                const newTeam = yield this.requestToApi('/api/team/create', 'POST', dto);
+                const newTeam = await this.requestToApi('/api/team/create', 'POST', dto);
                 // Добавляем в кэш
                 this.allTeamsCache.push(newTeam);
                 this.createNotification('Бригада успешно создана', NotificationType.SUCCESS);
@@ -613,8 +609,8 @@ class PdItem extends Base {
             finally {
                 unlock();
             }
-        });
-        this.deleteTeamHandler = () => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.deleteTeamHandler = async () => {
             if (!this.selectedTeamForEdit) {
                 this.createNotification('Выберите бригаду для удаления', NotificationType.WARNING);
                 return;
@@ -650,7 +646,7 @@ class PdItem extends Base {
             finally {
                 unlock();
             }
-        });
+        };
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createPdi, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
@@ -793,23 +789,18 @@ class PdItem extends Base {
     }
     onScroll() {
     }
-    print() {
-        const _super = Object.create(null, {
-            print: { get: () => super.print }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.selectedRows || this.selectedRows.size === 0) {
-                return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+    async print() {
+        if (!this.selectedRows || this.selectedRows.size === 0) {
+            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
+        }
+        this.reports = [
+            {
+                name: 'Акт-наряд',
+                api: '/api/report/print/pdi-act',
+                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
             }
-            this.reports = [
-                {
-                    name: 'Акт-наряд',
-                    api: '/api/report/print/pdi-act',
-                    params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
-                }
-            ];
-            return _super.print.call(this);
-        });
+        ];
+        return super.print();
     }
     savePdi() {
         var _a, _b;
@@ -839,7 +830,7 @@ class PdItem extends Base {
             version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
             changes: changes
         })).then(() => {
-            this.disableEditMode();
+            this.disableEditMode(['dateCompletion'], []);
             $('#edit-button').removeClass('active');
         }).catch(console.error);
     }

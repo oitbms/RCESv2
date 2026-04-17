@@ -1,19 +1,10 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class Team extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/team/get-page', undefined).catch(console.error);
         });
-        this.createTeam = (event) => __awaiter(this, void 0, void 0, function* () {
+        this.createTeam = async (event) => {
             event.preventDefault();
             const button = $(event.target);
             const form = button.closest('form').get(0);
@@ -30,7 +21,7 @@ class Team extends Base {
                 employeeIds: employeeIds
             };
             try {
-                const newTeam = yield this.createEntity('/api/team/create', formData);
+                const newTeam = await this.createEntity('/api/team/create', formData);
                 this.saveMassive = {};
                 this.localCache.set(newTeam.id, newTeam);
                 this.dialog.close("create-dialog");
@@ -44,22 +35,22 @@ class Team extends Base {
             finally {
                 button.prop('disabled', false);
             }
-        });
-        this.workWithModal = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.workWithModal = async (event) => {
             const modalDiv = $(event.currentTarget);
             const fieldName = modalDiv.attr('data-field');
             if (fieldName === 'employees') {
-                yield this.openEmployeeSelectionDialog(modalDiv);
+                await this.openEmployeeSelectionDialog(modalDiv);
             }
             modalDiv.addClass('change');
-        });
-        this.openEmployeeSelectionDialog = (modalDiv) => __awaiter(this, void 0, void 0, function* () {
-            yield this.openSelectionDialog('employee', 'employeeDialog', modalDiv, undefined, undefined, [
+        };
+        this.openEmployeeSelectionDialog = async (modalDiv) => {
+            await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, undefined, undefined, [
                 { key: 'name', label: 'Имя', width: '250' },
                 { label: 'Подразделение', width: '250', renderer: (e) => { var _a; return ((_a = e.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''; } }
             ], true);
-        });
-        this.selectRow = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.selectRow = async (event) => {
             const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
             this.toggleRowSelection(event, true);
             const circle = $(event.currentTarget);
@@ -75,7 +66,7 @@ class Team extends Base {
                 if (!this.editMode)
                     $('#edit-button').removeClass('active');
             }
-        });
+        };
         this.showRowContextMenu = (event) => {
             event.preventDefault();
             const $row = $(event.currentTarget);
@@ -93,7 +84,7 @@ class Team extends Base {
                 },
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
-        this.deleteTeamHandler = (id) => __awaiter(this, void 0, void 0, function* () {
+        this.deleteTeamHandler = async (id) => {
             try {
                 this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
                     // @ts-ignore
@@ -109,7 +100,7 @@ class Team extends Base {
             catch (_a) {
                 this.createNotification('Ошибка при удалении бригады', NotificationType.ERROR);
             }
-        });
+        };
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createTeam, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);

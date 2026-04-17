@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class Sgi extends Base {
     constructor(itemsPerPage = 16, visibleRow = Infinity) {
         super($(`.table-content-rows`), itemsPerPage, visibleRow, () => {
@@ -22,7 +13,7 @@ class Sgi extends Base {
             const $innerRows = $currentRow.siblings('.row-items-inner-row');
             $innerRows.slideToggle(400);
         };
-        this.createSgi = (event) => __awaiter(this, void 0, void 0, function* () {
+        this.createSgi = async (event) => {
             event.preventDefault();
             const button = $(event.target);
             const form = button.closest('form').get(0);
@@ -54,12 +45,12 @@ class Sgi extends Base {
                 }
             }
             try {
-                const newSgi = yield this.createEntity('/api/sgi/create-sgi', formData);
+                const newSgi = await this.createEntity('/api/sgi/create-sgi', formData);
                 this.dialog.close("create-dialog");
                 const newRow = this.createRow(newSgi);
                 if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage &&
                     !dialog.find('[name="parentId"]').val().length) {
-                    yield $('#last-page').click();
+                    await $('#last-page').click();
                     $(`.table-content-rows`).append(newRow);
                     this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
                 }
@@ -72,7 +63,7 @@ class Sgi extends Base {
                     if (parentSgi) {
                         parentSgi.subSGI.push(newSgi);
                         this.localCache.set(parentSgi.id, parentSgi);
-                        yield this.updateRow(parentSgi, parentSgi.id);
+                        await this.updateRow(parentSgi, parentSgi.id);
                         this.createNotification('Создана новая подзадача для мероприятия под номером ' + parentSgi.number, NotificationType.SUCCESS);
                     }
                 }
@@ -83,8 +74,8 @@ class Sgi extends Base {
                 this.createNotification('Ошибка при создании SGI', NotificationType.ERROR);
                 button.prop('disabled', false);
             }
-        });
-        this.uploadImages = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.uploadImages = async (event) => {
             const $this = $(event.target);
             $this.prop('disabled', true);
             const currentDialog = $this.closest('dialog');
@@ -93,56 +84,54 @@ class Sgi extends Base {
             // Сохраняем ссылку на класс или контекст
             // Предположим, что localCache - это свойство класса
             const that = this; // или const localCache = this.localCache;
-            inputFiles.off('change').on('change', function (e) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    e.preventDefault();
-                    const input = e.target;
-                    const files = input.files;
-                    if (!files)
-                        return;
-                    input.files = new DataTransfer().files;
-                    // Используем сохраненную ссылку
-                    if (!that.localCache.has('imagesMap')) {
-                        that.localCache.set('imagesMap', new Map());
+            inputFiles.off('change').on('change', async function (e) {
+                e.preventDefault();
+                const input = e.target;
+                const files = input.files;
+                if (!files)
+                    return;
+                input.files = new DataTransfer().files;
+                // Используем сохраненную ссылку
+                if (!that.localCache.has('imagesMap')) {
+                    that.localCache.set('imagesMap', new Map());
+                }
+                const imagesMap = that.localCache.get('imagesMap');
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!imagesMap.has(file.name)) {
+                        imagesMap.set(file.name, file);
                     }
-                    const imagesMap = that.localCache.get('imagesMap');
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        if (!imagesMap.has(file.name)) {
-                            imagesMap.set(file.name, file);
-                        }
-                    }
-                    const dataTransfer = new DataTransfer();
-                    for (const [fileName, file] of imagesMap) {
-                        if (file instanceof File) {
-                            dataTransfer.items.add(file);
-                            const imageUrl = URL.createObjectURL(file);
-                            const fileItem = `
+                }
+                const dataTransfer = new DataTransfer();
+                for (const [fileName, file] of imagesMap) {
+                    if (file instanceof File) {
+                        dataTransfer.items.add(file);
+                        const imageUrl = URL.createObjectURL(file);
+                        const fileItem = `
                 <div class="file-item">
                     <img src="${imageUrl}" alt="${file.name}">
                 </div>`;
-                            imageContainer.append(fileItem);
-                            imagesMap.set(file.name, null);
-                        }
+                        imageContainer.append(fileItem);
+                        imagesMap.set(file.name, null);
                     }
-                    const validFileMap = that.localCache.has('validFileMap')
-                        ? that.localCache.get('validFileMap')
-                        : new Map();
-                    for (let i = 0; i < dataTransfer.files.length; i++) {
-                        const file = dataTransfer.files[i];
-                        validFileMap.set(file.name, file);
-                    }
-                    that.localCache.set('validFileMap', validFileMap);
-                    const newDataTransfer = new DataTransfer();
-                    validFileMap.forEach(file => newDataTransfer.items.add(file));
-                    input.files = newDataTransfer.files;
-                });
+                }
+                const validFileMap = that.localCache.has('validFileMap')
+                    ? that.localCache.get('validFileMap')
+                    : new Map();
+                for (let i = 0; i < dataTransfer.files.length; i++) {
+                    const file = dataTransfer.files[i];
+                    validFileMap.set(file.name, file);
+                }
+                that.localCache.set('validFileMap', validFileMap);
+                const newDataTransfer = new DataTransfer();
+                validFileMap.forEach(file => newDataTransfer.items.add(file));
+                input.files = newDataTransfer.files;
             });
             inputFiles.trigger('click');
             $(document).off('click.closeContextMenu').on('click.closeContextMenu', () => $('.context-menu').remove());
             $this.prop('disabled', false);
-        });
-        this.edit = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.edit = async (event) => {
             const currentRow = $(event.target).closest('.row-items-row');
             const currentId = $(currentRow).attr('id');
             const currentSGI = this.localCache.get(currentId);
@@ -173,8 +162,8 @@ class Sgi extends Base {
             }
             dialog.find('.document').attr('id', currentSGI.id);
             this.dialog.open('editing-dialog');
-            yield this.renderImages('#editing-dialog', 'edit', currentSGI, currentSGI.imagesSGI);
-            $('#editing-dialog #saveEditBtn').off('click').on('click', (e) => __awaiter(this, void 0, void 0, function* () {
+            await this.renderImages('#editing-dialog', 'edit', currentSGI, currentSGI.imagesSGI);
+            $('#editing-dialog #saveEditBtn').off('click').on('click', async (e) => {
                 if (currentSGI.agree) {
                     this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
                     return;
@@ -193,7 +182,7 @@ class Sgi extends Base {
                         }
                     }
                 });
-                const updateSGI = yield $.ajax({
+                const updateSGI = await $.ajax({
                     url: '/api/sgi/update',
                     type: 'PATCH',
                     data: formData,
@@ -213,7 +202,7 @@ class Sgi extends Base {
                     if (parentSGI) {
                         parentSGI.subSGI = parentSGI.subSGI.filter((sub) => sub.id !== updateSGI.id);
                         parentSGI.subSGI.push(updateSGI);
-                        yield this.updateRow(parentSGI, parentSGI.id);
+                        await this.updateRow(parentSGI, parentSGI.id);
                     }
                     // @ts-ignore
                     const parentRow = $(`.row-items-row[id="${parentSGI.id}"]`);
@@ -227,17 +216,17 @@ class Sgi extends Base {
                             stopPropagation: () => {
                             }
                         };
-                        yield this.openSubSgi(fakeEvent);
+                        await this.openSubSgi(fakeEvent);
                     }
                 }
                 else {
-                    yield this.updateRow(updateSGI, currentId);
+                    await this.updateRow(updateSGI, currentId);
                 }
                 this.dialog.close('editing-dialog');
                 dialog.find('#createSubSGI').remove();
                 this.createNotification('Мероприятие успешно отредактировано', NotificationType.SUCCESS);
-            }));
-            $('#createSubSGI').off('click').on('click', (e) => __awaiter(this, void 0, void 0, function* () {
+            });
+            $('#createSubSGI').off('click').on('click', async (e) => {
                 if (currentSGI.agree) {
                     this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
                 }
@@ -246,15 +235,15 @@ class Sgi extends Base {
                 const createDialog = $('#create-dialog');
                 this.dialog.open('create-dialog');
                 createDialog.find('[name="parentId"]').val(currentId);
-            }));
+            });
             dialog.find('#cancelButton').off('click').on('click', () => {
                 this.localCache.delete('validFileMap');
                 this.localCache.delete('imagesMap');
                 this.dialog.close('editing-dialog');
                 dialog.find('#createSubSGI').remove();
             });
-        });
-        this.renderImages = (currentDialog, type, currentSGI, images) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.renderImages = async (currentDialog, type, currentSGI, images) => {
             var _a;
             const base64ToFile = (base64, name) => {
                 const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -269,7 +258,7 @@ class Sgi extends Base {
             if (!images || images === null) {
                 const url = `/api/sgi/get-images-${type === 'fact' ? 'fact-sgi' : 'sgi'}`;
                 try {
-                    images = yield $.ajax({
+                    images = await $.ajax({
                         url: url,
                         type: 'GET',
                         data: { id: type === 'fact' ? (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.id : currentSGI.id }
@@ -303,8 +292,8 @@ class Sgi extends Base {
             validFileMap.forEach(file => dataTransfer.items.add(file));
             input.files = dataTransfer.files;
             dialog.find('input[type="file"]').replaceWith(input);
-        });
-        this.zoomImageOnClick = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.zoomImageOnClick = async (event) => {
             event.preventDefault();
             event.stopPropagation();
             const target = $(event.target);
@@ -333,8 +322,8 @@ class Sgi extends Base {
             }
             $('#previewImage').attr('src', imgSrc).attr('alt', imgAlt);
             $('#imagePreviewModal').show();
-        });
-        this.imageContextMenu = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.imageContextMenu = async (event) => {
             event.preventDefault();
             const mouseEvent = event;
             const target = event.target;
@@ -400,8 +389,8 @@ class Sgi extends Base {
             setTimeout(() => {
                 $(document).on('click', closeMenu);
             }, 0);
-        });
-        this.showRowContextMenu = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.showRowContextMenu = async (event) => {
             event.preventDefault();
             const mouseEvent = event;
             const $row = $(event.currentTarget);
@@ -447,7 +436,7 @@ class Sgi extends Base {
                     }
                 }
             ], mouseEvent.clientX, mouseEvent.clientY);
-        });
+        };
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createSgi, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
@@ -625,257 +614,247 @@ class Sgi extends Base {
             });
         });
     }
-    enterPage(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const page = parseInt($(event.currentTarget).data('page'), 10);
-            if (this.currentPage === page)
-                return;
-            if (!isNaN(page) && page >= 1) {
-                const unlock = this.lockScreen();
-                try {
-                    const data = yield $.ajax({
-                        url: '/api/sgi/get-page-sgi',
-                        type: 'GET',
-                        data: {
-                            page: page,
-                            size: this.itemsPerPage
-                        }
-                    });
-                    this.localCache.clear();
-                    $(`.table-content-rows`).empty();
-                    data.data.forEach((sgi) => {
-                        const row = this.createRow(sgi);
-                        $(`.table-content-rows`).append(row);
-                        this.localCache.set(sgi.id, sgi);
-                        if (sgi.subSGI && sgi.subSGI.length) {
-                            sgi.subSGI.forEach(subSgi => this.localCache.set(subSgi.id, subSgi));
-                        }
-                    });
-                    this.applyFiltersToCurrentPage();
-                }
-                catch (error) {
-                    console.error('Ошибка загрузки страницы:', error);
-                }
-                finally {
-                    this.currentPage = page;
-                    unlock();
-                }
+    async enterPage(event) {
+        const page = parseInt($(event.currentTarget).data('page'), 10);
+        if (this.currentPage === page)
+            return;
+        if (!isNaN(page) && page >= 1) {
+            const unlock = this.lockScreen();
+            try {
+                const data = await $.ajax({
+                    url: '/api/sgi/get-page-sgi',
+                    type: 'GET',
+                    data: {
+                        page: page,
+                        size: this.itemsPerPage
+                    }
+                });
+                this.localCache.clear();
+                $(`.table-content-rows`).empty();
+                data.data.forEach((sgi) => {
+                    const row = this.createRow(sgi);
+                    $(`.table-content-rows`).append(row);
+                    this.localCache.set(sgi.id, sgi);
+                    if (sgi.subSGI && sgi.subSGI.length) {
+                        sgi.subSGI.forEach(subSgi => this.localCache.set(subSgi.id, subSgi));
+                    }
+                });
+                this.applyFiltersToCurrentPage();
             }
-        });
+            catch (error) {
+                console.error('Ошибка загрузки страницы:', error);
+            }
+            finally {
+                this.currentPage = page;
+                unlock();
+            }
+        }
     }
-    workWithModal(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const modalDiv = $(event.currentTarget);
-            const fieldName = modalDiv.attr('data-field');
-            const currentId = modalDiv.closest('.row-items-row').attr('id');
-            let selected;
-            if (fieldName === 'subDivision' || fieldName === 'employee') {
-                const isEmployee = fieldName === 'employee';
-                const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
-                const rowContainer = dialog.find('.dialog-content-rows');
-                const searchInput = dialog.find('.choice-field input');
-                const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
-                const data = yield this.cache.get(fieldName);
-                const filteredEmployees = data.filter(employee => ['EVENT', 'CONTROL'].some(role => role === employee.role));
-                const renderRows = (items) => {
-                    rowContainer.empty();
-                    items.forEach(item => {
-                        var _a;
-                        rowContainer.append(`
+    async workWithModal(event) {
+        const modalDiv = $(event.currentTarget);
+        const fieldName = modalDiv.attr('data-field');
+        const currentId = modalDiv.closest('.row-items-row').attr('id');
+        let selected;
+        if (fieldName === 'subDivision' || fieldName === 'employee') {
+            const isEmployee = fieldName === 'employee';
+            const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            const searchInput = dialog.find('.choice-field input');
+            const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
+            const data = await this.cache.get(fieldName);
+            const filteredEmployees = data.filter(employee => ['EVENT', 'CONTROL'].some(role => role === employee.role));
+            const renderRows = (items) => {
+                rowContainer.empty();
+                items.forEach(item => {
+                    var _a;
+                    rowContainer.append(`
                     <div class="dialog-content-rows-row" id="${item.id}">
                         <div class="content-row-column col-250">${item.name}</div>
                         ${isEmployee ? `<div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>` : ''}
                     </div>`);
-                    });
-                };
-                renderRows(filteredEmployees);
-                searchInput.off('input').on('input', function () {
-                    const searchText = $(this).val().toString().toLowerCase().trim();
-                    const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
-                    renderRows(filtered);
                 });
-                this.dialog.open('employeeDialog');
-                rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
-                    const target = e.currentTarget;
-                    const id = target.id;
-                    selected = data.find((item) => item.id === Number(id));
-                    rowContainer.find('.dialog-content-rows-row').removeClass('selected');
-                    $(target).addClass('selected');
-                });
-                changeButton.off('click').on('click', () => {
-                    if (!selected) {
-                        this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
-                        return;
-                    }
-                    modalDiv.text(selected.name);
-                    modalDiv.val(selected.name);
-                    if (isEmployee) {
-                        const employeeJson = JSON.stringify(selected);
-                        $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
-                    }
-                    if (currentId) {
-                        this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
-                    }
-                    else {
-                        this.saveMassive[fieldName] = selected;
-                    }
-                    modalDiv.addClass('change-textarea');
-                    this.dialog.close('employeeDialog');
-                });
-            }
-            modalDiv.addClass('change');
-        });
-    }
-    fact(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            event.preventDefault();
-            const currentRow = $(event.target).closest('.row-items-row');
-            const currentId = $(currentRow).attr('id');
-            const currentSGI = this.localCache.get(currentId);
-            if (!currentSGI)
-                return;
-            const dialog = $('#execution-dialog');
-            const executionDialog = document.getElementById('execution-dialog');
-            const factExec = currentSGI.factExecution;
-            if (factExec) {
-                Object.keys(factExec).forEach(key => {
-                    const value = factExec[key];
-                    const field = executionDialog === null || executionDialog === void 0 ? void 0 : executionDialog.querySelector(`[data-field="${key}"]`);
-                    if (!field || key === 'imagesFactSGI')
-                        return;
-                    if (key === 'executionDate') {
-                        field.value = value ? value.split('.').reverse().join('-') : '';
-                    }
-                    else if (field) {
-                        field.value = value || '';
-                    }
-                });
-            }
-            const self = this;
-            $(document).off('click', '#execution-dialog #saveBtn').on('click', '#execution-dialog #saveBtn', function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    if (currentSGI.agree) {
-                        self.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.INFO);
-                        return;
-                    }
-                    if (dialog.find(`[data-field="executionDate"]`).val() === '') {
-                        self.createNotification('Не заполнена дата выполнения', NotificationType.INFO);
-                        return;
-                    }
-                    const formData = new FormData();
-                    formData.append('id', currentId);
-                    formData.append('factExecutionSGIBool', 'true');
-                    $(dialog).find('[data-field]').each((_, el) => {
-                        var _a;
-                        const input = el;
-                        const files = Array.from((_a = input.files) !== null && _a !== void 0 ? _a : []);
-                        for (const file of files) {
-                            formData.append(input.dataset.field, file);
-                        }
-                    });
-                    try {
-                        const updateSGI = yield $.ajax({
-                            url: '/api/sgi/update',
-                            type: 'PATCH',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            dataType: 'json'
-                        });
-                        self.localCache.set(currentId, updateSGI);
-                        self.localCache.delete('validFileMap');
-                        yield self.updateRow(updateSGI, currentId);
-                        self.createNotification('Факт выполнения сохранен', NotificationType.SUCCESS);
-                        self.dialog.close('execution-dialog');
-                    }
-                    catch (error) {
-                        self.dialog.close('execution-dialog');
-                        self.createNotification('Редактировать может только создатель задачи', NotificationType.WARNING);
-                        console.error(error);
-                    }
-                });
+            };
+            renderRows(filteredEmployees);
+            searchInput.off('input').on('input', function () {
+                const searchText = $(this).val().toString().toLowerCase().trim();
+                const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
+                renderRows(filtered);
             });
-            this.dialog.open('execution-dialog');
-            yield this.renderImages(dialog, 'fact', currentSGI, (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.imagesFactSGI);
-            // Клик на крестик
-            dialog.find('#cancelButton').off('click').on('click', () => {
+            this.dialog.open('employeeDialog');
+            rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                const target = e.currentTarget;
+                const id = target.id;
+                selected = data.find((item) => item.id === Number(id));
+                rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                $(target).addClass('selected');
+            });
+            changeButton.off('click').on('click', () => {
+                if (!selected) {
+                    this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
+                    return;
+                }
+                modalDiv.text(selected.name);
+                modalDiv.val(selected.name);
+                if (isEmployee) {
+                    const employeeJson = JSON.stringify(selected);
+                    $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
+                }
+                if (currentId) {
+                    this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
+                }
+                else {
+                    this.saveMassive[fieldName] = selected;
+                }
+                modalDiv.addClass('change-textarea');
+                this.dialog.close('employeeDialog');
+            });
+        }
+        modalDiv.addClass('change');
+    }
+    async fact(event) {
+        var _a;
+        event.preventDefault();
+        const currentRow = $(event.target).closest('.row-items-row');
+        const currentId = $(currentRow).attr('id');
+        const currentSGI = this.localCache.get(currentId);
+        if (!currentSGI)
+            return;
+        const dialog = $('#execution-dialog');
+        const executionDialog = document.getElementById('execution-dialog');
+        const factExec = currentSGI.factExecution;
+        if (factExec) {
+            Object.keys(factExec).forEach(key => {
+                const value = factExec[key];
+                const field = executionDialog === null || executionDialog === void 0 ? void 0 : executionDialog.querySelector(`[data-field="${key}"]`);
+                if (!field || key === 'imagesFactSGI')
+                    return;
+                if (key === 'executionDate') {
+                    field.value = value ? value.split('.').reverse().join('-') : '';
+                }
+                else if (field) {
+                    field.value = value || '';
+                }
+            });
+        }
+        const self = this;
+        $(document).off('click', '#execution-dialog #saveBtn').on('click', '#execution-dialog #saveBtn', async function () {
+            if (currentSGI.agree) {
+                self.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.INFO);
+                return;
+            }
+            if (dialog.find(`[data-field="executionDate"]`).val() === '') {
+                self.createNotification('Не заполнена дата выполнения', NotificationType.INFO);
+                return;
+            }
+            const formData = new FormData();
+            formData.append('id', currentId);
+            formData.append('factExecutionSGIBool', 'true');
+            $(dialog).find('[data-field]').each((_, el) => {
+                var _a;
+                const input = el;
+                const files = Array.from((_a = input.files) !== null && _a !== void 0 ? _a : []);
+                for (const file of files) {
+                    formData.append(input.dataset.field, file);
+                }
+            });
+            try {
+                const updateSGI = await $.ajax({
+                    url: '/api/sgi/update',
+                    type: 'PATCH',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json'
+                });
+                self.localCache.set(currentId, updateSGI);
+                self.localCache.delete('validFileMap');
+                await self.updateRow(updateSGI, currentId);
+                self.createNotification('Факт выполнения сохранен', NotificationType.SUCCESS);
+                self.dialog.close('execution-dialog');
+            }
+            catch (error) {
+                self.dialog.close('execution-dialog');
+                self.createNotification('Редактировать может только создатель задачи', NotificationType.WARNING);
+                console.error(error);
+            }
+        });
+        this.dialog.open('execution-dialog');
+        await this.renderImages(dialog, 'fact', currentSGI, (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.imagesFactSGI);
+        // Клик на крестик
+        dialog.find('#cancelButton').off('click').on('click', () => {
+            this.localCache.delete('validFileMap');
+            this.localCache.delete('imagesMap');
+            this.dialog.close('execution-dialog');
+        });
+        // Клик вне диалога
+        dialog.off('click').on('click', (e) => {
+            if (e.target.nodeName === 'DIALOG') {
                 this.localCache.delete('validFileMap');
                 this.localCache.delete('imagesMap');
                 this.dialog.close('execution-dialog');
-            });
-            // Клик вне диалога
-            dialog.off('click').on('click', (e) => {
-                if (e.target.nodeName === 'DIALOG') {
-                    this.localCache.delete('validFileMap');
-                    this.localCache.delete('imagesMap');
-                    this.dialog.close('execution-dialog');
-                }
-            });
-            // Нажатие esc
-            $(document).off('keydown').on('keydown', (e) => {
-                if (e.key === 'Escape' || e.key === 'Esc') {
-                    this.localCache.delete('validFileMap');
-                    this.localCache.delete('imagesMap');
-                    this.dialog.close('execution-dialog');
-                }
-            });
+            }
+        });
+        // Нажатие esc
+        $(document).off('keydown').on('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                this.localCache.delete('validFileMap');
+                this.localCache.delete('imagesMap');
+                this.dialog.close('execution-dialog');
+            }
         });
     }
-    agree(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            event.preventDefault();
-            const checkbox = event.target;
-            const isChecked = checkbox.checked;
-            const currentRow = $(checkbox).closest('.row-items-row');
-            const currentId = $(currentRow).attr('id');
-            const currentSGI = this.localCache.get(currentId);
-            if (!currentSGI)
-                return;
-            const self = this;
-            const formData = new FormData();
-            formData.append("id", currentId);
-            formData.append("agreed", isChecked.toString());
-            if (!currentSGI.planDate) {
-                this.createNotification('Не заполнено поле планируемый срок!', NotificationType.ERROR);
-                checkbox.checked = !isChecked;
-                return;
+    async agree(event) {
+        var _a;
+        event.preventDefault();
+        const checkbox = event.target;
+        const isChecked = checkbox.checked;
+        const currentRow = $(checkbox).closest('.row-items-row');
+        const currentId = $(currentRow).attr('id');
+        const currentSGI = this.localCache.get(currentId);
+        if (!currentSGI)
+            return;
+        const self = this;
+        const formData = new FormData();
+        formData.append("id", currentId);
+        formData.append("agreed", isChecked.toString());
+        if (!currentSGI.planDate) {
+            this.createNotification('Не заполнено поле планируемый срок!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        if (isChecked && currentSGI.subSGI && !currentSGI.subSGI.every(sub => sub.agree)) {
+            this.createNotification('Все подзадачи должны быть согласованы!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        if (!isChecked && (currentSGI === null || currentSGI === void 0 ? void 0 : currentSGI.parent) && ((_a = this.localCache.get(currentSGI.parent)) === null || _a === void 0 ? void 0 : _a.agree)) {
+            this.createNotification('Нельзя отменить согласование подзадачи, если родительская задача согласована!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        try {
+            await $.ajax({
+                url: '/api/sgi/agree',
+                method: 'PATCH',
+                data: formData,
+                contentType: false,
+                processData: false
+            });
+            currentSGI.agree = isChecked;
+            this.localCache.set(currentId, currentSGI);
+            if (isChecked) {
+                currentRow.addClass('complete');
             }
-            if (isChecked && currentSGI.subSGI && !currentSGI.subSGI.every(sub => sub.agree)) {
-                this.createNotification('Все подзадачи должны быть согласованы!', NotificationType.ERROR);
-                checkbox.checked = !isChecked;
-                return;
+            else {
+                currentRow.removeClass('complete');
             }
-            if (!isChecked && (currentSGI === null || currentSGI === void 0 ? void 0 : currentSGI.parent) && ((_a = this.localCache.get(currentSGI.parent)) === null || _a === void 0 ? void 0 : _a.agree)) {
-                this.createNotification('Нельзя отменить согласование подзадачи, если родительская задача согласована!', NotificationType.ERROR);
-                checkbox.checked = !isChecked;
-                return;
-            }
-            try {
-                yield $.ajax({
-                    url: '/api/sgi/agree',
-                    method: 'PATCH',
-                    data: formData,
-                    contentType: false,
-                    processData: false
-                });
-                currentSGI.agree = isChecked;
-                this.localCache.set(currentId, currentSGI);
-                if (isChecked) {
-                    currentRow.addClass('complete');
-                }
-                else {
-                    currentRow.removeClass('complete');
-                }
-                currentRow.find('input[type="checkbox"]').prop('checked', isChecked);
-                this.createNotification(isChecked ? 'Мероприятие согласовано' : 'Согласование отменено', NotificationType.SUCCESS);
-            }
-            catch (error) {
-                checkbox.checked = !isChecked;
-                this.createNotification('Вы не можете закрывать/открывать мероприятие', NotificationType.ERROR);
-            }
-        });
+            currentRow.find('input[type="checkbox"]').prop('checked', isChecked);
+            this.createNotification(isChecked ? 'Мероприятие согласовано' : 'Согласование отменено', NotificationType.SUCCESS);
+        }
+        catch (error) {
+            checkbox.checked = !isChecked;
+            this.createNotification('Вы не можете закрывать/открывать мероприятие', NotificationType.ERROR);
+        }
     }
     selectRow(event) {
         const row = $(event.target).closest('.row-items-row');
@@ -889,63 +868,61 @@ class Sgi extends Base {
             this.selectedRows.add(rowId);
         }
     }
-    filterDialog(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            event.preventDefault();
-            const dialog = $('#filter-dialog');
-            this.dialog.open('filter-dialog');
-            // Заполняем select сотрудников
-            const employeeField = dialog.find('[data-field="employee"]');
-            employeeField.empty();
-            employeeField.append($('<option>', { value: '', text: 'Все сотрудники' }));
-            const employeesData = yield this.cache.get('employee');
-            const filteredEmployees = employeesData.filter((employee) => ['EVENT', 'CONTROL'].some((role) => role === employee.role));
-            filteredEmployees.forEach((employee) => {
-                employeeField.append($('<option>', {
-                    value: employee.name,
-                    text: employee.name
-                }));
-            });
-            // Сохраняем контекст this
-            const self = this;
-            // Обработчик применения фильтров
-            $(document).off('click', '#filtered').on('click', '#filtered', () => {
-                var _a, _b, _c, _d, _e, _f, _g, _h;
-                self.filters = {
-                    number: ((_a = dialog.find('[data-field="number"]').val()) === null || _a === void 0 ? void 0 : _a.toString().trim()) || '',
-                    workcenter: ((_b = dialog.find('[data-field="workcenter"]').val()) === null || _b === void 0 ? void 0 : _b.toString().trim()) || '',
-                    event: ((_c = dialog.find('[data-field="event"]').val()) === null || _c === void 0 ? void 0 : _c.toString().trim()) || '',
-                    actions: ((_d = dialog.find('[data-field="actions"]').val()) === null || _d === void 0 ? void 0 : _d.toString().trim()) || '',
-                    departament: (dialog.find('[data-field="department"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="department"] option:selected').text().trim(),
-                    employee: ((_e = dialog.find('[data-field="employee"]').val()) === null || _e === void 0 ? void 0 : _e.toString()) || '',
-                    desiredDate: ((_f = dialog.find('[data-field="desiredDate"]').val()) === null || _f === void 0 ? void 0 : _f.toString()) || '',
-                    planDate: ((_g = dialog.find('[data-field="planDate"]').val()) === null || _g === void 0 ? void 0 : _g.toString()) || '',
-                    note: ((_h = dialog.find('[data-field="note"]').val()) === null || _h === void 0 ? void 0 : _h.toString().trim()) || ''
-                };
-                // Применяем фильтры к текущей странице
-                self.applyFiltersToCurrentPage();
-                self.dialog.close('filter-dialog');
-            });
-            // Обработчик сброса фильтров
-            dialog.find('#default-filter').off('click').on('click', () => {
-                dialog.find('input, textarea, select').val('');
-                $('.row-items').show();
-                this.dialog.close('filter-dialog');
-            });
-            // Клик на крестик
-            dialog.find('#cancelButton').off('click').on('click', (e) => {
+    async filterDialog(event) {
+        event.preventDefault();
+        const dialog = $('#filter-dialog');
+        this.dialog.open('filter-dialog');
+        // Заполняем select сотрудников
+        const employeeField = dialog.find('[data-field="employee"]');
+        employeeField.empty();
+        employeeField.append($('<option>', { value: '', text: 'Все сотрудники' }));
+        const employeesData = await this.cache.get('employee');
+        const filteredEmployees = employeesData.filter((employee) => ['EVENT', 'CONTROL'].some((role) => role === employee.role));
+        filteredEmployees.forEach((employee) => {
+            employeeField.append($('<option>', {
+                value: employee.name,
+                text: employee.name
+            }));
+        });
+        // Сохраняем контекст this
+        const self = this;
+        // Обработчик применения фильтров
+        $(document).off('click', '#filtered').on('click', '#filtered', () => {
+            var _a, _b, _c, _d, _e, _f, _g, _h;
+            self.filters = {
+                number: ((_a = dialog.find('[data-field="number"]').val()) === null || _a === void 0 ? void 0 : _a.toString().trim()) || '',
+                workcenter: ((_b = dialog.find('[data-field="workcenter"]').val()) === null || _b === void 0 ? void 0 : _b.toString().trim()) || '',
+                event: ((_c = dialog.find('[data-field="event"]').val()) === null || _c === void 0 ? void 0 : _c.toString().trim()) || '',
+                actions: ((_d = dialog.find('[data-field="actions"]').val()) === null || _d === void 0 ? void 0 : _d.toString().trim()) || '',
+                departament: (dialog.find('[data-field="department"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="department"] option:selected').text().trim(),
+                employee: ((_e = dialog.find('[data-field="employee"]').val()) === null || _e === void 0 ? void 0 : _e.toString()) || '',
+                desiredDate: ((_f = dialog.find('[data-field="desiredDate"]').val()) === null || _f === void 0 ? void 0 : _f.toString()) || '',
+                planDate: ((_g = dialog.find('[data-field="planDate"]').val()) === null || _g === void 0 ? void 0 : _g.toString()) || '',
+                note: ((_h = dialog.find('[data-field="note"]').val()) === null || _h === void 0 ? void 0 : _h.toString().trim()) || ''
+            };
+            // Применяем фильтры к текущей странице
+            self.applyFiltersToCurrentPage();
+            self.dialog.close('filter-dialog');
+        });
+        // Обработчик сброса фильтров
+        dialog.find('#default-filter').off('click').on('click', () => {
+            dialog.find('input, textarea, select').val('');
+            $('.row-items').show();
+            this.dialog.close('filter-dialog');
+        });
+        // Клик на крестик
+        dialog.find('#cancelButton').off('click').on('click', (e) => {
+            this.localCache.delete('validFileMap');
+            this.localCache.delete('imagesMap');
+            this.dialog.close('filter-dialog');
+        });
+        // Клик вне диалога
+        dialog.off('click').on('click', (e) => {
+            if (e.target.nodeName === 'DIALOG') {
                 this.localCache.delete('validFileMap');
                 this.localCache.delete('imagesMap');
-                this.dialog.close('filter-dialog');
-            });
-            // Клик вне диалога
-            dialog.off('click').on('click', (e) => {
-                if (e.target.nodeName === 'DIALOG') {
-                    this.localCache.delete('validFileMap');
-                    this.localCache.delete('imagesMap');
-                    e.target.close();
-                }
-            });
+                e.target.close();
+            }
         });
     }
     applyFiltersToCurrentPage() {
@@ -993,28 +970,27 @@ class Sgi extends Base {
             download: ''
         }).appendTo('body')[0].click().remove();
     }
-    openDocument(event) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const dialog = $('#documentDialog');
-            const currentSGIId = $(event.currentTarget).attr('id');
-            const sgi = this.localCache.get(currentSGIId);
-            if (!sgi)
-                return;
-            const rowContainer = dialog.find('.dialog-content-rows');
-            rowContainer.empty();
-            if (sgi.documentId !== null) {
-                const document = yield this.requestToApi(`/api/document/get-document/${sgi.documentId}`, "GET");
-                this.localCache.set('document', document);
-                document.files.forEach((file) => {
-                    rowContainer.append(`
+    async openDocument(event) {
+        const dialog = $('#documentDialog');
+        const currentSGIId = $(event.currentTarget).attr('id');
+        const sgi = this.localCache.get(currentSGIId);
+        if (!sgi)
+            return;
+        const rowContainer = dialog.find('.dialog-content-rows');
+        rowContainer.empty();
+        if (sgi.documentId !== null) {
+            const document = await this.requestToApi(`/api/document/get-document/${sgi.documentId}`, "GET");
+            this.localCache.set('document', document);
+            document.files.forEach((file) => {
+                rowContainer.append(`
                     <div class="dialog-content-rows-row" id="${file.id}">
                         <div class="content-row-column col-450">${file.baseFileName}</div>
                         <div class="content-row-column col-100">${file.type}</div>
                         <div class="content-row-column col-100"><i style="float: right; font-size:1rem; padding: 12px 10px" class="download fas fa-download"></i></div>
                     </div>`);
-                });
-            }
-            rowContainer.append(`
+            });
+        }
+        rowContainer.append(`
             <div class="dialog-content-rows-row">
                 <div class="content-row-column col-450"></div>
                 <div class="content-row-column col-100"></div>
@@ -1023,30 +999,29 @@ class Sgi extends Base {
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
             </div>`);
-            $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSGIId));
-            $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
-                const $row = $(event.currentTarget);
-                const fileId = $row.attr('id');
-                if (!fileId) {
-                    return;
-                }
-                event.preventDefault();
-                const mouseEvent = event;
-                this.createContextMenu([
-                    {
-                        label: 'Удалить файл',
-                        idAction: "deleteFileDocumentButton",
-                        action: () => {
-                            this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
-                                this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
-                                this.deleteRow(fileId);
-                            });
-                        }
+        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSGIId));
+        $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
+            const $row = $(event.currentTarget);
+            const fileId = $row.attr('id');
+            if (!fileId) {
+                return;
+            }
+            event.preventDefault();
+            const mouseEvent = event;
+            this.createContextMenu([
+                {
+                    label: 'Удалить файл',
+                    idAction: "deleteFileDocumentButton",
+                    action: () => {
+                        this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
+                            this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
+                            this.deleteRow(fileId);
+                        });
                     }
-                ], mouseEvent.clientX, mouseEvent.clientY);
-            });
-            this.dialog.open('documentDialog');
+                }
+            ], mouseEvent.clientX, mouseEvent.clientY);
         });
+        this.dialog.open('documentDialog');
     }
     addFileToDocument(event, sgiId) {
         const formData = new FormData();

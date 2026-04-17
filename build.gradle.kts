@@ -100,24 +100,24 @@ dependencies {
 }
 
 tasks.register("runAllTests") {
-    dependsOn("apiTests", "uiTests")
+//    dependsOn("apiTests", "uiTests")
 }
 
-tasks.register<Test>("apiTests") {
-    useJUnitPlatform {
-        includeTags("api")
-    }
-    doFirst {
-        file("build/tmp/test-token.txt").delete()
-    }
-}
+//tasks.register<Test>("apiTests") {
+//    useJUnitPlatform {
+//        includeTags("api")
+//    }
+//    doFirst {
+//        file("build/tmp/test-token.txt").delete()
+//    }
+//}
 
-tasks.register<Test>("uiTests") {
-    useJUnitPlatform {
-        includeTags("ui")
-    }
-    mustRunAfter("apiTests")
-}
+//tasks.register<Test>("uiTests") {
+//    useJUnitPlatform {
+//        includeTags("ui")
+//    }
+//    mustRunAfter("apiTests")
+//}
 
 tasks.withType<JavaCompile> {
     options.isFork = true

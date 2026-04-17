@@ -206,7 +206,7 @@ class PdItem extends Base {
                 this.enableEditMode(currentRow);
             }
             else if (!this.selectedRows.has(rowId)) {
-                this.disableEditMode();
+                this.disableEditMode(['dateCompletion'], [], currentRow);
                 if (!this.editMode)
                     $('#edit-button').removeClass('active');
             }
@@ -659,6 +659,7 @@ class PdItem extends Base {
                 unlock();
             }
         });
+        this.editDateFields = ['dateCompletion'];
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createPdi, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
@@ -670,7 +671,7 @@ class PdItem extends Base {
                 $('#edit-button').addClass('active');
             }
             else {
-                this.disableEditMode();
+                this.disableEditMode(['dateCompletion'], []);
                 if (!this.editMode)
                     $('#edit-button').removeClass('active');
             }
@@ -843,7 +844,7 @@ class PdItem extends Base {
             return { id: id, version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version, changes: this.saveMassive[id] };
         });
         this.save('/api/parts-directory/update', ...itemsArray).then(() => {
-            this.disableEditMode();
+            this.disableEditMode(['dateCompletion'], []);
             itemsArray.forEach((item) => this.selectedRows.delete(item.id));
             $('#edit-button').removeClass('active');
         });

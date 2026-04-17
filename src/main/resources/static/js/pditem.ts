@@ -11,12 +11,17 @@ class PdItem extends Base {
                 const rowId = $div.closest('.table-row').attr('id');
                 const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
                 const value = (this.localCache.get(cacheKey) || {})[dataName];
-                if (!value) return $(`<div class="date-field"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`);
+                if (!value) return $(`<div class="field-container" style="width: 95%">
+                                        <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
+                                       </div>`);
                 const date = new Date(value);
                 const pad = (n: number) => n.toString().padStart(2, '0');
                 const val = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
-                return $(`<div class="field-container"><input type="datetime-local" class="form-control" data-name="${dataName}"></div>`).find('input').val(val).end();
+                return $(`<div class="field-container" style="width: 95%">
+                            <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
+                          </div>`)
+                    .find('input').val(val).end();
             }
         },
         {
@@ -225,7 +230,7 @@ class PdItem extends Base {
             version: cacheData?.version,
             changes: changes
         })).then(() => {
-            this.disableEditMode();
+            this.disableEditMode(['dateCompletion'], []);
             $('#edit-button').removeClass('active');
         }).catch(console.error);
     }
@@ -391,7 +396,7 @@ class PdItem extends Base {
         if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
             this.enableEditMode(['dateCompletion'], currentRow, this.pdSpecialFields);
         } else if (!this.selectedRows.has(rowId)) {
-            this.disableEditMode();
+            this.disableEditMode(['dateCompletion'], []);
             if (!this.editMode) $('#edit-button').removeClass('active');
         }
     };

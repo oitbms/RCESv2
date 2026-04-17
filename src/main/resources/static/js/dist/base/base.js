@@ -1,14 +1,5 @@
 "use strict";
 /// <reference path="type/generalType.ts" />
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class Base {
     constructor(rowContainer, itemsPerPage = Infinity, visibleRow = Infinity, ...initCallbacks) {
         this.locks = new Map();
@@ -23,18 +14,18 @@ class Base {
         this.cache = new CacheBormashImpl();
         this.dialog = new DialogImpl();
         //Блокировка параллельного выполнения
-        this.lock = (fn) => (...args) => __awaiter(this, void 0, void 0, function* () {
+        this.lock = (fn) => async (...args) => {
             const key = fn.name;
             if (this.locks.get(key))
                 return;
             this.locks.set(key, true);
             try {
-                return yield fn(...args);
+                return await fn(...args);
             }
             finally {
                 this.locks.set(key, false);
             }
-        });
+        };
         this.createHandler = (event, selector, handler, locked = false) => {
             this.handlers.push({
                 event,
@@ -58,8 +49,8 @@ class Base {
         this.switchVisibilityRow = (rowIndex, hide) => {
             $(`[data-index="${rowIndex}"]`)[hide ? 'fadeOut' : 'fadeIn'](300);
         };
-        this.save = (url, ...items) => __awaiter(this, void 0, void 0, function* () {
-            const results = yield Promise.all(items.map(item => {
+        this.save = async (url, ...items) => {
+            const results = await Promise.all(items.map(item => {
                 const id = item.id;
                 const version = item.version;
                 const changes = item.changes;
@@ -71,9 +62,9 @@ class Base {
             });
             this.createNotification('Успешно обновлено', NotificationType.SUCCESS);
             return results;
-        });
-        this.requestToApi = (url, type, param) => __awaiter(this, void 0, void 0, function* () {
-            return yield $.ajax({
+        };
+        this.requestToApi = async (url, type, param) => {
+            return await $.ajax({
                 url: url,
                 method: type,
                 contentType: param instanceof FormData ? false : 'application/json',
@@ -84,7 +75,7 @@ class Base {
                 this.createNotification(errorResponse.message, errorResponse.notificationType);
                 throw xhr;
             });
-        });
+        };
         // Экранирование HTML для защиты от XSS
         this.escapeHtml = (unsafe) => {
             if (unsafe == null)
@@ -97,10 +88,10 @@ class Base {
                 .replace(/'/g, '&#039;');
         };
         //Скачивает все файлы с api
-        this.downloadFile = (url, params) => __awaiter(this, void 0, void 0, function* () {
+        this.downloadFile = async (url, params) => {
             try {
                 url = url + (params ? `?${new URLSearchParams(params).toString()}` : '');
-                const response = yield this.requestToApi(url, 'GET');
+                const response = await this.requestToApi(url, 'GET');
                 const files = Array.isArray(response) ? response : [response];
                 for (const file of files) {
                     // @ts-ignore
@@ -120,14 +111,14 @@ class Base {
                     document.body.removeChild(link);
                     setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
                     if (files.length > 1)
-                        yield new Promise(resolve => setTimeout(resolve, 1250));
+                        await new Promise(resolve => setTimeout(resolve, 1250));
                 }
             }
             catch (error) {
                 this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
                 console.error(error);
             }
-        });
+        };
         this.createEntity = (url, dto) => {
             return this.requestToApi(url, 'POST', dto);
         };
@@ -423,12 +414,12 @@ class Base {
          * @param circleRowSelector — селектор кружка в строке
          */
         this.toggleAllRowsSelection = (event, rowSelector = '.table-row', circleRowSelector = '.circle-row') => {
+            const circle = $(event.currentTarget);
+            const allRows = $(`${rowSelector}:visible`);
             if (this.editMode) {
                 this.createNotification('Выключите режим редактирования', NotificationType.INFO);
                 return;
             }
-            const circle = $(event.currentTarget);
-            const allRows = $(`${rowSelector}:visible`);
             if (circle.hasClass('active')) {
                 this.selectedRows.clear();
                 allRows.removeClass('selected');
@@ -472,13 +463,17 @@ class Base {
          * @param dataFilter — опциональный фильтр данных
          * @param columns — колонки для рендера [{key, label}]
          */
-        this.openSelectionDialog = (fieldName_1, dialogId_1, modalDiv_1, currentId_1, rawData_1, dataFilter_1, ...args_1) => __awaiter(this, [fieldName_1, dialogId_1, modalDiv_1, currentId_1, rawData_1, dataFilter_1, ...args_1], void 0, function* (fieldName, dialogId, modalDiv, currentId, rawData, dataFilter, columns = [{ key: 'name', label: 'Наименование', width: '250' }], multiSelect = false) {
+        this.openSelectionDialog = async (fieldName, dialogId, modalDiv, currentId, rawData, dataFilter, columns = [{
+                key: 'name',
+                label: 'Наименование',
+                width: '250'
+            }], multiSelect = false) => {
             const dialog = $(`#${dialogId}`);
             const rowContainer = dialog.find('.dialog-content-rows');
             const searchInput = dialog.find('.choice-field input');
             const changeButton = dialog.find('[id^="change"]').first();
             let selected;
-            const raw = rawData ? rawData : yield this.cache.get(fieldName);
+            const raw = rawData ? rawData : await this.cache.get(fieldName);
             const data = dataFilter ? dataFilter(raw) : raw || [];
             const getValue = (item, col) => {
                 if (col.renderer)
@@ -569,7 +564,7 @@ class Base {
                 this.dialog.close(dialogId);
             });
             modalDiv.addClass('change');
-        });
+        };
         /**
          * Универсальный диалог просмотра/загрузки файлов документа.
          * @param event — событие клика на иконку документа
@@ -579,7 +574,7 @@ class Base {
          * @param deleteUrlBase — базовый URL для удаления
          * @param onFileAdded — колбэк после добавления файла
          */
-        this.openDocumentDialog = (event, documentId, getDocumentUrl, uploadUrlBase, deleteUrlBase, onFileAdded) => __awaiter(this, void 0, void 0, function* () {
+        this.openDocumentDialog = async (event, documentId, getDocumentUrl, uploadUrlBase, deleteUrlBase, onFileAdded) => {
             var _a;
             const dialog = $('#documentDialog');
             const currentRow = $(event.currentTarget).closest('.table-row, .table-card, .row-items-row');
@@ -587,7 +582,7 @@ class Base {
             const rowContainer = dialog.find('.dialog-content-rows');
             rowContainer.empty();
             if (documentId !== null) {
-                const document = yield this.requestToApi(getDocumentUrl, "GET");
+                const document = await this.requestToApi(getDocumentUrl, "GET");
                 this.localCache.set('document', document);
                 (_a = document.files) === null || _a === void 0 ? void 0 : _a.forEach((file) => {
                     this.createDocumentFileRow(file, rowContainer, deleteUrlBase);
@@ -645,7 +640,7 @@ class Base {
                 ], mouseEv.clientX, mouseEv.clientY);
             });
             this.dialog.open('documentDialog');
-        });
+        };
         /**
          * Создаёт строку файла в диалоге документов.
          */
@@ -665,7 +660,7 @@ class Base {
         /**
          * Загрузка файла в документ.
          */
-        this.uploadDocumentFile = (event, rowId, documentId, uploadUrlBase, onSuccess) => __awaiter(this, void 0, void 0, function* () {
+        this.uploadDocumentFile = async (event, rowId, documentId, uploadUrlBase, onSuccess) => {
             const formData = new FormData();
             const currentInput = event.currentTarget;
             if (currentInput.files) {
@@ -681,7 +676,7 @@ class Base {
                 .catch(console.error)
                 .then(() => unlock());
             currentInput.value = '';
-        });
+        };
         /**
          * Обработчик клика на иконку скачивания в диалоге.
          * @param event — событие
@@ -744,7 +739,7 @@ class Base {
          * @param onSuccess — колбэк (newItem) => void
          * @param useFormData — использовать FormData (true) или JSON (false)
          */
-        this.handleCreateForm = (event_1, url_1, dialogId_1, extractData_1, onSuccess_1, ...args_1) => __awaiter(this, [event_1, url_1, dialogId_1, extractData_1, onSuccess_1, ...args_1], void 0, function* (event, url, dialogId, extractData, onSuccess, useFormData = false) {
+        this.handleCreateForm = async (event, url, dialogId, extractData, onSuccess, useFormData = false) => {
             var _a;
             event.preventDefault();
             const button = $(event.target);
@@ -764,7 +759,7 @@ class Base {
                 payload = data instanceof FormData ? data : JSON.stringify(data);
             }
             try {
-                const newItem = yield this.createEntity(url, payload);
+                const newItem = await this.createEntity(url, payload);
                 this.saveMassive = {};
                 this.localCache.set(newItem.id, newItem);
                 this.dialog.close(dialogId);
@@ -779,13 +774,13 @@ class Base {
             finally {
                 button.prop('disabled', false);
             }
-        });
+        };
         /**
          * Универсальное сохранение изменений из saveMassive.
          * @param updateUrl — URL обновления
          * @param getItemVersionAndChanges — функция для маппинга из кэша
          */
-        this.saveMassiveChanges = (updateUrl, getItemVersionAndChanges) => __awaiter(this, void 0, void 0, function* () {
+        this.saveMassiveChanges = async (updateUrl, getItemVersionAndChanges) => {
             if (Object.keys(this.saveMassive).length === 0)
                 return;
             const itemsArray = Object.keys(this.saveMassive).map(id => {
@@ -793,9 +788,9 @@ class Base {
                 const cacheData = (_a = this.localCache.get(id)) !== null && _a !== void 0 ? _a : this.localCache.get(Number(id));
                 return getItemVersionAndChanges(id, cacheData, this.saveMassive[id]);
             });
-            yield this.save(updateUrl, ...itemsArray);
+            await this.save(updateUrl, ...itemsArray);
             this.selectedRows.forEach(id => this.selectedRows.delete(id));
-        });
+        };
         this.rowContainer = rowContainer;
         this.itemsPerPage = itemsPerPage;
         this.visibleRow = visibleRow;
@@ -826,78 +821,74 @@ class Base {
             this.localCache.delete(rowIndex);
         });
     }
-    displayPage(url, param, ...callbacks) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.currentPage > 1) {
-                param = Object.assign(Object.assign({}, param), { page: this.currentPage });
-            }
-            const request = yield this.requestToApi(url, 'GET', param);
-            const visibleItems = request.data.slice(0, this.visibleRow);
-            const hiddenItems = request.data.slice(this.visibleRow);
-            visibleItems.forEach(item => {
-                this.localCache.set(item.id, item);
-                const row = this.createRow(item);
-                this.rowContainer.append(row);
-            });
-            hiddenItems.forEach(item => {
-                this.localCache.set(item.id, item);
-                const row = this.createRow(item).hide();
-                this.rowContainer.append(row);
-            });
-            callbacks.forEach(callback => callback === null || callback === void 0 ? void 0 : callback(request.data, request.count));
+    async displayPage(url, param, ...callbacks) {
+        if (this.currentPage > 1) {
+            param = Object.assign(Object.assign({}, param), { page: this.currentPage });
+        }
+        const request = await this.requestToApi(url, 'GET', param);
+        const visibleItems = request.data.slice(0, this.visibleRow);
+        const hiddenItems = request.data.slice(this.visibleRow);
+        visibleItems.forEach(item => {
+            this.localCache.set(item.id, item);
+            const row = this.createRow(item);
+            this.rowContainer.append(row);
         });
+        hiddenItems.forEach(item => {
+            this.localCache.set(item.id, item);
+            const row = this.createRow(item).hide();
+            this.rowContainer.append(row);
+        });
+        callbacks.forEach(callback => callback === null || callback === void 0 ? void 0 : callback(request.data, request.count));
     }
     ;
-    print(param) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.reports.length)
-                return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
-            const dialogId = 'printDialog';
-            let $dialog = $(`#${dialogId}`);
-            if ($dialog.length)
+    async print(param) {
+        if (!this.reports.length)
+            return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
+        const dialogId = 'printDialog';
+        let $dialog = $(`#${dialogId}`);
+        if ($dialog.length)
+            $dialog.remove();
+        $('body').append($(printDialogTemplate(this.reports)));
+        $dialog = $(`#${dialogId}`);
+        let format = "PDF";
+        $dialog.find('.format-btn').off('click').on('click', function () {
+            $dialog.find('.format-btn').removeClass('active');
+            $(this).addClass('active');
+            format = $(this).data('format');
+        });
+        this.dialog.open(dialogId);
+        return new Promise((resolve) => {
+            $('#printCancel').on('click', () => {
+                this.dialog.close(dialogId);
                 $dialog.remove();
-            $('body').append($(printDialogTemplate(this.reports)));
-            $dialog = $(`#${dialogId}`);
-            let format = "PDF";
-            $dialog.find('.format-btn').off('click').on('click', function () {
-                $dialog.find('.format-btn').removeClass('active');
-                $(this).addClass('active');
-                format = $(this).data('format');
+                resolve();
             });
-            this.dialog.open(dialogId);
-            return new Promise((resolve) => {
-                $('#printCancel').on('click', () => {
-                    this.dialog.close(dialogId);
-                    $dialog.remove();
+            $('#printOk').on('click', async () => {
+                const api = $('#reportSelect').val();
+                const report = this.reports.find(r => r.api === api);
+                if (!report) {
                     resolve();
-                });
-                $('#printOk').on('click', () => __awaiter(this, void 0, void 0, function* () {
-                    const api = $('#reportSelect').val();
-                    const report = this.reports.find(r => r.api === api);
-                    if (!report) {
+                    return;
+                }
+                this.dialog.close(dialogId);
+                $dialog.remove();
+                const unlock = this.lockScreen('Формирование отчета');
+                try {
+                    if (report.function) {
+                        await report.function(format);
                         resolve();
                         return;
                     }
-                    this.dialog.close(dialogId);
-                    $dialog.remove();
-                    const unlock = this.lockScreen('Формирование отчета');
-                    try {
-                        if (report.function) {
-                            yield report.function(format);
-                            resolve();
-                            return;
-                        }
-                        const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
-                        yield this.downloadFile(report.api, params);
-                    }
-                    catch (_a) {
-                        this.createNotification('Ошибка при печати', NotificationType.ERROR);
-                    }
-                    finally {
-                        unlock();
-                        resolve();
-                    }
-                }));
+                    const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
+                    await this.downloadFile(report.api, params);
+                }
+                catch (_a) {
+                    this.createNotification('Ошибка при печати', NotificationType.ERROR);
+                }
+                finally {
+                    unlock();
+                    resolve();
+                }
             });
         });
     }

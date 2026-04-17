@@ -1,20 +1,11 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class NtDocuments extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/ntd/get-page-ntd', undefined).catch(console.error);
         });
-        this.createNtd = (event) => __awaiter(this, void 0, void 0, function* () {
-            yield this.handleCreateForm(event, '/api/ntd/create-ntd', 'create-dialog', (dialog) => ({
+        this.createNtd = async (event) => {
+            await this.handleCreateForm(event, '/api/ntd/create-ntd', 'create-dialog', (dialog) => ({
                 name: dialog.find('input[name="name"]').val(),
                 type: dialog.find('textarea[name="type"]').val(),
                 dateVerification: dialog.find('input[name="dateVerification"]').val(),
@@ -23,8 +14,8 @@ class NtDocuments extends Base {
                 const newRow = this.createRow(newNtd);
                 $(`.table-body`).append(newRow);
             });
-        });
-        this.selectRow = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.selectRow = async (event) => {
             this.toggleRowSelection(event, true);
             const circle = $(event.currentTarget);
             const currentRow = circle.closest('.table-row');
@@ -38,12 +29,12 @@ class NtDocuments extends Base {
             else if (!this.selectedRows.has(rowId)) {
                 this.disableEditMode(['dateVerification'], ['document', 'references'], currentRow, ['dateVerification', 'type']);
             }
-        });
-        this.openDocument = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.openDocument = async (event) => {
             const currentRow = $(event.currentTarget).closest('.table-row');
             const currentNtdId = currentRow.attr('id');
             const ntd = this.localCache.get(currentNtdId);
-            yield this.openDocumentDialog(event, ntd.documentId, `/api/document/get-document/${ntd.documentId}`, ntd.documentId
+            await this.openDocumentDialog(event, ntd.documentId, `/api/document/get-document/${ntd.documentId}`, ntd.documentId
                 ? `/api/document/add-file-to-document`
                 : `/api/ntd/create-document/${ntd.id}`, '/api/document/delete-file-from-document', (files) => {
                 this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
@@ -77,8 +68,8 @@ class NtDocuments extends Base {
                     unlock();
                 });
             });
-        });
-        this.openReferences = (event) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.openReferences = async (event) => {
             const dialog = $('#referencesDialog');
             const currentRow = $(event.currentTarget).closest('.table-row');
             const currentNtdId = currentRow.attr('id');
@@ -116,11 +107,11 @@ class NtDocuments extends Base {
                 });
             };
             if (ntd.references.length > 0) {
-                const references = yield this.requestToApi(`/api/ntd/get-references?ids=${ntd.references}`, "GET");
+                const references = await this.requestToApi(`/api/ntd/get-references?ids=${ntd.references}`, "GET");
                 this.localCache.set('references', references);
                 renderReference(references, true);
             }
-            const references = yield this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
+            const references = await this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
             renderReference(references, false);
             dialog.off('input', '.search-input').on('input', '.search-input', (e) => {
                 const input = e.currentTarget;
@@ -131,23 +122,23 @@ class NtDocuments extends Base {
                     row.toggle(rowName.includes(searchText));
                 });
             });
-            dialog.off('click', '.container-checkbox').on('click', '.container-checkbox', (e) => __awaiter(this, void 0, void 0, function* () {
+            dialog.off('click', '.container-checkbox').on('click', '.container-checkbox', async (e) => {
                 e.preventDefault();
                 const $container = $(e.currentTarget);
                 const $checkbox = $container.find('input[type="checkbox"]');
                 const referenceId = $container.closest('.dialog-content-rows-row').attr('id');
                 const newState = !$checkbox.prop('checked');
                 if (newState) {
-                    yield this.requestToApi(`/api/ntd/add-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
+                    await this.requestToApi(`/api/ntd/add-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
                     ntd.references.push(referenceId);
                 }
                 else {
-                    yield this.requestToApi(`/api/ntd/remove-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
+                    await this.requestToApi(`/api/ntd/remove-reference?id=${ntd.id}&referenceId=${referenceId}`, "PATCH");
                     ntd.references = ntd.references.filter(ref => ref !== referenceId);
                 }
                 $checkbox.prop('checked', newState);
                 $container.toggleClass('checked', newState);
-            }));
+            });
             dialog.off('click', '.download-inn').on('click', '.download-inn', (e) => {
                 const $icon = $(e.currentTarget);
                 const documentId = $icon.attr('id');
@@ -163,7 +154,7 @@ class NtDocuments extends Base {
                     $('#referencesDialog .search-input').val('');
                 }
             });
-        });
+        };
         this.showRowContextMenu = (event) => {
             this.createRowDeleteContextMenu(event, '/api/ntd/delete', 'документации');
         };
