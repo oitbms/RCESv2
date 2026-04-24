@@ -1,13 +1,11 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.dto.CreateRequestDto;
-import com.example.rces.dto.RequestContext;
-import com.example.rces.dto.RequestDto;
-import com.example.rces.dto.RequestParamsDto;
+import com.example.rces.dto.*;
 import com.example.rces.mapper.RequestMapper;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.GeneralReason;
 import com.example.rces.models.enums.Item;
+import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import com.example.rces.repository.RequestsRepository;
 import com.example.rces.service.*;
@@ -74,11 +72,12 @@ public class RequestServiceImpl implements RequestsService {
     @Override
     public RequestDto createRequest(Employee createdEmployee, CreateRequestDto createRequestDto, MultipartFile[] additionalFiles) throws JsonProcessingException {
 
+        EmployeeWorkDto employeeWorkDto;
         Employee employee = null;
 
         if (createRequestDto.getEmployeeJson() != null) {
-            employee = objectMapper.readValue(createRequestDto.getEmployeeJson(), Employee.class);
-            employee = employeeService.loadUserByUsername(employee.getUsername());
+            employeeWorkDto = objectMapper.readValue(createRequestDto.getEmployeeJson(), EmployeeWorkDto.class);
+            employee = employeeService.loadUserByUsername(employeeWorkDto.getName());
         }
 
         CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(createdEmployee,
@@ -254,6 +253,24 @@ public class RequestServiceImpl implements RequestsService {
     }
 
     @Override
+    public List<RequestDto> findByEmployeeId(Long id) {
+        return repository.findByEmployeeId(id, Status.InWork, Role.OTK.name())
+                .stream()
+                .map(requestMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<RequestDto> findByEmployeeIds(List<Long> ids) {
+
+        List<Requests> requestsList = repository.findByEmployeeIds(ids, Status.InWork, Role.OTK.name());
+
+        return requestsList.stream()
+                .map(requestMapper::toDTO)
+                .toList();
+    }
+
+    @Override
     public Requests findByRequestNumber(Integer requestNumber) {
         return repository.findByRequestNumber(requestNumber);
     }
@@ -424,6 +441,7 @@ public class RequestServiceImpl implements RequestsService {
             requests.setCloseDate(LocalDateTime.now());
             requests.setDescription(context.getDescriptionsCompleted());
             requests.setClosedEmployee(updaterEmployee);
+            requests.setQtyCompleted(qty);
             notificationService.sendMessage(requests);
             notificationService.sendPrivateNotification(
                     requests.getCreatedBy().getUsername(),
@@ -455,6 +473,7 @@ public class RequestServiceImpl implements RequestsService {
         Set<Inconsistency> inconsistencyData = context.getInconsistencies();
 
         Requests rejected = createChildRejectedRequest(requests, qty, description, inconsistencyData);
+        rejected.setParentRequest(requests);
 
         notificationService.sendMessage(rejected);
         notificationService.sendPrivateNotification(
@@ -474,7 +493,6 @@ public class RequestServiceImpl implements RequestsService {
         );
 
         requests.setStatus(Status.Closed);
-        requests.setQty(qty);
 
         notificationService.sendMessage(requests);
         notificationService.sendPrivateNotification(
@@ -485,6 +503,7 @@ public class RequestServiceImpl implements RequestsService {
         );
 
         requests.setCloseDate(LocalDateTime.now());
+        requests.setQtyCompleted(context.getQty());
     }
 
     private Requests createChildRejectedRequest(Requests parent, Integer qty, String description, Set<Inconsistency> inconsistencyData) {

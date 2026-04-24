@@ -1,6 +1,7 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.dto.EmployeeWorkCalendarDto;
 import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.SubDivision;
@@ -10,6 +11,7 @@ import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,7 +45,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     public CustomUserDetailsServiceImpl(EmployeeRepository repository,
                                         EmployeeMapper mapper,
                                         SubDivisionService subDivisionService,
-                                        PasswordEncoder passwordEncoder) {
+                                        @Lazy PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.mapper = mapper;
         this.subDivisionService = subDivisionService;
@@ -98,6 +100,16 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
         return repository.findAll().stream()
                 .map(mapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public List<EmployeeWorkCalendarDto> findEmployeeWorkCalendar(String role) {
+        return repository.findEmployeeWorkCalendar(role);
+    }
+
+    @Override
+    public Employee getReferenceById(Long id) {
+        return repository.getReferenceById(id);
     }
 
     @Override
