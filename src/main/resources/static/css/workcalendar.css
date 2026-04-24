@@ -1,0 +1,21 @@
+/* Дополнительные стили */
+.assign-shift-btn i {
+    margin-right: 5px;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#table td, #table th {
+    vertical-align: middle;
+}
+
+.alert-info strong {
+    display: inline-block;
+    width: 100px;
+}
+
+.fs-1 {
+    font-size: 3rem;
+}
