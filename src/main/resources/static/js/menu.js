@@ -191,7 +191,9 @@ document.addEventListener('DOMContentLoaded', function () {
             canvasElement.style.display = 'block';
             titleElement.style.display = 'block';
             this.textContent = 'Скрыть график';
-        } else {
+        }
+        else
+        {
             chartInstance.destroy();
             canvasElement.style.display = 'none';
             titleElement.style.display = 'none';
