@@ -17,7 +17,7 @@
     <script src="/js/notifications.js"></script>
 </head>
 <body>
-<div id="toolbar" class="mb-2">
+<div id="toolbar" class="mb-2 ms-3">
     <#switch typeRequest>
         <#case 'otk'>
             <#assign titleText = "Список заявок для ОТК">
@@ -30,7 +30,7 @@
     </#switch>
     <span class="custom-title ml-3">
   ${titleText}
-  <a class="btn btn-info ml-2" href="/menu" aria-label="Home">
+  <a class="btn btn-primary ml-2" href="/menu" aria-label="Home">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill"
          viewBox="0 0 16 16">
   <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/>
@@ -51,7 +51,7 @@
            data-id-table="advancedTable"
            data-show-toggle="true"
            data-locale="ru-RU"
-           data-buttons-class="info"
+           data-buttons-class="primary"
            class="table">
         <thead>
         <tr>
@@ -83,7 +83,7 @@
             <#elseif req.getStatus().getName() == "Отменен" || req.getStatus().getName() == "Забракована">
                 <tr class="table-danger" data-request-number="${req.requestNumber}">
             </#if>
-            <td>${req.getRequestNumber()}</td>
+            <td>${req.getRequestNumber()?string("0")}</td>
             <td>${req.getCreatedBy().getName()}</td>
             <td>${(req.getEmployee().getName())!"Не назначен"}</td>
             <td>${(req.getCustomerOrder().getName())!"Нет"}</td>
@@ -105,7 +105,7 @@
             <td>
                 <i class="history-icon bi bi-clock-history text-primary fs-4" data-id="${req.id}"></i>
                 <#if req.getRequestNumber()??>
-                    <a class="btn btn-info ml-3" href="/view/${req.getRequestNumber()?c}">Редактировать</a>
+                    <a class="btn btn-primary ml-3" href="/view/${req.getRequestNumber()?c}">Редактировать</a>
                 </#if>
             </td>
             </tr>
@@ -114,9 +114,9 @@
     </table>
 </div>
 
-<div class="mobile-cards-container" id="mobileCards">
-    <div class="mobile-header">
-        <div class="mobile-title">
+<div class="mobile-cards-container " id="mobileCards">
+    <div class="mobile-header ">
+        <div class="mobile-title ">
             <#switch typeRequest>
                 <#case 'otk'>
                     <#assign titleText = "Список заявок для ОТК">
@@ -128,7 +128,7 @@
                     <#assign titleText = "Список заявок для ОГК">
             </#switch>
             ${titleText}
-            <a class="btn btn-info home-btn" href="/menu" aria-label="Home">
+            <a class="btn btn-primary home-btn" href="/menu" aria-label="Home">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
                      class="bi bi-house-fill"
                      viewBox="0 0 16 16">
@@ -222,7 +222,7 @@
             <div class="card-footer">
                 <i class="history-icon bi bi-clock-history" data-id="${req.id}"></i>
                 <#if req.getRequestNumber()??>
-                    <a class="btn btn-info btn-edit" href="/view/${req.getRequestNumber()?c}">
+                    <a class="btn btn-primary btn-edit" href="/view/${req.getRequestNumber()?c}">
                         <i class="bi bi-pencil"></i>
                     </a>
                 </#if>
@@ -234,7 +234,7 @@
         <button class="btn btn-secondary" id="prevPage" disabled>
             <i class="bi bi-chevron-left"></i> Назад
         </button>
-        <span class="page-info" id="pageInfo">Страница 1 из 1</span>
+        <span class="page-primary" id="pageInfo">Страница 1 из 1</span>
         <button class="btn btn-secondary" id="nextPage" disabled>
             Далее <i class="bi bi-chevron-right"></i>
         </button>

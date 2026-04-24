@@ -11,10 +11,7 @@ import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
@@ -26,6 +23,11 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
         constructor("ОГК"),
         otk("ОТК"),
         technologist("ОГТ");
+
+        public static boolean isValid(String type) {
+            return Arrays.stream(Type.values())
+                    .anyMatch(t -> type.equals(t.name()));
+        }
 
         private final String name;
 
@@ -155,30 +157,24 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     @DisplayName("Забраковано")
     private int qtyRejected = 0;
 
-    @Transient
+    @Column(name = "qty_completed")
     @DisplayName("Количество выполненного")
     private int qtyCompleted;
 
-//    @Column(name = "notice")
-//    @DisplayName("Уведомления")
-//    private Boolean notice;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_request_id")
+    private Requests parentRequest;
+
+    @OneToMany(mappedBy = "parentRequest",fetch = FetchType.LAZY)
+    private List<Requests> childRequests;
 
     //TODO че со старыми логами делать
-
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     @Deprecated(forRemoval = true)
     @NotAudited
     private List<RequestLog> log = new ArrayList<>();
 
     private boolean frozen;
-
-//    public Boolean getNotice() {
-//        return notice;
-//    }
-//
-//    public void setNotice(Boolean notice) {
-//        this.notice = notice;
-//    }
 
     public int getQtyCompleted() {
         return qtyCompleted;
@@ -407,6 +403,23 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
     public void setScore(Appraisal score) {
         this.score = score;
     }
+
+    public Requests getParentRequest() {
+        return parentRequest;
+    }
+
+    public void setParentRequest(Requests parentRequest) {
+        this.parentRequest = parentRequest;
+    }
+
+    public List<Requests> getChildRequests() {
+        return childRequests;
+    }
+
+    public void setChildRequests(List<Requests> childRequests) {
+        this.childRequests = childRequests;
+    }
+
 
     @Deprecated(forRemoval = true)
     public List<RequestLog> getLog() {

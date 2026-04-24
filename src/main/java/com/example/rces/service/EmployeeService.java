@@ -1,6 +1,7 @@
 package com.example.rces.service;
 
 import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.dto.EmployeeWorkCalendarDto;
 import com.example.rces.models.Employee;
 
 import java.util.List;
@@ -28,5 +29,9 @@ public interface EmployeeService {
     void setSecurityContext(Employee employee);
 
     List<EmployeeDTO> findAll();
+
+    List<EmployeeWorkCalendarDto> findEmployeeWorkCalendar(String role);
+
+    Employee getReferenceById(Long id);
 
 }

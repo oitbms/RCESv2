@@ -103,6 +103,8 @@
                             <#elseif user.getRole() == 'TECHNOLOGIST'>
                                 <a class="btn btn-primary bottom-margin" id="equipmentPageButton"
                                    href="http://192.168.30.80:2001/">Оснастка</a>
+                            <#elseif user.getRole() == 'OTK'>
+                                <a class="btn btn-primary bottom-margin" href="/work-calendar/otk">Рабочий календарь</a>
                             </#if>
                             <#if user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
                                 <a class="btn btn-primary bottom-margin" id="equipmentPageButton"

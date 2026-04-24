@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-
         images.splice(index, 1);
         renderPhotos(images);
 
@@ -453,7 +452,10 @@ document.addEventListener('DOMContentLoaded', function () {
             data.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item list-group-item-action selectable';
-                li.textContent = item.name;
+                li.innerHTML = `
+            <div><strong>${escapeHtml(item.name)}</strong></div>
+            <div class="small text-muted">${escapeHtml(item.message)}</div>
+         `;
                 li.dataset.entity = encodeURIComponent(JSON.stringify(item));
 
                 if (multiple && selected.has(item.name)) {
@@ -1120,3 +1122,184 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    function initZoomForCarousel(carousel) {
+        let currentZoom = 1;
+        const MIN_ZOOM = 1;
+        const MAX_ZOOM = 3;
+        const ZOOM_STEP = 0.1;
+
+        const getActiveImage = () => {
+            const activeItem = carousel.querySelector('.carousel-item.active');
+            return activeItem ? activeItem.querySelector('img') : null;
+        };
+
+        const applyZoom = (img, zoomLevel, clientX, clientY) => {
+            if (!img) return;
+
+            const rect = img.getBoundingClientRect();
+            let percentX = 50, percentY = 50;
+
+            if (clientX && clientY) {
+                percentX = ((clientX - rect.left) / rect.width) * 100;
+                percentY = ((clientY - rect.top) / rect.height) * 100;
+                // Ограничиваем проценты
+                percentX = Math.min(100, Math.max(0, percentX));
+                percentY = Math.min(100, Math.max(0, percentY));
+            }
+
+            img.style.transformOrigin = `${percentX}% ${percentY}%`;
+            img.style.transform = `scale(${zoomLevel})`;
+            img.style.transition = 'transform 0.15s ease';
+        };
+
+        const resetZoom = () => {
+            const img = getActiveImage();
+            if (img) {
+                currentZoom = 1;
+                img.style.transform = 'scale(1)';
+                img.style.transformOrigin = 'center center';
+            }
+        };
+
+        const handleWheel = (e) => {
+            const img = getActiveImage();
+            if (!img || !img.contains(e.target)) return;
+
+            e.preventDefault();
+
+            const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+            let newZoom = currentZoom + delta;
+            newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, newZoom));
+
+            if (newZoom !== currentZoom) {
+                currentZoom = newZoom;
+                applyZoom(img, currentZoom, e.clientX, e.clientY);
+            }
+        };
+
+        let initialDistance = 0;
+        let initialZoom = 1;
+        let touchStartX = 0, touchStartY = 0;
+        let isTouching = false;
+
+        const getDistance = (touches) => {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+
+        const getMidPoint = (touches) => {
+            const x = (touches[0].clientX + touches[1].clientX) / 2;
+            const y = (touches[0].clientY + touches[1].clientY) / 2;
+            return { x, y };
+        };
+
+        const handleTouchStart = (e) => {
+            const img = getActiveImage();
+            if (!img || !img.contains(e.target)) return;
+
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                initialDistance = getDistance(e.touches);
+                initialZoom = currentZoom;
+                const mid = getMidPoint(e.touches);
+                touchStartX = mid.x;
+                touchStartY = mid.y;
+                isTouching = true;
+            }
+        };
+
+        const handleTouchMove = (e) => {
+            if (!isTouching || e.touches.length !== 2) return;
+
+            e.preventDefault();
+
+            const newDistance = getDistance(e.touches);
+            const ratio = newDistance / initialDistance;
+            let newZoom = initialZoom * ratio;
+            newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, newZoom));
+
+            if (newZoom !== currentZoom) {
+                currentZoom = newZoom;
+                const mid = getMidPoint(e.touches);
+                const img = getActiveImage();
+                if (img) {
+                    applyZoom(img, currentZoom, mid.x, mid.y);
+                }
+            }
+        };
+
+        const handleTouchEnd = (e) => {
+            if (isTouching) {
+                e.preventDefault();
+                isTouching = false;
+                initialDistance = 0;
+
+                if (currentZoom < 1.05) {
+                    currentZoom = 1;
+                    const img = getActiveImage();
+                    if (img) {
+                        img.style.transform = 'scale(1)';
+                    }
+                }
+            }
+        };
+
+        let lastTap = 0;
+        const handleDoubleTap = (e) => {
+            const img = getActiveImage();
+            if (!img || !img.contains(e.target)) return;
+
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+
+            if (tapLength < 300 && tapLength > 0) {
+                e.preventDefault();
+                resetZoom();
+            }
+            lastTap = currentTime;
+        };
+
+        const carouselElement = carousel;
+        const modal = carousel.closest('.modal');
+
+        if (modal) {
+
+            modal.addEventListener('wheel', handleWheel, { passive: false });
+
+            modal.addEventListener('touchstart', handleTouchStart, { passive: false });
+            modal.addEventListener('touchmove', handleTouchMove, { passive: false });
+            modal.addEventListener('touchend', handleTouchEnd);
+            modal.addEventListener('touchcancel', handleTouchEnd);
+            modal.addEventListener('click', handleDoubleTap);
+        }
+
+        carousel.addEventListener('slid.bs.carousel', () => {
+            resetZoom();
+        });
+
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', () => {
+                resetZoom();
+            });
+        }
+    }
+
+    function initAllCarousels() {
+        document.querySelectorAll('.carousel').forEach(carousel => {
+            initZoomForCarousel(carousel);
+        });
+    }
+
+    initAllCarousels();
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('shown.bs.modal', () => {
+            modal.querySelectorAll('.carousel').forEach(carousel => {
+                initZoomForCarousel(carousel);
+            });
+        });
+    });
+});

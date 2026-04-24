@@ -60,6 +60,7 @@ public interface RequestMapper extends BaseMapper<Requests, RequestDto, CreateRe
     @Override
     @Mapping(target = "type", source = "typeRequest")
     @Mapping(target = "reasonsJson", source = "reason_wr")
+    @Mapping(target = "employeeJson", expression = "java(entity.getEmployee().getName())")
     RequestDto toDTO(Requests entity);
 
 }

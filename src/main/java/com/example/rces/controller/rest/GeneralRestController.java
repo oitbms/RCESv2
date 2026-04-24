@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
@@ -28,23 +25,61 @@ public class GeneralRestController {
     private final EmployeeService employeeService;
     private final SubDivisionService subDivisionService;
     private final ImageService imageService;
+    private final RequestsService requestsService;
+    private final UserShiftsService shiftsService;
 
     @Autowired
-    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService, ImageService imageService) {
+    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService, ImageService imageService, RequestsService requestsService, RequestsService requestsService1, UserShiftsService shiftsService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
         this.subDivisionService = subDivisionService;
         this.imageService = imageService;
+        this.requestsService = requestsService1;
+        this.shiftsService = shiftsService;
     }
 
     @GetMapping("/employees")
     public List<EmployeeDTO> getEmployees(@RequestParam(required = false) Object param) {
         if (param != null) {
-            return employeeService.findAllByRole((String) param);
+            List<EmployeeDTO> employees = employeeService.findAllByRole((String) param);
+            return employees;
         } else {
             return employeeService.findAll();
         }
+    }
+
+    @GetMapping("/employees-work")
+    public List<EmployeeWorkDto> getEmployeeWork(@RequestParam(required = false) Object param) {
+
+        List<EmployeeWorkDto> employeeWorkDtoList = new ArrayList<>();
+
+        if (param != null) {
+            List<EmployeeDTO> employees = employeeService.findAllByRole((String) param);
+
+            List<Long> employeesIds = employees.stream()
+                    .map(EmployeeDTO::getId)
+                    .toList();
+
+            List<RequestDto> requests = requestsService.findByEmployeeIds(employeesIds);
+
+            Map<String, List<RequestDto>> requestsEmployees = requests.stream()
+                    .collect(Collectors.groupingBy(RequestDto::getEmployeeJson));
+
+            for (EmployeeDTO employee : employees) {
+                List<RequestDto> employeeRequests = requestsEmployees.getOrDefault(employee.getName(), Collections.emptyList());
+                if (!employeeRequests.isEmpty()) {
+                    String message = employeeRequests.stream()
+                            .map(e -> "Смена: " + "Пользователь работает с заявкой " + e.getRequestNumber())
+                            .collect(Collectors.joining(";"));
+                    employeeWorkDtoList.add(new EmployeeWorkDto(employee.getName(), message));
+                } else {
+                    employeeWorkDtoList.add(new EmployeeWorkDto(employee.getName()));
+                }
+            }
+        }
+
+        return employeeWorkDtoList;
     }
 
     @GetMapping("/updater")
@@ -82,7 +117,7 @@ public class GeneralRestController {
             case "ADMIN" -> Arrays.asList(Status.values());
             case "OTK", "CONSTRUCTOR", "TECHNOLOGIST" -> Arrays.asList(Status.InWork, Status.Completed);
             case "MASTER" -> Arrays.asList(Status.Closed, Status.Cancel);
-            default ->  Collections.emptyList();
+            default -> Collections.emptyList();
         };
     }
 

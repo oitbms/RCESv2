@@ -1,17 +1,12 @@
 package com.example.rces.controller.mvc;
 
-import com.example.rces.dto.CreateRequestDto;
-import com.example.rces.dto.RequestDto;
-import com.example.rces.dto.RequestHistoryDTO;
-import com.example.rces.dto.SubDivisionDTO;
+import com.example.rces.dto.*;
 import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
-import com.example.rces.service.EmployeeService;
-import com.example.rces.service.RequestHistoryService;
-import com.example.rces.service.RequestsService;
-import com.example.rces.service.SubDivisionService;
+import com.example.rces.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,16 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.DateUtil.formatedDate;
 
 
 @Controller
+@Slf4j
 public class RequestController {
 
     private final RequestsService requestsService;
@@ -37,48 +30,85 @@ public class RequestController {
     private final RequestHistoryService requestHistoryService;
     private final EmployeeService employeeService;
     private final SubDivisionService subDivisionService;
+    private final UserShiftsService userShiftsService;
 
     @Autowired
     public RequestController(RequestsService requestsService,
                              SubDivisionMapper subDivisionMapper, RequestHistoryService requestHistoryService,
-                             EmployeeService employeeService, SubDivisionService subDivisionService) {
+                             EmployeeService employeeService, SubDivisionService subDivisionService, UserShiftsService userShiftsService) {
         this.requestsService = requestsService;
         this.subDivisionMapper = subDivisionMapper;
         this.requestHistoryService = requestHistoryService;
         this.employeeService = employeeService;
         this.subDivisionService = subDivisionService;
+        this.userShiftsService = userShiftsService;
     }
 
+
+    /**
+     *
+     * @param type Отдел для которого создается заявка
+     * @param model
+     * @return Возвращаем форму создания заявки
+     */
     @GetMapping("/create")
     public String getCreateBidForm(@RequestParam String type, Model model) {
-        if (!Arrays.stream(Requests.Type.values()).map(Enum::name).toList().contains(type)) {
+
+        if (!Requests.Type.isValid(type)) {
             model.addAttribute("type", type);
             return "error";
         }
-        Employee currentUser = currentUser().orElseThrow();
-        SubDivisionDTO subDivisionDTO = subDivisionMapper.toDTO(currentUser.getSubDivision());
+
+        Employee employee = currentUser().orElseThrow();
+        List<SubDivisionDTO> subDivisionDTOList = subDivisionService.getAll();
+
+        log.info("Запрос на создание заявки от пользователя: {}, для отдела: {}", employee.getName(), type);
+
         model.addAttribute("createForm", true);
         model.addAttribute("type", type);
         model.addAttribute(type, true);
-        model.addAttribute("employeeName", currentUser.getName());
-        model.addAttribute("mlmNodeEmployee", subDivisionDTO);
-        model.addAttribute("subDivision", subDivisionService.getAll());
+        model.addAttribute("employeeName", employee.getName());
+        model.addAttribute("mlmNodeEmployee", subDivisionMapper.toDTO(employee.getSubDivision()));
+        model.addAttribute("subDivision", subDivisionDTOList);
+
         return "/requests";
     }
 
+    /**
+     *
+     * @param createRequestDto созданная пользователем заявка
+     * @param model
+     * @param additionalFiles прикрепленные фото
+     * @return создает заявку
+     * @throws JsonProcessingException
+     */
     @PostMapping("/create")
     public String createRequest(@ModelAttribute CreateRequestDto createRequestDto, Model model,
                                 @RequestParam("additionalFiles") MultipartFile[] additionalFiles) throws JsonProcessingException {
+
+        log.info("Запрос на создание заявки, Request - {}", createRequestDto);
 
         Employee createdEmployee = currentUser().orElseThrow();
         RequestDto requestDto = requestsService.createRequest(createdEmployee, createRequestDto, additionalFiles);
         model.addAttribute("create", true);
         model.addAttribute("requestNumber", requestDto.getRequestNumber());
+
+        log.info("Заявка успешно создана! Номер заявки RequestNumber: {}", requestDto.getRequestNumber());
+
         return "success";
     }
 
+    /**
+     *
+     * @param requestNumber Номер заявки которую хотим просмотреть/отредактировать
+     * @param model
+     * @return Возвращает заявку по номеру
+     */
     @GetMapping("/view/{requestNumber}")
     public String getViewBidForm(@PathVariable("requestNumber") Integer requestNumber, Model model) {
+
+        log.info("Запрос на просмотр заявки с RequestNumber: {}", requestNumber);
+
         Requests requests = requestsService.findByRequestNumber(requestNumber);
         Employee user = currentUser().orElseThrow();
 
@@ -94,13 +124,24 @@ public class RequestController {
         model.addAttribute("requestHistoryDTOList", requestHistoryDTOList);
         model.addAttribute("employeeMaster", employeeService.findAllByRole("MASTER"));
         model.addAttribute("role", user.getRole());
-        return "/requests";
 
+        log.info("Форма просмотра/редактирования заявки с RequestNumber - {} успешно открыта!", requestNumber);
+
+        return "/requests";
     }
 
+    /**
+     *
+     * @param type Наименование отдела(Аббревиатура)
+     * @param model
+     * @return Возвращает все заявки указанного в параметрах отдела, за форму отвечает BootstrapTable
+     */
     @GetMapping("/requestslist/{type}")
     public String getRequestList(@PathVariable String type,
                                  Model model) {
+
+        log.info("Запрос на открытие формы с заявками для отдела - {}", type);
+
         List<Requests> requestsList = requestsService.findAllByTypeRequest(Requests.Type.valueOf(type)).stream()
                 .sorted(Comparator.comparing(Requests::getRequestNumber).reversed())
                 .toList();
@@ -115,7 +156,20 @@ public class RequestController {
         model.addAttribute("typeRequest", type);
         model.addAttribute("formattedBidList", formattedDates);
         model.addAttribute("updateDateList", updateDate);
+
+        log.info("Форма заявок для отдела - {} успешно загружена", type);
+
         return "requestslist";
+    }
+
+    @GetMapping("/work-calendar/{role}")
+    public String showSchedule(Model model, @PathVariable String role) {
+
+        List<EmployeeWorkCalendarDto> employeeWorkCalendarList = userShiftsService.findByEmployeesAndRole(role);
+
+        model.addAttribute("employeeDTOList", employeeWorkCalendarList);
+
+        return "work-calendar";
     }
 
 }

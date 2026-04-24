@@ -28,6 +28,10 @@ public interface RequestsService {
 
     Requests findById(UUID id);
 
+    List<RequestDto> findByEmployeeId(Long id);
+
+    List<RequestDto> findByEmployeeIds(List<Long> ids);
+
     Requests findByRequestNumber(Integer requestNumber);
 
     List<Requests> findAllByTypeRequest(Requests.Type type);
