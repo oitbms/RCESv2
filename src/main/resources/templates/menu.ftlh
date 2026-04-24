@@ -14,7 +14,7 @@
 
         const dailyCountOtk = [<#list dailyCountOtk as item>${item}<#if item_has_next>, </#if></#list>];
 
-        const dailyCountTechnologist = [<#lis t dailyCountTechnologist as item>${item}<#if item_has_next>, </#if></#list>];
+        const dailyCountTechnologist = [<#list dailyCountTechnologist as item>${item}<#if item_has_next>, </#if></#list>];
 
         const chartDates = [
             <#list chartDates as date>"${date}"<#if date_has_next>, </#if></#list>
