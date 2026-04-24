@@ -1,246 +1,20 @@
-"use strict";
-class Spe extends Base {
-    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
-        super($(`.table-body`), itemsPerPage, visibleRow, () => {
-            this.displayPage('/api/spe/get-page-spe', undefined, (data) => this.fullData(data)).catch(console.error);
-        });
-        this.currentStatus = 'NONE';
-        this.currentSubDivision = '';
-        this.currentEmployee = '';
-        this.searchText = '';
-        this.editMode = false;
-        this.speSpecialFields = [
-            {
-                name: 'mark',
-                transform: ($div) => {
-                    const text = $div.text().trim();
-                    const element = $(`<select data-name="mark"></select>`);
-                    const statuses = ['исправен', 'списан', 'на поверке', 'ремонт'];
-                    if (text === '' || text === null) {
-                        element.append($(`<option selected value=""></option>`));
-                    }
-                    statuses.forEach(status => {
-                        const isSelected = text !== '' && text !== null && status === text;
-                        element.append($(`<option ${isSelected ? 'selected' : ''}>${status}</option>`));
-                    });
-                    return element;
-                }
-            },
-            {
-                name: 'employee',
-                transform: ($div) => $div.addClass('area-modal').attr('contenteditable', 'false')
-            },
-            {
-                name: 'subDivision',
-                transform: ($div) => $div.addClass('area-modal').attr('contenteditable', 'false')
-            }
-        ];
-        this.createFgisSpe = async (event) => {
-            event.preventDefault();
-            const button = $(event.target);
-            const form = button.closest('form').get(0);
-            const dialog = $('#create-fgis-dialog');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            button.prop('disabled', true);
-            const formData = {
-                outNumber: dialog.find('textarea[name="outNumber"]').val(),
-                accuracyClass: dialog.find('textarea[name="accuracyClass"]').val(),
-                limitMeasurement: dialog.find('textarea[name="limitMeasurement"]').val(),
-                subDivision: this.saveMassive['subDivision'],
-                employee: this.saveMassive['employee'],
-            };
-            try {
-                const newSPE = await this.createEntity('/api/spe/create-spe-fgis', formData);
-                this.saveMassive = {};
-                this.localCache.set(newSPE.id, newSPE);
-                this.dialog.close('create-fgis-dialog');
-                const newRow = this.createRow(newSPE);
-                $(`.table-body`).append(newRow);
-                button.prop('disabled', false);
-            }
-            catch (error) {
-                this.saveMassive = {};
-                // form.reset();
-                if (error.status === 404) {
-                    this.createNotification('СИ не найдено в реестре ФГИС', NotificationType.WARNING);
-                    this.dialog.close('create-fgis-dialog');
-                    setTimeout(() => this.dialog.open('create-dialog'), 850);
-                }
-                else {
-                    this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
-                }
-                button.prop('disabled', false);
-            }
-        };
-        this.createSpe = async (event) => {
-            event.preventDefault();
-            const button = $(event.target);
-            const form = button.closest('form').get(0);
-            const dialog = $('#create-dialog');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            button.prop('disabled', true);
-            const formData = {
-                name: dialog.find('input[name="name"]').val(),
-                type: dialog.find('textarea[name="type"]').val(),
-                outNumber: dialog.find('textarea[name="outNumber"]').val(),
-                accuracyClass: dialog.find('textarea[name="accuracyClass"]').val(),
-                limitMeasurement: dialog.find('textarea[name="limitMeasurement"]').val(),
-                subDivision: this.saveMassive['subDivision'],
-                employee: this.saveMassive['employee'],
-                periodicity: dialog.find('textarea[name="periodicity"]').val(),
-                datePreparation: dialog.find('input[name="datePreparation"]').val(),
-                dateVerification: dialog.find('input[name="dateVerification"]').val(),
-                certificateNumber: dialog.find('textarea[name="certificateNumber"]').val(),
-                organization: dialog.find('select[name="organization"]').val()
-            };
-            try {
-                const newSPE = await this.createEntity('/api/spe/create-spe', formData);
-                this.saveMassive = {};
-                this.localCache.set(newSPE.id, newSPE);
-                this.dialog.close("create-dialog");
-                const newRow = this.createRow(newSPE);
-                $(`.table-body`).append(newRow);
-                button.prop('disabled', false);
-            }
-            catch (error) {
-                this.saveMassive = {};
-                form.reset();
-                this.createNotification('Ошибка при создании SPE', NotificationType.ERROR);
-                button.prop('disabled', false);
-            }
-        };
-        this.applyFilters = () => {
-            if (this.editMode) {
-                this.createNotification('Выключите режим редактирования', NotificationType.INFO);
-                return;
-            }
-            $('.table-row').each((_, element) => {
-                const row = $(element);
-                row.removeClass('selected');
-                row.find('.circle-row').removeClass('active-critical');
-                const rowId = row.attr('id');
-                this.selectedRows.delete(rowId);
-                const statusMatch = this.currentStatus === 'NONE' ||
-                    (this.currentStatus === 'NO_DOCUMENT' ? row.find('[data-document="false"]').length > 0 :
-                        row.find('[data-status]').attr('data-status') === this.currentStatus);
-                const subDivisionMatch = !this.currentSubDivision || row.find('[data-name="subDivision"]').text().trim() === this.currentSubDivision;
-                const employeeMatch = !this.currentEmployee || row.find('[data-name="employee"]').text().trim() === this.currentEmployee;
-                const textMatch = this.searchText === '' || row.text().toLowerCase().includes(this.searchText.toLowerCase());
-                row.toggle(statusMatch && subDivisionMatch && employeeMatch && textMatch);
-            });
-            $('.circle-header').removeClass('active');
-        };
-        this.filterButtonHandler = (event) => {
-            this.currentStatus = $(event.target).data('status');
-            $('.filter-btn').removeClass('active');
-            $(event.target).addClass('active');
-            this.applyFilters();
-        };
-        this.showRowContextMenu = (event) => {
-            if ($(event.target).is('div[contenteditable="true"]') || $(event.target).closest('div[contenteditable="true"]').length > 0) {
-                return;
-            }
-            event.preventDefault();
-            const mouseEvent = event;
-            const $row = $(event.currentTarget);
-            const rowName = $row.find('[data-name="outNumber"]').text().trim();
-            const rowId = $row.attr('id');
-            this.createContextMenu([
-                {
-                    label: 'Удалить',
-                    idAction: 'deleteButton',
-                    action: () => {
-                        this.createConfirmationDialog("Подтвердите удаление оборудования: {outNumber}", { outNumber: rowName }).then((confirmed) => {
-                            // @ts-ignore
-                            if (confirmed) {
-                                this.deleteEntity(`/api/spe/delete/${rowId}`).then(() => {
-                                    this.deleteRow(rowId);
-                                    this.createNotification("Оборудование успешно удалено", NotificationType.SUCCESS);
-                                }).catch(() => {
-                                    this.createNotification("Возникла ошибка при удалении оборудования", NotificationType.ERROR);
-                                });
-                            }
-                        });
-                    }
-                }
-            ], mouseEvent.clientX, mouseEvent.clientY);
-        };
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
-        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode(['datePreparation', 'dateVerification'], undefined, this.speSpecialFields);
-                $('#edit-button').addClass('active');
-            }
-            else {
-                this.disableEditMode(['datePreparation', 'dateVerification'], []);
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        }, true);
-        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
-        this.createHandler('click', '#unload-button', () => this.unload(), true);
-        this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
-        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
-        this.createHandler('click', '#save-button', () => this.saveSpe(), true);
-        this.bindFieldChanges();
-        this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.document', this.openDocument.bind(this), true);
-        this.createHandler('change', '#fileInput', this.addFileToDocument.bind(this), true);
-        this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
-        this.createHandler('click', '#createFgisBtn', this.createFgisSpe, true);
-        this.createHandler('click', '#createBtn', this.createSpe, true);
-        this.createHandler('click', '.filter-status', this.filterButtonHandler, true);
-        this.createHandler('click', '.employee-button', this.employeeHandler.bind(this), true);
-        this.createHandler('click', '.subdivision-button', this.subDivisionHandler.bind(this), true);
-        this.createHandler('input', '#searchInput', (event) => {
-            this.searchText = $(event.target).val().toString().toLowerCase().trim();
-            this.applyFilters();
-        }, true);
-        this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu, true);
-    }
-    createRow(spe) {
-        const status = (() => {
-            switch (spe.status) {
-                case 'NONE':
-                    return 'Новый';
-                case 'WRITE_OFF':
-                    return 'Списан';
-                case 'VERIFICATION_REQUIRED':
-                    return 'Требуется поверка';
-                case 'EXPIRED':
-                    return 'Срок поверки истек';
-                case 'AT_INSPECTION':
-                    return 'На поверке';
-                case 'CORRECTED':
-                    return 'Исправен';
-                case 'REPAIR':
-                    return 'На ремонте';
-            }
-        })();
-        const row = `
-                <div class="table-row" id="${spe.id}" data-index="${spe.id}">
+var b=(m,a)=>()=>(a||m((a={exports:{}}).exports,a),a.exports);var y=b(w=>{var h=w&&w.__awaiter||function(m,a,i,e){function o(t){return t instanceof i?t:new i(function(s){s(t)})}return new(i||(i=Promise))(function(t,s){function c(r){try{l(e.next(r))}catch(d){s(d)}}function n(r){try{l(e.throw(r))}catch(d){s(d)}}function l(r){r.done?t(r.value):o(r.value).then(c,n)}l((e=e.apply(m,a||[])).next())})},g=class extends Base{constructor(a=1/0,i=1/0){super($(".table-body"),a,i,()=>{this.displayPage("/api/spe/get-page-spe",void 0,e=>this.fullData(e)).catch(console.error)}),this.currentStatus="NONE",this.currentSubDivision="",this.currentEmployee="",this.searchText="",this.editMode=!1,this.speSpecialFields=[{name:"mark",transform:e=>{let o=e.text().trim(),t=$('<select data-name="mark"></select>'),s=["\u0438\u0441\u043F\u0440\u0430\u0432\u0435\u043D","\u0441\u043F\u0438\u0441\u0430\u043D","\u043D\u0430 \u043F\u043E\u0432\u0435\u0440\u043A\u0435","\u0440\u0435\u043C\u043E\u043D\u0442"];return(o===""||o===null)&&t.append($('<option selected value=""></option>')),s.forEach(c=>{let n=o!==""&&o!==null&&c===o;t.append($(`<option ${n?"selected":""}>${c}</option>`))}),t}},{name:"employee",transform:e=>e.addClass("area-modal").attr("contenteditable","false")},{name:"subDivision",transform:e=>e.addClass("area-modal").attr("contenteditable","false")}],this.createFgisSpe=e=>h(this,void 0,void 0,function*(){e.preventDefault();let o=$(e.target),t=o.closest("form").get(0),s=$("#create-fgis-dialog");if(!t.checkValidity()){t.reportValidity();return}o.prop("disabled",!0);let c={outNumber:s.find('textarea[name="outNumber"]').val(),accuracyClass:s.find('textarea[name="accuracyClass"]').val(),limitMeasurement:s.find('textarea[name="limitMeasurement"]').val(),subDivision:this.saveMassive.subDivision,employee:this.saveMassive.employee};try{let n=yield this.createEntity("/api/spe/create-spe-fgis",c);this.saveMassive={},this.localCache.set(n.id,n),this.dialog.close("create-fgis-dialog");let l=this.createRow(n);$(".table-body").append(l),o.prop("disabled",!1)}catch(n){this.saveMassive={},n.status===404?(this.createNotification("\u0421\u0418 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0432 \u0440\u0435\u0435\u0441\u0442\u0440\u0435 \u0424\u0413\u0418\u0421",NotificationType.WARNING),this.dialog.close("create-fgis-dialog"),setTimeout(()=>this.dialog.open("create-dialog"),850)):this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 SPE",NotificationType.ERROR),o.prop("disabled",!1)}}),this.createSpe=e=>h(this,void 0,void 0,function*(){e.preventDefault();let o=$(e.target),t=o.closest("form").get(0),s=$("#create-dialog");if(!t.checkValidity()){t.reportValidity();return}o.prop("disabled",!0);let c={name:s.find('input[name="name"]').val(),type:s.find('textarea[name="type"]').val(),outNumber:s.find('textarea[name="outNumber"]').val(),accuracyClass:s.find('textarea[name="accuracyClass"]').val(),limitMeasurement:s.find('textarea[name="limitMeasurement"]').val(),subDivision:this.saveMassive.subDivision,employee:this.saveMassive.employee,periodicity:s.find('textarea[name="periodicity"]').val(),datePreparation:s.find('input[name="datePreparation"]').val(),dateVerification:s.find('input[name="dateVerification"]').val(),certificateNumber:s.find('textarea[name="certificateNumber"]').val(),organization:s.find('select[name="organization"]').val()};try{let n=yield this.createEntity("/api/spe/create-spe",c);this.saveMassive={},this.localCache.set(n.id,n),this.dialog.close("create-dialog");let l=this.createRow(n);$(".table-body").append(l),o.prop("disabled",!1)}catch{this.saveMassive={},t.reset(),this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 SPE",NotificationType.ERROR),o.prop("disabled",!1)}}),this.applyFilters=()=>{if(this.editMode){this.createNotification("\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.INFO);return}$(".table-row").each((e,o)=>{let t=$(o);t.removeClass("selected"),t.find(".circle-row").removeClass("active-critical");let s=t.attr("id");this.selectedRows.delete(s);let c=this.currentStatus==="NONE"||(this.currentStatus==="NO_DOCUMENT"?t.find('[data-document="false"]').length>0:t.find("[data-status]").attr("data-status")===this.currentStatus),n=!this.currentSubDivision||t.find('[data-name="subDivision"]').text().trim()===this.currentSubDivision,l=!this.currentEmployee||t.find('[data-name="employee"]').text().trim()===this.currentEmployee,r=this.searchText===""||t.text().toLowerCase().includes(this.searchText.toLowerCase());t.toggle(c&&n&&l&&r)}),$(".circle-header").removeClass("active")},this.filterButtonHandler=e=>{this.currentStatus=$(e.target).data("status"),$(".filter-btn").removeClass("active"),$(e.target).addClass("active"),this.applyFilters()},this.showRowContextMenu=e=>{if($(e.target).is('div[contenteditable="true"]')||$(e.target).closest('div[contenteditable="true"]').length>0)return;e.preventDefault();let o=e,t=$(e.currentTarget),s=t.find('[data-name="outNumber"]').text().trim(),c=t.attr("id");this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C",idAction:"deleteButton",action:()=>{this.createConfirmationDialog("\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435 \u043E\u0431\u043E\u0440\u0443\u0434\u043E\u0432\u0430\u043D\u0438\u044F: {outNumber}",{outNumber:s}).then(n=>{n&&this.deleteEntity(`/api/spe/delete/${c}`).then(()=>{this.deleteRow(c),this.createNotification("\u041E\u0431\u043E\u0440\u0443\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u043E",NotificationType.SUCCESS)}).catch(()=>{this.createNotification("\u0412\u043E\u0437\u043D\u0438\u043A\u043B\u0430 \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u043E\u0431\u043E\u0440\u0443\u0434\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.ERROR)})})}}],o.clientX,o.clientY)},this.createHandler("click",".circle-header",this.selectAllRows.bind(this),!0),this.createHandler("click",".circle-row",this.selectRow.bind(this),!0),this.createHandler("click","#edit-button",()=>{this.editMode?(this.disableEditMode(["datePreparation","dateVerification"],[]),this.editMode||$("#edit-button").removeClass("active")):(this.enableEditMode(["datePreparation","dateVerification"],void 0,this.speSpecialFields),$("#edit-button").addClass("active"))},!0),this.createHandler("click","#print-button",this.print=this.print.bind(this),!0),this.createHandler("click","#unload-button",()=>this.unload(),!0),this.createHandler("click","#create-fgis-button",()=>this.dialog.open("create-fgis-dialog"),!0),this.createHandler("click","#create-button",()=>this.dialog.open("create-dialog"),!0),this.createHandler("click","#save-button",()=>this.saveSpe(),!0),this.createHandler("input","[data-name]",this.inputChanges.bind(this),!0),this.createHandler("click",".area-modal",this.workWithModal.bind(this),!0),this.createHandler("click",".document",this.openDocument.bind(this),!0),this.createHandler("change","#fileInput",this.addFileToDocument.bind(this),!0),this.createHandler("click",".download",this.handleDownloadFile.bind(this),!0),this.createHandler("click","#createFgisBtn",this.createFgisSpe,!0),this.createHandler("click","#createBtn",this.createSpe,!0),this.createHandler("click",".filter-status",this.filterButtonHandler,!0),this.createHandler("click",".employee-button",this.employeeHandler.bind(this),!0),this.createHandler("click",".subdivision-button",this.subDivisionHandler.bind(this),!0),this.createHandler("input","#searchInput",e=>{this.searchText=$(e.target).val().toString().toLowerCase().trim(),this.applyFilters()},!0),this.createHandler("contextmenu",".table-row.selected",this.showRowContextMenu,!0)}createRow(a){let i=(()=>{switch(a.status){case"NONE":return"\u041D\u043E\u0432\u044B\u0439";case"WRITE_OFF":return"\u0421\u043F\u0438\u0441\u0430\u043D";case"VERIFICATION_REQUIRED":return"\u0422\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044F \u043F\u043E\u0432\u0435\u0440\u043A\u0430";case"EXPIRED":return"\u0421\u0440\u043E\u043A \u043F\u043E\u0432\u0435\u0440\u043A\u0438 \u0438\u0441\u0442\u0435\u043A";case"AT_INSPECTION":return"\u041D\u0430 \u043F\u043E\u0432\u0435\u0440\u043A\u0435";case"CORRECTED":return"\u0418\u0441\u043F\u0440\u0430\u0432\u0435\u043D";case"REPAIR":return"\u041D\u0430 \u0440\u0435\u043C\u043E\u043D\u0442\u0435"}})(),e=`
+                <div class="table-row" id="${a.id}" data-index="${a.id}">
                     <div class="table-cell" style="width: var(--equipment);">
                         <div class="equipment">
-                            <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
+                            <div class="circle circle-row tooltip-trigger" data-description="\u0412\u044B\u0434\u0435\u043B\u0438\u0442\u044C \u0441\u0442\u0440\u043E\u043A\u0443"></div>
                             <div data-name="name" contenteditable="false" padding-left="18px">
-                                ${spe.name}
+                                ${a.name}
                             </div>
                             <div class="equipments">
                                 <div class="equipment-type">
                                     <div contenteditable="false" data-name="type">
-                                        ${spe.type}
+                                        ${a.type}
                                     </div>
                                 </div>
                                 <div class="equipment-number">
                                     <div contenteditable="false" data-name="outNumber">
-                                        ${spe.outNumber}
+                                        ${a.outNumber}
                                     </div>
                                 </div>
                             </div>
@@ -249,220 +23,66 @@ class Spe extends Base {
                     <div class="table-cell" style="width: var(--characteristics);">
                         <div class="characteristics">
                             <div contenteditable="false" data-name="accuracyClass">
-                                ${spe.accuracyClass}
+                                ${a.accuracyClass}
                             </div>
                             <div contenteditable="false" data-name="limitMeasurement">
-                                ${spe.limitMeasurement}
+                                ${a.limitMeasurement}
                             </div>
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--subdivision);">
                         <div contenteditable="false" data-name="subDivision">
-                            ${spe.subDivision.name}
+                            ${a.subDivision.name}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--responsible);">
                         <div contenteditable="false" class="responsible" data-name="employee">
-                            ${spe.employee.name}
+                            ${a.employee.name}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--mark);">
                         <div contenteditable="false" data-name="mark">
-                            ${spe.mark != null ? spe.mark : ''}
+                            ${a.mark!=null?a.mark:""}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--preparationDate);">
                         <div contenteditable="false" data-name="datePreparation">
-                            ${this.formatDate(spe.datePreparation)}
+                            ${this.formatDate(a.datePreparation)}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--verificationDate);">
                         <div contenteditable="false" data-name="dateVerification">
-                            ${this.formatDate(spe.dateVerification)}
+                            ${this.formatDate(a.dateVerification)}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--certificate);">
                         <div contenteditable="false" data-name="certificateNumber">
-                            ${spe.certificateNumber}
+                            ${a.certificateNumber}
                         </div>
                     </div>
                     <div class="table-cell" style="width: var(--periodicity);">
                         <div contenteditable="false" data-name="periodicity">
-                            ${spe.periodicity}
-                        </div> месяцев
+                            ${a.periodicity}
+                        </div> \u043C\u0435\u0441\u044F\u0446\u0435\u0432
                     </div>
                     <div class="table-cell" style="width: var(--file);">
-                        <i class="document fa-solid fa-file tooltip-trigger" data-description="Открыть окно документа"></i>
+                        <i class="document fa-solid fa-file tooltip-trigger" data-description="\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u043A\u043D\u043E \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430"></i>
                     </div>
                     <div class="table-cell" style="width: var(--status);">
-                        <span class="status-indicator" style="background-color: ${this.calculateColor(spe.color)}" data-status="${spe.status}" data-document="${spe.documentId != null ? 'true' : 'false'}">
-                           ${status}
+                        <span class="status-indicator" style="background-color: ${this.calculateColor(a.color)}" data-status="${a.status}" data-document="${a.documentId!=null?"true":"false"}">
+                           ${i}
                         </span>
                     </div>
-                </div>`;
-        return $(row);
-    }
-    onScroll() {
-    }
-    async print() {
-        if (!this.selectedRows || this.selectedRows.size === 0) {
-            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
-        }
-        this.reports = [
-            {
-                name: 'Извещения о предъявлении СИ на поверку/калибровку',
-                api: '/api/report/print/spe',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
-            },
-            {
-                name: 'Графики поверки (калибровки) средств измерений',
-                api: '/api/report/print/spe-schedule',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
-                function: async (format) => {
-                    const nonOrganization = [];
-                    const groupByOrganization = Array.from(this.selectedRows)
-                        .reduce((map, id) => {
-                        const item = this.localCache.get(Number(id));
-                        const org = item.organization;
-                        if (org == null) {
-                            nonOrganization.push(item.outNumber);
-                        }
-                        else {
-                            map.set(org, [...(map.get(org) || []), item]);
-                        }
-                        return map;
-                    }, new Map());
-                    if (nonOrganization.length > 0) {
-                        this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
-                    }
-                    for (const [organization, speList] of Array.from(groupByOrganization)) {
-                        const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
-                        await this.downloadFile('/api/report/print/spe-schedule', params);
-                    }
-                }
-            }
-        ];
-        return super.print();
-    }
-    async unload() {
-        if (!this.selectedRows || this.selectedRows.size === 0) {
-            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
-        }
-        const param = Array.from(this.selectedRows).map(id => `idList=${id}`).join('&');
-        await this.downloadFile('/api/report/print/spe-unload', param);
-    }
-    saveSpe() {
-        this.saveMassiveChanges('/api/spe/update', (id, cacheData, changes) => ({
-            id: id,
-            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
-            changes: changes
-        })).then(() => {
-            this.disableEditMode(['datePreparation', 'dateVerification'], []);
-            $('#edit-button').removeClass('active');
-        }).catch(console.error);
-    }
-    fullData(data) {
-        $('#total-units').text(data.length);
-        $('#written-off').text(data.filter(s => s.status === 'WRITE_OFF').length);
-        $('#verification-required').text(data.filter(s => s.status === 'VERIFICATION_REQUIRED').length);
-        $('#verification-period-has-expired').text(data.filter(s => s.status === 'EXPIRED').length);
-        $('#at-inspection').text(data.filter(s => s.status === 'AT_INSPECTION').length);
-        $('#at-repair').text(data.filter(s => s.status === 'REPAIR').length);
-        $('#no-document').text(data.filter(s => s.documentId === null).length);
-    }
-    async selectRow(event) {
-        const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
-        this.toggleRowSelection(event, true);
-        const circle = $(event.currentTarget);
-        const currentRow = circle.closest('.table-row');
-        const rowId = currentRow.attr('id');
-        if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
-            this.enableEditMode(['datePreparation', 'dateVerification'], currentRow, this.speSpecialFields);
-        }
-        else if (!this.selectedRows.has(rowId)) {
-            this.disableEditMode(['datePreparation', 'dateVerification'], [], currentRow);
-            if (!this.editMode)
-                $('#edit-button').removeClass('active');
-        }
-    }
-    async workWithModal(event) {
-        const modalDiv = $(event.currentTarget);
-        const fieldName = modalDiv.attr('data-name');
-        const currentId = modalDiv.closest('.table-row').attr('id');
-        let selected;
-        if (fieldName === 'subDivision' || fieldName === 'employee') {
-            const isEmployee = fieldName === 'employee';
-            const data = await this.cache.get(fieldName);
-            const renderRows = (items) => {
-                const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
-                const rowContainer = dialog.find('.dialog-content-rows');
-                rowContainer.empty();
-                items.forEach(item => {
-                    var _a;
-                    rowContainer.append(`
-                    <div class="dialog-content-rows-row" data-id="${item.id}">
-                        <div class="content-row-column col-250">${item.name}</div>
-                        ${isEmployee ? `<div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>` : ''}
-                    </div>`);
-                });
-            };
-            renderRows(data);
-            const searchInput = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog').find('.choice-field input');
-            searchInput.off('input').on('input', function () {
-                const searchText = $(this).val().toString().toLowerCase().trim();
-                const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
-                renderRows(filtered);
-            });
-            this.dialog.open(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
-            const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
-            const rowContainer = dialog.find('.dialog-content-rows');
-            const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
-            let selected;
-            rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
-                const id = $(this).data('id');
-                selected = data.find((e) => e.id === id);
-                $('.dialog-content-rows-row').removeClass('selected');
-                $(this).addClass('selected');
-            });
-            changeButton.off('click').on('click', () => {
-                if (!selected) {
-                    this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
-                    return;
-                }
-                modalDiv.text(selected.name);
-                modalDiv.val(selected.name);
-                if (currentId) {
-                    this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
-                }
-                else {
-                    this.saveMassive[fieldName] = selected;
-                }
-                modalDiv.addClass('change-textarea');
-                this.dialog.close(isEmployee ? 'employeeDialog' : 'subDivisionDialog');
-            });
-        }
-        modalDiv.addClass('change');
-    }
-    async openDocument(event) {
-        const dialog = $('#documentDialog');
-        const currentRow = $(event.currentTarget).closest('.table-row');
-        const currentSpeId = currentRow.attr('id');
-        const spe = this.localCache.get(Number(currentSpeId));
-        const rowContainer = dialog.find('.dialog-content-rows');
-        rowContainer.empty();
-        if (spe.documentId !== null) {
-            const document = await this.requestToApi(`/api/document/get-document/${spe.documentId}`, "GET");
-            this.localCache.set('document', document);
-            document.files.forEach((file) => {
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" id="${file.id}">
-                    <div class="content-row-column col-450">${file.baseFileName}</div>
-                    <div class="content-row-column col-100">${file.type}</div>
+                </div>`;return $(e)}onScroll(){}print(){let a=Object.create(null,{print:{get:()=>super.print}});return h(this,void 0,void 0,function*(){return!this.selectedRows||this.selectedRows.size===0?this.createNotification("\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043E \u043D\u0438 \u043E\u0434\u043D\u043E\u0439 \u0441\u0442\u0440\u043E\u043A\u0438",NotificationType.WARNING):(this.reports=[{name:"\u0418\u0437\u0432\u0435\u0449\u0435\u043D\u0438\u044F \u043E \u043F\u0440\u0435\u0434\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u0438 \u0421\u0418 \u043D\u0430 \u043F\u043E\u0432\u0435\u0440\u043A\u0443/\u043A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0443",api:"/api/report/print/spe",params:Array.from(this.selectedRows).map(i=>`idList=${i}`).join("&")},{name:"\u0413\u0440\u0430\u0444\u0438\u043A\u0438 \u043F\u043E\u0432\u0435\u0440\u043A\u0438 (\u043A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0438) \u0441\u0440\u0435\u0434\u0441\u0442\u0432 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439",api:"/api/report/print/spe-schedule",params:Array.from(this.selectedRows).map(i=>`idList=${i}`).join("&"),function:i=>h(this,void 0,void 0,function*(){let e=[],o=Array.from(this.selectedRows).reduce((t,s)=>{let c=this.localCache.get(Number(s)),n=c.organization;return n==null?e.push(c.outNumber):t.set(n,[...t.get(n)||[],c]),t},new Map);e.length>0&&this.createNotification("\u041E\u0431\u043E\u0440\u0443\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0431\u0435\u0437 \u043E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u0438 \u043D\u0435 \u043F\u043E\u043F\u0430\u0432\u0448\u0438\u0435 \u0432 \u043E\u0442\u0447\u0435\u0442: "+e.join(", "),NotificationType.INFO);for(let[t,s]of Array.from(o)){let c=`?format=${i}&${s.map(n=>`idList=${n.id}`).join("&")}`;yield this.downloadFile("/api/report/print/spe-schedule",c)}})}],a.print.call(this))})}unload(){return h(this,void 0,void 0,function*(){if(!this.selectedRows||this.selectedRows.size===0)return this.createNotification("\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043E \u043D\u0438 \u043E\u0434\u043D\u043E\u0439 \u0441\u0442\u0440\u043E\u043A\u0438",NotificationType.WARNING);let a=Array.from(this.selectedRows).map(i=>`idList=${i}`).join("&");yield this.downloadFile("/api/report/print/spe-unload",a)})}saveSpe(){if(Object.keys(this.saveMassive).length===0)return;let a=Object.keys(this.saveMassive).map(i=>{let e=this.localCache.get(Number(i));return{id:i,version:e.version,changes:this.saveMassive[i]}});this.save("/api/spe/update",...a).then(()=>{this.disableEditMode(["datePreparation","dateVerification"],[]),a.forEach(i=>this.selectedRows.delete(Number(i))),$("#edit-button").removeClass("active")})}fullData(a){$("#total-units").text(a.length),$("#written-off").text(a.filter(i=>i.status==="WRITE_OFF").length),$("#verification-required").text(a.filter(i=>i.status==="VERIFICATION_REQUIRED").length),$("#verification-period-has-expired").text(a.filter(i=>i.status==="EXPIRED").length),$("#at-inspection").text(a.filter(i=>i.status==="AT_INSPECTION").length),$("#at-repair").text(a.filter(i=>i.status==="REPAIR").length),$("#no-document").text(a.filter(i=>i.documentId===null).length)}selectAllRows(a){return h(this,void 0,void 0,function*(){if(this.editMode){this.createNotification("\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.INFO);return}let i=$(a.currentTarget),e=$(".table-row:visible");i.hasClass("active")?(this.selectedRows.clear(),e.removeClass("selected"),e.each((o,t)=>{$(t).find(".circle-row").removeClass("active-critical")}),i.removeClass("active")):(this.selectedRows.clear(),e.each((o,t)=>{let s=$(t).find(".circle-row"),c=$(t).attr("id");this.selectedRows.add(c),$(t).addClass("selected"),s.addClass("active-critical")}),i.addClass("active"))})}selectRow(a){return h(this,void 0,void 0,function*(){let i=this.selectedRows.has($(a.currentTarget).closest(".table-row").attr("id"));this.toggleRowSelection(a,!0);let o=$(a.currentTarget).closest(".table-row"),t=o.attr("id");this.selectedRows.has(t)&&!i&&this.editMode?this.enableEditMode(["datePreparation","dateVerification"],o,this.speSpecialFields):this.selectedRows.has(t)||(this.disableEditMode(["datePreparation","dateVerification"],[],o),this.editMode||$("#edit-button").removeClass("active"))})}inputChanges(a){let i=$(a.target),e=i.closest(".table-row").attr("id"),o=i.attr("data-name"),t=i.is("div")?i.text().trim():i.val();this.saveMassive[e]=Object.assign(Object.assign({},this.saveMassive[e]),{[o]:t}),i.addClass("change")}workWithModal(a){return h(this,void 0,void 0,function*(){let i=$(a.currentTarget),e=i.attr("data-name"),o=i.closest(".table-row").attr("id"),t;if(e==="subDivision"||e==="employee"){let s=e==="employee",c=$(s?"#employeeDialog":"#subDivisionDialog"),n=c.find(".dialog-content-rows"),l=c.find(".choice-field input"),r=$(s?"#changeEmployee":"#changeSubDivision"),d=yield this.cache.get(e),u=f=>{n.empty(),f.forEach(v=>{var p;n.append(`
+                    <div class="dialog-content-rows-row" data-id="${v.id}">
+                        <div class="content-row-column col-250">${v.name}</div>
+                        ${s?`<div class="content-row-column col-250">${((p=v.subDivision)===null||p===void 0?void 0:p.name)||""}</div>`:""}
+                    </div>`)})};u(d),l.off("input").on("input",function(){let f=$(this).val().toString().toLowerCase().trim(),v=d.filter(p=>p.name.toLowerCase().includes(f));u(v)}),this.dialog.open(s?"employeeDialog":"subDivisionDialog"),n.off("click").on("click",".dialog-content-rows-row",function(){let f=$(this).data("id");t=d.find(v=>v.id===f),$(".dialog-content-rows-row").removeClass("selected"),$(this).addClass("selected")}),r.off("click").on("click",()=>{if(!t){this.createNotification(`\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 ${s?"\u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0430":"\u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435"} \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430`,NotificationType.WARNING);return}i.text(t.name),i.val(t.name),o?this.saveMassive[o]=Object.assign(Object.assign({},this.saveMassive[o]),{[e]:t}):this.saveMassive[e]=t,i.addClass("change-textarea"),this.dialog.close(s?"employeeDialog":"subDivisionDialog")})}i.addClass("change")})}openDocument(a){return h(this,void 0,void 0,function*(){let i=$("#documentDialog"),o=$(a.currentTarget).closest(".table-row").attr("id"),t=this.localCache.get(Number(o)),s=i.find(".dialog-content-rows");if(s.empty(),t.documentId!==null){let n=yield this.requestToApi(`/api/document/get-document/${t.documentId}`,"GET");this.localCache.set("document",n),n.files.forEach(l=>{s.append(`
+                <div class="dialog-content-rows-row" id="${l.id}">
+                    <div class="content-row-column col-450">${l.baseFileName}</div>
+                    <div class="content-row-column col-100">${l.type}</div>
                     <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
-                </div>`);
-            });
-        }
-        rowContainer.append(`
+                </div>`)})}s.append(`
             <div class="dialog-content-rows-row">
                 <div class="content-row-column col-450"></div>
                 <div class="content-row-column col-100"></div>
@@ -470,75 +90,19 @@ class Spe extends Base {
                     <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
-            </div>`);
-        const organizationSelect = $(`
+            </div>`);let c=$(`
             <select class="organization-select form-control">
-                <option value="">Выберите организацию</option>
-                <option value="organization1">Борисоглебский филиал ФБУ "Воронежский ЦСМ"</option>
-                <option value="organization2">ФБУ "Воронежский ЦСМ"</option>
-                <option value="organization3">ООО "СТАНДАРТ"</option>
+                <option value="">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044E</option>
+                <option value="organization1">\u0411\u043E\u0440\u0438\u0441\u043E\u0433\u043B\u0435\u0431\u0441\u043A\u0438\u0439 \u0444\u0438\u043B\u0438\u0430\u043B \u0424\u0411\u0423 "\u0412\u043E\u0440\u043E\u043D\u0435\u0436\u0441\u043A\u0438\u0439 \u0426\u0421\u041C"</option>
+                <option value="organization2">\u0424\u0411\u0423 "\u0412\u043E\u0440\u043E\u043D\u0435\u0436\u0441\u043A\u0438\u0439 \u0426\u0421\u041C"</option>
+                <option value="organization3">\u041E\u041E\u041E "\u0421\u0422\u0410\u041D\u0414\u0410\u0420\u0422"</option>
             </select>
-        `);
-        if (spe.organization) {
-            organizationSelect.find('option[value=""]').remove();
-            organizationSelect.val(spe.organization);
-        }
-        dialog.find('.organization-row').empty().append(organizationSelect);
-        $(document).off('change', '.organization-select').on('change', '.organization-select', (event) => {
-            const value = $(event.currentTarget).val();
-            this.saveMassive[currentSpeId] = Object.assign(Object.assign({}, this.saveMassive[currentSpeId]), { organization: value });
-            this.saveSpe();
-        });
-        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
-        $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
-            const $row = $(event.currentTarget);
-            const fileId = $row.attr('id');
-            if (!fileId) {
-                return;
-            }
-            event.preventDefault();
-            const mouseEvent = event;
-            this.createContextMenu([
-                {
-                    label: 'Удалить файл',
-                    idAction: 'contextMenu',
-                    action: () => {
-                        this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
-                            this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
-                            this.deleteRow(fileId);
-                        });
-                    }
-                },
-            ], mouseEvent.clientX, mouseEvent.clientY);
-        });
-        this.dialog.open('documentDialog');
-    }
-    addFileToDocument(event, speId) {
-        const formData = new FormData();
-        const currentInput = event.currentTarget;
-        const spe = this.localCache.get(Number(speId));
-        if (currentInput.files) {
-            Array.from(currentInput.files).forEach(file => {
-                formData.append('files', file);
-            });
-        }
-        const url = spe.documentId
-            ? `/api/document/add-file-to-document-and-get/${spe.documentId}`
-            : `/api/spe/create-document/${spe.id}`;
-        const requestType = spe.documentId ? 'PATCH' : 'POST';
-        this.requestToApi(url, requestType, formData).then((document) => {
-            const dialog = $('#documentDialog');
-            const rowContainer = dialog.find('.dialog-content-rows');
-            rowContainer.empty();
-            for (const file of document.files) {
-                rowContainer.append(`
-                    <div class="dialog-content-rows-row" id="${file.id}">
-                        <div class="content-row-column col-450">${file.baseFileName}</div>
-                        <div class="content-row-column col-100">${file.type}</div>
+        `);t.organization&&(c.find('option[value=""]').remove(),c.val(t.organization)),i.find(".organization-row").empty().append(c),$(document).off("change",".organization-select").on("change",".organization-select",n=>{let l=$(n.currentTarget).val();this.saveMassive[o]=Object.assign(Object.assign({},this.saveMassive[o]),{organization:l}),this.saveSpe()}),$(document).off("change","#fileInput").on("change","#fileInput",n=>this.addFileToDocument(n,o)),$(document).on("contextmenu",".dialog-content-rows-row",n=>{let r=$(n.currentTarget).attr("id");if(!r)return;n.preventDefault();let d=n;this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u0430\u0439\u043B",idAction:"contextMenu",action:()=>{this.deleteEntity(`/api/document/delete-file-from-document/${r}`).then(()=>{this.createNotification("\u0424\u0430\u0439\u043B \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D",NotificationType.SUCCESS),this.deleteRow(r)})}}],d.clientX,d.clientY)}),this.dialog.open("documentDialog")})}addFileToDocument(a,i){let e=new FormData,o=a.currentTarget,t=this.localCache.get(Number(i));o.files&&Array.from(o.files).forEach(n=>{e.append("files",n)});let s=t.documentId?`/api/document/add-file-to-document-and-get/${t.documentId}`:`/api/spe/create-document/${t.id}`,c=t.documentId?"PATCH":"POST";this.requestToApi(s,c,e).then(n=>{let r=$("#documentDialog").find(".dialog-content-rows");r.empty();for(let d of n.files)r.append(`
+                    <div class="dialog-content-rows-row" id="${d.id}">
+                        <div class="content-row-column col-450">${d.baseFileName}</div>
+                        <div class="content-row-column col-100">${d.type}</div>
                         <div class="content-row-column col-100"><i style="float: right" class="download fas fa-download"></i></div>
-                    </div>`);
-            }
-            rowContainer.append(`
+                    </div>`);r.append(`
             <div class="dialog-content-rows-row">
                 <div class="content-row-column col-450"></div>
                 <div class="content-row-column col-100"></div>
@@ -546,114 +110,8 @@ class Spe extends Base {
                     <i style="float: right" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
-            </div>`);
-            spe.documentId = document.id;
-            this.localCache.set(spe.id, spe);
-            this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
-        }).catch(console.error);
-        currentInput.value = '';
-    }
-    handleDownloadFile(event) {
-        this.handleDownloadFileFromDialog(event, '/api/document/download-document-file');
-    }
-    async employeeHandler(event) {
-        const button = $(event.target);
-        const dialog = $('#employeeDialog');
-        const rowContainer = dialog.find('.dialog-content-rows');
-        let selectedName = '';
-        const cancelBtn = dialog.find('.close');
-        const dialogName = dialog.find('.dialog-name');
-        try {
-            const employees = await this.cache.get('employee');
-            function render(list) {
-                rowContainer.empty();
-                list.forEach(e => rowContainer.append(`
+            </div>`),t.documentId=n.id,this.localCache.set(t.id,t),this.createNotification("\u0424\u0430\u0439\u043B\u044B \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",NotificationType.SUCCESS)}).catch(console.error),o.value=""}handleDownloadFile(a){this.handleDownloadFileFromDialog(a,"/api/document/download-document-file")}employeeHandler(a){return h(this,void 0,void 0,function*(){let i=$(a.target),e=$("#employeeDialog"),o=e.find(".dialog-content-rows"),t="",s=e.find(".close"),c=e.find(".dialog-name");try{let r=function(d){o.empty(),d.forEach(u=>o.append(`
                     <div class="dialog-content-rows-row">
-                        <div class="content-row-column col-250 filter">${e.name}</div>
-                        <div class="content-row-column col-250">${e.subDivision.name}</div>
-                    </div>`));
-            }
-            cancelBtn.text('Сбросить фильтры');
-            dialogName.text('Фильтр по подразделению');
-            render(employees);
-            dialog.find('.choice-field input').on('input', function () {
-                const search = $(this).val().toString().toLowerCase();
-                const filtered = employees.filter((e) => e.name.toLowerCase().includes(search));
-                render(filtered);
-            });
-            rowContainer.on('click', '.dialog-content-rows-row', function () {
-                selectedName = $(this).find('.content-row-column.filter').text().trim();
-            });
-            $('#changeEmployee').on('click', () => {
-                this.currentEmployee = selectedName;
-                this.applyFilters();
-                button.css('border-color', 'red');
-                this.dialog.close('employeeDialog');
-            });
-            $('.close').on('click', () => {
-                this.currentEmployee = '';
-                button.css('border-color', '#e2e8f0');
-                this.applyFilters();
-                this.dialog.close('employeeDialog');
-            });
-            dialog.on('close', function () {
-                cancelBtn.text('Отмена');
-                dialogName.text('Окно выбора сотрудника');
-            });
-            this.dialog.open('employeeDialog');
-        }
-        catch (error) {
-            this.createNotification('Ошибка при загрузке сотрудников', NotificationType.ERROR);
-        }
-    }
-    async subDivisionHandler(event) {
-        const button = $(event.target);
-        const dialog = $('#subDivisionDialog');
-        const rowContainer = dialog.find('.dialog-content-rows');
-        let selectedName = '';
-        const cancelBtn = dialog.find('.close');
-        const dialogName = dialog.find('.dialog-name');
-        try {
-            const subDivisions = await this.cache.get('subDivision');
-            function render(list) {
-                rowContainer.empty();
-                list.forEach(e => rowContainer.append(`<div class="dialog-content-rows-row"><div class="content-row-column filter">${e.name}</div></div>`));
-            }
-            cancelBtn.text('Сбросить фильтры');
-            dialogName.text('Фильтр по подразделению');
-            render(subDivisions);
-            dialog.find('.choice-field input').on('input', function () {
-                const search = $(this).val().toString().toLowerCase();
-                const filtered = subDivisions.filter((e) => e.name.toLowerCase().includes(search));
-                render(filtered);
-            });
-            rowContainer.on('click', '.dialog-content-rows-row', function () {
-                selectedName = $(this).find('.content-row-column.filter').text().trim();
-            });
-            $('#changeSubDivision').on('click', () => {
-                this.currentSubDivision = selectedName;
-                this.applyFilters();
-                button.css('border-color', 'red');
-                this.dialog.close('subDivisionDialog');
-            });
-            $('.close').on('click', () => {
-                this.currentSubDivision = '';
-                button.css('border-color', '#e2e8f0');
-                this.applyFilters();
-                this.dialog.close('subDivisionDialog');
-            });
-            dialog.on('close', function () {
-                cancelBtn.text('Отмена');
-                dialogName.text('Окно выбора подразделения');
-            });
-            this.dialog.open('subDivisionDialog');
-        }
-        catch (error) {
-            this.createNotification('Ошибка при загрузке подразделений', NotificationType.ERROR);
-        }
-    }
-}
-$(document).ready(() => {
-    new Spe();
-});
-//# sourceMappingURL=spe.js.map
+                        <div class="content-row-column col-250 filter">${u.name}</div>
+                        <div class="content-row-column col-250">${u.subDivision.name}</div>
+                    </div>`))};var n=r;let l=yield this.cache.get("employee");s.text("\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u0444\u0438\u043B\u044C\u0442\u0440\u044B"),c.text("\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044E"),r(l),e.find(".choice-field input").on("input",function(){let d=$(this).val().toString().toLowerCase(),u=l.filter(f=>f.name.toLowerCase().includes(d));r(u)}),o.on("click",".dialog-content-rows-row",function(){t=$(this).find(".content-row-column.filter").text().trim()}),$("#changeEmployee").on("click",()=>{this.currentEmployee=t,this.applyFilters(),i.css("border-color","red"),this.dialog.close("employeeDialog")}),$(".close").on("click",()=>{this.currentEmployee="",i.css("border-color","#e2e8f0"),this.applyFilters(),this.dialog.close("employeeDialog")}),e.on("close",function(){s.text("\u041E\u0442\u043C\u0435\u043D\u0430"),c.text("\u041E\u043A\u043D\u043E \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0430")}),this.dialog.open("employeeDialog")}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u043E\u0432",NotificationType.ERROR)}})}subDivisionHandler(a){return h(this,void 0,void 0,function*(){let i=$(a.target),e=$("#subDivisionDialog"),o=e.find(".dialog-content-rows"),t="",s=e.find(".close"),c=e.find(".dialog-name");try{let r=function(d){o.empty(),d.forEach(u=>o.append(`<div class="dialog-content-rows-row"><div class="content-row-column filter">${u.name}</div></div>`))};var n=r;let l=yield this.cache.get("subDivision");s.text("\u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u0444\u0438\u043B\u044C\u0442\u0440\u044B"),c.text("\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044E"),r(l),e.find(".choice-field input").on("input",function(){let d=$(this).val().toString().toLowerCase(),u=l.filter(f=>f.name.toLowerCase().includes(d));r(u)}),o.on("click",".dialog-content-rows-row",function(){t=$(this).find(".content-row-column.filter").text().trim()}),$("#changeSubDivision").on("click",()=>{this.currentSubDivision=t,this.applyFilters(),i.css("border-color","red"),this.dialog.close("subDivisionDialog")}),$(".close").on("click",()=>{this.currentSubDivision="",i.css("border-color","#e2e8f0"),this.applyFilters(),this.dialog.close("subDivisionDialog")}),e.on("close",function(){s.text("\u041E\u0442\u043C\u0435\u043D\u0430"),c.text("\u041E\u043A\u043D\u043E \u0432\u044B\u0431\u043E\u0440\u0430 \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044F")}),this.dialog.open("subDivisionDialog")}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0439",NotificationType.ERROR)}})}};$(document).ready(()=>{new g})});export default y();

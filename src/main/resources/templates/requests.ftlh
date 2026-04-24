@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Заявка на вызов</title>
     <link rel="stylesheet" href="/css/notification.css">
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/stylesBid.css">
     <link rel="stylesheet" href="/css/sweetalert2.min.css">
 </head>

@@ -1,179 +1,26 @@
-"use strict";
-class Team extends Base {
-    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
-        super($(`.table-body`), itemsPerPage, visibleRow, () => {
-            this.displayPage('/api/team/get-page', undefined).catch(console.error);
-        });
-        this.createTeam = async (event) => {
-            event.preventDefault();
-            const button = $(event.target);
-            const form = button.closest('form').get(0);
-            const dialog = $('#create-dialog');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            button.prop('disabled', true);
-            const hiddenEmployees = dialog.find('input[name="hiddenEmployees"]').val();
-            const employeeIds = hiddenEmployees ? JSON.parse(hiddenEmployees) : [];
-            const formData = {
-                name: dialog.find('input[name="name"]').val(),
-                employeeIds: employeeIds
-            };
-            try {
-                const newTeam = await this.createEntity('/api/team/create', formData);
-                this.saveMassive = {};
-                this.localCache.set(newTeam.id, newTeam);
-                this.dialog.close("create-dialog");
-                $(`.table-body`).append(this.createRow(newTeam));
-            }
-            catch (_a) {
-                this.saveMassive = {};
-                form.reset();
-                this.createNotification('Ошибка при создании бригады', NotificationType.ERROR);
-            }
-            finally {
-                button.prop('disabled', false);
-            }
-        };
-        this.workWithModal = async (event) => {
-            const modalDiv = $(event.currentTarget);
-            const fieldName = modalDiv.attr('data-field');
-            if (fieldName === 'employees') {
-                await this.openEmployeeSelectionDialog(modalDiv);
-            }
-            modalDiv.addClass('change');
-        };
-        this.openEmployeeSelectionDialog = async (modalDiv) => {
-            await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, undefined, undefined, [
-                { key: 'name', label: 'Имя', width: '250' },
-                { label: 'Подразделение', width: '250', renderer: (e) => { var _a; return ((_a = e.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''; } }
-            ], true);
-        };
-        this.selectRow = async (event) => {
-            const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
-            this.toggleRowSelection(event, true);
-            const circle = $(event.currentTarget);
-            const currentRow = circle.closest('.table-row');
-            const rowId = currentRow.attr('id');
-            if (!rowId)
-                return;
-            if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
-                this.enableEditMode([], currentRow);
-            }
-            else if (!this.selectedRows.has(rowId)) {
-                this.disableEditMode();
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        };
-        this.showRowContextMenu = (event) => {
-            event.preventDefault();
-            const $row = $(event.currentTarget);
-            const rowId = $row.attr('id');
-            if (!rowId)
-                return;
-            const mouseEvent = event;
-            this.createContextMenu([
-                {
-                    label: 'Удалить бригаду',
-                    idAction: 'deleteTeam',
-                    action: () => {
-                        this.deleteTeamHandler(Number(rowId));
-                    }
-                },
-            ], mouseEvent.clientX, mouseEvent.clientY);
-        };
-        this.deleteTeamHandler = async (id) => {
-            try {
-                this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
-                    // @ts-ignore
-                    if (confirmed) {
-                        this.deleteEntity(`/api/team/delete/${id}`).then(() => {
-                            this.createNotification('Бригада успешно удалена', NotificationType.SUCCESS);
-                            this.deleteRow(id);
-                            this.selectedRows.delete(id);
-                        });
-                    }
-                });
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при удалении бригады', NotificationType.ERROR);
-            }
-        };
-        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
-        this.createHandler('click', '#createBtn', this.createTeam, true);
-        this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
-        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode();
-                $('#edit-button').addClass('active');
-            }
-            else {
-                this.disableEditMode();
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        }, true);
-        this.createHandler('click', '#save-button', () => this.saveTeam(), true);
-        this.bindFieldChanges();
-        this.createHandler('input', '#searchInput', (event) => {
-            this.searchText = $(event.target).val().toString().toLowerCase().trim();
-            this.applyFilters();
-        }, true);
-        this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu.bind(this), true);
-    }
-    createRow(team) {
-        var _a;
-        const employeesText = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map(e => e.name).join(', ')) || '';
-        const row = `
-            <div class="table-row" id="${team.id}" data-index="${team.id}">
+var v=(f,e)=>()=>(e||f((e={exports:{}}).exports,e),e.exports);var w=v(p=>{var h=p&&p.__awaiter||function(f,e,i,t){function a(s){return s instanceof i?s:new i(function(o){o(s)})}return new(i||(i=Promise))(function(s,o){function r(n){try{c(t.next(n))}catch(d){o(d)}}function l(n){try{c(t.throw(n))}catch(d){o(d)}}function c(n){n.done?s(n.value):a(n.value).then(r,l)}c((t=t.apply(f,e||[])).next())})},u=class extends Base{constructor(e=1/0,i=1/0){super($(".table-body"),e,i,()=>{this.displayPage("/api/team/get-page",void 0).catch(console.error)}),this.editMode=!1,this.createTeam=t=>h(this,void 0,void 0,function*(){t.preventDefault();let a=$(t.target),s=a.closest("form").get(0),o=$("#create-dialog");if(!s.checkValidity()){s.reportValidity();return}a.prop("disabled",!0);let r=o.find('input[name="hiddenEmployees"]').val(),l=r?JSON.parse(r):[],c={name:o.find('input[name="name"]').val(),employeeIds:l};try{let n=yield this.createEntity("/api/team/create",c);this.saveMassive={},this.localCache.set(n.id,n),this.dialog.close("create-dialog");let d=this.createRow(n);$(".table-body").append(d),a.prop("disabled",!1)}catch{this.saveMassive={},s.reset(),this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.ERROR),a.prop("disabled",!1)}}),this.createHandler("click","#create-button",()=>this.dialog.open("create-dialog"),!0),this.createHandler("click","#createBtn",this.createTeam,!0),this.createHandler("click",".area-modal",this.workWithModal.bind(this),!0),this.createHandler("click",".circle-header",this.selectAllRows.bind(this),!0),this.createHandler("click",".circle-row",this.selectRow.bind(this),!0),this.createHandler("click","#edit-button",()=>{this.editMode?this.disableEditMode():this.enableEditMode()},!0),this.createHandler("click","#save-button",()=>this.saveTeam(),!0),this.createHandler("input","[data-name]",this.inputChanges.bind(this),!0),this.createHandler("input","#searchInput",t=>{this.searchText=$(t.target).val().toString().toLowerCase().trim(),this.applyFilters()},!0),this.createHandler("contextmenu",".table-row.selected",this.showRowContextMenu.bind(this),!0)}createRow(e){let i=e.employees?e.employees.map(a=>a.name).join(", "):"",t=`
+            <div class="table-row" id="${e.id}" data-index="${e.id}">
                 <div class="table-cell" style="width: var(--no); position: relative">
-                    <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
+                    <div class="circle circle-row tooltip-trigger" data-description="\u0412\u044B\u0434\u0435\u043B\u0438\u0442\u044C \u0441\u0442\u0440\u043E\u043A\u0443"></div>
                     <div class="field-container center" data-name="id" contenteditable="false">
-                        ${team.id}
+                        ${e.id}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--name);">
                     <div class="field-container center" data-name="name" contenteditable="false">
-                        ${this.escapeHtml(team.name)}
+                        ${e.name}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--employees);">
                     <div class="field-container" data-name="employees" contenteditable="false">
-                        ${this.escapeHtml(employeesText)}
+                        ${i}
                     </div>
                 </div>
-            </div>`;
-        return $(row);
-    }
-    onScroll() {
-    }
-    saveTeam() {
-        this.saveMassiveChanges('/api/team/update', (id, cacheData, changes) => ({
-            id: id,
-            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
-            changes: changes
-        })).then(() => {
-            this.disableEditMode();
-            $('#edit-button').removeClass('active');
-        }).catch(console.error);
-    }
-    applyFilters() {
-        if (!this.searchText) {
-            $('.table-row').show();
-            return;
-        }
-        $('.table-row').each((_, row) => {
-            const $row = $(row);
-            const text = $row.text().toLowerCase();
-            $row.toggle(text.includes(this.searchText));
-        });
-    }
-}
-$(document).ready(() => {
-    new Team();
-});
-//# sourceMappingURL=team.js.map
+            </div>`;return $(t)}onScroll(){}workWithModal(e){return h(this,void 0,void 0,function*(){let i=$(e.currentTarget);i.attr("data-field")==="employees"&&(yield this.openEmployeeSelectionDialog(i)),i.addClass("change")})}openEmployeeSelectionDialog(e){return h(this,void 0,void 0,function*(){let i=$("#employeeDialog"),t=i.find(".dialog-content-rows"),a=i.find(".choice-field input"),s=yield this.cache.get("employee"),o=[],r=l=>{t.empty(),l.forEach(c=>{var n;let d=((n=c.subDivision)===null||n===void 0?void 0:n.name)||"",m=o.includes(c.id)?"checked":"";t.append(`
+                    <div class="dialog-content-rows-row" data-id="${c.id}">
+                        <div class="content-row-column col-250">
+                            <input type="checkbox" class="employee-checkbox" data-id="${c.id}" ${m}>
+                        </div>
+                        <div class="content-row-column col-250">${c.name}</div>
+                        <div class="content-row-column col-250">${d}</div>
+                    </div>`)})};r(s),i.find("#selectAllEmployees").off("change").on("change",function(){let l=$(this).prop("checked");t.find(".employee-checkbox").each(function(){$(this).prop("checked",l);let c=parseInt($(this).data("id"));if(l)o.includes(c)||o.push(c);else{let n=o.indexOf(c);n>-1&&o.splice(n,1)}})}),t.off("change",".employee-checkbox").on("change",".employee-checkbox",function(){let l=parseInt($(this).data("id"));if($(this).prop("checked"))o.includes(l)||o.push(l);else{let n=o.indexOf(l);n>-1&&o.splice(n,1)}let c=t.find(".employee-checkbox").length===t.find(".employee-checkbox:checked").length;i.find("#selectAllEmployees").prop("checked",c)}),a.off("input").on("input",function(){let l=$(this).val().toString().toLowerCase().trim(),c=s.filter(n=>n.name.toLowerCase().includes(l));r(c)}),this.dialog.open("employeeDialog"),i.find("#changeEmployee").off("click").on("click",()=>{let c=s.filter(d=>o.includes(d.id)).map(d=>d.name).join(", ");e.val(c),e.text(c),$("#create-dialog").find('input[name="hiddenEmployees"]').val(JSON.stringify(o)),e.addClass("change-textarea"),this.dialog.close("employeeDialog")})})}selectAllRows(e){return h(this,void 0,void 0,function*(){if(this.editMode){this.createNotification("\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.INFO);return}let i=$(e.currentTarget),t=$(".table-row:visible");i.hasClass("active")?(this.selectedRows.clear(),t.removeClass("selected"),t.each((a,s)=>{$(s).find(".circle-row").removeClass("active-critical")}),i.removeClass("active")):(this.selectedRows.clear(),t.each((a,s)=>{let o=$(s).attr("id");this.selectedRows.add(o),$(s).addClass("selected"),$(s).find(".circle-row").addClass("active-critical")}),i.addClass("active"))})}selectRow(e){return h(this,void 0,void 0,function*(){let i=this.selectedRows.has($(e.currentTarget).closest(".table-row").attr("id"));this.toggleRowSelection(e,!0);let a=$(e.currentTarget).closest(".table-row"),s=a.attr("id");s&&(this.selectedRows.has(s)&&!i&&this.editMode?this.enableEditMode([],a):this.selectedRows.has(s)||(this.disableEditMode(),this.editMode||$("#edit-button").removeClass("active")))})}enableEditMode(e){let i=t=>{let a=t.text().trim(),s=t.attr("data-name"),o;o=t,o.attr("contenteditable","true"),t.replaceWith(o)};if(e){$(e).find('div[contenteditable="false"]').each(function(){i($(this))}),this.editMode=!0;return}for(let t of this.selectedRows)e=$(`.table-row[id="${t}"]`),e.find('div[contenteditable="false"]').each(function(){i($(this))});this.editMode=!0,$("#edit-button").addClass("active")}disableEditMode(e){if(this.editMode&&Object.keys(this.saveMassive).length>0&&(e&&e.find(".change").length>0||$(".table-row .change").length>0)){this.createNotification("\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F",NotificationType.WARNING);return}let i=t=>{let a=t.attr("data-name"),s=t.text();t.replaceWith(`<div data-name="${a}" contenteditable="false">${s}</div>`)};if(e){$(e).find('div[contenteditable="true"], select[data-name], input[data-name]').each(function(){i($(this))});return}for(let t of this.selectedRows)$(`.table-row[id="${t}"]`).find('div[contenteditable="true"], select[data-name], input[data-name]').each(function(){i($(this))});this.editMode=!1,$("#edit-button").removeClass("active")}saveTeam(){if(Object.keys(this.saveMassive).length===0)return;let e=Object.keys(this.saveMassive).map(i=>{let t=this.localCache.get(Number(i));return{id:i,version:t.version,changes:this.saveMassive[i]}});this.save("/api/team/update",...e).then(()=>{this.disableEditMode(),e.forEach(i=>this.selectedRows.delete(i.id)),$("#edit-button").removeClass("active")})}inputChanges(e){let i=$(e.target),t=i.closest(".table-row").attr("id"),a=i.attr("data-name"),s=i.is("div")?i.text().trim():i.val();this.saveMassive[t]=Object.assign(Object.assign({},this.saveMassive[t]),{[a]:s}),i.addClass("change")}showRowContextMenu(e){e.preventDefault();let t=$(e.currentTarget).attr("id");if(!t)return;let a=e;this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0431\u0440\u0438\u0433\u0430\u0434\u0443",idAction:"deleteTeam",action:()=>{this.deleteTeamHandler(Number(t))}}],a.clientX,a.clientY)}deleteTeamHandler(e){return h(this,void 0,void 0,function*(){if(yield this.createConfirmationDialog("\u0412\u044B \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043B\u044C\u043D\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0431\u0440\u0438\u0433\u0430\u0434\u0443?"))try{yield this.deleteEntity(`/api/team/delete/${e}`),this.createNotification("\u0411\u0440\u0438\u0433\u0430\u0434\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),this.deleteRow(e),this.selectedRows.delete(e)}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.ERROR)}})}applyFilters(){if(!this.searchText){$(".table-row").show();return}$(".table-row").each((e,i)=>{let t=$(i),a=t.text().toLowerCase();t.toggle(a.includes(this.searchText))})}};$(document).ready(()=>{new u})});export default w();

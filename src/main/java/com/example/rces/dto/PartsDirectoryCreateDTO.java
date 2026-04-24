@@ -34,8 +34,6 @@ public class PartsDirectoryCreateDTO {
 
     private EmployeeDTO employee;
 
-    private String status;
-
     private LocalDateTime dateCompletion;
 
     private TeamDTO team;
@@ -134,14 +132,6 @@ public class PartsDirectoryCreateDTO {
 
     public void setEmployee(EmployeeDTO employee) {
         this.employee = employee;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public LocalDateTime getDateCompletion() {

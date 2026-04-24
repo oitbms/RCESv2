@@ -1,782 +1,98 @@
-"use strict";
-class PdItem extends Base {
-    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
-        super($(`.table-body`), itemsPerPage, visibleRow, () => {
-            this.displayPage('/api/parts-directory/get-page-pdi', undefined).catch(console.error);
-        });
-        this.pdSpecialFields = [
-            {
-                name: 'dateCompletion',
-                transform: ($div) => {
-                    const dataName = $div.attr('data-name');
-                    const rowId = $div.closest('.table-row').attr('id');
-                    const cacheKey = (rowId && rowId.indexOf('.') !== -1) ? rowId : Number(rowId);
-                    const value = (this.localCache.get(cacheKey) || {})[dataName];
-                    if (!value)
-                        return $(`<div class="field-container" style="width: 95%">
-                                        <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
-                                       </div>`);
-                    const date = new Date(value);
-                    const pad = (n) => n.toString().padStart(2, '0');
-                    const val = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                    return $(`<div class="field-container" style="width: 95%">
-                            <input type="datetime-local" class="form-control" style="padding: 0; font-size: 14px" data-name="${dataName}">
-                          </div>`)
-                        .find('input').val(val).end();
-                }
-            },
-            {
-                name: 'team',
-                transform: ($div) => {
-                    const dataName = $div.attr('data-name');
-                    const value = $div.text() || '';
-                    return $(`<div class="field-container team-field area-modal center" data-name="${dataName}" contenteditable="false">${this.escapeHtml(value)}</div>`);
-                }
-            }
-        ];
-        this.selectedTeamForEdit = null;
-        this.selectedEmployeeIds = [];
-        this.createSelectedEmployeeIds = [];
-        this.allTeamsCache = [];
-        this.allEmployeesCache = [];
-        this.selectedReadinessRowId = null;
-        this.createPdi = async (event) => {
-            event.preventDefault();
-            const button = $(event.target);
-            const form = button.closest('form').get(0);
-            const dialog = $('#create-dialog');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            button.prop('disabled', true);
-            const employee = this.saveMassive['employee'] || (dialog.find('input[name="hiddenEmployee"]').val() ? JSON.parse(dialog.find('input[name="hiddenEmployee"]').val()) : null);
-            const validatedFields = this.validateIntegerFields([
-                { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
-                {
-                    key: 'qtyCompleted',
-                    value: dialog.find('input[name="qtyCompleted"]').val(),
-                    min: 0,
-                    label: 'Выполненное количество',
-                    defaultValue: 0
-                }
-            ]);
-            if (!validatedFields) {
-                button.prop('disabled', false);
-                return;
-            }
-            const hiddenTeam = dialog.find('input[name="hiddenTeam"]').val();
-            const team = hiddenTeam ? JSON.parse(hiddenTeam) : null;
-            const formData = {
-                customerOrder: dialog.find('input[name="customerOrder"]').val(),
-                name: dialog.find('input[name="name"]').val(),
-                thickness: dialog.find('input[name="thickness"]').val(),
-                measurements: dialog.find('input[name="measurements"]').val(),
-                steel: dialog.find('input[name="steel"]').val(),
-                scheme: dialog.find('input[name="scheme"]').val(),
-                qty: validatedFields.qty,
-                qtyCompleted: validatedFields.qtyCompleted,
-                comment: dialog.find('textarea[name="comment"]').val(),
-                machine: dialog.find('input[name="machine"]').val(),
-                program: dialog.find('input[name="program"]').val(),
-                employee,
-                team,
-                status: dialog.find('select[name="status"]').val(),
-                dateCompletion: dialog.find('input[name="dateCompletion"]').val()
-            };
-            try {
-                const newPdi = await this.createEntity('/api/parts-directory/create-item', formData);
-                this.saveMassive = {};
-                this.localCache.set(newPdi.id, newPdi);
-                this.dialog.close("create-dialog");
-                $(`.table-body`).append(this.createRow(newPdi));
-            }
-            catch (_a) {
-                this.saveMassive = {};
-                form.reset();
-                this.createNotification('Ошибка при создании PDI', NotificationType.ERROR);
-            }
-            finally {
-                button.prop('disabled', false);
-            }
-        };
-        this.workWithModal = async (event) => {
-            var _a;
-            const modalDiv = $(event.currentTarget);
-            const fieldName = modalDiv.attr('data-field') || modalDiv.attr('data-name');
-            const currentId = (_a = modalDiv.closest('.table-row')) === null || _a === void 0 ? void 0 : _a.attr('id');
-            if (fieldName === 'employee') {
-                const dialog = $('#employeeDialog');
-                const rowContainer = dialog.find('.dialog-content-rows');
-                const searchInput = dialog.find('.choice-field input');
-                const changeButton = $('#changeEmployee');
-                let selected;
-                const data = await this.cache.get('employee');
-                const renderRows = (items) => {
-                    rowContainer.empty();
-                    items.forEach(item => {
-                        var _a;
-                        rowContainer.append(`
-                        <div class="dialog-content-rows-row" id="${item.id}">
-                            <div class="content-row-column col-250">${item.name}</div>
-                            <div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>
-                        </div>`);
-                    });
-                };
-                renderRows(data);
-                searchInput.off('input').on('input', function () {
-                    const searchText = $(this).val().toString().toLowerCase().trim();
-                    const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
-                    renderRows(filtered);
-                });
-                this.dialog.open('employeeDialog');
-                rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
-                    const target = e.currentTarget;
-                    const id = target.id;
-                    selected = data.find((item) => item.id === Number(id));
-                    rowContainer.find('.dialog-content-rows-row').removeClass('selected');
-                    $(target).addClass('selected');
-                });
-                changeButton.off('click').on('click', () => {
-                    if (!selected) {
-                        this.createNotification('Выберите сотрудника из списка', NotificationType.WARNING);
-                        return;
-                    }
-                    // Записываем имя в видимое поле
-                    modalDiv.text(selected.name);
-                    modalDiv.val(selected.name);
-                    // Записываем объект сотрудника в скрытое поле для отправки на API
-                    const employeeJson = JSON.stringify(selected);
-                    $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
-                    if (currentId) {
-                        this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { employee: selected });
-                    }
-                    modalDiv.addClass('change-textarea');
-                    this.dialog.close('employeeDialog');
-                });
-            }
-            else if (fieldName === 'team') {
-                await this.openTeamSelectionDialog(modalDiv, currentId);
-            }
-            modalDiv.addClass('change');
-        };
-        this.openTeamSelectionDialog = async (modalDiv, currentId) => {
-            const allTeams = await this.requestToApi('/api/team/get-page', 'GET');
-            const teamsList = allTeams.data || [];
-            await this.openSelectionDialog('team', 'teamDialog', modalDiv, currentId, teamsList, undefined, [
-                { key: 'name', label: 'Название', width: '160' },
-                {
-                    label: 'Сотрудники',
-                    width: '500',
-                    renderer: (t) => (t.employees || []).map((e) => e.name).join(', ')
-                }
-            ]);
-        };
-        this.selectRow = async (event) => {
-            const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
-            this.toggleRowSelection(event, true);
-            const circle = $(event.currentTarget);
-            const currentRow = circle.closest('.table-row');
-            const rowId = currentRow.attr('id');
-            if (!rowId)
-                return;
-            if (this.selectedRows.has(rowId) && !wasSelected && this.editMode) {
-                this.enableEditMode(['dateCompletion'], currentRow, this.pdSpecialFields);
-            }
-            else if (!this.selectedRows.has(rowId)) {
-                this.disableEditMode(['dateCompletion'], []);
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        };
-        this.closeReadinessDialog = () => {
-            this.dialog.close('readiness-dialog');
-            this.selectedReadinessRowId = null;
-        };
-        this.saveReadinessHandler = async () => {
-            if (!this.selectedReadinessRowId)
-                return;
-            const dialog = $('#readiness-dialog');
-            const isThermal = dialog.find('#operationThermal').is(':checked');
-            const isLocksmith = dialog.find('#operationLocksmith').is(':checked');
-            // Собираем выбранные операции
-            const operations = [];
-            if (isThermal)
-                operations.push('thermal');
-            if (isLocksmith)
-                operations.push('locksmith');
-            // Готовность = true если выбрана хотя бы одна операция
-            const ready = operations.length > 0;
-            const unlock = this.lockScreen('Сохранение готовности...');
-            try {
-                const params = new URLSearchParams();
-                params.set('id', this.selectedReadinessRowId);
-                params.set('ready', String(ready));
-                operations.forEach(op => params.append('operations', op));
-                await this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi) => {
-                    // @ts-ignore
-                    this.updateRow(pdi, this.selectedReadinessRowId);
-                });
-                // Обновляем кэш и UI
-                const cacheData = this.localCache.get(this.selectedReadinessRowId);
-                if (cacheData) {
-                    cacheData.ready = ready;
-                    cacheData.operation = operations;
-                }
-                // Обновляем чекбокс в таблице
-                const $row = $(`.table-row[id="${this.selectedReadinessRowId}"]`);
-                const checkbox = $row.find('.ready-checkbox');
-                checkbox.prop('checked', ready);
-                this.createNotification('Готовность успешно обновлена', NotificationType.SUCCESS);
-                this.closeReadinessDialog();
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при сохранении готовности', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
-            }
-        };
-        this.showRowContextMenu = (event) => {
-            event.preventDefault();
-            const $row = $(event.currentTarget);
-            const rowId = $row.attr('id');
-            if (!rowId)
-                return;
-            const mouseEvent = event;
-            this.createContextMenu([
-                {
-                    label: 'Подробнее',
-                    idAction: 'Detail',
-                    action: () => {
-                    }
-                },
-                {
-                    label: 'Удалить запись',
-                    idAction: 'deletePdi',
-                    action: () => {
-                        this.deletePdiHandler(rowId);
-                    }
-                },
-            ], mouseEvent.clientX, mouseEvent.clientY);
-        };
-        this.deletePdiHandler = async (id) => {
-            try {
-                this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
-                    // @ts-ignore
-                    if (confirmed) {
-                        this.deleteEntity(`/api/parts-directory/delete/${id}`).then(() => {
-                            this.createNotification('Запись успешно удалена', NotificationType.SUCCESS);
-                            this.deleteRow(id);
-                            this.selectedRows.delete(id);
-                        });
-                    }
-                });
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
-            }
-        };
-        this.openDetailDialog = (event) => {
-        };
-        this.openTeamEditDialog = async () => {
-            const dialog = $('#teamEditDialog');
-            // Загружаем данные
-            const teamsResponse = await this.requestToApi('/api/team/get-page', 'GET');
-            this.allTeamsCache = teamsResponse.data || [];
-            this.allEmployeesCache = await this.cache.get("employee");
-            // Сбрасываем состояние
-            this.selectedTeamForEdit = null;
-            this.selectedEmployeeIds = [];
-            this.createSelectedEmployeeIds = [];
-            // Рендерим список бригад
-            this.renderTeamList();
-            // Скрываем кнопки редактирования/удаления по умолчанию
-            dialog.find('#deleteTeam').hide();
-            dialog.find('#saveTeam').hide();
-            dialog.find('#createTeam').show();
-            // Активируем первую вкладку
-            this.switchTeamTab('team-list');
-            // Обработчик поиска бригад
-            dialog.find('#teamSearchInput').off('input').on('input', () => {
-                const searchText = dialog.find('#teamSearchInput').val().toString().toLowerCase().trim();
-                this.renderTeamList(searchText);
-            });
-            // Обработчик переключения вкладок
-            dialog.find('.team-tab').off('click').on('click', (e) => {
-                const tab = $(e.currentTarget).data('tab');
-                this.switchTeamTab(tab);
-            });
-            // Обработчик выбора бригады из списка
-            dialog.find('#teamListRows').off('click').on('click', '.dialog-content-rows-row', (e) => {
-                const $row = $(e.currentTarget);
-                const teamId = $row.data('id');
-                const team = this.allTeamsCache.find((t) => t.id === teamId);
-                if (!team)
-                    return;
-                this.selectedTeamForEdit = team;
-                dialog.find('#teamListRows .dialog-content-rows-row').removeClass('selected');
-                $row.addClass('selected');
-                // Показываем кнопки редактирования и удаления
-                dialog.find('#deleteTeam').show();
-                dialog.find('#saveTeam').show();
-            });
-            // Двойной клик - переход к редактированию
-            dialog.find('#teamListRows').off('dblclick').on('dblclick', '.dialog-content-rows-row', (e) => {
-                const $row = $(e.currentTarget);
-                const teamId = $row.data('id');
-                const team = this.allTeamsCache.find((t) => t.id === teamId);
-                if (!team)
-                    return;
-                this.selectedTeamForEdit = team;
-                this.switchTeamTab('team-edit');
-                this.populateTeamEditForm(team);
-            });
-            // Обработчик кнопки "Сохранить"
-            dialog.find('#saveTeam').off('click').on('click', () => this.saveTeamHandler());
-            // Обработчик кнопки "Удалить"
-            dialog.find('#deleteTeam').off('click').on('click', () => this.deleteTeamHandler());
-            // Обработчик кнопки "Создать"
-            dialog.find('#createTeam').off('click').on('click', () => this.createTeamHandler());
-            // Поиск сотрудников в режиме редактирования
-            dialog.find('#employeeSearchInput').off('input').on('input', () => {
-                const searchText = dialog.find('#employeeSearchInput').val().toString().toLowerCase().trim();
-                this.renderEmployeeListForEdit(searchText);
-            });
-            // Поиск сотрудников в режиме создания
-            dialog.find('#createEmployeeSearchInput').off('input').on('input', () => {
-                const searchText = dialog.find('#createEmployeeSearchInput').val().toString().toLowerCase().trim();
-                this.renderEmployeeListForCreate(searchText);
-            });
-            // Select all employees (edit)
-            dialog.find('#selectAllEmployees').off('change').on('change', (e) => {
-                const target = e.currentTarget;
-                const isChecked = target.checked;
-                dialog.find('#employeeRows .employee-checkbox').each((_, el) => {
-                    const checkbox = el;
-                    const empId = parseInt($(checkbox).data('id'));
-                    checkbox.checked = isChecked;
-                    if (isChecked) {
-                        if (!this.selectedEmployeeIds.includes(empId)) {
-                            this.selectedEmployeeIds.push(empId);
-                        }
-                    }
-                    else {
-                        const idx = this.selectedEmployeeIds.indexOf(empId);
-                        if (idx > -1)
-                            this.selectedEmployeeIds.splice(idx, 1);
-                    }
-                });
-            });
-            // Individual employee checkboxes (edit)
-            dialog.find('#employeeRows').off('change', '.employee-checkbox').on('change', '.employee-checkbox', (e) => {
-                const target = e.currentTarget;
-                const empId = parseInt($(target).data('id'));
-                if (target.checked) {
-                    if (!this.selectedEmployeeIds.includes(empId)) {
-                        this.selectedEmployeeIds.push(empId);
-                    }
-                }
-                else {
-                    const idx = this.selectedEmployeeIds.indexOf(empId);
-                    if (idx > -1)
-                        this.selectedEmployeeIds.splice(idx, 1);
-                }
-                const allCheckboxes = dialog.find('#employeeRows .employee-checkbox');
-                const checkedBoxes = dialog.find('#employeeRows .employee-checkbox:checked');
-                dialog.find('#selectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
-            });
-            // Select all employees (create)
-            dialog.find('#createSelectAllEmployees').off('change').on('change', (e) => {
-                const target = e.currentTarget;
-                const isChecked = target.checked;
-                dialog.find('#createEmployeeRows .employee-checkbox').each((_, el) => {
-                    const checkbox = el;
-                    const empId = parseInt($(checkbox).data('id'));
-                    checkbox.checked = isChecked;
-                    if (isChecked) {
-                        if (!this.createSelectedEmployeeIds.includes(empId)) {
-                            this.createSelectedEmployeeIds.push(empId);
-                        }
-                    }
-                    else {
-                        const idx = this.createSelectedEmployeeIds.indexOf(empId);
-                        if (idx > -1)
-                            this.createSelectedEmployeeIds.splice(idx, 1);
-                    }
-                });
-            });
-            // Individual employee checkboxes (create)
-            dialog.find('#createEmployeeRows').off('change', '.employee-checkbox').on('change', '.employee-checkbox', (e) => {
-                const checkbox = e.currentTarget;
-                const $checkbox = $(checkbox);
-                const empId = Number($checkbox.data('id'));
-                if (checkbox.checked) {
-                    if (!this.createSelectedEmployeeIds.includes(empId)) {
-                        this.createSelectedEmployeeIds.push(empId);
-                    }
-                }
-                else {
-                    const idx = this.createSelectedEmployeeIds.indexOf(empId);
-                    if (idx > -1)
-                        this.createSelectedEmployeeIds.splice(idx, 1);
-                }
-                const allCheckboxes = dialog.find('#createEmployeeRows .employee-checkbox');
-                const checkedBoxes = dialog.find('#createEmployeeRows .employee-checkbox:checked');
-                dialog.find('#createSelectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
-            });
-            this.dialog.open('teamEditDialog');
-        };
-        this.renderTeamList = (searchText = '') => {
-            const dialog = $('#teamEditDialog');
-            const rowContainer = dialog.find('#teamListRows');
-            rowContainer.empty();
-            const filtered = this.allTeamsCache.filter((t) => t.name.toLowerCase().includes(searchText.toLowerCase()));
-            filtered.forEach((team) => {
-                var _a, _b;
-                const employeesText = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.name).join(', ')) || '';
-                const isSelected = ((_b = this.selectedTeamForEdit) === null || _b === void 0 ? void 0 : _b.id) === team.id ? 'selected' : '';
-                rowContainer.append(`
-                <div class="dialog-content-rows-row ${isSelected}" data-id="${team.id}">
-                    <div class="content-row-column" style="width: 160px">${this.escapeHtml(team.name)}</div>
-                    <div class="content-row-column" style="width: 500px">${this.escapeHtml(employeesText)}</div>
+var E=(g,n)=>()=>(n||g((n={exports:{}}).exports,n),n.exports);var k=E(T=>{var p=T&&T.__awaiter||function(g,n,d,e){function a(t){return t instanceof d?t:new d(function(i){i(t)})}return new(d||(d=Promise))(function(t,i){function s(l){try{c(e.next(l))}catch(m){i(m)}}function o(l){try{c(e.throw(l))}catch(m){i(m)}}function c(l){l.done?t(l.value):a(l.value).then(s,o)}c((e=e.apply(g,n||[])).next())})},w=class extends Base{constructor(n=1/0,d=1/0){super($(".table-body"),n,d,()=>{this.displayPage("/api/parts-directory/get-page-pdi",void 0).catch(console.error)}),this.selectedTeamForEdit=null,this.selectedEmployeeIds=[],this.createSelectedEmployeeIds=[],this.allTeamsCache=[],this.allEmployeesCache=[],this.selectedReadinessRowId=null,this.createPdi=e=>p(this,void 0,void 0,function*(){e.preventDefault();let a=$(e.target),t=a.closest("form").get(0),i=$("#create-dialog");if(!t.checkValidity()){t.reportValidity();return}a.prop("disabled",!0);let s=i.find('input[name="hiddenEmployee"]').val(),o=s?JSON.parse(s):null,c=this.validateIntegerFields([{key:"qty",value:i.find('input[name="qty"]').val(),min:1,label:"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E"},{key:"qtyCompleted",value:i.find('input[name="qtyCompleted"]').val(),min:0,label:"\u0412\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u043D\u043E\u0435 \u043A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E",defaultValue:0}]);if(!c){a.prop("disabled",!1);return}let l=i.find('input[name="hiddenTeam"]').val(),m=l?JSON.parse(l):null,r={customerOrder:i.find('input[name="customerOrder"]').val(),name:i.find('input[name="name"]').val(),thickness:i.find('input[name="thickness"]').val(),measurements:i.find('input[name="measurements"]').val(),steel:i.find('input[name="steel"]').val(),scheme:i.find('input[name="scheme"]').val(),qty:c.qty,qtyCompleted:c.qtyCompleted,comment:i.find('textarea[name="comment"]').val(),machine:i.find('input[name="machine"]').val(),program:i.find('input[name="program"]').val(),employee:o,team:m,status:i.find('select[name="status"]').val(),dateCompletion:i.find('input[name="dateCompletion"]').val()};try{let h=yield this.createEntity("/api/parts-directory/create-item",r);this.saveMassive={},this.localCache.set(h.id,h),this.dialog.close("create-dialog"),$(".table-body").append(this.createRow(h))}catch{this.saveMassive={},t.reset(),this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 PDI",NotificationType.ERROR)}finally{a.prop("disabled",!1)}}),this.workWithModal=e=>p(this,void 0,void 0,function*(){var a;let t=$(e.currentTarget),i=t.attr("data-field")||t.attr("data-name"),s=(a=t.closest(".table-row"))===null||a===void 0?void 0:a.attr("id");if(i==="employee"){let o=$("#employeeDialog"),c=o.find(".dialog-content-rows"),l=o.find(".choice-field input"),m=$("#changeEmployee"),r,h=yield this.cache.get("employee"),y=v=>{c.empty(),v.forEach(f=>{var u;c.append(`
+                        <div class="dialog-content-rows-row" id="${f.id}">
+                            <div class="content-row-column col-250">${f.name}</div>
+                            <div class="content-row-column col-250">${((u=f.subDivision)===null||u===void 0?void 0:u.name)||""}</div>
+                        </div>`)})};y(h),l.off("input").on("input",function(){let v=$(this).val().toString().toLowerCase().trim(),f=h.filter(u=>u.name.toLowerCase().includes(v));y(f)}),this.dialog.open("employeeDialog"),c.off("click").on("click",".dialog-content-rows-row",v=>{let f=v.currentTarget,u=f.id;r=h.find(b=>b.id===Number(u)),c.find(".dialog-content-rows-row").removeClass("selected"),$(f).addClass("selected")}),m.off("click").on("click",()=>{if(!r){this.createNotification("\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0430 \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430",NotificationType.WARNING);return}t.text(r.name),t.val(r.name);let v=JSON.stringify(r);$("#create-dialog").find('input[name="hiddenEmployee"]').val(v),s&&(this.saveMassive[s]=Object.assign(Object.assign({},this.saveMassive[s]),{employee:r})),t.addClass("change-textarea"),this.dialog.close("employeeDialog")})}else i==="team"&&(yield this.openTeamSelectionDialog(t,s));t.addClass("change")}),this.openTeamSelectionDialog=(e,a)=>p(this,void 0,void 0,function*(){let t=$("#teamDialog"),i=t.find(".dialog-content-rows"),s=t.find(".choice-field input"),c=(yield this.requestToApi("/api/team/get-page","GET")).data||[],l,m=r=>{i.empty(),r.forEach(h=>{var y;let v=((y=h.employees)===null||y===void 0?void 0:y.map(u=>u.name).join(", "))||"",f=l===h.id?"selected":"";i.append(`
+                    <div class="dialog-content-rows-row" data-id="${h.id}" class="${f}">
+                        <div class="content-row-column col-50">${h.name}</div>
+                        <div class="content-row-column col-50">${v}</div>
+                    </div>`)})};m(c),s.off("input").on("input",function(){let r=$(this).val().toString().toLowerCase().trim(),h=c.filter(y=>y.name.toLowerCase().includes(r));m(h)}),this.dialog.open("teamDialog"),i.off("click").on("click",".dialog-content-rows-row",function(r){l=$(r.currentTarget).data("id"),t.find(".dialog-content-rows-row").removeClass("selected"),$(this).addClass("selected")}),t.find("#changeTeam").off("click").on("click",()=>{if(!l){this.createNotification("\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u0443 \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430",NotificationType.WARNING);return}let r=c.find(h=>h.id==l);r&&(e.text(r.name),e.val(r.name),a?this.saveMassive[a]=Object.assign(Object.assign({},this.saveMassive[a]),{team:r}):$("#create-dialog").find('input[name="hiddenTeam"]').val(JSON.stringify(r)),e.addClass("change-textarea"),this.dialog.close("teamDialog"))})}),this.selectRow=e=>p(this,void 0,void 0,function*(){let a=this.selectedRows.has($(e.currentTarget).closest(".table-row").attr("id"));this.toggleRowSelection(e,!0);let i=$(e.currentTarget).closest(".table-row"),s=i.attr("id");s&&(this.selectedRows.has(s)&&!a&&this.editMode?this.enableEditMode(i):this.selectedRows.has(s)||(this.disableEditMode(["dateCompletion"],[],i),this.editMode||$("#edit-button").removeClass("active")))}),this.closeReadinessDialog=()=>{this.dialog.close("readiness-dialog"),this.selectedReadinessRowId=null},this.saveReadinessHandler=()=>p(this,void 0,void 0,function*(){if(!this.selectedReadinessRowId)return;let e=$("#readiness-dialog"),a=e.find("#operationThermal").is(":checked"),t=e.find("#operationLocksmith").is(":checked"),i=[];a&&i.push("thermal"),t&&i.push("locksmith");let s=i.length>0,o=this.lockScreen("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438...");try{let c=new URLSearchParams;c.set("id",this.selectedReadinessRowId),c.set("ready",String(s)),i.forEach(h=>c.append("operations",h)),yield this.requestToApi(`/api/parts-directory/ready?${c.toString()}`,"PATCH");let l=this.localCache.get(this.selectedReadinessRowId);l&&(l.ready=s,l.operation=i),$(`.table-row[id="${this.selectedReadinessRowId}"]`).find(".ready-checkbox").prop("checked",s),this.createNotification("\u0413\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u044C \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),this.closeReadinessDialog()}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0438 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438",NotificationType.ERROR)}finally{o()}}),this.showRowContextMenu=e=>{e.preventDefault();let t=$(e.currentTarget).attr("id");if(!t)return;let i=e;this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0437\u0430\u043F\u0438\u0441\u044C",idAction:"deletePdi",action:()=>{this.deletePdiHandler(t)}}],i.clientX,i.clientY)},this.deletePdiHandler=e=>p(this,void 0,void 0,function*(){if(yield this.createConfirmationDialog("\u0412\u044B \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043B\u044C\u043D\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0437\u0430\u043F\u0438\u0441\u044C?"))try{yield this.deleteEntity(`/api/parts-directory/delete/${e}`),this.createNotification("\u0417\u0430\u043F\u0438\u0441\u044C \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),this.deleteRow(e),this.selectedRows.delete(e)}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u0437\u0430\u043F\u0438\u0441\u0438",NotificationType.ERROR)}}),this.openTeamEditDialog=()=>p(this,void 0,void 0,function*(){let e=$("#teamEditDialog"),a=yield this.requestToApi("/api/team/get-page","GET");this.allTeamsCache=a.data||[],this.allEmployeesCache=yield this.cache.get("employee"),this.selectedTeamForEdit=null,this.selectedEmployeeIds=[],this.createSelectedEmployeeIds=[],this.renderTeamList(),e.find("#deleteTeam").hide(),e.find("#saveTeam").hide(),e.find("#createTeam").show(),this.switchTeamTab("team-list"),e.find("#teamSearchInput").off("input").on("input",()=>{let t=e.find("#teamSearchInput").val().toString().toLowerCase().trim();this.renderTeamList(t)}),e.find(".team-tab").off("click").on("click",t=>{let i=$(t.currentTarget).data("tab");this.switchTeamTab(i)}),e.find("#teamListRows").off("click").on("click",".dialog-content-rows-row",t=>{let i=$(t.currentTarget),s=i.data("id"),o=this.allTeamsCache.find(c=>c.id===s);o&&(this.selectedTeamForEdit=o,e.find("#teamListRows .dialog-content-rows-row").removeClass("selected"),i.addClass("selected"),e.find("#deleteTeam").show(),e.find("#saveTeam").show())}),e.find("#teamListRows").off("dblclick").on("dblclick",".dialog-content-rows-row",t=>{let s=$(t.currentTarget).data("id"),o=this.allTeamsCache.find(c=>c.id===s);o&&(this.selectedTeamForEdit=o,this.switchTeamTab("team-edit"),this.populateTeamEditForm(o))}),e.find("#saveTeam").off("click").on("click",()=>this.saveTeamHandler()),e.find("#deleteTeam").off("click").on("click",()=>this.deleteTeamHandler()),e.find("#createTeam").off("click").on("click",()=>this.createTeamHandler()),e.find("#employeeSearchInput").off("input").on("input",()=>{let t=e.find("#employeeSearchInput").val().toString().toLowerCase().trim();this.renderEmployeeListForEdit(t)}),e.find("#createEmployeeSearchInput").off("input").on("input",()=>{let t=e.find("#createEmployeeSearchInput").val().toString().toLowerCase().trim();this.renderEmployeeListForCreate(t)}),e.find("#selectAllEmployees").off("change").on("change",function(){let t=$(this).prop("checked"),i=this;e.find("#employeeRows .employee-checkbox").each(function(){let s=parseInt($(this).data("id"));if($(this).prop("checked",t),t)i.selectedEmployeeIds.includes(s)||i.selectedEmployeeIds.push(s);else{let o=i.selectedEmployeeIds.indexOf(s);o>-1&&i.selectedEmployeeIds.splice(o,1)}})}.bind(this)),e.find("#employeeRows").off("change",".employee-checkbox").on("change",".employee-checkbox",function(){let t=parseInt($(this).data("id"));if($(this).prop("checked"))this.selectedEmployeeIds.includes(t)||this.selectedEmployeeIds.push(t);else{let o=this.selectedEmployeeIds.indexOf(t);o>-1&&this.selectedEmployeeIds.splice(o,1)}let i=e.find("#employeeRows .employee-checkbox"),s=e.find("#employeeRows .employee-checkbox:checked");e.find("#selectAllEmployees").prop("checked",i.length===s.length&&i.length>0)}.bind(this)),e.find("#createSelectAllEmployees").off("change").on("change",function(){let t=$(this).prop("checked"),i=this;e.find("#createEmployeeRows .employee-checkbox").each(function(){let s=parseInt($(this).data("id"));if($(this).prop("checked",t),t)i.createSelectedEmployeeIds.includes(s)||i.createSelectedEmployeeIds.push(s);else{let o=i.createSelectedEmployeeIds.indexOf(s);o>-1&&i.createSelectedEmployeeIds.splice(o,1)}}.bind(this))}.bind(this)),e.find("#createEmployeeRows").off("change",".employee-checkbox").on("change",".employee-checkbox",function(){let t=$(this),i=parseInt(t.data("id")),s=this;if(console.log("Checkbox changed! empId:",i,"checked:",t.prop("checked")),console.log("Before update, createSelectedEmployeeIds:",s.createSelectedEmployeeIds),t.prop("checked"))s.createSelectedEmployeeIds.includes(i)||s.createSelectedEmployeeIds.push(i);else{let l=s.createSelectedEmployeeIds.indexOf(i);l>-1&&s.createSelectedEmployeeIds.splice(l,1)}console.log("After update, createSelectedEmployeeIds:",s.createSelectedEmployeeIds);let o=e.find("#createEmployeeRows .employee-checkbox"),c=e.find("#createEmployeeRows .employee-checkbox:checked");e.find("#createSelectAllEmployees").prop("checked",o.length===c.length&&o.length>0)}.bind(this)),this.dialog.open("teamEditDialog")}),this.renderTeamList=(e="")=>{let t=$("#teamEditDialog").find("#teamListRows");t.empty(),this.allTeamsCache.filter(s=>s.name.toLowerCase().includes(e.toLowerCase())).forEach(s=>{var o,c;let l=((o=s.employees)===null||o===void 0?void 0:o.map(r=>r.name).join(", "))||"",m=((c=this.selectedTeamForEdit)===null||c===void 0?void 0:c.id)===s.id?"selected":"";t.append(`
+                <div class="dialog-content-rows-row ${m}" data-id="${s.id}">
+                    <div class="content-row-column col-50">${this.escapeHtml(s.name)}</div>
+                    <div class="content-row-column col-50">${this.escapeHtml(l)}</div>
                 </div>
-            `);
-            });
-        };
-        this.renderEmployeeListForEdit = (searchText = '') => {
-            const dialog = $('#teamEditDialog');
-            const rowContainer = dialog.find('#employeeRows');
-            rowContainer.empty();
-            const filtered = this.allEmployeesCache.filter((e) => e.name.toLowerCase().includes(searchText.toLowerCase()));
-            filtered.forEach((emp) => {
-                var _a;
-                const subDivisionName = ((_a = emp.subDivision) === null || _a === void 0 ? void 0 : _a.name) || '';
-                const isChecked = this.selectedEmployeeIds.includes(emp.id) ? 'checked' : '';
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${emp.id}">
+            `)})},this.renderEmployeeListForEdit=(e="")=>{let t=$("#teamEditDialog").find("#employeeRows");t.empty(),this.allEmployeesCache.filter(s=>s.name.toLowerCase().includes(e.toLowerCase())).forEach(s=>{var o;let c=((o=s.subDivision)===null||o===void 0?void 0:o.name)||"",l=this.selectedEmployeeIds.includes(s.id)?"checked":"";t.append(`
+                <div class="dialog-content-rows-row" data-id="${s.id}">
                     <div class="content-row-column col-250">
-                        <input type="checkbox" class="employee-checkbox" data-id="${emp.id}" ${isChecked}>
+                        <input type="checkbox" class="employee-checkbox" data-id="${s.id}" ${l}>
                     </div>
-                    <div class="content-row-column col-250">${this.escapeHtml(emp.name)}</div>
-                    <div class="content-row-column col-250">${this.escapeHtml(subDivisionName)}</div>
+                    <div class="content-row-column col-250">${this.escapeHtml(s.name)}</div>
+                    <div class="content-row-column col-250">${this.escapeHtml(c)}</div>
                 </div>
-            `);
-            });
-        };
-        this.renderEmployeeListForCreate = (searchText = '') => {
-            const dialog = $('#teamEditDialog');
-            const rowContainer = dialog.find('#createEmployeeRows');
-            rowContainer.empty();
-            const filtered = this.allEmployeesCache.filter((e) => e.name.toLowerCase().includes(searchText.toLowerCase()));
-            filtered.forEach((emp) => {
-                var _a;
-                const subDivisionName = ((_a = emp.subDivision) === null || _a === void 0 ? void 0 : _a.name) || '';
-                const isChecked = this.createSelectedEmployeeIds.includes(emp.id) ? 'checked' : '';
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${emp.id}">
+            `)})},this.renderEmployeeListForCreate=(e="")=>{let t=$("#teamEditDialog").find("#createEmployeeRows");t.empty(),this.allEmployeesCache.filter(s=>s.name.toLowerCase().includes(e.toLowerCase())).forEach(s=>{var o;let c=((o=s.subDivision)===null||o===void 0?void 0:o.name)||"",l=this.createSelectedEmployeeIds.includes(s.id)?"checked":"";t.append(`
+                <div class="dialog-content-rows-row" data-id="${s.id}">
                     <div class="content-row-column col-250">
-                        <input type="checkbox" class="employee-checkbox" data-id="${emp.id}" ${isChecked}>
+                        <input type="checkbox" class="employee-checkbox" data-id="${s.id}" ${l}>
                     </div>
-                    <div class="content-row-column col-250">${this.escapeHtml(emp.name)}</div>
-                    <div class="content-row-column col-250">${this.escapeHtml(subDivisionName)}</div>
+                    <div class="content-row-column col-250">${this.escapeHtml(s.name)}</div>
+                    <div class="content-row-column col-250">${this.escapeHtml(c)}</div>
                 </div>
-            `);
-            });
-        };
-        this.switchTeamTab = (tabName) => {
-            const dialog = $('#teamEditDialog');
-            // Обновляем кнопки вкладок
-            dialog.find('.team-tab').removeClass('active');
-            dialog.find(`.team-tab[data-tab="${tabName}"]`).addClass('active');
-            // Обновляем контент вкладок
-            dialog.find('.team-tab-content').removeClass('active');
-            dialog.find(`.team-tab-content[data-tab-content="${tabName}"]`).addClass('active');
-            // Действия при переключении
-            if (tabName === 'team-list') {
-                dialog.find('#deleteTeam').hide();
-                dialog.find('#saveTeam').hide();
-                dialog.find('#createTeam').show();
-                this.renderTeamList();
-            }
-            else if (tabName === 'team-edit') {
-                if (this.selectedTeamForEdit) {
-                    dialog.find('#deleteTeam').show();
-                    dialog.find('#saveTeam').show();
-                    dialog.find('#createTeam').hide();
-                    this.populateTeamEditForm(this.selectedTeamForEdit);
-                }
-            }
-            else if (tabName === 'team-create') {
-                dialog.find('#deleteTeam').hide();
-                dialog.find('#saveTeam').hide();
-                dialog.find('#createTeam').show();
-                this.clearTeamCreateForm();
-            }
-        };
-        this.populateTeamEditForm = (team) => {
-            var _a;
-            const dialog = $('#teamEditDialog');
-            dialog.find('#editTeamName').val(team.name);
-            this.selectedEmployeeIds = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.id)) || [];
-            this.renderEmployeeListForEdit();
-            const allCheckboxes = dialog.find('#employeeRows .employee-checkbox');
-            const checkedBoxes = dialog.find('#employeeRows .employee-checkbox:checked');
-            dialog.find('#selectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
-        };
-        this.clearTeamCreateForm = () => {
-            const dialog = $('#teamEditDialog');
-            dialog.find('#createTeamName').val('');
-            this.createSelectedEmployeeIds = [];
-            this.renderEmployeeListForCreate();
-            dialog.find('#createSelectAllEmployees').prop('checked', false);
-        };
-        this.saveTeamHandler = async () => {
-            if (!this.selectedTeamForEdit) {
-                this.createNotification('Выберите бригаду для редактирования', NotificationType.WARNING);
-                return;
-            }
-            const dialog = $('#teamEditDialog');
-            const name = dialog.find('#editTeamName').val().toString().trim();
-            if (!name) {
-                this.createNotification('Введите название бригады', NotificationType.WARNING);
-                return;
-            }
-            const version = this.selectedTeamForEdit.version;
-            if (version === undefined || version === null) {
-                this.createNotification('Ошибка: версия бригады не определена', NotificationType.ERROR);
-                return;
-            }
-            const changes = { name };
-            if (this.selectedEmployeeIds.length > 0) {
-                changes.employeeIds = this.selectedEmployeeIds;
-            }
-            const unlock = this.lockScreen('Сохранение бригады...');
-            try {
-                const updatedTeam = await this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
-                // Обновляем кэш
-                const idx = this.allTeamsCache.findIndex((t) => t.id === updatedTeam.id);
-                if (idx !== -1) {
-                    this.allTeamsCache[idx] = updatedTeam;
-                }
-                // Обновляем localCache для PDI записей с этой бригадой
-                this.localCache.forEach((pdi, key) => {
-                    var _a;
-                    if (((_a = pdi.team) === null || _a === void 0 ? void 0 : _a.id) === updatedTeam.id) {
-                        pdi.team = updatedTeam;
-                        // Обновляем отображение в таблице
-                        const $row = $(`.table-row[id="${key}"]`);
-                        $row.find('[data-name="team"]').text(updatedTeam.name);
-                    }
-                });
-                this.createNotification('Бригада успешно обновлена', NotificationType.SUCCESS);
-                this.renderTeamList();
-                this.switchTeamTab('team-list');
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при сохранении бригады', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
-            }
-        };
-        this.createTeamHandler = async () => {
-            const dialog = $('#teamEditDialog');
-            const name = dialog.find('#createTeamName').val().toString().trim();
-            if (!name) {
-                this.createNotification('Введите название бригады', NotificationType.WARNING);
-                return;
-            }
-            const dto = {
-                name,
-                employeeIds: this.createSelectedEmployeeIds
-            };
-            console.log('=== Creating Team ===');
-            console.log('createSelectedEmployeeIds:', this.createSelectedEmployeeIds);
-            console.log('DTO being sent:', dto);
-            const unlock = this.lockScreen('Создание бригады...');
-            try {
-                const newTeam = await this.requestToApi('/api/team/create', 'POST', dto);
-                // Добавляем в кэш
-                this.allTeamsCache.push(newTeam);
-                this.createNotification('Бригада успешно создана', NotificationType.SUCCESS);
-                this.renderTeamList();
-                this.switchTeamTab('team-list');
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при создании бригады', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
-            }
-        };
-        this.deleteTeamHandler = async () => {
-            if (!this.selectedTeamForEdit) {
-                this.createNotification('Выберите бригаду для удаления', NotificationType.WARNING);
-                return;
-            }
-            const unlock = this.lockScreen('Удаление бригады...');
-            try {
-                this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
-                    // @ts-ignore
-                    if (confirmed) {
-                        this.requestToApi(`/api/team/delete/${this.selectedTeamForEdit.id}`, 'DELETE').then(() => {
-                            const idx = this.allTeamsCache.findIndex((t) => t.id === this.selectedTeamForEdit.id);
-                            if (idx !== -1) {
-                                this.allTeamsCache.splice(idx, 1);
-                            }
-                            this.localCache.forEach((pdi, key) => {
-                                var _a;
-                                if (((_a = pdi.team) === null || _a === void 0 ? void 0 : _a.id) === this.selectedTeamForEdit.id) {
-                                    pdi.team = null;
-                                    const $row = $(`.table-row[id="${key}"]`);
-                                    $row.find('[data-name="team"]').text('');
-                                }
-                            });
-                            this.createNotification('Бригада успешно удалена', NotificationType.SUCCESS);
-                            this.selectedTeamForEdit = null;
-                            this.renderTeamList();
-                        });
-                    }
-                });
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при удалении бригады', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
-            }
-        };
-        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
-        this.createHandler('click', '#createBtn', this.createPdi, true);
-        this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
-        this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode(['dateCompletion'], undefined, this.pdSpecialFields);
-                $('#edit-button').addClass('active');
-            }
-            else {
-                this.disableEditMode(['dateCompletion'], []);
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        }, true);
-        this.createHandler('click', '#save-button', () => this.savePdi(), true);
-        this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
-        this.createHandler('click', '#teams-button', () => this.openTeamEditDialog(), true);
-        this.bindFieldChanges();
-        this.createHandler('click', '.ready-checkbox', (e) => {
-            const $row = $(e.currentTarget).closest('.table-row');
-            const rowId = Number($row.attr('id'));
-            const pdItem = this.localCache.get(rowId);
-            if (pdItem.ready) {
-                const params = new URLSearchParams();
-                params.set('id', String(rowId));
-                params.set('ready', 'false');
-                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH").then((pdi) => {
-                    this.updateRow(pdi, rowId);
-                });
-            }
-            else {
-                this.openReadinessDialog(e);
-            }
-        }, true);
-        this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
-        this.createHandler('click', '#cancelReadiness', this.closeReadinessDialog.bind(this), true);
-        this.createHandler('click', '#closeReadinessDialog', this.closeReadinessDialog.bind(this), true);
-        this.createHandler('input', '#searchInput', (event) => {
-            this.searchText = $(event.target).val().toString().toLowerCase().trim();
-            this.applyFilters();
-        }, true);
-        this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu.bind(this), true);
-    }
-    createRow(pdi) {
-        var _a;
-        const status = (() => {
-            switch (pdi.status) {
-                case 'NEW':
-                    return 'Новый';
-                case 'WORK':
-                    return 'В работе';
-                case 'REQUIRED':
-                    return 'Требуется в срок';
-                case 'COMPLETE':
-                    return 'Готов';
-            }
-        })();
-        const row = `
-            <div class="table-row" id="${pdi.id}" data-index="${pdi.id}">
+            `)})},this.switchTeamTab=e=>{let a=$("#teamEditDialog");a.find(".team-tab").removeClass("active"),a.find(`.team-tab[data-tab="${e}"]`).addClass("active"),a.find(".team-tab-content").removeClass("active"),a.find(`.team-tab-content[data-tab-content="${e}"]`).addClass("active"),e==="team-list"?(a.find("#deleteTeam").hide(),a.find("#saveTeam").hide(),a.find("#createTeam").show(),this.renderTeamList()):e==="team-edit"?this.selectedTeamForEdit&&(a.find("#deleteTeam").show(),a.find("#saveTeam").show(),a.find("#createTeam").hide(),this.populateTeamEditForm(this.selectedTeamForEdit)):e==="team-create"&&(a.find("#deleteTeam").hide(),a.find("#saveTeam").hide(),a.find("#createTeam").show(),this.clearTeamCreateForm())},this.populateTeamEditForm=e=>{var a;let t=$("#teamEditDialog");t.find("#editTeamName").val(e.name),this.selectedEmployeeIds=((a=e.employees)===null||a===void 0?void 0:a.map(o=>o.id))||[],this.renderEmployeeListForEdit();let i=t.find("#employeeRows .employee-checkbox"),s=t.find("#employeeRows .employee-checkbox:checked");t.find("#selectAllEmployees").prop("checked",i.length===s.length&&i.length>0)},this.clearTeamCreateForm=()=>{let e=$("#teamEditDialog");e.find("#createTeamName").val(""),this.createSelectedEmployeeIds=[],this.renderEmployeeListForCreate(),e.find("#createSelectAllEmployees").prop("checked",!1)},this.saveTeamHandler=()=>p(this,void 0,void 0,function*(){if(!this.selectedTeamForEdit){this.createNotification("\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u0443 \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.WARNING);return}let a=$("#teamEditDialog").find("#editTeamName").val().toString().trim();if(!a){this.createNotification("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.WARNING);return}let t=this.selectedTeamForEdit.version;if(t==null){this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430: \u0432\u0435\u0440\u0441\u0438\u044F \u0431\u0440\u0438\u0433\u0430\u0434\u044B \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D\u0430",NotificationType.ERROR);return}let i={name:a};this.selectedEmployeeIds.length>0&&(i.employeeIds=this.selectedEmployeeIds);let s=this.lockScreen("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u044B...");try{let o=yield this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${t}`,"PATCH",i),c=this.allTeamsCache.findIndex(l=>l.id===o.id);c!==-1&&(this.allTeamsCache[c]=o),this.localCache.forEach((l,m)=>{var r;((r=l.team)===null||r===void 0?void 0:r.id)===o.id&&(l.team=o,$(`.table-row[id="${m}"]`).find('[data-name="team"]').text(o.name))}),this.createNotification("\u0411\u0440\u0438\u0433\u0430\u0434\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),this.renderTeamList(),this.switchTeamTab("team-list")}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0438 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.ERROR)}finally{s()}}),this.createTeamHandler=()=>p(this,void 0,void 0,function*(){let a=$("#teamEditDialog").find("#createTeamName").val().toString().trim();if(!a){this.createNotification("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.WARNING);return}let t={name:a,employeeIds:this.createSelectedEmployeeIds};console.log("=== Creating Team ==="),console.log("createSelectedEmployeeIds:",this.createSelectedEmployeeIds),console.log("DTO being sent:",t);let i=this.lockScreen("\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u044B...");try{let s=yield this.requestToApi("/api/team/create","POST",t);this.allTeamsCache.push(s),this.createNotification("\u0411\u0440\u0438\u0433\u0430\u0434\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0441\u043E\u0437\u0434\u0430\u043D\u0430",NotificationType.SUCCESS),this.renderTeamList(),this.switchTeamTab("team-list")}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.ERROR)}finally{i()}}),this.deleteTeamHandler=()=>p(this,void 0,void 0,function*(){if(!this.selectedTeamForEdit){this.createNotification("\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u0443 \u0434\u043B\u044F \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u044F",NotificationType.WARNING);return}if(!(yield this.createConfirmationDialog("\u0412\u044B \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043B\u044C\u043D\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0431\u0440\u0438\u0433\u0430\u0434\u0443?")))return;let a=this.lockScreen("\u0423\u0434\u0430\u043B\u0435\u043D\u0438\u0435 \u0431\u0440\u0438\u0433\u0430\u0434\u044B...");try{yield this.requestToApi(`/api/team/delete/${this.selectedTeamForEdit.id}`,"DELETE");let t=this.allTeamsCache.findIndex(i=>i.id===this.selectedTeamForEdit.id);t!==-1&&this.allTeamsCache.splice(t,1),this.localCache.forEach((i,s)=>{var o;((o=i.team)===null||o===void 0?void 0:o.id)===this.selectedTeamForEdit.id&&(i.team=null,$(`.table-row[id="${s}"]`).find('[data-name="team"]').text(""))}),this.createNotification("\u0411\u0440\u0438\u0433\u0430\u0434\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),this.selectedTeamForEdit=null,this.renderTeamList()}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u0431\u0440\u0438\u0433\u0430\u0434\u044B",NotificationType.ERROR)}finally{a()}}),this.editDateFields=["dateCompletion"],this.createHandler("click","#create-button",()=>this.dialog.open("create-dialog"),!0),this.createHandler("click","#createBtn",this.createPdi,!0),this.createHandler("click",".area-modal",this.workWithModal.bind(this),!0),this.createHandler("click",".circle-header",this.selectAllRows.bind(this),!0),this.createHandler("click",".circle-row",this.selectRow.bind(this),!0),this.createHandler("click","#edit-button",()=>{this.editMode?(this.disableEditMode(["dateCompletion"],[]),this.editMode||$("#edit-button").removeClass("active")):(this.enableEditMode(),$("#edit-button").addClass("active"))},!0),this.createHandler("click","#save-button",()=>this.savePdi(),!0),this.createHandler("click","#print-button",this.print=this.print.bind(this),!0),this.createHandler("click","#teams-button",()=>this.openTeamEditDialog(),!0),this.createHandler("input","[data-name]",this.inputChanges.bind(this),!0),this.createHandler("click",".ready-checkbox",e=>{let t=$(e.currentTarget).closest(".table-row").attr("id");if(!t)return;let i=this.localCache.get(t);i&&i.ready?this.requestToApi("/api/parts-directory/ready","PATCH",{id:t,ready:!1}):this.openReadinessDialog(e)},!0),this.createHandler("click","#saveReadiness",this.saveReadinessHandler.bind(this),!0),this.createHandler("click","#cancelReadiness",this.closeReadinessDialog.bind(this),!0),this.createHandler("click","#closeReadinessDialog",this.closeReadinessDialog.bind(this),!0),this.createHandler("input","#searchInput",e=>{this.searchText=$(e.target).val().toString().toLowerCase().trim(),this.applyFilters()},!0),this.createHandler("contextmenu",".table-row.selected",this.showRowContextMenu.bind(this),!0)}createRow(n){var d;let e=(()=>{switch(n.status){case"NEW":return"\u041D\u043E\u0432\u044B\u0439";case"WORK":return"\u0412 \u0440\u0430\u0431\u043E\u0442\u0435";case"REQUIRED":return"\u0422\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044F \u0432 \u0441\u0440\u043E\u043A";case"COMPLETE":return"\u0413\u043E\u0442\u043E\u0432"}})(),a=`
+            <div class="table-row" id="${n.id}" data-index="${n.id}">
                 <div class="table-cell" style="width: var(--customerOrder); position: relative">
-                    <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
+                    <div class="circle circle-row tooltip-trigger" data-description="\u0412\u044B\u0434\u0435\u043B\u0438\u0442\u044C \u0441\u0442\u0440\u043E\u043A\u0443"></div>
                     <div class="field-container center" data-name="customerOrder" contenteditable="false">
-                        ${this.escapeHtml(pdi.customerOrder.name)}
+                        ${this.escapeHtml(n.customerOrder.name)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--name);">
                     <div class="field-container center" data-name="name" contenteditable="false">
-                        ${this.escapeHtml(pdi.name)}
+                        ${this.escapeHtml(n.name)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--scheme);">
                     <div class="field-container center" data-name="scheme" contenteditable="false">
-                        ${this.escapeHtml(pdi.scheme)}
+                        ${this.escapeHtml(n.scheme)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--thickness); padding: 0">
                     <div class="field-container center" data-name="thickness" contenteditable="false">
-                        ${this.escapeHtml(String(pdi.thickness))}
+                        ${this.escapeHtml(String(n.thickness))}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--steel); padding: 0">
                     <div class="field-container center" data-name="steel" contenteditable="false">
-                        ${this.escapeHtml(pdi.steel)}
+                        ${this.escapeHtml(n.steel)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qty);">
-                    <div class="field-container center" data-name="qty" contenteditable="false">
-                        ${pdi.qty}
+                    <div class="field-container left" data-name="qty" contenteditable="false">
+                        ${n.qty}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--qtyCompleted);">
-                    <div class="field-container center" data-name="qtyCompleted" contenteditable="false">
-                        ${pdi.qtyCompleted}
+                    <div class="field-container right" data-name="qtyCompleted" contenteditable="false">
+                        ${n.qtyCompleted}
                     </div>
                 </div>
                  <div class="table-cell" style="width: var(--measurements);">
                     <div class="field-container center" data-name="measurements" contenteditable="false">
-                        ${this.escapeHtml(pdi.measurements)}
+                        ${this.escapeHtml(n.measurements)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--program);">
                     <div class="field-container" data-name="program" contenteditable="false">
-                        ${this.escapeHtml(pdi.program)}
+                        ${this.escapeHtml(n.program)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--comment);">
                     <div class="field-container" data-name="comment" contenteditable="false">
-                        ${this.escapeHtml(pdi.comment)}
+                        ${this.escapeHtml(n.comment)}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--status);">
-                    <span class="status-indicator" style="background-color: ${this.calculateColor(pdi.color)}" data-status="${pdi.status}">
-                        ${status}
+                    <span class="status-indicator" style="background-color: ${this.calculateColor(n.color)}" data-status="${n.status}">
+                        ${e}
                     </span>
                 </div>
                 <div class="table-cell" style="width: var(--team);">
                     <div class="field-container team-field center" data-name="team" contenteditable="false">
-                        ${this.escapeHtml(((_a = pdi.team) === null || _a === void 0 ? void 0 : _a.name) || '')}
-                    </div>
-                </div>
-                <div class="table-cell" style="width: var(--preparationDate);">
-                    <div contenteditable="false" data-name="dateCompletion">
-                        ${this.formatDate(pdi.dateCompletion)}
+                        ${this.escapeHtml(((d=n.team)===null||d===void 0?void 0:d.name)||"")}
                     </div>
                 </div>
                 <div class="table-cell center" style="width: var(--ready);">
                     <div class="checkbox-wrapper-ready">
-                        <input type="checkbox" class="ready-checkbox" id="toggleReady-${pdi.id}" ${pdi.ready ? 'checked' : ''}>
+                        <input type="checkbox" class="ready-checkbox" id="toggleReady-${n.id}" ${n.ready?"checked":""}>
                         <svg viewBox="0 0 35.6 35.6">
                             <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
                             <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
@@ -784,84 +100,4 @@ class PdItem extends Base {
                         </svg>
                     </div>
                 </div>
-            </div>`;
-        return $(row);
-    }
-    onScroll() {
-    }
-    async print() {
-        if (!this.selectedRows || this.selectedRows.size === 0) {
-            return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
-        }
-        this.reports = [
-            {
-                name: 'Акт-наряд',
-                api: '/api/report/print/pdi-act',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
-            }
-        ];
-        return super.print();
-    }
-    savePdi() {
-        var _a, _b;
-        if (Object.keys(this.saveMassive).length === 0)
-            return;
-        for (const id of Object.keys(this.saveMassive)) {
-            const pdItem = this.localCache.get(Number(id));
-            const changes = this.saveMassive[id] || {};
-            const qtyValue = (_a = changes.qty) !== null && _a !== void 0 ? _a : pdItem.qty;
-            const qtyCompletedValue = (_b = changes.qtyCompleted) !== null && _b !== void 0 ? _b : pdItem.qtyCompleted;
-            const validatedFields = this.validateIntegerFields([
-                { key: 'qty', value: qtyValue, min: 1, label: 'Количество' },
-                {
-                    key: 'qtyCompleted',
-                    value: qtyCompletedValue,
-                    min: 0,
-                    label: 'Выполненное количество',
-                    defaultValue: 0
-                }
-            ]);
-            if (!validatedFields)
-                return;
-            this.saveMassive[id] = Object.assign(Object.assign({}, changes), { qty: validatedFields.qty, qtyCompleted: validatedFields.qtyCompleted });
-        }
-        this.saveMassiveChanges('/api/parts-directory/update', (id, cacheData, changes) => ({
-            id: id,
-            version: cacheData === null || cacheData === void 0 ? void 0 : cacheData.version,
-            changes: changes
-        })).then(() => {
-            this.disableEditMode(['dateCompletion'], []);
-            $('#edit-button').removeClass('active');
-        }).catch(console.error);
-    }
-    openReadinessDialog(event) {
-        const $row = $(event.currentTarget).closest('.table-row');
-        const rowId = $row.attr('id');
-        if (!rowId)
-            return;
-        this.selectedReadinessRowId = rowId;
-        // Получаем данные из кэша для отображения текущих операций
-        const cacheData = this.localCache.get(rowId);
-        const operations = (cacheData === null || cacheData === void 0 ? void 0 : cacheData.operation) || [];
-        // Отмечаем чекбоксы на основе существующих операций
-        const dialog = $('#readiness-dialog');
-        dialog.find('#operationThermal').prop('checked', operations.indexOf('thermal') !== -1);
-        dialog.find('#operationLocksmith').prop('checked', operations.indexOf('locksmith') !== -1);
-        this.dialog.open('readiness-dialog');
-    }
-    applyFilters() {
-        if (!this.searchText) {
-            $('.table-row').show();
-            return;
-        }
-        $('.table-row').each((_, row) => {
-            const $row = $(row);
-            const text = $row.text().toLowerCase();
-            $row.toggle(text.includes(this.searchText));
-        });
-    }
-}
-$(document).ready(() => {
-    new PdItem();
-});
-//# sourceMappingURL=pditem.js.map
+            </div>`;return $(a)}onScroll(){}print(){let n=Object.create(null,{print:{get:()=>super.print}});return p(this,void 0,void 0,function*(){return!this.selectedRows||this.selectedRows.size===0?this.createNotification("\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043E \u043D\u0438 \u043E\u0434\u043D\u043E\u0439 \u0441\u0442\u0440\u043E\u043A\u0438",NotificationType.WARNING):(this.reports=[{name:"\u0410\u043A\u0442-\u043D\u0430\u0440\u044F\u0434",api:"/api/report/print/pdi-act",params:Array.from(this.selectedRows).map(d=>`idList=${d}`).join("&")}],n.print.call(this))})}savePdi(){var n,d;if(Object.keys(this.saveMassive).length===0)return;for(let a of Object.keys(this.saveMassive)){let t=this.localCache.get(a);if(!t)return;let i=this.saveMassive[a]||{},s=(n=i.qty)!==null&&n!==void 0?n:t.qty,o=(d=i.qtyCompleted)!==null&&d!==void 0?d:t.qtyCompleted,c=this.validateIntegerFields([{key:"qty",value:s,min:1,label:"\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E"},{key:"qtyCompleted",value:o,min:0,label:"\u0412\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u043D\u043E\u0435 \u043A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E",defaultValue:0}]);if(!c)return;this.saveMassive[a]=Object.assign(Object.assign({},i),{qty:c.qty,qtyCompleted:c.qtyCompleted})}let e=Object.keys(this.saveMassive).map(a=>{let t=this.localCache.get(a);return{id:a,version:t?.version,changes:this.saveMassive[a]}});this.save("/api/parts-directory/update",...e).then(()=>{this.disableEditMode(["dateCompletion"],[]),e.forEach(a=>this.selectedRows.delete(a.id)),$("#edit-button").removeClass("active")})}inputChanges(n){let d=$(n.target),e=d.closest(".table-row").attr("id"),a=d.attr("data-name"),t=d.is("div")?d.text().trim():d.val();this.saveMassive[e]=Object.assign(Object.assign({},this.saveMassive[e]),{[a]:t}),d.addClass("change")}openReadinessDialog(n){let e=$(n.currentTarget).closest(".table-row").attr("id");if(!e)return;this.selectedReadinessRowId=e;let a=this.localCache.get(e),t=a?.operation||[],i=$("#readiness-dialog");i.find("#operationThermal").prop("checked",t.indexOf("thermal")!==-1),i.find("#operationLocksmith").prop("checked",t.indexOf("locksmith")!==-1),this.dialog.open("readiness-dialog")}selectAllRows(n){return p(this,void 0,void 0,function*(){if(this.editMode){this.createNotification("\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",NotificationType.INFO);return}let d=$(n.currentTarget),e=$(".table-row:visible");d.hasClass("active")?(this.selectedRows.clear(),e.removeClass("selected"),e.each((a,t)=>{$(t).find(".circle-row").removeClass("active-critical")}),d.removeClass("active")):(this.selectedRows.clear(),e.each((a,t)=>{let i=$(t).attr("id");this.selectedRows.add(i),$(t).addClass("selected"),$(t).find(".circle-row").addClass("active-critical")}),d.addClass("active"))})}applyFilters(){if(!this.searchText){$(".table-row").show();return}$(".table-row").each((n,d)=>{let e=$(d),a=e.text().toLowerCase();e.toggle(a.includes(this.searchText))})}};$(document).ready(()=>{new w})});export default k();

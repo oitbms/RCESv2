@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
-    <link rel="stylesheet" href="/css/pditem-overrides.css">
     <script src="/js/jquery.min.js"></script>
     <script src="/js/dist/base/dialog.js"></script>
     <script src="/js/dist/base/dialogTemplates.js"></script>
@@ -172,17 +171,6 @@
                 <label class="form-label">Автор</label>
                 <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть модальное окно" data-field="employee" name="employee" readonly  required></textarea>
                 <input type="hidden" name="hiddenEmployee">
-            </div>
-
-
-            <div class="form-group">
-                <label class="form-label">Статус</label>
-                <select class="form-control" name="status">
-                    <option value="NEW">Новый</option>
-                    <option value="WORK">В работе</option>
-                    <option value="REQUIRED">Требуется в строк</option>
-                    <option value="COMPLETE">Готов</option>
-                </select>
             </div>
 
             <div class="form-group">

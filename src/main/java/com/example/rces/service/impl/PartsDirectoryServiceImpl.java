@@ -85,16 +85,17 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     private PartsDirectory.Status calculateStatus(PartsDirectory pdi) {
         LocalDate today = LocalDate.now();
         LocalDate requiredUntil = today.plusDays(3);
+        boolean program = pdi.getProgram() != null && !pdi.getProgram().isEmpty();
 
         if (pdi.getReady()) {
             return PartsDirectory.Status.COMPLETE;
         } else if (pdi.getDateCompletion() != null &&
                 !pdi.getDateCompletion().toLocalDate().isBefore(today) &&
-                !pdi.getDateCompletion().toLocalDate().isAfter(requiredUntil)) {
+                !pdi.getDateCompletion().toLocalDate().isAfter(requiredUntil) && program) {
             return PartsDirectory.Status.REQUIRED;
-        } else if (pdi.getProgram() != null) {
+        } else if (program) {
             return PartsDirectory.Status.WORK;
-        } else return pdi.getStatus();
+        } else return PartsDirectory.Status.NEW;
     }
 
     @Override
