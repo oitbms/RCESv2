@@ -164,8 +164,7 @@ class Sgi extends Base {
     public buildPagination(data: SgiIn[], count: number) {
         const $p = $('.pagination');
         $p.empty();
-        const totalElement = count;
-        const totalPages = Math.ceil(totalElement / this.itemsPerPage);
+        const totalPages = Math.ceil(count / this.itemsPerPage);
         if (totalPages <= 1) return;
         const createBtn = (label, page, extraClass = '') => {
             const btn = $(`<button class="btn btn-secondary page-btn ${extraClass}" data-page="${page}">${label}</button>`);
@@ -339,19 +338,22 @@ class Sgi extends Base {
 
             renderRows(filteredEmployees);
 
-            searchInput.off('input').on('input', function () {
-                const searchText = $(this).val().toString().toLowerCase().trim();
-                const filtered = data.filter((e: any) => e.name.toLowerCase().includes(searchText));
+            searchInput.off('input').on('input', function (this: HTMLInputElement) {
+                const searchText = $(this).val()!.toString().toLowerCase().trim();
+                const filtered = data.filter((e: any) =>
+                    e.name.toLowerCase().includes(searchText)
+                );
                 renderRows(filtered);
             });
 
             this.dialog.open('employeeDialog');
 
-            rowContainer.off('click').on('click', '.dialog-content-rows-row', function (e: Event) {
-                const id = $(e.currentTarget).attr('id');
-                selected = data.find((e: any) => e.id === Number(id));
-                $('.dialog-content-rows-row').removeClass('selected');
-                $(this).addClass('selected');
+            rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const id = target.id;
+                selected = data.find((item: any) => item.id === Number(id));
+                rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                $(target).addClass('selected');
             });
 
             changeButton.off('click').on('click', () => {
@@ -367,7 +369,7 @@ class Sgi extends Base {
                     const employeeJson = JSON.stringify(selected);
                     $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
                 }
-                
+
                 if (currentId) {
                     this.saveMassive[currentId] = {
                         ...this.saveMassive[currentId],
@@ -465,7 +467,7 @@ class Sgi extends Base {
         if (!currentSGI) return;
         const dialog = $('#editing-dialog');
 
-        const isParentSGI = (currentSGI as any).parent===null;
+        const isParentSGI = (currentSGI as any).parent === null;
 
         if (isParentSGI && !dialog.find('#createSubSGI').length) {
             dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
@@ -525,13 +527,14 @@ class Sgi extends Base {
             });
             this.localCache.set(currentId, updateSGI);
             this.localCache.delete('validFileMap');
-            if (updateSGI.parent!=null) {
+            if (updateSGI.parent != null) {
                 const parentSGI = this.localCache.get(updateSGI.parent) as SgiIn | undefined;
                 if (parentSGI) {
                     parentSGI.subSGI = parentSGI.subSGI.filter((sub) => sub.id !== updateSGI.id);
                     parentSGI.subSGI.push(updateSGI);
                     await this.updateRow(parentSGI, parentSGI.id);
                 }
+                // @ts-ignore
                 const parentRow = $(`.row-items-row[id="${parentSGI.id}"]`);
                 const hamburger = parentRow.find('.hamburger');
 
@@ -539,8 +542,10 @@ class Sgi extends Base {
                     const fakeEvent = {
                         currentTarget: hamburger[0],
                         target: hamburger[0],
-                        preventDefault: () => {},
-                        stopPropagation: () => {}
+                        preventDefault: () => {
+                        },
+                        stopPropagation: () => {
+                        }
                     } as Event;
 
                     await this.openSubSgi(fakeEvent);
@@ -613,12 +618,10 @@ class Sgi extends Base {
             formData.append('factExecutionSGIBool', 'true');
 
             $(dialog).find('[data-field]').each((_, el) => {
-                if (el.type !== 'file') {
-                    formData.append(el.dataset.field, el.value);
-                } else {
-                    for (let file of (el as HTMLInputElement).files || []) {
-                        formData.append(el.dataset.field, file);
-                    }
+                const input = el as HTMLInputElement;
+                const files = Array.from(input.files ?? []);
+                for (const file of files) {
+                    formData.append(input.dataset.field!, file);
                 }
             });
 
@@ -753,7 +756,7 @@ class Sgi extends Base {
                 images = await $.ajax({
                     url: url,
                     type: 'GET',
-                    data: {id: type === 'fact' ? currentSGI.factExecution.id : currentSGI.id}
+                    data: {id: type === 'fact' ? currentSGI.factExecution?.id : currentSGI.id}
                 });
             } catch (error) {
                 images = [];
@@ -761,7 +764,9 @@ class Sgi extends Base {
 
             const processedImages = Array.isArray(images) ? images : [];
             if (type === 'fact') {
-                currentSGI.factExecution.imagesFactSGI = processedImages;
+                if (currentSGI.factExecution != null) {
+                    currentSGI.factExecution.imagesFactSGI = processedImages;
+                }
             } else {
                 currentSGI.imagesSGI = processedImages;
             }
@@ -930,9 +935,9 @@ class Sgi extends Base {
         this.createContextMenu([
             {
                 label: 'Удалить',
-                idAction : "deleteSgiButton",
+                idAction: "deleteSgiButton",
                 action: () => {
-                    const sgi: any =  this.localCache.get(rowId);
+                    const sgi: any = this.localCache.get(rowId);
                     if (sgi.agree) {
                         this.createNotification('Нельзя удалять согласованное мероприятие!', NotificationType.ERROR);
                         return;
@@ -943,8 +948,8 @@ class Sgi extends Base {
                             this.deleteEntity(`/api/sgi/delete/${rowId}`).then(() => {
                                 this.deleteRow(rowId);
                                 this.localCache.delete(rowId);
-                                if (sgi.parent !=null) {
-                                    const parentSgi: any =  this.localCache.get(sgi.parent);
+                                if (sgi.parent != null) {
+                                    const parentSgi: any = this.localCache.get(sgi.parent);
                                     parentSgi.subSGI = parentSgi.subSGI.filter((sub) => sub.id !== sgi.id);
                                     this.localCache.set(parentSgi.id, parentSgi);
                                     if (parentSgi.subSGI.length === 0) {

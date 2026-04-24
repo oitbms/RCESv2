@@ -14,4 +14,8 @@ public interface PartsDirectoryService {
 
     PartsDirectoryDTO updatePdi(Long id, Long version, Map<String, Object> changes);
 
+    void deletePdi(Long id);
+
+    PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations);
+
 }

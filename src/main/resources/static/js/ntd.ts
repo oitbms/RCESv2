@@ -76,21 +76,13 @@ class NtDocuments extends Base {
     }
 
     private saveNtd() {
-        if (Object.keys(this.saveMassive).length === 0) {
-            return;
-        }
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id) as NtdIn;
-            return {
-                id: id,
-                version: cacheData.version,
-                changes: this.saveMassive[id]
-            };
-        });
-        this.save('/api/ntd/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/ntd/update', (id: string | number, cacheData: any, changes: any) => ({
+            id: id,
+            version: cacheData?.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode(['dateVerification'], ['document', 'references']);
-            itemsArray.forEach((id) => this.selectedRows.delete(id.toString()));
-        });
+        }).catch(console.error);
     }
 
     private createNtd = async (event: Event) => {
@@ -160,7 +152,7 @@ class NtDocuments extends Base {
                 formData.append('file', multipartFile);
                 return this.requestToApi(`/api/document/add-file-2-document/${ntd.documentId}`, "PATCH", formData);
             }).then((file: DocumentFile) => {
-                this.createRowOnDocument(file, fileId);
+                this.createDocumentFileRow(file, $('#documentDialog').find('.dialog-content-rows'), '/api/document/delete-file-from-document');
                 return this.requestToApi(`/api/ntd/calculate-references?id=${currentNtdId}`, 'POST');
             }).then(() => {
                 this.createNotification('Файл успешно перезагружен', NotificationType.SUCCESS);
@@ -177,25 +169,7 @@ class NtDocuments extends Base {
         });
     };
 
-    private createRowOnDocument = (file: DocumentFile, index?: string) => {
-        const rowContainer = $('#documentDialog').find('.dialog-content-rows');
-        const rowHtml = `
-                <div class="dialog-content-rows-row" id="${file.id}">
-                    <div class="content-row-column col-450">${file.baseFileName}</div>
-                    <div class="content-row-column col-100 center">
-                        ${file.type}</div>
-                    <div class="content-row-column col-100 file-items">
-                        <i class="fas fa-arrows-rotate reload-icon tooltip-trigger" data-description="Обновить документацию" data-file-id="${file.id}" onclick="$('#reloadFileInput').click()"></i>
-                        <input type="file" id="reloadFileInput" class="reload-file-input" style="display: none;"/>
-                        <i style="float: right" class="download fas fa-download tooltip-trigger" data-description="Скачать документацию" data-file-id="${file.id}"></i>
-                    </div>
-                </div>`;
-        if (index) {
-            rowContainer.find(`#${index}`).replaceWith(rowHtml);
-        } else {
-            rowContainer.append(rowHtml);
-        }
-    };
+
 
     private openReferences = async (event: Event): Promise<void> => {
         const dialog = $('#referencesDialog');
@@ -246,14 +220,15 @@ class NtDocuments extends Base {
         const references: NtdRefIn[] = await this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
         renderReference(references, false);
 
-        dialog.off('input', '.search-input').on('input', '.search-input', function () {
-            const searchText = $(this).val().toString().toLowerCase();
-            $('.dialog-content-rows-row').each(function () {
-                const rowName = $(this).find('.content-row-column').first().text().toLowerCase();
-                $(this).toggle(rowName.includes(searchText));
+        dialog.off('input', '.search-input').on('input', '.search-input', (e) => {
+                const input = e.currentTarget as HTMLInputElement;
+                const searchText = input.value.toLowerCase();
+                $('.dialog-content-rows-row').each((_, el) => {
+                    const row = $(el);
+                    const rowName = row.find('.content-row-column').first().text().toLowerCase();
+                    row.toggle(rowName.includes(searchText));
+                });
             });
-        });
-
         dialog.off('click', '.container-checkbox').on('click', '.container-checkbox', async (e: Event) => {
             e.preventDefault();
             const $container = $(e.currentTarget);
@@ -299,14 +274,17 @@ class NtDocuments extends Base {
 
     // Фильтрация — переопределяется для конкретного поведения
     protected override applyFilters(): void {
-        // Здесь можно добавить логику фильтрации строк по searchText
-        $('.table-row').each(function () {
-            const name = $(this).find('[data-name="name"]').text().toLowerCase();
-            const type = $(this).find('[data-name="type"]').text().toLowerCase();
-            const comment = $(this).find('[data-name="comment"]').text().toLowerCase();
-            const match = name.includes(this.searchText) || type.includes(this.searchText) || comment.includes(this.searchText);
-            $(this).toggle(match);
-        }.bind(this));
+        const searchText = this.searchText.toLowerCase();
+        $('.table-row').each((_, el) => {
+            const row = $(el);
+
+            const name = row.find('[data-name="name"]').text().toLowerCase();
+            const type = row.find('[data-name="type"]').text().toLowerCase();
+            const comment = row.find('[data-name="comment"]').text().toLowerCase();
+
+            const match = name.includes(searchText) || type.includes(searchText) || comment.includes(searchText);
+            row.toggle(match);
+        });
     }
 
 }

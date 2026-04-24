@@ -51,6 +51,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/create", "/requestslist/**")
                         .hasAnyAuthority("MASTER", "ADMIN", "CONSTRUCTOR", "TECHNOLOGIST", "OTK", "CONTROL")
                         .requestMatchers("/sgi/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
+                        .requestMatchers("/team/**").hasAnyAuthority("ADMIN", "CONTROL", "EVENT")
                         .requestMatchers(new TypeBasedRequestMatcher(webSecurityService)).authenticated()
                         .anyRequest().authenticated()
                 )

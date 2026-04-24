@@ -15,4 +15,15 @@ type pdItemIn = {
     status: string;
     comment: string;
     color: Color;
+    ready: boolean;
+    team: TeamIn;
+    dateCompletion: string;
+    operation: string[];
+}
+
+type TeamIn = {
+    id: number;
+    version: number;
+    name: string;
+    employees: Employee[];
 }

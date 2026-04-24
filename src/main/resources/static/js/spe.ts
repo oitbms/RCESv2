@@ -7,7 +7,7 @@ class Spe extends Base {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
-        this.createHandler('click', '.circle-header', this.selectAllRows.bind(this),true);
+        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this),true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -23,7 +23,7 @@ class Spe extends Base {
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#save-button', () => this.saveSpe(), true);
-        this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
+        this.bindFieldChanges();
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
         this.createHandler('change', '#fileInput', this.addFileToDocument.bind(this), true);
@@ -224,22 +224,14 @@ class Spe extends Base {
     }
 
     private saveSpe() {
-        if (Object.keys(this.saveMassive).length === 0) {
-            return;
-        }
-        const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(Number(id)) as SpeIn;
-            return {
-                id: id,
-                version: cacheData.version,
-                changes: this.saveMassive[id]
-            };
-        });
-        this.save('/api/spe/update', ...itemsArray).then(() => {
+        this.saveMassiveChanges('/api/spe/update', (id: string | number, cacheData: any, changes: any) => ({
+            id: id,
+            version: cacheData?.version,
+            changes: changes
+        })).then(() => {
             this.disableEditMode(['datePreparation', 'dateVerification'], []);
-            itemsArray.forEach((id) => this.selectedRows.delete(Number(id)));
             $('#edit-button').removeClass('active');
-        });
+        }).catch(console.error);
     }
 
     private fullData(data: SpeIn[]): void {
@@ -252,34 +244,6 @@ class Spe extends Base {
         $('#no-document').text(data.filter(s => s.documentId === null).length);
     }
 
-    private async selectAllRows(event: Event): Promise<void> {
-        if (this.editMode) {
-            this.createNotification('Выключите режим редактирования', NotificationType.INFO);
-            return;
-        }
-        const circle = $(event.currentTarget);
-        const allRows = $('.table-row:visible');
-
-        if (circle.hasClass('active')) {
-            this.selectedRows.clear();
-            allRows.removeClass('selected');
-            allRows.each((_, row) => {
-                const circle = $(row).find('.circle-row');
-                circle.removeClass('active-critical');
-            });
-            circle.removeClass('active');
-        } else {
-            this.selectedRows.clear();
-            allRows.each((_, row) => {
-                const circle = $(row).find('.circle-row')
-                const rowId = $(row).attr('id');
-                this.selectedRows.add(rowId);
-                $(row).addClass('selected');
-                circle.addClass('active-critical')
-            });
-            circle.addClass('active');
-        }
-    }
 
     private async selectRow(event: Event): Promise<void> {
         const wasSelected = this.selectedRows.has($(event.currentTarget).closest('.table-row').attr('id'));
@@ -296,15 +260,6 @@ class Spe extends Base {
         }
     }
 
-    private inputChanges(event: Event): void {
-        const $el = $(event.target);
-        const id = $el.closest('.table-row').attr('id');
-        const name = $el.attr('data-name');
-        const value = $el.is('div') ? $el.text().trim() : $el.val();
-
-        this.saveMassive[id] = {...this.saveMassive[id], [name]: value};
-        $el.addClass('change');
-    }
 
     private async workWithModal(event: Event): Promise<void> {
         const modalDiv = $(event.currentTarget);

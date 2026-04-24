@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/spe.css">
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/base/dialog.js"></script>
-    <script src="/js/base/cache.js"></script>
-    <script src="/js/base/type/generalType.js"></script>
-    <script src="/js/base/type/speConstants.js"></script>
-    <script src="/js/base/base.js"></script>
-    <script src="/js/spe.js"></script>
+    <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/cache.js"></script>
+    <script src="/js/dist/base/type/generalType.js"></script>
+    <script src="/js/dist/base/type/speConstants.js"></script>
+    <script src="/js/dist/base/base.js"></script>
+    <script src="/js/dist/spe.js"></script>
 </head>
 
 <body>

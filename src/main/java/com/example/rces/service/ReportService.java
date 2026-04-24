@@ -26,4 +26,6 @@ public interface ReportService {
     byte[] createSpeSchedule(Format format, List<Integer> numberList);
 
     byte[] createInspectionReport(Format format, Integer id);
+
+    byte[] createPdItemReport(Format format, List<Long> ids);
 }

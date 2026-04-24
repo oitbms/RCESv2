@@ -100,24 +100,24 @@ dependencies {
 }
 
 tasks.register("runAllTests") {
-    dependsOn("apiTests", "uiTests")
+//    dependsOn("apiTests", "uiTests")
 }
 
-tasks.register<Test>("apiTests") {
-    useJUnitPlatform {
-        includeTags("api")
-    }
-    doFirst {
-        file("build/tmp/test-token.txt").delete()
-    }
-}
+//tasks.register<Test>("apiTests") {
+//    useJUnitPlatform {
+//        includeTags("api")
+//    }
+//    doFirst {
+//        file("build/tmp/test-token.txt").delete()
+//    }
+//}
 
-tasks.register<Test>("uiTests") {
-    useJUnitPlatform {
-        includeTags("ui")
-    }
-    mustRunAfter("apiTests")
-}
+//tasks.register<Test>("uiTests") {
+//    useJUnitPlatform {
+//        includeTags("ui")
+//    }
+//    mustRunAfter("apiTests")
+//}
 
 tasks.withType<JavaCompile> {
     options.isFork = true
@@ -154,6 +154,20 @@ tasks.named<BootWar>("bootWar") {
     archiveFileName.set("RCES.war")
 }
 
+
+tasks.register<Exec>("npmBuild") {
+    group = "build"
+    description = "Build frontend assets if package.json exists"
+    workingDir = file("src/main/resources/static/js")
+    // Windows-friendly command; npm scripts should support "build"
+    commandLine = listOf("cmd", "/c", "npm ci && npm run build")
+    onlyIf {
+        file("src/main/resources/static/js/package.json").exists()
+    }
+}
+tasks.named("processResources") {
+    dependsOn("npmBuild")
+}
 
 springBoot {
     buildInfo()

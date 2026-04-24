@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS rces.parts_directory
     machine           VARCHAR(255),
     status            VARCHAR(50),
     comment           VARCHAR(255),
+    ready             BOOLEAN   NOT NULL DEFAULT FALSE,
     color             VARCHAR(50),
     date_completion   DATETIME,
     created_date      TIMESTAMP,
@@ -31,4 +32,13 @@ CREATE TABLE IF NOT EXISTS rces.parts_directory
     FOREIGN KEY (updated_by) REFERENCES rces.employees (id),
     FOREIGN KEY (employee_id) REFERENCES rces.employees (id),
     FOREIGN KEY (customer_order_id) REFERENCES rces.customerorder (id)
+);
+
+CREATE TABLE parts_directory_operation
+(
+    parts_directory_id BIGINT      NOT NULL,
+    operation          VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_parts_directory_operation
+        FOREIGN KEY (parts_directory_id)
+            REFERENCES parts_directory (id)
 );

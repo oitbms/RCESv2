@@ -431,13 +431,38 @@ class Base {
          * @param rowSelector — селектор строки (по умолчанию '.table-row')
          * @param circleRowSelector — селектор кружка в строке
          */
+        this.editDateFields = [];
+
         this.toggleAllRowsSelection = (event, rowSelector = '.table-row', circleRowSelector = '.circle-row') => {
+            const circle = $(event.currentTarget);
+            const allRows = $(`${rowSelector}:visible`);
+            // If in edit mode, allow cancelling selection and properly exit edit mode for each row.
             if (this.editMode) {
+                if (circle.hasClass('active')) {
+                    // For each selected row, disable edit mode for that specific row so special fields are converted correctly
+                    allRows.each((_, row) => {
+                        const $row = $(row);
+                        if ($row.hasClass('selected')) {
+                            try {
+                                this.disableEditMode(this.editDateFields, [], $row);
+                            }
+                            catch (e) {
+                                console.error(e);
+                            }
+                        }
+                    });
+                    this.selectedRows.clear();
+                    allRows.removeClass('selected');
+                    allRows.each((_, row) => {
+                        $(row).find(circleRowSelector).removeClass('active-critical');
+                    });
+                    circle.removeClass('active');
+                    this.editMode = false;
+                    return;
+                }
                 this.createNotification('Выключите режим редактирования', NotificationType.INFO);
                 return;
             }
-            const circle = $(event.currentTarget);
-            const allRows = $(`${rowSelector}:visible`);
             if (circle.hasClass('active')) {
                 this.selectedRows.clear();
                 allRows.removeClass('selected');

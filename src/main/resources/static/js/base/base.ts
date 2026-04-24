@@ -10,6 +10,8 @@ abstract class Base {
     public currentPage: number = 1;
     public saveMassive: object = {};
     public reports: ReportItem[] = [];
+    public searchText: string = '';
+    public editMode: boolean = false;
 
     public readonly rowContainer: any;
 
@@ -94,7 +96,7 @@ abstract class Base {
         $(`[data-index="${rowIndex}"]`)[hide ? 'fadeOut' : 'fadeIn'](300);
     };
 
-    public deleteRow (rowIndex: string | number): void {
+    public deleteRow(rowIndex: string | number): void {
         const $row = $(`#${rowIndex}`);
         $row.fadeOut(300, () => {
             $row.remove();
@@ -102,7 +104,7 @@ abstract class Base {
         });
     }
 
-    public async displayPage  (url: string, param?: object, ...callbacks: Function[]): Promise<void> {
+    public async displayPage(url: string, param?: object, ...callbacks: Function[]): Promise<void> {
         if (this.currentPage > 1) {
             param = {...param, page: this.currentPage};
         }
@@ -172,36 +174,18 @@ abstract class Base {
         if (!this.reports.length) return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
 
         const dialogId = 'printDialog';
-        $(`#${dialogId}`).remove();
-        const $dialog = $(`
-        <dialog id="${dialogId}" class="print-dialog">
-            <div class="print-content">
-                <h3>Выберите отчёт и формат</h3>
-                <select id="reportSelect" class="print-select">
-                    ${this.reports.map(r => `<option value="${r.api}">${r.name}</option>`).join('')}
-                </select>
-                <div class="format-block">
-                    <div class="format-toggle">
-                        <button type="button" class="format-btn active" data-format="PDF">PDF</button>
-                        <button type="button" class="format-btn" data-format="XLSX">XLSX</button>
-                    </div>
-                </div>
-                <div class="print-buttons">
-                    <button id="printCancel">Отмена</button>
-                    <button id="printOk">Печать</button>
-                </div>
-            </div>
-        </dialog>
-    `);
+        let $dialog = $(`#${dialogId}`);
+        if ($dialog.length) $dialog.remove();
+        $('body').append($(printDialogTemplate(this.reports)));
+        $dialog = $(`#${dialogId}`);
 
         let format = "PDF";
-        $dialog.find('.format-btn').off('click').on('click', function () {
+        $dialog.find('.format-btn').off('click').on('click', function (this: HTMLElement) {
             $dialog.find('.format-btn').removeClass('active');
             $(this).addClass('active');
             format = $(this).data('format') as string;
         });
 
-        $('body').append($dialog);
         this.dialog.open(dialogId);
 
         return new Promise<void>((resolve) => {
@@ -214,7 +198,10 @@ abstract class Base {
             $('#printOk').on('click', async () => {
                 const api = $('#reportSelect').val() as string;
                 const report = this.reports.find(r => r.api === api);
-                if (!report) { resolve(); return; }
+                if (!report) {
+                    resolve();
+                    return;
+                }
                 this.dialog.close(dialogId);
                 $dialog.remove();
 
@@ -319,21 +306,10 @@ abstract class Base {
 
             let $dialog = $('#confirmDialog');
             if ($dialog.length === 0) {
-                $dialog = $(`
-                    <dialog id="confirmDialog" class="confirm-dialog">
-                        <div class="confirm-content">
-                            <div class="confirm-message" id="confirmMessage">${text}</div>
-                            <div class="confirm-buttons">
-                                <button class="confirm-btn confirm-cancel" id="confirmCancel">Отмена</button>
-                                <button class="confirm-btn confirm-ok" id="confirmOk">Подтвердить</button>
-                            </div>
-                        </div>
-                    </dialog>
-                `);
-                $('body').append($dialog);
-            } else {
-                $('#confirmMessage').text(text);
+                $('body').append($(confirmDialogTemplate()));
+                $dialog = $('#confirmDialog');
             }
+            $('#confirmMessage').text(text);
 
             const cleanup = () => {
                 $('#confirmCancel').off('click');
@@ -360,6 +336,7 @@ abstract class Base {
             });
         });
     });
+
 
     //Контекстное меню
     public readonly createContextMenu = (items: { label: string, idAction: string, action: () => void }[],
@@ -500,14 +477,6 @@ abstract class Base {
         };
     };
 
-    // ============================================================
-    // УНИВЕРСАЛЬНЫЕ МЕТОДЫ ДЛЯ НАСЛЕДНИКОВ
-    // ============================================================
-
-    // --- Поиск / фильтрация ---
-
-    public searchText: string = '';
-
     public readonly bindSearchInput = (selector: string, onSearch?: (text: string) => void): void => {
         this.createHandler('input', selector, (event: Event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
@@ -519,14 +488,8 @@ abstract class Base {
         }, true);
     };
 
-    // Переопределяется в наследниках для конкретной логики фильтрации
     protected applyFilters(): void {
-        // По умолчанию — no-op; наследники переопределяют
     }
-
-    // --- Режим редактирования ---
-
-    public editMode: boolean = false;
 
     /**
      * Включает режим редактирования для выбранных строк или конкретной строки.
@@ -534,11 +497,8 @@ abstract class Base {
      * @param row — конкретная строка (jQuery-объект), если null — все выбранные строки
      * @param specialFields — объекты {name: string, transform: ($div: any) => any} для кастомных полей
      */
-    public readonly enableEditMode = (
-        dateTimeFields: string[] = [],
-        row?: any,
-        specialFields: { name: string, transform: ($div: any) => any }[] = []
-    ): void => {
+    public readonly enableEditMode = (dateTimeFields: string[] = [], row?: any,
+                                      specialFields: { name: string, transform: ($div: any) => any }[] = []): void => {
         const processElement = ($div: any) => {
             const dataName: string = $div.attr('data-name');
             const special = specialFields.find(f => f.name === dataName);
@@ -558,7 +518,7 @@ abstract class Base {
         };
 
         if (row) {
-            row.find('div[contenteditable="false"]').each(function () {
+            row.find('div[contenteditable="false"]').each(function (this: HTMLElement) {
                 processElement($(this));
             });
             this.editMode = true;
@@ -567,7 +527,7 @@ abstract class Base {
 
         for (const rowId of this.selectedRows) {
             const $row = $(`.table-row[id="${rowId}"]`);
-            $row.find('div[contenteditable="false"]').each(function () {
+            $row.find('div[contenteditable="false"]').each(function (this: HTMLElement) {
                 processElement($(this));
             });
         }
@@ -611,17 +571,19 @@ abstract class Base {
         };
 
         if (row) {
-            row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
+            row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                .each(function (this: HTMLElement) {
+                    processElement($(this));
+                });
             return;
         }
 
         for (const rowId of this.selectedRows) {
             const $row = $(`.table-row[id="${rowId}"]`);
-            $row.find('div[contenteditable="true"], select[data-name], input[data-name]').each(function () {
-                processElement($(this));
-            });
+            $row.find('div[contenteditable="true"], select[data-name], input[data-name]')
+                .each(function (this: HTMLElement) {
+                    processElement($(this));
+                });
         }
         this.editMode = false;
     };
@@ -668,12 +630,12 @@ abstract class Base {
         rowSelector: string = '.table-row',
         circleRowSelector: string = '.circle-row'
     ): void => {
+        const circle = $(event.currentTarget);
+        const allRows = $(`${rowSelector}:visible`);
         if (this.editMode) {
             this.createNotification('Выключите режим редактирования', NotificationType.INFO);
             return;
         }
-        const circle = $(event.currentTarget);
-        const allRows = $(`${rowSelector}:visible`);
 
         if (circle.hasClass('active')) {
             this.selectedRows.clear();
@@ -727,8 +689,14 @@ abstract class Base {
         dialogId: string,
         modalDiv: any,
         currentId?: string | number,
+        rawData?: any[],
         dataFilter?: (items: any[]) => any[],
-        columns: { key: string, label: string, width?: string }[] = [{ key: 'name', label: 'Наименование', width: '250' }]
+        columns: ({ key?: string, label: string, width?: string, renderer?: (item: any) => string }[]) = [{
+            key: 'name',
+            label: 'Наименование',
+            width: '250'
+        }],
+        multiSelect: boolean = false
     ): Promise<void> => {
         const dialog = $(`#${dialogId}`);
         const rowContainer = dialog.find('.dialog-content-rows');
@@ -736,51 +704,98 @@ abstract class Base {
         const changeButton = dialog.find('[id^="change"]').first();
         let selected: any;
 
-        const rawData: any[] = await this.cache.get(fieldName);
-        const data = dataFilter ? dataFilter(rawData) : rawData;
+        const raw = rawData ? rawData : await this.cache.get(fieldName);
+        const data = dataFilter ? dataFilter(raw) : raw || [];
+
+        const getValue = (item: any, col: any) => {
+            if (col.renderer) return col.renderer(item);
+            if (col.key && col.key.indexOf('.') !== -1) {
+                return col.key.split('.').reduce((acc: any, p: string) => acc ? acc[p] : '', item) || '';
+            }
+            return col.key ? (item[col.key] || item[col.key + 'Name'] || '') : '';
+        };
 
         const renderRows = (items: any[]) => {
             rowContainer.empty();
             items.forEach(item => {
                 let colsHtml = columns.map(col =>
-                    `<div class="content-row-column col-${col.width || '250'}">${item[col.key] || (item[col.key + 'Name'] ? item[col.key + 'Name'] : '')}</div>`
+                    `<div class="content-row-column col-${col.width || '250'}">${this.escapeHtml(String(getValue(item, col) || ''))}</div>`
                 ).join('');
+                if (multiSelect) {
+                    colsHtml = `<div class="content-row-column col-40"><input type="checkbox" class="selection-checkbox" data-id="${item.id}"></div>` + colsHtml;
+                }
                 rowContainer.append(`<div class="dialog-content-rows-row" data-id="${item.id}">${colsHtml}</div>`);
             });
         };
 
         renderRows(data);
 
-        searchInput.off('input').on('input', function () {
-            const searchText = $(this).val().toString().toLowerCase().trim();
+        searchInput.off('input').on('input', function (this: HTMLInputElement) {
+            const searchText = $(this).val()!.toString().toLowerCase().trim();
             const filtered = data.filter((e: any) =>
-                columns.some(col => (e[col.key] || '').toString().toLowerCase().indexOf(searchText) !== -1)
+                columns.some(col => (getValue(e, col) || '').toString().toLowerCase().includes(searchText))
             );
+
             renderRows(filtered);
         });
 
         this.dialog.open(dialogId);
 
-        rowContainer.off('click').on('click', '.dialog-content-rows-row', function () {
-            const id = $(this).data('id');
-            selected = data.find((e: any) => e.id === id);
-            $('.dialog-content-rows-row').removeClass('selected');
-            $(this).addClass('selected');
-        });
+        if (!multiSelect) {
+            rowContainer.off('click').on('click', '.dialog-content-rows-row', function (this: HTMLElement) {
+                    const id = $(this).data('id');
+                    selected = data.find((e: any) => e.id === id);
+                    $('.dialog-content-rows-row').removeClass('selected');
+                    $(this).addClass('selected');
+                }
+            );
+        } else {
+            // Handle checkbox toggling
+            rowContainer.off('change', '.selection-checkbox').on('change', '.selection-checkbox', function (this: HTMLInputElement) {
+                const id = $(this).data('id');
+                // toggle selected array stored in closure variable selected (as array)
+                if (!Array.isArray(selected)) selected = [];
+                const idx = selected.findIndex((s: any) => s.id == id);
+                if ((this as any).checked) {
+                    if (idx === -1) selected.push(data.find((e: any) => e.id == id));
+                } else {
+                    if (idx !== -1) selected.splice(idx, 1);
+                }
+            });
+        }
 
         changeButton.off('click').on('click', () => {
-            if (!selected) {
-                const label = fieldName === 'employee' ? 'сотрудника' : 'подразделение';
+            if (!selected || (Array.isArray(selected) && selected.length === 0)) {
+                const label = fieldName === 'employee' ? 'сотрудника' : 'элемент';
                 this.createNotification(`Выберите ${label} из списка`, NotificationType.WARNING);
                 return;
             }
-            modalDiv.text(selected.name);
-            modalDiv.val(selected.name);
+
+            if (!multiSelect) {
+                modalDiv.text(selected.name);
+                modalDiv.val(selected.name);
+            } else {
+                const selectedItems = Array.isArray(selected) ? selected : [];
+                const names = selectedItems.map((s: any) => s.name).join(', ');
+                modalDiv.val(names);
+                modalDiv.text(names);
+            }
 
             if (currentId) {
                 this.saveMassive[currentId] = {...this.saveMassive[currentId], [fieldName]: selected};
             } else {
                 this.saveMassive[fieldName] = selected;
+            }
+
+            // If there is a hidden input in a containing form, set its value (useful for older create dialogs)
+            try {
+                const form = modalDiv.closest('form');
+                if (form.length) {
+                    const hidden = form.find(`input[name="hidden${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}"]`);
+                    if (hidden.length) hidden.val(JSON.stringify(selected));
+                }
+            } catch (e) {
+                // ignore
             }
 
             modalDiv.addClass('change-textarea');
@@ -789,8 +804,6 @@ abstract class Base {
 
         modalDiv.addClass('change');
     };
-
-    // --- Диалог документов ---
 
     /**
      * Универсальный диалог просмотра/загрузки файлов документа.
@@ -836,8 +849,9 @@ abstract class Base {
         );
 
         dialog.off('change', '#fileInput').on('change', '#fileInput', (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                Array.from(e.target.files).forEach((file: File) => {
+            const input = e.target as HTMLInputElement;
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach((file) => {
                     const fileName = file.name;
                     if (rowContainer.find(`.col-450:contains("${fileName}")`).length > 0) {
                         this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
@@ -939,9 +953,6 @@ abstract class Base {
             this.createNotification("Файл не найден", NotificationType.INFO);
         }
     };
-
-    // --- Контекстное меню удаления строки ---
-
     /**
      * Создаёт контекстное меню с пунктом «Удалить» для строки.
      * @param event — событие contextmenu
@@ -1048,12 +1059,16 @@ abstract class Base {
      */
     public readonly saveMassiveChanges = async (
         updateUrl: string,
-        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => { id: string | number, version: any, changes: any }
+        getItemVersionAndChanges: (id: string | number, cacheItem: any, changes: any) => {
+            id: string | number,
+            version: number,
+            changes: any
+        }
     ): Promise<void> => {
         if (Object.keys(this.saveMassive).length === 0) return;
 
         const itemsArray = Object.keys(this.saveMassive).map(id => {
-            const cacheData = this.localCache.get(id);
+            const cacheData = this.localCache.get(id) ?? this.localCache.get(Number(id));
             return getItemVersionAndChanges(id, cacheData, this.saveMassive[id]);
         });
 

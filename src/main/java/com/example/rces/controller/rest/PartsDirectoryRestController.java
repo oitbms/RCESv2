@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -41,6 +42,20 @@ public class PartsDirectoryRestController {
                                                     @RequestBody Map<String, Object> changes) {
         var updatedPDI = service.updatePdi(id, version, changes);
         return ResponseEntity.ok(updatedPDI);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        service.deletePdi(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/ready")
+    public ResponseEntity<PartsDirectoryDTO> coordination(@RequestParam Long id,
+                                                @RequestParam(name = "ready") Boolean readyBoolean,
+                                                @RequestParam(required = false) List<String> operations) {
+        PartsDirectoryDTO dto = service.readyOrNot(id, readyBoolean, operations);
+        return ResponseEntity.ok(dto);
     }
 
 }

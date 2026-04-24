@@ -9,13 +9,14 @@
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
+    <link rel="stylesheet" href="/css/pditem-overrides.css">
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/base/dialog.js"></script>
-    <script src="/js/base/cache.js"></script>
-    <script src="/js/base/type/generalType.js"></script>
-    <script src="/js/base/type/pditemConstants.js"></script>
-    <script src="/js/base/base.js"></script>
-    <script src="/js/pditem.js"></script>
+    <script src="/js/dist/base/dialog.js"></script>
+    <script src="/js/dist/base/dialogTemplates.js"></script>
+    <script src="/js/dist/base/cache.js"></script>
+    <script src="/js/dist/base/type/generalType.js"></script>
+    <script src="/js/dist/base/base.js"></script>
+    <script src="/js/dist/pditem.js"></script>
     <title>Справочник</title>
 </head>
 <body>
@@ -49,6 +50,11 @@
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
+            <div class="tool teams tooltip-trigger" id="teams-button" data-description="Управление бригадами">
+                <button>
+                    <i class="fas fa-users"></i>
+                </button>
+            </div>
         </div>
     </header>
     <div class="data-container">
@@ -72,7 +78,7 @@
             <div class="table-header-cell" style="width: var(--qty);">
                 Количество
             </div>
-            <div class="table-header-cell" style="width: var(--qtyCompleted);">
+            <div class="table-header-cell center" style="width: var(--qtyCompleted);">
                 Выполненное количество
             </div>
             <div class="table-header-cell" style="width: var(--dimensions);">
@@ -86,6 +92,15 @@
             </div>
             <div class="table-header-cell last-child" style="width: var(--status);">
                 Статус
+            </div>
+            <div class="table-header-cell" style="width: var(--team);">
+                Бригада
+            </div>
+            <div class="table-header-cell" style="width: var(--dateCompletion);">
+                Дата готовности
+            </div>
+            <div class="table-header-cell last-child" style="width: var(--ready);">
+                Готовность
             </div>
         </div>
         <div class="table-body">
@@ -171,6 +186,12 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">Бригада</label>
+                <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть окно выбора бригады" data-field="team" name="team" readonly></textarea>
+                <input type="hidden" name="hiddenTeam">
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Дата готовности</label>
                 <input type="datetime-local" class="form-control" name="dateCompletion">
             </div>
@@ -206,6 +227,141 @@
                 Выбрать
             </button>
         </div>
+    </div>
+</dialog>
+<dialog id="teamDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно выбора бригады</div>
+            <div class="choice-field">
+                <input type="text" placeholder="Введите название бригады">
+            </div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column" style="width: 160px">Название бригады</div>
+                <div class="dialog-content-header-column" style="width: 500px">Сотрудники</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button name="closeDialog" class="dialog-btn">
+                Отмена
+            </button>
+            <button class="dialog-btn primary" id="changeTeam">
+                Выбрать
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="teamEditDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Управление бригадами</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="team-edit-tabs">
+                <button type="button" class="team-tab active" data-tab="team-list">Список бригад</button>
+                <button type="button" class="team-tab" data-tab="team-edit">Редактирование</button>
+                <button type="button" class="team-tab" data-tab="team-create">Создание</button>
+            </div>
+            <!-- Tab: Team List -->
+            <div class="team-tab-content active" data-tab-content="team-list">
+                <div class="choice-field">
+                    <input type="text" id="teamSearchInput" placeholder="Введите название бригады">
+                </div>
+                <div class="dialog-content-header">
+                    <div class="dialog-content-header-column" style="width: 160px">Название бригады</div>
+                    <div class="dialog-content-header-column" style="width: 500px">Сотрудники</div>
+                </div>
+                <div class="dialog-content-rows" id="teamListRows"></div>
+            </div>
+            <!-- Tab: Team Edit -->
+            <div class="team-tab-content" data-tab-content="team-edit">
+                <div class="form-group">
+                    <label class="form-label">Название бригады</label>
+                    <input type="text" class="form-control" id="editTeamName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Сотрудники</label>
+                    <div class="employee-selection">
+                        <div class="choice-field">
+                            <input type="text" id="employeeSearchInput" placeholder="Введите фамилию сотрудника">
+                        </div>
+                        <div class="dialog-content-header">
+                            <div class="dialog-content-header-column col-250">
+                                <input type="checkbox" id="selectAllEmployees">
+                                <label for="selectAllEmployees">Выбрать всех</label>
+                            </div>
+                            <div class="dialog-content-header-column col-250">Имя</div>
+                            <div class="dialog-content-header-column col-250">Подразделение</div>
+                        </div>
+                        <div class="dialog-content-rows" id="employeeRows"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab: Team Create -->
+            <div class="team-tab-content" data-tab-content="team-create">
+                <div class="form-group">
+                    <label class="form-label">Название бригады</label>
+                    <input type="text" class="form-control" id="createTeamName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Сотрудники</label>
+                    <div class="employee-selection">
+                        <div class="choice-field">
+                            <input type="text" id="createEmployeeSearchInput" placeholder="Введите фамилию сотрудника">
+                        </div>
+                        <div class="dialog-content-header">
+                            <div class="dialog-content-header-column col-250">
+                                <input type="checkbox" id="createSelectAllEmployees">
+                                <label for="createSelectAllEmployees">Выбрать всех</label>
+                            </div>
+                            <div class="dialog-content-header-column col-250">Имя</div>
+                            <div class="dialog-content-header-column col-250">Подразделение</div>
+                        </div>
+                        <div class="dialog-content-rows" id="createEmployeeRows"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button name="closeDialog" class="dialog-btn">
+                Закрыть
+            </button>
+            <button class="dialog-btn danger" id="deleteTeam">
+                Удалить
+            </button>
+            <button class="dialog-btn primary" id="saveTeam">
+                Сохранить
+            </button>
+            <button class="dialog-btn primary" id="createTeam">
+                Создать
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="readiness-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Готовность</h2>
+        <button class="close-btn" id="closeReadinessDialog">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="readiness-operation-checks">
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationThermal" value="thermal">
+                <span>Термическая резка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationLocksmith" value="locksmith">
+                <span>Слесарные работы</span>
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelReadiness">Отмена</button>
+        <button class="btn btn-primary" id="saveReadiness">Сохранить</button>
     </div>
 </dialog>
 </body>

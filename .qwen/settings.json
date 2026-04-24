@@ -5,7 +5,27 @@
       "Bash(type *)",
       "Bash(find *)",
       "Bash(cmd *)",
-      "Bash(findstr *)"
+      "Bash(findstr *)",
+      "Bash(npx *)",
+      "Bash(npm install *)",
+      "Bash(tsc *)",
+      "Bash(gradlew.bat *)",
+      "Bash(mshta *)",
+      "Bash(\"set objfso=createobject(\"\"scripting.filesystemobject\"\"):set objfile=createobject(\"\"scripting.filesystemobject\"\").opentextfile(\"\"c:\\users\\hohlov_ik\\desktop\\rcesv2\\src\\main\\resources\\static\\js\\base\\base.ts\"\", 1):for i=1 to 716:objfile.readline:next:for i=717 to 867:wscript.echo objfile.readline:next:objfile.close\")",
+      "Bash(node *)",
+      "Bash(npm run *)",
+      "Bash(where *)",
+      "Bash(copy *)",
+      "Bash(del *)",
+      "Bash(gradlew *)",
+      "Bash(c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe *)",
+      "Bash(select-object *)",
+      "Bash(get-content *)",
+      "Bash(.length\\\")",
+      "Bash($lines[699..819] *)",
+      "Bash(c:\\windows\\system32\\find *)",
+      "Bash(699..748)",
+      "Bash(dir *)"
     ]
   },
   "$version": 3

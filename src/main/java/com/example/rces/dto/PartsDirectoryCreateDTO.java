@@ -38,6 +38,8 @@ public class PartsDirectoryCreateDTO {
 
     private LocalDateTime dateCompletion;
 
+    private TeamDTO team;
+
     public String getCustomerOrder() {
         return customerOrder;
     }
@@ -148,5 +150,13 @@ public class PartsDirectoryCreateDTO {
 
     public void setDateCompletion(LocalDateTime dateCompletion) {
         this.dateCompletion = dateCompletion;
+    }
+
+    public TeamDTO getTeam() {
+        return team;
+    }
+
+    public void setTeam(TeamDTO team) {
+        this.team = team;
     }
 }

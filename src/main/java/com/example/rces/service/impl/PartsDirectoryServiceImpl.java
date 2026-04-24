@@ -14,10 +14,12 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,7 +86,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         LocalDate today = LocalDate.now();
         LocalDate requiredUntil = today.plusDays(3);
 
-        if (pdi.getStatus().equals(PartsDirectory.Status.COMPLETE)) {
+        if (pdi.getReady()) {
             return PartsDirectory.Status.COMPLETE;
         } else if (pdi.getDateCompletion() != null &&
                 !pdi.getDateCompletion().toLocalDate().isBefore(today) &&
@@ -93,6 +95,39 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         } else if (pdi.getProgram() != null) {
             return PartsDirectory.Status.WORK;
         } else return pdi.getStatus();
+    }
+
+    @Override
+    public void deletePdi(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations) {
+        PartsDirectory pdiEntity = repository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
+        if (ready) {
+            List<PartsDirectory.Operation> operationList = PartsDirectory.Operation.fromString(operations);
+            pdiEntity.setOperation(new ArrayList<>(operationList));
+        } else {
+            pdiEntity.setOperation(new ArrayList<>());
+        }
+        pdiEntity.setReady(ready);
+        pdiEntity.setStatus(calculateStatus(pdiEntity));
+        pdiEntity.setColor(colorCalculate(pdiEntity));
+        repository.save(pdiEntity);
+        return mapper.toDTO(pdiEntity);
+    }
+
+    @Scheduled(cron = "0 0 9 * * *")
+    @Transactional
+    public void notifyExpiredDeviations() {
+        List<PartsDirectory> partsDirectories = repository.findAll();
+        partsDirectories.forEach(p -> {
+            p.setStatus(calculateStatus(p));
+            p.setColor(colorCalculate(p));
+            repository.save(p);
+        });
     }
 
 }
