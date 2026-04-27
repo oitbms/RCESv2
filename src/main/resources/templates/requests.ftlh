@@ -1514,7 +1514,7 @@
 </script>
 
 <script src="/js/jquery.min.js"></script>
-<script src="/js/bootstrap.bundle.js"></script>
+<script src="/js/bootstrap/bootstrap.bundle.js"></script>
 <script src="/js/bootstrap-table.min.js"></script>
 <script src="/js/sweetalert2.min.js"></script>
 <script src="/js/sockjs.min.js"></script>

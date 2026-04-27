@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ==============================
     // 11. Comment Saving
-    // ==============================
+
     if (saveCommentId) {
         saveCommentId.addEventListener('click', () => {
             const id = saveCommentId.getAttribute('data-param');
