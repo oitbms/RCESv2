@@ -19,7 +19,6 @@
 
             <input type="hidden" name="type" value="${type}">
 
-            <!-- Сотрудник -->
             <#if type == 'otk'>
                 <div class="mb-3">
                     <label class="form-label">Сотрудник</label>
