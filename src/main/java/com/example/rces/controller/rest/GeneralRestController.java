@@ -70,7 +70,7 @@ public class GeneralRestController {
                 List<RequestDto> employeeRequests = requestsEmployees.getOrDefault(employee.getName(), Collections.emptyList());
                 if (!employeeRequests.isEmpty()) {
                     String message = employeeRequests.stream()
-                            .map(e -> "Смена: " + "Пользователь работает с заявкой " + e.getRequestNumber())
+                            .map(e -> "Пользователь работает с заявкой " + e.getRequestNumber())
                             .collect(Collectors.joining(";"));
                     employeeWorkDtoList.add(new EmployeeWorkDto(employee.getName(), message));
                 } else {

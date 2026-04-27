@@ -37,10 +37,10 @@ input.readonly-scroll {
     overflow: auto;
     white-space: nowrap; /* или 'pre-wrap' для многострочного текста */
 }
-#fullPhoto {
-    max-width: 90%;
-    max-height: 80vh;
-}
+/*#fullPhoto {*/
+/*    max-width: 90%;*/
+/*    max-height: 80vh;*/
+/*}*/
 #modalSearchInput {
     transition: opacity 0.3s ease, visibility 0.3s ease;
     opacity: 0;
@@ -446,5 +446,48 @@ input.readonly-scroll {
     to {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+#fullPhoto {
+    max-width: 95%;
+    max-height: 85vh;
+    margin: 20px auto;
+    display: block;
+    border: 4px solid white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    cursor: zoom-in;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#fullPhoto.zoomed {
+    cursor: zoom-out;
+    transform: scale(1.8);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.pulsing-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }

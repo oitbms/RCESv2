@@ -114,15 +114,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const imageUrl = target.src;
                 if (fullPhoto && photoModalInstance) {
                     fullPhoto.src = imageUrl;
-                    photoModalInstance.show();
+                    fullPhoto.style.display = 'block';
+                    photoContainer.style.display = 'none';
                 }
             }
         });
     }
 
     if (fullPhoto) {
-        fullPhoto.addEventListener('click', function () {
-            this.style.display = 'none';
+        fullPhoto.addEventListener('click', function (e) {
+            e.stopPropagation();
+            this.classList.toggle('zoomed')
         });
     }
 
@@ -452,10 +454,15 @@ document.addEventListener('DOMContentLoaded', function () {
             data.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item list-group-item-action selectable';
+
+                let messageHtml = '';
+                if (item.message && item.message !== "") {
+                    messageHtml = `<span class="pulsing-dot"></span> ${escapeHtml(item.message)}`;
+                }
                 li.innerHTML = `
             <div><strong>${escapeHtml(item.name)}</strong></div>
-            <div class="small text-muted">${escapeHtml(item.message)}</div>
-         `;
+            <div class="small text-muted">${messageHtml}</div>
+        `;
                 li.dataset.entity = encodeURIComponent(JSON.stringify(item));
 
                 if (multiple && selected.has(item.name)) {
