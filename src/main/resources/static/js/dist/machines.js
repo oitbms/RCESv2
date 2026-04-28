@@ -1,48 +1,395 @@
-var v=(p,s)=>()=>(s||p((s={exports:{}}).exports,s),s.exports);var I=v(E=>{var r=E&&E.__awaiter||function(p,s,i,o){function t(e){return e instanceof i?e:new i(function(n){n(e)})}return new(i||(i=Promise))(function(e,n){function a(c){try{m(o.next(c))}catch(h){n(h)}}function l(c){try{m(o.throw(c))}catch(h){n(h)}}function m(c){c.done?e(c.value):t(c.value).then(a,l)}m((o=o.apply(p,s||[])).next())})},b=class{constructor(){this.apiUrl="/api/v1/machines",this.employeeApiUrl="/api/employees?subdivision=2",this.choicesInstances={},this.imageModalInstance=null,this.init()}init(){document.getElementById("machines-table-body")?this.initListPage():document.getElementById("machine-form")?this.initFormPage():document.getElementById("machine-content")&&this.initDetailsPage()}fetchData(s){return r(this,arguments,void 0,function*(i,o={}){let t=yield fetch(i,o);if(!t.ok){let n=yield t.text();throw new Error(`HTTP error! status: ${t.status}, message: ${n}`)}if(t.status===204)return null;let e=yield t.text();return e?JSON.parse(e):null})}showLoading(s){let i=document.getElementById("loading-indicator");i&&(i.style.display=s?"block":"none")}initListPage(){return r(this,void 0,void 0,function*(){this.showLoading(!0);try{let s=yield this.fetchData(this.apiUrl),i=document.getElementById("machines-table-body"),o=document.getElementById("machines-card-view");i.innerHTML="",o.innerHTML="",s.forEach(t=>{let e=document.createElement("tr");e.innerHTML=`
-                    <td>${t.name}</td>
-                    <td>${t.number}</td>
-                    <td class="description-cell">${t.description||"-"}</td>
+"use strict";
+class MachineManager {
+    constructor() {
+        this.apiUrl = '/api/v1/machines';
+        this.employeeApiUrl = '/api/employees?subdivision=2';
+        this.choicesInstances = {};
+        this.imageModalInstance = null;
+        this.init();
+    }
+    init() {
+        if (document.getElementById('machines-table-body')) {
+            this.initListPage();
+        }
+        else if (document.getElementById('machine-form')) {
+            this.initFormPage();
+        }
+        else if (document.getElementById('machine-content')) {
+            this.initDetailsPage();
+        }
+    }
+    async fetchData(url, options = {}) {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+        if (response.status === 204) {
+            return null;
+        }
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+    }
+    showLoading(show) {
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) {
+            indicator.style.display = show ? 'block' : 'none';
+        }
+    }
+    async initListPage() {
+        this.showLoading(true);
+        try {
+            const machines = await this.fetchData(this.apiUrl);
+            const tableBody = document.getElementById('machines-table-body');
+            const cardView = document.getElementById('machines-card-view');
+            tableBody.innerHTML = '';
+            cardView.innerHTML = '';
+            machines.forEach(machine => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${machine.name}</td>
+                    <td>${machine.number}</td>
+                    <td class="description-cell">${machine.description || '-'}</td>
                     <td>
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="/machines/${t.number}" class="btn btn-sm btn-info icon-text" title="\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440">
+                            <a href="/machines/${machine.number}" class="btn btn-sm btn-info icon-text" title="Просмотр">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="/machines/${t.number}/edit" class="btn btn-sm btn-primary icon-text" title="\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C">
+                            <a href="/machines/${machine.number}/edit" class="btn btn-sm btn-primary icon-text" title="Редактировать">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>
                     </td>
-                `,i.appendChild(e);let n=document.createElement("div");n.className="card mb-3",n.innerHTML=`
+                `;
+                tableBody.appendChild(row);
+                const card = document.createElement('div');
+                card.className = 'card mb-3';
+                card.innerHTML = `
                         <div>
-                            <h5 class="card-title mt-2 ms-2">${t.name}</h5>
-                            <h6 class="card-subtitle mb-2 ms-2 text-muted">\u0421\u0435\u0440\u0438\u0439\u043D\u044B\u0439 \u043D\u043E\u043C\u0435\u0440: ${t.number}</h6>
-                            <p class="card-text ms-2">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435: ${t.description||"\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442."}</p>
+                            <h5 class="card-title mt-2 ms-2">${machine.name}</h5>
+                            <h6 class="card-subtitle mb-2 ms-2 text-muted">Серийный номер: ${machine.number}</h6>
+                            <p class="card-text ms-2">Описание: ${machine.description || 'Описание отсутствует.'}</p>
                             <div class="d-flex justify-content-end gap-2 mt-3 mb-2 me-2">
-                                <a href="/machines/${t.number}" class="btn btn-sm btn-info icon-text">
+                                <a href="/machines/${machine.number}" class="btn btn-sm btn-info icon-text">
                                     <i class="bi bi-eye"></i>
-                                    <span>\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440</span>
+                                    <span>Просмотр</span>
                                 </a>
-                                <a href="/machines/${t.number}/edit" class="btn btn-sm btn-primary icon-text">
+                                <a href="/machines/${machine.number}/edit" class="btn btn-sm btn-primary icon-text">
                                     <i class="bi bi-pencil"></i>
-                                    <span>\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C</span>
+                                    <span>Редактировать</span>
                                 </a>
                             </div>
                         </div>
-                `,o.appendChild(n)})}catch(s){console.error("Failed to load machines:",s),alert("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0441\u043F\u0438\u0441\u043E\u043A \u0441\u0442\u0430\u043D\u043A\u043E\u0432.")}finally{this.showLoading(!1)}})}initFormPage(){return r(this,void 0,void 0,function*(){let s=document.getElementById("machine-form"),i=document.getElementById("form-title"),o=document.getElementById("number"),t=window.location.pathname.split("/"),e=t[t.length-2],n=t[t.length-1]==="edit"&&e;if(yield this.populateEmployeeSelects(),n){i.textContent="\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0441\u0442\u0430\u043D\u043A\u0430",this.showLoading(!0);try{let a=yield this.fetchData(`${this.apiUrl}/${e}`);document.getElementById("name").value=a.name,o.value=a.number.toString(),o.readOnly=!0,document.getElementById("description").value=a.description||"",this.selectOptions("responsibleEmployees",a.responsibleEmployeesList||[]),this.selectOptions("admittedEmployees",a.admittedEmployeesList||[])}catch(a){console.error("Failed to load machine data for editing:",a),alert("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u0441\u0442\u0430\u043D\u043A\u0430.")}finally{this.showLoading(!1)}}s.addEventListener("submit",a=>r(this,void 0,void 0,function*(){var l,m,c,h;a.preventDefault();let g=n?`${this.apiUrl}/${e}`:this.apiUrl;try{if(n){let d=((l=this.choicesInstances.responsibleEmployees)===null||l===void 0?void 0:l.getValue(!0))||[],y=((m=this.choicesInstances.admittedEmployees)===null||m===void 0?void 0:m.getValue(!0))||[],f={name:s.elements.namedItem("name").value,number:Number(s.elements.namedItem("number").value),description:s.elements.namedItem("description").value,responsibleEmployeesList:d.map(u=>({name:u})),admittedEmployeesList:y.map(u=>({name:u}))};yield this.fetchData(g,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(f)})}else{let d=new FormData(s),y=((c=this.choicesInstances.responsibleEmployees)===null||c===void 0?void 0:c.getValue(!0))||[],f=((h=this.choicesInstances.admittedEmployees)===null||h===void 0?void 0:h.getValue(!0))||[];d.delete("responsibleEmployeesList"),d.delete("admittedEmployeesList"),y.forEach(u=>d.append("responsibleEmployeesList",u)),f.forEach(u=>d.append("admittedEmployeesList",u)),yield this.fetchData(g,{method:"POST",body:d})}alert(`\u0421\u0442\u0430\u043D\u043E\u043A \u0443\u0441\u043F\u0435\u0448\u043D\u043E ${n?"\u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D":"\u0441\u043E\u0437\u0434\u0430\u043D"}!`),window.location.href="/machines"}catch(d){console.error("Failed to save machine:",d),alert("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u043D\u043A\u0430.")}}))})}populateEmployeeSelects(){return r(this,void 0,void 0,function*(){try{let s=yield this.fetchData(this.employeeApiUrl),i=document.getElementById("responsibleEmployees"),o=document.getElementById("admittedEmployees");i.innerHTML="",o.innerHTML="",s.forEach(e=>{let n=new Option(e.name,e.name);e.role.includes("MASTER")?i.add(n):o.add(n)}),this.choicesInstances.responsibleEmployees&&this.choicesInstances.responsibleEmployees.destroy(),this.choicesInstances.admittedEmployees&&this.choicesInstances.admittedEmployees.destroy();let t={removeItemButton:!0,shouldSort:!1,placeholder:!0,placeholderValue:"\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430...",noChoicesText:"\u041D\u0435\u0442 \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u043E\u0432 \u0434\u043B\u044F \u0432\u044B\u0431\u043E\u0440\u0430",itemSelectText:"\u041D\u0430\u0436\u043C\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u0432\u044B\u0431\u0440\u0430\u0442\u044C",searchPlaceholderValue:"\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u0432\u0432\u043E\u0434 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430...",noResultsText:"\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E"};this.choicesInstances.responsibleEmployees=new Choices(i,t),this.choicesInstances.admittedEmployees=new Choices(o,t)}catch(s){console.error("Failed to load employees:",s)}})}selectOptions(s,i){let o=this.choicesInstances[s];if(o){let t=i.map(e=>e.name);setTimeout(()=>{o.setChoiceByValue(t)},150)}}initDetailsPage(){return r(this,void 0,void 0,function*(){let s=document.getElementById("machine-content"),i=window.location.pathname.split("/"),o=i[i.length-1];if(!o)return;let t=document.getElementById("imageViewerModal");if(t){let e=window.bootstrap.Modal.getOrCreateInstance(t);this.imageModalInstance=e;let n=t.querySelector(".btn-close");n&&n.addEventListener("click",()=>{e.hide()}),t.addEventListener("click",a=>{a.target===t&&e.hide()})}this.showLoading(!0);try{let e=yield this.fetchData(`${this.apiUrl}/${o}`);document.getElementById("machine-name").textContent=e.name,document.getElementById("edit-button").href=`/machines/${e.number}/edit`,document.getElementById("machine-number").textContent=e.number.toString(),document.getElementById("machine-description").textContent=e.description||"\u041D\u0435\u0442 \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u044F.",this.renderList("responsible-employees-list",e.responsibleEmployeesList,"\u0421\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0438 \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B."),this.renderList("admitted-employees-list",e.admittedEmployeesList,"\u0421\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0438 \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B."),this.renderDocumentList("documents-list",e.pdfs,"\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B."),this.renderPhotoGallery("photos-gallery",e.imageUrls,"\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B."),this.generateQrCode(e.number),document.getElementById("delete-button").addEventListener("click",()=>r(this,void 0,void 0,function*(){if(confirm(`\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0441\u0442\u0430\u043D\u043E\u043A "${e.name}"?`))try{yield this.fetchData(`${this.apiUrl}/${e.number}`,{method:"DELETE"}),alert("\u0421\u0442\u0430\u043D\u043E\u043A \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D."),window.location.href="/machines"}catch(n){console.error("Failed to delete machine:",n),alert("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0441\u0442\u0430\u043D\u043E\u043A.")}})),document.getElementById("upload-documents-button").addEventListener("click",()=>r(this,void 0,void 0,function*(){let n=document.getElementById("new-documents");if(n.files&&n.files.length>0){let a=new FormData;for(let l of Array.from(n.files))a.append("files",l);try{yield this.fetchData(`${this.apiUrl}/${e.number}/documents`,{method:"POST",body:a}),alert("\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u044B."),location.reload()}catch(l){console.error("Failed to upload documents:",l),alert("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u043E\u0432.")}}})),s.style.display="block"}catch(e){console.error("Failed to load machine details:",e),s.innerHTML='<div class="alert alert-danger">\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u0441\u0442\u0430\u043D\u043A\u0430.</div>',s.style.display="block"}finally{this.showLoading(!1)}})}renderList(s,i,o){let t=document.getElementById(s);if(t.innerHTML="",!i||i.length===0){t.innerHTML=`<li class="list-group-item text-muted">${o}</li>`;return}i.forEach(e=>{let n=document.createElement("li");n.className="list-group-item";let a=e.name.split(" ").map(l=>l[0]).slice(0,2).join("").toUpperCase();n.innerHTML=`
+                `;
+                cardView.appendChild(card);
+            });
+        }
+        catch (error) {
+            console.error("Failed to load machines:", error);
+            alert('Не удалось загрузить список станков.');
+        }
+        finally {
+            this.showLoading(false);
+        }
+    }
+    async initFormPage() {
+        const form = document.getElementById('machine-form');
+        const formTitle = document.getElementById('form-title');
+        const numberInput = document.getElementById('number');
+        const pathParts = window.location.pathname.split('/');
+        const machineNumber = pathParts[pathParts.length - 2];
+        const isEditMode = pathParts[pathParts.length - 1] === 'edit' && machineNumber;
+        await this.populateEmployeeSelects();
+        if (isEditMode) {
+            formTitle.textContent = 'Редактирование станка';
+            this.showLoading(true);
+            try {
+                const machine = await this.fetchData(`${this.apiUrl}/${machineNumber}`);
+                document.getElementById('name').value = machine.name;
+                numberInput.value = machine.number.toString();
+                numberInput.readOnly = true;
+                document.getElementById('description').value = machine.description || '';
+                this.selectOptions('responsibleEmployees', machine.responsibleEmployeesList || []);
+                this.selectOptions('admittedEmployees', machine.admittedEmployeesList || []);
+            }
+            catch (error) {
+                console.error('Failed to load machine data for editing:', error);
+                alert('Не удалось загрузить данные станка.');
+            }
+            finally {
+                this.showLoading(false);
+            }
+        }
+        form.addEventListener('submit', async (e) => {
+            var _a, _b, _c, _d;
+            e.preventDefault();
+            const url = isEditMode ? `${this.apiUrl}/${machineNumber}` : this.apiUrl;
+            try {
+                if (isEditMode) {
+                    const responsibleEmployees = ((_a = this.choicesInstances['responsibleEmployees']) === null || _a === void 0 ? void 0 : _a.getValue(true)) || [];
+                    const admittedEmployees = ((_b = this.choicesInstances['admittedEmployees']) === null || _b === void 0 ? void 0 : _b.getValue(true)) || [];
+                    const machineData = {
+                        name: form.elements.namedItem('name').value,
+                        number: Number(form.elements.namedItem('number').value),
+                        description: form.elements.namedItem('description').value,
+                        responsibleEmployeesList: responsibleEmployees.map((name) => ({ name })),
+                        admittedEmployeesList: admittedEmployees.map((name) => ({ name })),
+                    };
+                    await this.fetchData(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(machineData)
+                    });
+                }
+                else {
+                    const formData = new FormData(form);
+                    const responsibleEmployees = ((_c = this.choicesInstances['responsibleEmployees']) === null || _c === void 0 ? void 0 : _c.getValue(true)) || [];
+                    const admittedEmployees = ((_d = this.choicesInstances['admittedEmployees']) === null || _d === void 0 ? void 0 : _d.getValue(true)) || [];
+                    formData.delete('responsibleEmployeesList');
+                    formData.delete('admittedEmployeesList');
+                    responsibleEmployees.forEach((name) => formData.append('responsibleEmployeesList', name));
+                    admittedEmployees.forEach((name) => formData.append('admittedEmployeesList', name));
+                    await this.fetchData(url, {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+                alert(`Станок успешно ${isEditMode ? 'обновлен' : 'создан'}!`);
+                window.location.href = '/machines';
+            }
+            catch (error) {
+                console.error('Failed to save machine:', error);
+                alert('Ошибка при сохранении станка.');
+            }
+        });
+    }
+    async populateEmployeeSelects() {
+        try {
+            const employees = await this.fetchData(this.employeeApiUrl);
+            const responsibleSelect = document.getElementById('responsibleEmployees');
+            const admittedSelect = document.getElementById('admittedEmployees');
+            responsibleSelect.innerHTML = '';
+            admittedSelect.innerHTML = '';
+            employees.forEach(emp => {
+                const option = new Option(emp.name, emp.name);
+                if (emp.role.includes('MASTER')) {
+                    responsibleSelect.add(option);
+                }
+                else {
+                    admittedSelect.add(option);
+                }
+            });
+            if (this.choicesInstances['responsibleEmployees'])
+                this.choicesInstances['responsibleEmployees'].destroy();
+            if (this.choicesInstances['admittedEmployees'])
+                this.choicesInstances['admittedEmployees'].destroy();
+            const choicesConfig = {
+                removeItemButton: true,
+                shouldSort: false,
+                placeholder: true,
+                placeholderValue: 'Выберите из списка...',
+                noChoicesText: 'Нет вариантов для выбора',
+                itemSelectText: 'Нажмите, чтобы выбрать',
+                searchPlaceholderValue: 'Начните ввод для поиска...',
+                noResultsText: 'Ничего не найдено',
+            };
+            this.choicesInstances['responsibleEmployees'] = new Choices(responsibleSelect, choicesConfig);
+            this.choicesInstances['admittedEmployees'] = new Choices(admittedSelect, choicesConfig);
+        }
+        catch (error) {
+            console.error('Failed to load employees:', error);
+        }
+    }
+    selectOptions(selectId, employeesToSelect) {
+        const choiceInstance = this.choicesInstances[selectId];
+        if (choiceInstance) {
+            const employeeNames = employeesToSelect.map(e => e.name);
+            setTimeout(() => {
+                choiceInstance.setChoiceByValue(employeeNames);
+            }, 150);
+        }
+    }
+    async initDetailsPage() {
+        const contentDiv = document.getElementById('machine-content');
+        const pathParts = window.location.pathname.split('/');
+        const machineNumber = pathParts[pathParts.length - 1];
+        if (!machineNumber)
+            return;
+        const imageModalEl = document.getElementById('imageViewerModal');
+        if (imageModalEl) {
+            const modal = window.bootstrap.Modal.getOrCreateInstance(imageModalEl);
+            this.imageModalInstance = modal;
+            const closeButton = imageModalEl.querySelector('.btn-close');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    modal.hide();
+                });
+            }
+            imageModalEl.addEventListener('click', (e) => {
+                if (e.target === imageModalEl) {
+                    modal.hide();
+                }
+            });
+        }
+        this.showLoading(true);
+        try {
+            const machine = await this.fetchData(`${this.apiUrl}/${machineNumber}`);
+            document.getElementById('machine-name').textContent = machine.name;
+            document.getElementById('edit-button').href = `/machines/${machine.number}/edit`;
+            document.getElementById('machine-number').textContent = machine.number.toString();
+            document.getElementById('machine-description').textContent = machine.description || 'Нет описания.';
+            this.renderList('responsible-employees-list', machine.responsibleEmployeesList, 'Сотрудники не назначены.');
+            this.renderList('admitted-employees-list', machine.admittedEmployeesList, 'Сотрудники не назначены.');
+            this.renderDocumentList('documents-list', machine.pdfs, 'Документы не найдены.');
+            this.renderPhotoGallery('photos-gallery', machine.imageUrls, 'Фотографии не найдены.');
+            this.generateQrCode(machine.number);
+            document.getElementById('delete-button').addEventListener('click', async () => {
+                if (confirm(`Вы уверены, что хотите удалить станок "${machine.name}"?`)) {
+                    try {
+                        await this.fetchData(`${this.apiUrl}/${machine.number}`, { method: 'DELETE' });
+                        alert('Станок успешно удален.');
+                        window.location.href = '/machines';
+                    }
+                    catch (error) {
+                        console.error('Failed to delete machine:', error);
+                        alert('Не удалось удалить станок.');
+                    }
+                }
+            });
+            document.getElementById('upload-documents-button').addEventListener('click', async () => {
+                const fileInput = document.getElementById('new-documents');
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    for (const file of Array.from(fileInput.files)) {
+                        formData.append('files', file);
+                    }
+                    try {
+                        await this.fetchData(`${this.apiUrl}/${machine.number}/documents`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        alert('Документы успешно загружены.');
+                        location.reload();
+                    }
+                    catch (error) {
+                        console.error('Failed to upload documents:', error);
+                        alert('Ошибка при загрузке документов.');
+                    }
+                }
+            });
+            contentDiv.style.display = 'block';
+        }
+        catch (error) {
+            console.error('Failed to load machine details:', error);
+            contentDiv.innerHTML = '<div class="alert alert-danger">Не удалось загрузить данные станка.</div>';
+            contentDiv.style.display = 'block';
+        }
+        finally {
+            this.showLoading(false);
+        }
+    }
+    renderList(elementId, items, emptyMessage) {
+        const listElement = document.getElementById(elementId);
+        listElement.innerHTML = '';
+        if (!items || items.length === 0) {
+            listElement.innerHTML = `<li class="list-group-item text-muted">${emptyMessage}</li>`;
+            return;
+        }
+        items.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            const initials = item.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+            li.innerHTML = `
                 <div class="employee-item">
-                    <div class="avatar-placeholder">${a}</div>
-                    <span>${e.name}</span>
+                    <div class="avatar-placeholder">${initials}</div>
+                    <span>${item.name}</span>
                 </div>
-            `,t.appendChild(n)})}renderPhotoGallery(s,i,o){let t=document.getElementById(s);if(t.innerHTML="",!i||i.length===0){t.innerHTML=`<div class="col"><p class="text-muted">${o}</p></div>`;return}let e=document.getElementById("modalImage");i.forEach(n=>{let a=document.createElement("div");a.className="col-md-4 mb-3",a.innerHTML=`
+            `;
+            listElement.appendChild(li);
+        });
+    }
+    renderPhotoGallery(elementId, items, emptyMessage) {
+        const galleryElement = document.getElementById(elementId);
+        galleryElement.innerHTML = '';
+        if (!items || items.length === 0) {
+            galleryElement.innerHTML = `<div class="col"><p class="text-muted">${emptyMessage}</p></div>`;
+            return;
+        }
+        const modalImageEl = document.getElementById('modalImage');
+        items.forEach(item => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-3';
+            col.innerHTML = `
                     <div class="card">
-                        <img src="${n.data}" class="img-fluid img-thumbnail" alt="${n.name}" style="height: 200px; object-fit: cover;">
+                        <img src="${item.data}" class="img-fluid img-thumbnail" alt="${item.name}" style="height: 200px; object-fit: cover;">
                     </div>
-                `,a.addEventListener("click",()=>{e&&this.imageModalInstance&&(e.src=n.data,this.imageModalInstance.show())}),t.appendChild(a)})}renderDocumentList(s,i,o){let t=document.getElementById(s);if(t.innerHTML="",!i||i.length===0){t.innerHTML=`<li class="list-group-item text-muted">${o}</li>`;return}i.forEach(e=>{let n=document.createElement("li");n.className="list-group-item d-flex justify-content-between align-items-center",n.innerHTML=`
+                `;
+            col.addEventListener('click', () => {
+                if (modalImageEl && this.imageModalInstance) {
+                    modalImageEl.src = item.data;
+                    this.imageModalInstance.show();
+                }
+            });
+            galleryElement.appendChild(col);
+        });
+    }
+    renderDocumentList(elementId, items, emptyMessage) {
+        const listElement = document.getElementById(elementId);
+        listElement.innerHTML = '';
+        if (!items || items.length === 0) {
+            listElement.innerHTML = `<li class="list-group-item text-muted">${emptyMessage}</li>`;
+            return;
+        }
+        items.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
                             <div class="icon-text">
                                 <i class="bi bi-file-earmark-pdf text-danger"></i>
-                                <a href="/api/v1/machines/documents/${e.id}" target="_blank" rel="noopener noreferrer">${e.baseFileName}</a>
+                                <a href="/api/v1/machines/documents/${item.id}" target="_blank" rel="noopener noreferrer">${item.baseFileName}</a>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger delete-document-btn" data-doc-id="${e.id}" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
+                            <button class="btn btn-sm btn-outline-danger delete-document-btn" data-doc-id="${item.id}" title="Удалить">
                                 <i class="bi bi-trash"></i>
                             </button>
-                        `,t.appendChild(n)}),t.querySelectorAll(".delete-document-btn").forEach(e=>{e.addEventListener("click",n=>r(this,void 0,void 0,function*(){let a=n.target.dataset.docId;if(a&&confirm("\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u043E\u0442 \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442?"))try{yield this.fetchData(`/api/v1/machines/documents/${a}`,{method:"DELETE"}),alert("\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442 \u0443\u0434\u0430\u043B\u0435\u043D."),location.reload()}catch(l){console.error("Failed to delete document:",l),alert("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442.")}}))})}generateQrCode(s){let i=document.getElementById("qr-code-canvas"),o=document.getElementById("download-qr-btn");if(!i||!o){console.error("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0434\u043B\u044F QR-\u043A\u043E\u0434\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.");return}let t=`http://192.168.30.80:2005/machines/${s}`;QRCode.toCanvas(i,t,{width:200,margin:1},e=>{e?console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0433\u0435\u043D\u0435\u0440\u0430\u0446\u0438\u0438 QR-\u043A\u043E\u0434\u0430:",e):o.href=i.toDataURL("image/png")})}};document.addEventListener("DOMContentLoaded",()=>{new b})});export default I();
+                        `;
+            listElement.appendChild(li);
+        });
+        listElement.querySelectorAll('.delete-document-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const docId = e.target.dataset.docId;
+                if (docId && confirm('Вы уверены, что хотите удалить этот документ?')) {
+                    try {
+                        await this.fetchData(`/api/v1/machines/documents/${docId}`, { method: 'DELETE' });
+                        alert('Документ удален.');
+                        location.reload();
+                    }
+                    catch (error) {
+                        console.error('Failed to delete document:', error);
+                        alert('Не удалось удалить документ.');
+                    }
+                }
+            });
+        });
+    }
+    generateQrCode(machineNumber) {
+        const qrCodeCanvas = document.getElementById('qr-code-canvas');
+        const downLoadQrBtn = document.getElementById('download-qr-btn');
+        if (!qrCodeCanvas || !downLoadQrBtn) {
+            console.error('Элементы для QR-кода не найдены.');
+            return;
+        }
+        const machineLink = `http://192.168.30.80:2005/machines/${machineNumber}`;
+        QRCode.toCanvas(qrCodeCanvas, machineLink, { width: 200, margin: 1 }, (error) => {
+            if (error) {
+                console.error('Ошибка при генерации QR-кода:', error);
+            }
+            else {
+                downLoadQrBtn.href = qrCodeCanvas.toDataURL('image/png');
+            }
+        });
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    new MachineManager();
+});
+//# sourceMappingURL=machines.js.map

@@ -1,56 +1,503 @@
-var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=x&&x.__awaiter||function(w,n,l,i){function c(a){return a instanceof l?a:new l(function(e){e(a)})}return new(l||(l=Promise))(function(a,e){function t(s){try{d(i.next(s))}catch(f){e(f)}}function o(s){try{d(i.throw(s))}catch(f){e(f)}}function d(s){s.done?a(s.value):c(s.value).then(t,o)}d((i=i.apply(w,n||[])).next())})},k=class extends Base{constructor(n=16,l=1/0){super($(".table-content-rows"),n,l,()=>{this.displayPage("/api/sgi/get-page-sgi",void 0,(i,c)=>this.buildPagination(i,c)).catch(console.error)}),this.filters={},this.openSubSgi=i=>{if($(i.target).is("input"))return;$(i.currentTarget).closest(".row-items-row").siblings(".row-items-inner-row").slideToggle(400)},this.createSgi=i=>g(this,void 0,void 0,function*(){i.preventDefault();let c=$(i.target),a=c.closest("form").get(0),e=$("#create-dialog");if(!a.checkValidity()){a.reportValidity();return}c.prop("disabled",!0);let t=new FormData,o=e.find('input[name="hiddenEmployee"]').val(),d=JSON.parse(o),s={workcenter:e.find('input[name="workcenter"]').val(),event:e.find('textarea[name="event"]').val(),actions:e.find('textarea[name="actions"]').val(),department:e.find('select[name="department"]').val(),employee:d,desiredDate:e.find('input[name="desiredDate"]').val(),note:e.find('textarea[name="note"]').val(),parentId:e.find('input[name="parentId"]').val()},f=new Blob([JSON.stringify(s)],{type:"application/json"});t.append("data",f,"data.json");let u=e.find('input[name="additionalFiles"]')[0];if(u?.files)for(let r=0;r<u.files.length;r++)t.append("additionalFiles",u.files[r]);try{let r=yield this.createEntity("/api/sgi/create-sgi",t);this.dialog.close("create-dialog");let p=this.createRow(r);if($(".table-content-rows").find(".row-items-row").length===this.itemsPerPage&&!e.find('[name="parentId"]').val().length)yield $("#last-page").click(),$(".table-content-rows").append(p),this.createNotification("\u0421\u043E\u0437\u0434\u0430\u043D\u043E \u043D\u043E\u0432\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u043F\u043E\u0434 \u043D\u043E\u043C\u0435\u0440\u043E\u043C "+r.number,NotificationType.SUCCESS);else if(r.parent==null)$(".table-content-rows").append(p),this.createNotification("\u0421\u043E\u0437\u0434\u0430\u043D\u043E \u043D\u043E\u0432\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u043F\u043E\u0434 \u043D\u043E\u043C\u0435\u0440\u043E\u043C "+r.number,NotificationType.SUCCESS);else{let h=this.localCache.get(r.parent);h.subSGI.push(r),this.localCache.set(h.id,h),yield this.updateRow(h,h.id),this.createNotification("\u0421\u043E\u0437\u0434\u0430\u043D\u0430 \u043D\u043E\u0432\u0430\u044F \u043F\u043E\u0434\u0437\u0430\u0434\u0430\u0447\u0430 \u0434\u043B\u044F \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u044F \u043F\u043E\u0434 \u043D\u043E\u043C\u0435\u0440\u043E\u043C "+h.number,NotificationType.SUCCESS)}this.localCache.set(r.id,r),c.prop("disabled",!1)}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 SGI",NotificationType.ERROR),c.prop("disabled",!1)}}),this.uploadImages=function(i){return g(this,void 0,void 0,function*(){let c=$(i.target);c.prop("disabled",!0);let a=c.closest("dialog"),e=a.find('[name="additionalFiles"]'),t=a.find(".file-list"),o=this;e.off("change").on("change",function(d){return g(this,void 0,void 0,function*(){d.preventDefault();let s=d.target,f=s.files;if(!f)return;s.files=new DataTransfer().files,o.localCache.has("imagesMap")||o.localCache.set("imagesMap",new Map);let u=o.localCache.get("imagesMap");for(let m=0;m<f.length;m++){let v=f[m];u.has(v.name)||u.set(v.name,v)}let r=new DataTransfer;for(let[m,v]of u)if(v instanceof File){r.items.add(v);let b=`
+"use strict";
+class Sgi extends Base {
+    constructor(itemsPerPage = 16, visibleRow = Infinity) {
+        super($(`.table-content-rows`), itemsPerPage, visibleRow, () => {
+            this.displayPage('/api/sgi/get-page-sgi', undefined, (data, count) => this.buildPagination(data, count)).catch(console.error);
+        });
+        this.filters = {};
+        this.openSubSgi = (event) => {
+            if ($(event.target).is('input')) {
+                return;
+            }
+            const $currentRow = $(event.currentTarget).closest('.row-items-row');
+            const $innerRows = $currentRow.siblings('.row-items-inner-row');
+            $innerRows.slideToggle(400);
+        };
+        this.createSgi = async (event) => {
+            event.preventDefault();
+            const button = $(event.target);
+            const form = button.closest('form').get(0);
+            const dialog = $('#create-dialog');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            button.prop('disabled', true);
+            const formData = new FormData();
+            const employeeInput = dialog.find('input[name="hiddenEmployee"]').val();
+            const employee = JSON.parse(employeeInput);
+            const jsonData = {
+                workcenter: dialog.find('input[name="workcenter"]').val(),
+                event: dialog.find('textarea[name="event"]').val(),
+                actions: dialog.find('textarea[name="actions"]').val(),
+                department: dialog.find('select[name="department"]').val(),
+                employee: employee,
+                desiredDate: dialog.find('input[name="desiredDate"]').val(),
+                note: dialog.find('textarea[name="note"]').val(),
+                parentId: dialog.find('input[name="parentId"]').val()
+            };
+            const jsonBlob = new Blob([JSON.stringify(jsonData)], { type: 'application/json' });
+            formData.append('data', jsonBlob, 'data.json');
+            const fileInput = dialog.find('input[name="additionalFiles"]')[0];
+            if (fileInput === null || fileInput === void 0 ? void 0 : fileInput.files) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('additionalFiles', fileInput.files[i]);
+                }
+            }
+            try {
+                const newSgi = await this.createEntity('/api/sgi/create-sgi', formData);
+                this.dialog.close("create-dialog");
+                const newRow = this.createRow(newSgi);
+                if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage &&
+                    !dialog.find('[name="parentId"]').val().length) {
+                    await $('#last-page').click();
+                    $(`.table-content-rows`).append(newRow);
+                    this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
+                }
+                else if (newSgi.parent == null) {
+                    $(`.table-content-rows`).append(newRow);
+                    this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
+                }
+                else {
+                    const parentSgi = this.localCache.get(newSgi.parent);
+                    if (parentSgi) {
+                        parentSgi.subSGI.push(newSgi);
+                        this.localCache.set(parentSgi.id, parentSgi);
+                        await this.updateRow(parentSgi, parentSgi.id);
+                        this.createNotification('Создана новая подзадача для мероприятия под номером ' + parentSgi.number, NotificationType.SUCCESS);
+                    }
+                }
+                this.localCache.set(newSgi.id, newSgi);
+                button.prop('disabled', false);
+            }
+            catch (error) {
+                this.createNotification('Ошибка при создании SGI', NotificationType.ERROR);
+                button.prop('disabled', false);
+            }
+        };
+        this.uploadImages = async (event) => {
+            const $this = $(event.target);
+            $this.prop('disabled', true);
+            const currentDialog = $this.closest('dialog');
+            const inputFiles = currentDialog.find('[name="additionalFiles"]');
+            const imageContainer = currentDialog.find('.file-list');
+            // Сохраняем ссылку на класс или контекст
+            // Предположим, что localCache - это свойство класса
+            const that = this; // или const localCache = this.localCache;
+            inputFiles.off('change').on('change', async function (e) {
+                e.preventDefault();
+                const input = e.target;
+                const files = input.files;
+                if (!files)
+                    return;
+                input.files = new DataTransfer().files;
+                // Используем сохраненную ссылку
+                if (!that.localCache.has('imagesMap')) {
+                    that.localCache.set('imagesMap', new Map());
+                }
+                const imagesMap = that.localCache.get('imagesMap');
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!imagesMap.has(file.name)) {
+                        imagesMap.set(file.name, file);
+                    }
+                }
+                const dataTransfer = new DataTransfer();
+                for (const [fileName, file] of imagesMap) {
+                    if (file instanceof File) {
+                        dataTransfer.items.add(file);
+                        const imageUrl = URL.createObjectURL(file);
+                        const fileItem = `
                 <div class="file-item">
-                    <img src="${URL.createObjectURL(v)}" alt="${v.name}">
-                </div>`;t.append(b),u.set(v.name,null)}let p=o.localCache.has("validFileMap")?o.localCache.get("validFileMap"):new Map;for(let m=0;m<r.files.length;m++){let v=r.files[m];p.set(v.name,v)}o.localCache.set("validFileMap",p);let h=new DataTransfer;p.forEach(m=>h.items.add(m)),s.files=h.files})}),e.trigger("click"),$(document).off("click.closeContextMenu").on("click.closeContextMenu",()=>$(".context-menu").remove()),c.prop("disabled",!1)})},this.edit=function(i){return g(this,void 0,void 0,function*(){let c=$(i.target).closest(".row-items-row"),a=$(c).attr("id"),e=this.localCache.get(a),t=$("#editing-dialog"),o=e.parent===null;o&&!t.find("#createSubSGI").length?t.find(".modal-footer").prepend('<button class="btn btn-primary" id="createSubSGI">\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043F\u043E\u0434\u0437\u0430\u0434\u0430\u0447\u0443</button>'):!o&&t.find("#createSubSGI").length&&t.find("#createSubSGI").remove();for(let d in e){if(!e.hasOwnProperty(d))continue;let s=e[d],f=t.find(`[data-field="${d}"]`);if(f.length&&d!=="imagesSGI"){if(d==="employee"){f.val(s.name);continue}f.val(s||"")}}t.find(".document").attr("id",e.id),this.dialog.open("editing-dialog"),yield this.renderImages("#editing-dialog","edit",e,e.imagesSGI),$("#editing-dialog #saveEditBtn").off("click").on("click",d=>g(this,void 0,void 0,function*(){if(e.agree){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u043D\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435",NotificationType.ERROR);return}d.preventDefault();let s=new FormData;s.append("id",a),s.append("factExecutionSGIBool","false"),$(t).find("[data-field]").each((u,r)=>{if(r.type!=="file")s.append(r.dataset.field,r.value);else for(let p of r.files)s.append(r.dataset.field,p)});let f=yield $.ajax({url:"/api/sgi/update",type:"PATCH",data:s,processData:!1,contentType:!1,dataType:"json",error:()=>{this.dialog.close("editing-dialog"),t.find("#createSubSGI").remove(),this.createNotification("\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u043C\u043E\u0436\u0435\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u043E\u0437\u0434\u0430\u0442\u0435\u043B\u044C \u0437\u0430\u0434\u0430\u0447\u0438",NotificationType.ERROR)}});if(this.localCache.set(a,f),this.localCache.delete("validFileMap"),f.parent!=null){let u=this.localCache.get(f.parent);u.subSGI=u.subSGI.filter(h=>h.id!==f.id),u.subSGI.push(f),yield this.updateRow(u,u.id);let p=$(`.row-items-row[id="${u.id}"]`).find(".hamburger");if(p.length>0){let h={currentTarget:p[0],target:p[0],preventDefault:()=>{},stopPropagation:()=>{}};yield this.openSubSgi(h)}}else yield this.updateRow(f,a);this.dialog.close("editing-dialog"),t.find("#createSubSGI").remove(),this.createNotification("\u041C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0442\u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u043E",NotificationType.SUCCESS)})),$("#createSubSGI").off("click").on("click",d=>g(this,void 0,void 0,function*(){e.agree&&this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u043D\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435",NotificationType.ERROR),this.dialog.close("editing-dialog"),t.find("#createSubSGI").remove();let s=$("#create-dialog");this.dialog.open("create-dialog"),s.find('[name="parentId"]').val(a)})),t.find("#cancelButton").off("click").on("click",()=>{this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),this.dialog.close("editing-dialog"),t.find("#createSubSGI").remove()})})},this.renderImages=(i,c,a,e)=>g(this,void 0,void 0,function*(){let t=(r,p)=>{let h=r.split(","),m=h[0].match(/:(.*?);/)[1],v=atob(h[1]),C=v.length,b=new Uint8Array(C);for(let y=0;y<C;y++)b[y]=v.charCodeAt(y);return new File([b],p,{type:m})},o=$(i),d=o.find(".file-list");d.empty();let s=new Map;if(!e||e===null){let r=`/api/sgi/get-images-${c==="fact"?"fact-sgi":"sgi"}`;try{e=yield $.ajax({url:r,type:"GET",data:{id:c==="fact"?a.factExecution.id:a.id}})}catch{e=[]}let p=Array.isArray(e)?e:[];c==="fact"?a.factExecution.imagesFactSGI=p:a.imagesSGI=p}for(let r of e||[]){let p=`
-            <div class="file-item" id="${r.id}">
-                <img src="${r.data}" alt="${r.name}">
-            </div>`;d.append(p),this.localCache.set(r.name,null),s.set(r.name,t(r.data,r.name))}this.localCache.set("validFileMap",s);let f=o.find('input[type="file"]').clone()[0],u=new DataTransfer;s.forEach(r=>u.items.add(r)),f.files=u.files,o.find('input[type="file"]').replaceWith(f)}),this.zoomImageOnClick=i=>g(this,void 0,void 0,function*(){i.preventDefault(),i.stopPropagation();let c=$(i.target),a=c.attr("src"),e=c.attr("alt"),t=c.closest("dialog");$("#imagePreviewModal").length||(t.append(`
+                    <img src="${imageUrl}" alt="${file.name}">
+                </div>`;
+                        imageContainer.append(fileItem);
+                        imagesMap.set(file.name, null);
+                    }
+                }
+                const validFileMap = that.localCache.has('validFileMap')
+                    ? that.localCache.get('validFileMap')
+                    : new Map();
+                for (let i = 0; i < dataTransfer.files.length; i++) {
+                    const file = dataTransfer.files[i];
+                    validFileMap.set(file.name, file);
+                }
+                that.localCache.set('validFileMap', validFileMap);
+                const newDataTransfer = new DataTransfer();
+                validFileMap.forEach(file => newDataTransfer.items.add(file));
+                input.files = newDataTransfer.files;
+            });
+            inputFiles.trigger('click');
+            $(document).off('click.closeContextMenu').on('click.closeContextMenu', () => $('.context-menu').remove());
+            $this.prop('disabled', false);
+        };
+        this.edit = async (event) => {
+            const currentRow = $(event.target).closest('.row-items-row');
+            const currentId = $(currentRow).attr('id');
+            const currentSGI = this.localCache.get(currentId);
+            if (!currentSGI)
+                return;
+            const dialog = $('#editing-dialog');
+            const isParentSGI = currentSGI.parent === null;
+            if (isParentSGI && !dialog.find('#createSubSGI').length) {
+                dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
+            }
+            else if (!isParentSGI && dialog.find('#createSubSGI').length) {
+                dialog.find('#createSubSGI').remove();
+            }
+            for (const key in currentSGI) {
+                if (!currentSGI.hasOwnProperty(key))
+                    continue;
+                const value = currentSGI[key];
+                const field = dialog.find(`[data-field="${key}"]`);
+                if (!field.length)
+                    continue;
+                if (key === 'imagesSGI')
+                    continue;
+                if (key === 'employee') {
+                    field.val(value.name);
+                    continue;
+                }
+                field.val(value || '');
+            }
+            dialog.find('.document').attr('id', currentSGI.id);
+            this.dialog.open('editing-dialog');
+            await this.renderImages('#editing-dialog', 'edit', currentSGI, currentSGI.imagesSGI);
+            $('#editing-dialog #saveEditBtn').off('click').on('click', async (e) => {
+                if (currentSGI.agree) {
+                    this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
+                    return;
+                }
+                e.preventDefault();
+                const formData = new FormData();
+                formData.append('id', currentId);
+                formData.append('factExecutionSGIBool', 'false');
+                $(dialog).find('[data-field]').each((_, el) => {
+                    if (el.type !== 'file') {
+                        formData.append(el.dataset.field, el.value);
+                    }
+                    else {
+                        for (let file of el.files) {
+                            formData.append(el.dataset.field, file);
+                        }
+                    }
+                });
+                const updateSGI = await $.ajax({
+                    url: '/api/sgi/update',
+                    type: 'PATCH',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    error: () => {
+                        this.dialog.close('editing-dialog');
+                        dialog.find('#createSubSGI').remove();
+                        this.createNotification('Редактировать может только создатель задачи', NotificationType.ERROR);
+                    }
+                });
+                this.localCache.set(currentId, updateSGI);
+                this.localCache.delete('validFileMap');
+                if (updateSGI.parent != null) {
+                    const parentSGI = this.localCache.get(updateSGI.parent);
+                    if (parentSGI) {
+                        parentSGI.subSGI = parentSGI.subSGI.filter((sub) => sub.id !== updateSGI.id);
+                        parentSGI.subSGI.push(updateSGI);
+                        await this.updateRow(parentSGI, parentSGI.id);
+                    }
+                    // @ts-ignore
+                    const parentRow = $(`.row-items-row[id="${parentSGI.id}"]`);
+                    const hamburger = parentRow.find('.hamburger');
+                    if (hamburger.length > 0) {
+                        const fakeEvent = {
+                            currentTarget: hamburger[0],
+                            target: hamburger[0],
+                            preventDefault: () => {
+                            },
+                            stopPropagation: () => {
+                            }
+                        };
+                        await this.openSubSgi(fakeEvent);
+                    }
+                }
+                else {
+                    await this.updateRow(updateSGI, currentId);
+                }
+                this.dialog.close('editing-dialog');
+                dialog.find('#createSubSGI').remove();
+                this.createNotification('Мероприятие успешно отредактировано', NotificationType.SUCCESS);
+            });
+            $('#createSubSGI').off('click').on('click', async (e) => {
+                if (currentSGI.agree) {
+                    this.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.ERROR);
+                }
+                this.dialog.close('editing-dialog');
+                dialog.find('#createSubSGI').remove();
+                const createDialog = $('#create-dialog');
+                this.dialog.open('create-dialog');
+                createDialog.find('[name="parentId"]').val(currentId);
+            });
+            dialog.find('#cancelButton').off('click').on('click', () => {
+                this.localCache.delete('validFileMap');
+                this.localCache.delete('imagesMap');
+                this.dialog.close('editing-dialog');
+                dialog.find('#createSubSGI').remove();
+            });
+        };
+        this.renderImages = async (currentDialog, type, currentSGI, images) => {
+            var _a;
+            const base64ToFile = (base64, name) => {
+                const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                for (let i = 0; i < n; i++)
+                    u8arr[i] = bstr.charCodeAt(i);
+                return new File([u8arr], name, { type: mime });
+            };
+            const dialog = $(currentDialog);
+            const imageContainer = dialog.find('.file-list');
+            imageContainer.empty();
+            const validFileMap = new Map();
+            if (!images || images === null) {
+                const url = `/api/sgi/get-images-${type === 'fact' ? 'fact-sgi' : 'sgi'}`;
+                try {
+                    images = await $.ajax({
+                        url: url,
+                        type: 'GET',
+                        data: { id: type === 'fact' ? (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.id : currentSGI.id }
+                    });
+                }
+                catch (error) {
+                    images = [];
+                }
+                const processedImages = Array.isArray(images) ? images : [];
+                if (type === 'fact') {
+                    if (currentSGI.factExecution != null) {
+                        currentSGI.factExecution.imagesFactSGI = processedImages;
+                    }
+                }
+                else {
+                    currentSGI.imagesSGI = processedImages;
+                }
+            }
+            for (const image of images || []) {
+                const imgHtml = `
+            <div class="file-item" id="${image.id}">
+                <img src="${image.data}" alt="${image.name}">
+            </div>`;
+                imageContainer.append(imgHtml);
+                this.localCache.set(image.name, {});
+                validFileMap.set(image.name, base64ToFile(image.data, image.name));
+            }
+            this.localCache.set('validFileMap', validFileMap);
+            let input = dialog.find('input[type="file"]').clone()[0];
+            const dataTransfer = new DataTransfer();
+            validFileMap.forEach(file => dataTransfer.items.add(file));
+            input.files = dataTransfer.files;
+            dialog.find('input[type="file"]').replaceWith(input);
+        };
+        this.zoomImageOnClick = async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const target = $(event.target);
+            const imgSrc = target.attr('src');
+            const imgAlt = target.attr('alt');
+            const currentDialog = target.closest('dialog');
+            if (!$('#imagePreviewModal').length) {
+                currentDialog.append(`
                 <div id="imagePreviewModal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9);">
                     <span class="close" style="position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
                     <img class="modal-content" id="previewImage" style="margin: auto; display: block; width: 80%; max-width: 700px; margin-top: 40px;">
                 </div>
-            `),$(document).on("click","#imagePreviewModal .close, #imagePreviewModal",function(o){(o.target.id==="imagePreviewModal"||o.target.className==="close")&&$("#imagePreviewModal").hide()}),$(document).on("keydown",function(o){o.key==="Escape"&&$("#imagePreviewModal").is(":visible")&&$("#imagePreviewModal").hide()})),$("#previewImage").attr("src",a).attr("alt",e),$("#imagePreviewModal").show()}),this.imageContextMenu=i=>g(this,void 0,void 0,function*(){i.preventDefault();let c=i,a=i.target,e=$(a).closest("dialog");$(".context-menu").remove();let t=$(`
+            `);
+                // Обработчики для закрытия модального окна
+                $(document).on('click', '#imagePreviewModal .close, #imagePreviewModal', (e) => {
+                    if (e.target.id === 'imagePreviewModal' || e.target.className === 'close') {
+                        $('#imagePreviewModal').hide();
+                    }
+                });
+                // Закрытие по ESC
+                $(document).on('keydown', (e) => {
+                    if (e.key === 'Escape' && $('#imagePreviewModal').is(':visible')) {
+                        $('#imagePreviewModal').hide();
+                    }
+                });
+            }
+            $('#previewImage').attr('src', imgSrc).attr('alt', imgAlt);
+            $('#imagePreviewModal').show();
+        };
+        this.imageContextMenu = async (event) => {
+            event.preventDefault();
+            const mouseEvent = event;
+            const target = event.target;
+            const currentDialog = $(target).closest('dialog');
+            $('.context-menu').remove();
+            const menu = $(`
         <div class="context-menu">
-            <button class="context-btn">\u0423\u0434\u0430\u043B\u0438\u0442\u044C</button>
+            <button class="context-btn">Удалить</button>
         </div>
-    `);$(e).append(t);let o=$(e).offset();t.css({position:"absolute",top:`${c.pageY-o.top}px`,left:`${c.pageX-o.left}px`,background:"#f8f9fa",border:"1px solid #dee2e6",padding:"8px","border-radius":"4px","box-shadow":"0 4px 12px rgba(0,0,0,0.15)","z-index":"1000"}),t.find(".context-btn").css({background:"#dc3545",color:"white",border:"none",padding:"6px 12px",cursor:"pointer","border-radius":"3px","font-size":"0.875rem"}),t.find(".context-btn").click(()=>{let s=a,f=s.alt;this.localCache.has("imagesMap")&&this.localCache.get("imagesMap").delete(f);let u=this.localCache.get("validFileMap");if(u){u.delete(f),this.localCache.set("validFileMap",u);let r=e.find('input[type="file"]').clone()[0],p=new DataTransfer;u.forEach(h=>{p.items.add(h)}),r.files=p.files,e.find('input[type="file"]').replaceWith(r)}$(s).remove(),t.remove()});let d=s=>{!t.is(s.target)&&t.has(s.target).length===0&&(t.remove(),$(document).off("click",d))};setTimeout(()=>{$(document).on("click",d)},0)}),this.showRowContextMenu=i=>g(this,void 0,void 0,function*(){i.preventDefault();let c=i,e=$(i.currentTarget).attr("id");this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C",idAction:"deleteSgiButton",action:()=>{let t=this.localCache.get(e);if(t.agree){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u044F\u0442\u044C \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u043D\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435!",NotificationType.ERROR);return}this.createConfirmationDialog("\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u044F").then(o=>{o&&this.deleteEntity(`/api/sgi/delete/${e}`).then(()=>{if(this.deleteRow(e),this.localCache.delete(e),t.parent!=null){let d=this.localCache.get(t.parent);d.subSGI=d.subSGI.filter(s=>s.id!==t.id),this.localCache.set(d.id,d),d.subSGI.length===0&&this.updateRow(d,d.id)}this.createNotification("\u041C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u043E",NotificationType.SUCCESS)}).catch(d=>{this.createNotification("\u0412\u043E\u0437\u043D\u0438\u043A\u043B\u0430 \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u044F",NotificationType.ERROR),console.error(d)})})}},{label:"\u041F\u0435\u0447\u0430\u0442\u044C",idAction:"printSgiButton",action:()=>{window.open(`/api/report/print/sgi?ids=${[...this.selectedRows].join(",")}`)}}],c.clientX,c.clientY)}),this.createHandler("click","#create-button",()=>this.dialog.open("create-dialog"),!0),this.createHandler("click","#createBtn",this.createSgi,!0),this.createHandler("click",".area-modal",this.workWithModal.bind(this),!0),this.createHandler("click",".file-upload",this.uploadImages.bind(this),!0),this.createHandler("click",".editing-btn",this.edit.bind(this),!0),this.createHandler("click",".execution-btn",this.fact.bind(this),!0),this.createHandler("click","#toggleAgreement",this.agree.bind(this),!0),this.createHandler("click","dialog img",this.zoomImageOnClick.bind(this),!0),this.createHandler("contextmenu","img",this.imageContextMenu.bind(this),!0),this.createHandler("dblclick",".row-items-row",this.selectRow.bind(this),!1),this.createHandler("contextmenu",".selected-row",this.showRowContextMenu.bind(this),!0),this.createHandler("click",".pagination .page-btn",this.enterPage.bind(this),!0),this.createHandler("click","#filter-button",this.filterDialog.bind(this),!0),this.createHandler("click",".print-menu-item",this.printFromMenu.bind(this),!0),this.createHandler("click",".document",this.openDocument.bind(this),!0),this.createHandler("click",".download",this.handleDownloadFile.bind(this),!0),this.createHandler("click",".hamburger",this.openSubSgi.bind(this),!1)}createRow(n){var l;let i=`
-            <label class="hamburger tooltip-trigger" data-description="\u0420\u0430\u0441\u043A\u0440\u044B\u0442\u044C \u0441\u043F\u0438\u0441\u043E\u043A \u043F\u043E\u0434\u0437\u0430\u0434\u0430\u0447">
+    `);
+            $(currentDialog).append(menu);
+            // Получаем позицию диалога
+            const dialogOffset = $(currentDialog).offset();
+            // Позиционируем меню
+            menu.css({
+                'position': 'absolute',
+                'top': `${mouseEvent.pageY - dialogOffset.top}px`,
+                'left': `${mouseEvent.pageX - dialogOffset.left}px`,
+                'background': '#f8f9fa',
+                'border': '1px solid #dee2e6',
+                'padding': '8px',
+                'border-radius': '4px',
+                'box-shadow': '0 4px 12px rgba(0,0,0,0.15)',
+                'z-index': '1000'
+            });
+            menu.find('.context-btn').css({
+                'background': '#dc3545',
+                'color': 'white',
+                'border': 'none',
+                'padding': '6px 12px',
+                'cursor': 'pointer',
+                'border-radius': '3px',
+                'font-size': '0.875rem'
+            });
+            menu.find('.context-btn').click(() => {
+                const imgElement = target;
+                const imgName = imgElement.alt;
+                if (this.localCache.has('imagesMap')) {
+                    const imagesMap = this.localCache.get('imagesMap');
+                    imagesMap.delete(imgName);
+                }
+                const validFileMap = this.localCache.get('validFileMap');
+                if (validFileMap) {
+                    validFileMap.delete(imgName);
+                    this.localCache.set('validFileMap', validFileMap);
+                    const input = currentDialog.find('input[type="file"]').clone()[0];
+                    const dataTransfer = new DataTransfer();
+                    validFileMap.forEach((file) => {
+                        dataTransfer.items.add(file);
+                    });
+                    input.files = dataTransfer.files;
+                    currentDialog.find('input[type="file"]').replaceWith(input);
+                }
+                $(imgElement).remove();
+                menu.remove();
+            });
+            const closeMenu = (e) => {
+                if (!menu.is(e.target) && menu.has(e.target).length === 0) {
+                    menu.remove();
+                    $(document).off('click', closeMenu);
+                }
+            };
+            setTimeout(() => {
+                $(document).on('click', closeMenu);
+            }, 0);
+        };
+        this.showRowContextMenu = async (event) => {
+            event.preventDefault();
+            const mouseEvent = event;
+            const $row = $(event.currentTarget);
+            const rowId = $row.attr('id');
+            this.createContextMenu([
+                {
+                    label: 'Удалить',
+                    idAction: "deleteSgiButton",
+                    action: () => {
+                        const sgi = this.localCache.get(rowId);
+                        if (sgi.agree) {
+                            this.createNotification('Нельзя удалять согласованное мероприятие!', NotificationType.ERROR);
+                            return;
+                        }
+                        this.createConfirmationDialog("Подтвердите удаление мероприятия").then((confirmed) => {
+                            // @ts-ignore
+                            if (confirmed) {
+                                this.deleteEntity(`/api/sgi/delete/${rowId}`).then(() => {
+                                    this.deleteRow(rowId);
+                                    this.localCache.delete(rowId);
+                                    if (sgi.parent != null) {
+                                        const parentSgi = this.localCache.get(sgi.parent);
+                                        parentSgi.subSGI = parentSgi.subSGI.filter((sub) => sub.id !== sgi.id);
+                                        this.localCache.set(parentSgi.id, parentSgi);
+                                        if (parentSgi.subSGI.length === 0) {
+                                            this.updateRow(parentSgi, parentSgi.id);
+                                        }
+                                    }
+                                    this.createNotification("Мероприятие успешно удалено", NotificationType.SUCCESS);
+                                }).catch((error) => {
+                                    this.createNotification("Возникла ошибка при удалении мероприятия", NotificationType.ERROR);
+                                    console.error(error);
+                                });
+                            }
+                        });
+                    }
+                },
+                {
+                    label: 'Печать',
+                    idAction: "printSgiButton",
+                    action: () => {
+                        window.open(`/api/report/print/sgi?ids=${[...this.selectedRows].join(',')}`);
+                    }
+                }
+            ], mouseEvent.clientX, mouseEvent.clientY);
+        };
+        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
+        this.createHandler('click', '#createBtn', this.createSgi, true);
+        this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
+        this.createHandler('click', '.file-upload', this.uploadImages.bind(this), true);
+        this.createHandler('click', '.editing-btn', this.edit.bind(this), true);
+        this.createHandler('click', '.execution-btn', this.fact.bind(this), true);
+        this.createHandler('click', '#toggleAgreement', this.agree.bind(this), true);
+        this.createHandler('click', 'dialog img', this.zoomImageOnClick.bind(this), true);
+        this.createHandler('contextmenu', 'img', this.imageContextMenu.bind(this), true);
+        this.createHandler('dblclick', '.row-items-row', this.selectRow.bind(this), false);
+        this.createHandler('contextmenu', '.selected-row', this.showRowContextMenu.bind(this), true);
+        this.createHandler('click', '.pagination .page-btn', this.enterPage.bind(this), true);
+        this.createHandler('click', '#filter-button', this.filterDialog.bind(this), true);
+        this.createHandler('click', '.print-menu-item', this.printFromMenu.bind(this), true);
+        this.createHandler('click', '.document', this.openDocument.bind(this), true);
+        this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
+        this.createHandler('click', '.hamburger', this.openSubSgi.bind(this), false);
+    }
+    createRow(sgi) {
+        var _a;
+        const hamburger = `
+            <label class="hamburger tooltip-trigger" data-description="Раскрыть список подзадач">
                 <input type="checkbox">
                 <svg viewBox="0 0 32 32">
                     <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
                     <path class="line" d="M7 16 27 16"></path>
                 </svg>                    
-            </label>`,c=n.color==="RED"?"border-danger":n.color==="YELLOW"?"border-warning":n.color==="GREEN"?"border-good":"",a=((l=n.subSGI)===null||l===void 0?void 0:l.map(t=>this.createInnerRow(t,n)).join(""))||"",e=`
-         <div class="row-items" data-index="${n.id}">
-            <div class="row-items-row ${n.color==="GREY"?"complete":""}" id="${n.id}" data-inner="true">
+            </label>`;
+        const borderClass = sgi.color === 'RED' ? 'border-danger' : sgi.color === 'YELLOW' ? 'border-warning' : sgi.color === 'GREEN' ? 'border-good' : '';
+        const innerRows = ((_a = sgi.subSGI) === null || _a === void 0 ? void 0 : _a.map(sub => this.createInnerRow(sub, sgi)).join('')) || '';
+        const row = `
+         <div class="row-items" data-index="${sgi.id}">
+            <div class="row-items-row ${sgi.color === 'GREY' ? 'complete' : ''}" id="${sgi.id}" data-inner="true">
                 <div class="row-item" data-field="number" style="width: var(--no);">
-                    ${n.subSGI&&n.subSGI.length>0?i:""}
-                    <span class="${c}">${n.number}</span>
+                    ${sgi.subSGI && sgi.subSGI.length > 0 ? hamburger : ''}
+                    <span class="${borderClass}">${sgi.number}</span>
                 </div>
-                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${n.workcenter}</div>
-                <div class="row-item" data-field="event" style="width: var(--event);">${n.event}</div>
-                <div class="row-item" data-field="actions" style="width: var(--action);">${n.actions}</div>
-                <div class="row-item" data-field="department" style="width: var(--department);">${n.departmentName}</div>
-                <div class="row-item" data-field="employee" style="width: var(--employee);">${n.employee.name}</div>
-                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(n.desiredDate)}</div>
-                <div class="row-item" data-field="note" style="width: var(--note);">${n.note}</div>
+                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${sgi.workcenter}</div>
+                <div class="row-item" data-field="event" style="width: var(--event);">${sgi.event}</div>
+                <div class="row-item" data-field="actions" style="width: var(--action);">${sgi.actions}</div>
+                <div class="row-item" data-field="department" style="width: var(--department);">${sgi.departmentName}</div>
+                <div class="row-item" data-field="employee" style="width: var(--employee);">${sgi.employee.name}</div>
+                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(sgi.desiredDate)}</div>
+                <div class="row-item" data-field="note" style="width: var(--note);">${sgi.note}</div>
                 <div class="row-item" data-field="planDate" style="width: var(--planDate);">
-                   <span class="${c}">${this.formatDate(n.planDate)}</span>
+                   <span class="${borderClass}">${this.formatDate(sgi.planDate)}</span>
                 </div>
-                <div class="row-item" data-field="comment" style="width: var(--comment);">${n.comment}</div>
+                <div class="row-item" data-field="comment" style="width: var(--comment);">${sgi.comment}</div>
                 <div class="row-item" style="width: var(--editing);">
-                    <button type="button" name="editingButton" class="btn btn-info btn-sm editing-btn tooltip-trigger" data-description="\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u043A\u043D\u043E \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F">
+                    <button type="button" name="editingButton" class="btn btn-info btn-sm editing-btn tooltip-trigger" data-description="Открыть окно редактирования">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                 </div>
                 <div class="row-item" style="width: var(--executions);">
-                    <button type="button" name="executionButton" class="btn btn-info btn-sm execution-btn tooltip-trigger" data-description="\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043E\u043A\u043D\u043E \u0444\u0430\u043A\u0442\u0430 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F">
-                        \u2714
+                    <button type="button" name="executionButton" class="btn btn-info btn-sm execution-btn tooltip-trigger" data-description="Открыть окно факта выполнения">
+                        ✔
                     </button>
                 </div>
                 <div class="row-item" style="width: var(--status);">
                     <div class="checkbox-wrapper-31">
-                        <input type="checkbox" id="toggleAgreement" ${n.agree?"checked":""}>
+                        <input type="checkbox" id="toggleAgreement" ${sgi.agree ? 'checked' : ''}>
                         <svg viewBox="0 0 35.6 35.6">
                             <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
                             <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
@@ -60,31 +507,42 @@ var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=
                 </div>
             </div>
             <div class="row-items-inner-row">
-                ${a}
+                ${innerRows}
             </div>
-         </div>`;return $(e)}createInnerRow(n,l){let i=n.color==="RED"?"border-danger":n.color==="YELLOW"?"border-warning":n.color==="GREEN"?"border-good":"",c=`
+         </div>`;
+        return $(row);
+    }
+    createInnerRow(sgi, inner) {
+        const borderClass = sgi.color === 'RED'
+            ? 'border-danger' :
+            sgi.color === 'YELLOW'
+                ? 'border-warning' :
+                sgi.color === 'GREEN'
+                    ? 'border-good' : '';
+        const hamburger = `
             <label class="hamburger">
                 <input type="checkbox">
                 <svg viewBox="0 0 32 32">
                     <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
                     <path class="line" d="M7 16 27 16"></path>
                 </svg>                    
-            </label>`,a=`
-            <div class="row-items-row ${n.color==="GREY"?"complete":""}" id="${n.id}" data-inner="true">
+            </label>`;
+        const row = `
+            <div class="row-items-row ${sgi.color === 'GREY' ? 'complete' : ''}" id="${sgi.id}" data-inner="true">
                 <div class="row-item" data-field="number" style="width: var(--no);">
-                    <span class="${i}"></span>
+                    <span class="${borderClass}"></span>
                 </div>
-                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${n.workcenter}</div>
-                <div class="row-item" data-field="event" style="width: var(--event);">${n.event}</div>
-                <div class="row-item" data-field="actions" style="width: var(--action);">${n.actions}</div>
-                <div class="row-item" data-field="department" style="width: var(--department);">${n.departmentName}</div>
-                <div class="row-item" data-field="employee" style="width: var(--employee);">${n.employee.name}</div>
-                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(n.desiredDate)}</div>
-                <div class="row-item" data-field="note" style="width: var(--note);">${n.note}</div>
+                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${sgi.workcenter}</div>
+                <div class="row-item" data-field="event" style="width: var(--event);">${sgi.event}</div>
+                <div class="row-item" data-field="actions" style="width: var(--action);">${sgi.actions}</div>
+                <div class="row-item" data-field="department" style="width: var(--department);">${sgi.departmentName}</div>
+                <div class="row-item" data-field="employee" style="width: var(--employee);">${sgi.employee.name}</div>
+                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${this.formatDate(sgi.desiredDate)}</div>
+                <div class="row-item" data-field="note" style="width: var(--note);">${sgi.note}</div>
                 <div class="row-item" data-field="planDate" style="width: var(--planDate);">
-                   <span class="${i}">${this.formatDate(n.planDate)}</span>
+                   <span class="${borderClass}">${this.formatDate(sgi.planDate)}</span>
                 </div>
-                <div class="row-item" data-field="comment" style="width: var(--comment);">${n.comment}</div>
+                <div class="row-item" data-field="comment" style="width: var(--comment);">${sgi.comment}</div>
                 <div class="row-item" style="width: var(--editing);">
                     <button type="button" class="btn btn-info btn-sm editing-btn">
                         <i class="bi bi-pencil-square"></i>
@@ -92,12 +550,12 @@ var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=
                 </div>
                 <div class="row-item" style="width: var(--executions);">
                     <button type="button" class="btn btn-info btn-sm execution-btn">
-                        \u2714
+                        ✔
                     </button>
                 </div>
                 <div class="row-item" style="width: var(--status);">
                     <div class="checkbox-wrapper-31">
-                        <input type="checkbox" id="toggleAgreement" ${n.agree?"checked":""}>
+                        <input type="checkbox" id="toggleAgreement" ${sgi.agree ? 'checked' : ''}>
                         <svg viewBox="0 0 35.6 35.6">
                             <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
                             <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
@@ -105,16 +563,434 @@ var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=
                         </svg>
                     </div>
                 </div>
-            </div>`,e=$(`.row-items-row[id="${l}"]`);return e.find(".hamburger").length===0&&e.find(".row-item").first().append(c),a}onScroll(){}buildPagination(n,l){let i=$(".pagination");i.empty();let a=Math.ceil(l/this.itemsPerPage);if(a<=1)return;let e=(t,o,d="")=>{let s=$(`<button class="btn btn-secondary page-btn ${d}" data-page="${o}">${t}</button>`);return o===this.currentPage&&s.addClass("active"),s};this.currentPage>1?i.append(e("\u2039",this.currentPage-1,"prev-btn")):i.append($('<button class="btn btn-secondary" disabled>\u2039</button>'));for(let t=1;t<=a;t++){let o=e(t,t);t===a&&o.attr("id","last-page"),i.append(o)}this.currentPage<a?i.append(e("\u203A",this.currentPage+1,"next-btn")):i.append($('<button class="btn btn-secondary" disabled>\u203A</button>')),n.forEach(t=>{t.subSGI.forEach(o=>{this.localCache.set(o.id,o)})})}enterPage(n){return g(this,void 0,void 0,function*(){let l=parseInt($(n.currentTarget).data("page"),10);if(this.currentPage!==l&&!isNaN(l)&&l>=1){let i=this.lockScreen();try{let c=yield $.ajax({url:"/api/sgi/get-page-sgi",type:"GET",data:{page:l,size:this.itemsPerPage}});this.localCache.clear(),$(".table-content-rows").empty(),c.data.forEach(a=>{let e=this.createRow(a);$(".table-content-rows").append(e),this.localCache.set(a.id,a),a.subSGI&&a.subSGI.length&&a.subSGI.forEach(t=>this.localCache.set(t.id,t))}),this.applyFiltersToCurrentPage()}catch(c){console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u044B:",c)}finally{this.currentPage=l,i()}}})}workWithModal(n){return g(this,void 0,void 0,function*(){let l=$(n.currentTarget),i=l.attr("data-field"),c=l.closest(".row-items-row").attr("id"),a;if(i==="subDivision"||i==="employee"){let e=i==="employee",t=$(e?"#employeeDialog":"#subDivisionDialog"),o=t.find(".dialog-content-rows"),d=t.find(".choice-field input"),s=$(e?"#changeEmployee":"#changeSubDivision"),f=yield this.cache.get(i),u=f.filter(p=>["EVENT","CONTROL"].some(h=>h===p.role)),r=p=>{o.empty(),p.forEach(h=>{var m;o.append(`
-                    <div class="dialog-content-rows-row" id="${h.id}">
-                        <div class="content-row-column col-250">${h.name}</div>
-                        ${e?`<div class="content-row-column col-250">${((m=h.subDivision)===null||m===void 0?void 0:m.name)||""}</div>`:""}
-                    </div>`)})};r(u),d.off("input").on("input",function(){let p=$(this).val().toString().toLowerCase().trim(),h=f.filter(m=>m.name.toLowerCase().includes(p));r(h)}),this.dialog.open("employeeDialog"),o.off("click").on("click",".dialog-content-rows-row",function(p){let h=$(p.currentTarget).attr("id");a=f.find(m=>m.id===Number(h)),$(".dialog-content-rows-row").removeClass("selected"),$(this).addClass("selected")}),s.off("click").on("click",()=>{if(!a){this.createNotification(`\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 ${e?"\u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0430":"\u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435"} \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430`,NotificationType.WARNING);return}if(l.text(a.name),l.val(a.name),e){let p=JSON.stringify(a);$("#create-dialog").find('input[name="hiddenEmployee"]').val(p)}c?this.saveMassive[c]=Object.assign(Object.assign({},this.saveMassive[c]),{[i]:a}):this.saveMassive[i]=a,l.addClass("change-textarea"),this.dialog.close("employeeDialog")})}l.addClass("change")})}fact(n){return g(this,void 0,void 0,function*(){n.preventDefault();let l=$(n.target).closest(".row-items-row"),i=$(l).attr("id"),c=this.localCache.get(i),a=$("#execution-dialog"),e=document.getElementById("execution-dialog");Object.keys(c.factExecution).forEach(o=>{let d=c.factExecution[o],s=e?.querySelector(`[data-field="${o}"]`);!s||o==="imagesFactSGI"||(o==="executionDate"?s.value=d?d.split(".").reverse().join("-"):"":s&&(s.value=d||""))});let t=this;$(document).off("click","#execution-dialog #saveBtn").on("click","#execution-dialog #saveBtn",function(){return g(this,void 0,void 0,function*(){if(c.agree){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u043D\u043E\u0435 \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435",NotificationType.INFO);return}if(a.find('[data-field="executionDate"]').val()===""){this.createNotification("\u041D\u0435 \u0437\u0430\u043F\u043E\u043B\u043D\u0435\u043D\u0430 \u0434\u0430\u0442\u0430 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F",NotificationType.INFO);return}let o=new FormData;o.append("id",i),o.append("factExecutionSGIBool","true"),$(a).find("[data-field]").each((d,s)=>{if(s.type!=="file")o.append(s.dataset.field,s.value);else for(let f of s.files||[])o.append(s.dataset.field,f)});try{let d=yield $.ajax({url:"/api/sgi/update",type:"PATCH",data:o,processData:!1,contentType:!1,dataType:"json"});t.localCache.set(i,d),t.localCache.delete("validFileMap"),yield t.updateRow(d,null),t.createNotification("\u0424\u0430\u043A\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D",NotificationType.SUCCESS),t.dialog.close("execution-dialog")}catch(d){t.dialog.close("execution-dialog"),t.createNotification("\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u043C\u043E\u0436\u0435\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u043E\u0437\u0434\u0430\u0442\u0435\u043B\u044C \u0437\u0430\u0434\u0430\u0447\u0438",NotificationType.WARNING),console.error(d)}})}),this.dialog.open("execution-dialog"),yield this.renderImages(a,"fact",c,c.factExecution.imagesFactSGI),a.find("#cancelButton").off("click").on("click",()=>{this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),this.dialog.close("execution-dialog")}),a.off("click").on("click",o=>{o.target.nodeName==="DIALOG"&&(this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),this.dialog.close("execution-dialog"))}),$(document).off("keydown").on("keydown",o=>{(o.key==="Escape"||o.key==="Esc")&&(this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),this.dialog.close("execution-dialog"))})})}agree(n){return g(this,void 0,void 0,function*(){n.preventDefault();let l=n.target,i=l.checked,c=$(l).closest(".row-items-row"),a=$(c).attr("id"),e=this.localCache.get(a),t=this,o=new FormData;if(o.append("id",a),o.append("agreed",i.toString()),!e.planDate){this.createNotification("\u041D\u0435 \u0437\u0430\u043F\u043E\u043B\u043D\u0435\u043D\u043E \u043F\u043E\u043B\u0435 \u043F\u043B\u0430\u043D\u0438\u0440\u0443\u0435\u043C\u044B\u0439 \u0441\u0440\u043E\u043A!",NotificationType.ERROR),l.checked=!i;return}if(i&&e.subSGI&&!e.subSGI.every(d=>d.agree)){this.createNotification("\u0412\u0441\u0435 \u043F\u043E\u0434\u0437\u0430\u0434\u0430\u0447\u0438 \u0434\u043E\u043B\u0436\u043D\u044B \u0431\u044B\u0442\u044C \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u044B!",NotificationType.ERROR),l.checked=!i;return}if(!i&&e?.parent&&this.localCache.get(e.parent).agree){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u043E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\u0435 \u043F\u043E\u0434\u0437\u0430\u0434\u0430\u0447\u0438, \u0435\u0441\u043B\u0438 \u0440\u043E\u0434\u0438\u0442\u0435\u043B\u044C\u0441\u043A\u0430\u044F \u0437\u0430\u0434\u0430\u0447\u0430 \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0430!",NotificationType.ERROR),l.checked=!i;return}try{yield $.ajax({url:"/api/sgi/agree",method:"PATCH",data:o,contentType:!1,processData:!1}),e.agree=i,this.localCache.set(a,e),i?c.addClass("complete"):c.removeClass("complete"),c.find('input[type="checkbox"]').prop("checked",i),this.createNotification(i?"\u041C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435 \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u043E":"\u0421\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\u0435 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E",NotificationType.SUCCESS)}catch{l.checked=!i,this.createNotification("\u0412\u044B \u043D\u0435 \u043C\u043E\u0436\u0435\u0442\u0435 \u0437\u0430\u043A\u0440\u044B\u0432\u0430\u0442\u044C/\u043E\u0442\u043A\u0440\u044B\u0432\u0430\u0442\u044C \u043C\u0435\u0440\u043E\u043F\u0440\u0438\u044F\u0442\u0438\u0435",NotificationType.ERROR)}})}selectRow(n){let l=$(n.target).closest(".row-items-row"),i=$(l).attr("id");l.hasClass("selected-row")?(l.removeClass("selected-row"),this.selectedRows.delete(i)):(l.addClass("selected-row"),this.selectedRows.add(i))}filterDialog(n){return g(this,void 0,void 0,function*(){n.preventDefault();let l=$("#filter-dialog");this.dialog.open("filter-dialog");let i=l.find('[data-field="employee"]');i.empty(),i.append($("<option>",{value:"",text:"\u0412\u0441\u0435 \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0438"})),(yield this.cache.get("employee")).filter(t=>["EVENT","CONTROL"].some(o=>o===t.role)).forEach(t=>{i.append($("<option>",{value:t.name,text:t.name}))});let e=this;$(document).off("click","#filtered").on("click","#filtered",function(){var t,o,d,s,f,u,r,p;e.filters={number:((t=l.find('[data-field="number"]').val())===null||t===void 0?void 0:t.toString().trim())||"",workcenter:((o=l.find('[data-field="workcenter"]').val())===null||o===void 0?void 0:o.toString().trim())||"",event:((d=l.find('[data-field="event"]').val())===null||d===void 0?void 0:d.toString().trim())||"",actions:((s=l.find('[data-field="actions"]').val())===null||s===void 0?void 0:s.toString().trim())||"",departament:l.find('[data-field="department"] option:selected').text().trim()==="\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043E\u0442\u0434\u0435\u043B"?"":l.find('[data-field="department"] option:selected').text().trim(),employee:((f=l.find('[data-field="employee"]').val())===null||f===void 0?void 0:f.toString())||"",desiredDate:((u=l.find('[data-field="desiredDate"]').val())===null||u===void 0?void 0:u.toString())||"",planDate:((r=l.find('[data-field="planDate"]').val())===null||r===void 0?void 0:r.toString())||"",note:((p=l.find('[data-field="note"]').val())===null||p===void 0?void 0:p.toString().trim())||""},e.applyFiltersToCurrentPage(),e.dialog.close("filter-dialog")}),l.find("#default-filter").off("click").on("click",function(){l.find("input, textarea, select").val(""),$(".row-items").show(),this.dialog("filter-dialog").close()}),l.find("#cancelButton").off("click").on("click",t=>{this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),this.dialog.close("filter-dialog")}),l.off("click").on("click",t=>{t.target.nodeName==="DIALOG"&&(this.localCache.delete("validFileMap"),this.localCache.delete("imagesMap"),t.target.close())})})}applyFiltersToCurrentPage(){let n=!1;Object.keys(this.filters).forEach(l=>{let i=this.filters[l];i&&i.trim()!==""&&(n=!0)}),n&&document.querySelectorAll(".row-items").forEach(i=>{var c;let a=null;for(let e of Object.keys(this.filters)){let t=this.filters[e];if(!t)continue;a=!0;let o=i.querySelector(`[data-field="${e}"]`);if(!o)continue;let d=((c=o.textContent)===null||c===void 0?void 0:c.trim())||"";if(e==="desiredDate"||e==="planDate"){let s=this.formatDate(t);if(d===s){a=!1;break}}else if(d.toLowerCase()===t.toLowerCase()){a=!1;break}}i.style.display=a!=null&&a?"none":""})}printFromMenu(n){let l=$(n.target).data("department");$("<a>",{href:`/api/report/print/sgi?department=${l}`,download:""}).appendTo("body")[0].click().remove()}openDocument(n){return g(this,void 0,void 0,function*(){let l=$("#documentDialog"),i=$(n.currentTarget).attr("id"),c=this.localCache.get(i),a=l.find(".dialog-content-rows");if(a.empty(),c.documentId!==null){let e=yield this.requestToApi(`/api/document/get-document/${c.documentId}`,"GET");this.localCache.set("document",e),e.files.forEach(t=>{a.append(`
-                    <div class="dialog-content-rows-row" id="${t.id}">
-                        <div class="content-row-column col-450">${t.baseFileName}</div>
-                        <div class="content-row-column col-100">${t.type}</div>
+            </div>`;
+        const parentRow = $(`.row-items-row[id="${inner}"]`);
+        // parentRow.closest('.row-items').children('.row-items-inner-row').append(row);
+        if (parentRow.find('.hamburger').length === 0) {
+            parentRow.find('.row-item').first().append(hamburger);
+        }
+        return row;
+    }
+    onScroll() {
+    }
+    buildPagination(data, count) {
+        const $p = $('.pagination');
+        $p.empty();
+        const totalPages = Math.ceil(count / this.itemsPerPage);
+        if (totalPages <= 1)
+            return;
+        const createBtn = (label, page, extraClass = '') => {
+            const btn = $(`<button class="btn btn-secondary page-btn ${extraClass}" data-page="${page}">${label}</button>`);
+            if (page === this.currentPage)
+                btn.addClass('active');
+            return btn;
+        };
+        // Предыдущая страница
+        if (this.currentPage > 1) {
+            $p.append(createBtn('‹', this.currentPage - 1, 'prev-btn'));
+        }
+        else {
+            $p.append($('<button class="btn btn-secondary" disabled>‹</button>'));
+        }
+        // Номера страниц
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = createBtn(i, i);
+            if (i === totalPages) {
+                btn.attr('id', 'last-page');
+            }
+            $p.append(btn);
+        }
+        // Следующая страница
+        if (this.currentPage < totalPages) {
+            $p.append(createBtn('›', this.currentPage + 1, 'next-btn'));
+        }
+        else {
+            $p.append($('<button class="btn btn-secondary" disabled>›</button>'));
+        }
+        data.forEach((sgi) => {
+            sgi.subSGI.forEach((sub) => {
+                // this.createInnerRow(sub, sgi.id);
+                this.localCache.set(sub.id, sub);
+            });
+        });
+    }
+    async enterPage(event) {
+        const page = parseInt($(event.currentTarget).data('page'), 10);
+        if (this.currentPage === page)
+            return;
+        if (!isNaN(page) && page >= 1) {
+            const unlock = this.lockScreen();
+            try {
+                const data = await $.ajax({
+                    url: '/api/sgi/get-page-sgi',
+                    type: 'GET',
+                    data: {
+                        page: page,
+                        size: this.itemsPerPage
+                    }
+                });
+                this.localCache.clear();
+                $(`.table-content-rows`).empty();
+                data.data.forEach((sgi) => {
+                    const row = this.createRow(sgi);
+                    $(`.table-content-rows`).append(row);
+                    this.localCache.set(sgi.id, sgi);
+                    if (sgi.subSGI && sgi.subSGI.length) {
+                        sgi.subSGI.forEach(subSgi => this.localCache.set(subSgi.id, subSgi));
+                    }
+                });
+                this.applyFiltersToCurrentPage();
+            }
+            catch (error) {
+                console.error('Ошибка загрузки страницы:', error);
+            }
+            finally {
+                this.currentPage = page;
+                unlock();
+            }
+        }
+    }
+    async workWithModal(event) {
+        const modalDiv = $(event.currentTarget);
+        const fieldName = modalDiv.attr('data-field');
+        const currentId = modalDiv.closest('.row-items-row').attr('id');
+        let selected;
+        if (fieldName === 'subDivision' || fieldName === 'employee') {
+            const isEmployee = fieldName === 'employee';
+            const dialog = $(isEmployee ? '#employeeDialog' : '#subDivisionDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            const searchInput = dialog.find('.choice-field input');
+            const changeButton = $(isEmployee ? '#changeEmployee' : '#changeSubDivision');
+            const data = await this.cache.get(fieldName);
+            const filteredEmployees = data.filter(employee => ['EVENT', 'CONTROL'].some(role => role === employee.role));
+            const renderRows = (items) => {
+                rowContainer.empty();
+                items.forEach(item => {
+                    var _a;
+                    rowContainer.append(`
+                    <div class="dialog-content-rows-row" id="${item.id}">
+                        <div class="content-row-column col-250">${item.name}</div>
+                        ${isEmployee ? `<div class="content-row-column col-250">${((_a = item.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''}</div>` : ''}
+                    </div>`);
+                });
+            };
+            renderRows(filteredEmployees);
+            searchInput.off('input').on('input', function () {
+                const searchText = $(this).val().toString().toLowerCase().trim();
+                const filtered = data.filter((e) => e.name.toLowerCase().includes(searchText));
+                renderRows(filtered);
+            });
+            this.dialog.open('employeeDialog');
+            rowContainer.off('click').on('click', '.dialog-content-rows-row', (e) => {
+                const target = e.currentTarget;
+                const id = target.id;
+                selected = data.find((item) => item.id === Number(id));
+                rowContainer.find('.dialog-content-rows-row').removeClass('selected');
+                $(target).addClass('selected');
+            });
+            changeButton.off('click').on('click', () => {
+                if (!selected) {
+                    this.createNotification(`Выберите ${isEmployee ? 'сотрудника' : 'подразделение'} из списка`, NotificationType.WARNING);
+                    return;
+                }
+                modalDiv.text(selected.name);
+                modalDiv.val(selected.name);
+                if (isEmployee) {
+                    const employeeJson = JSON.stringify(selected);
+                    $('#create-dialog').find('input[name="hiddenEmployee"]').val(employeeJson);
+                }
+                if (currentId) {
+                    this.saveMassive[currentId] = Object.assign(Object.assign({}, this.saveMassive[currentId]), { [fieldName]: selected });
+                }
+                else {
+                    this.saveMassive[fieldName] = selected;
+                }
+                modalDiv.addClass('change-textarea');
+                this.dialog.close('employeeDialog');
+            });
+        }
+        modalDiv.addClass('change');
+    }
+    async fact(event) {
+        var _a;
+        event.preventDefault();
+        const currentRow = $(event.target).closest('.row-items-row');
+        const currentId = $(currentRow).attr('id');
+        const currentSGI = this.localCache.get(currentId);
+        if (!currentSGI)
+            return;
+        const dialog = $('#execution-dialog');
+        const executionDialog = document.getElementById('execution-dialog');
+        const factExec = currentSGI.factExecution;
+        if (factExec) {
+            Object.keys(factExec).forEach(key => {
+                const value = factExec[key];
+                const field = executionDialog === null || executionDialog === void 0 ? void 0 : executionDialog.querySelector(`[data-field="${key}"]`);
+                if (!field || key === 'imagesFactSGI')
+                    return;
+                if (key === 'executionDate') {
+                    field.value = value ? value.split('.').reverse().join('-') : '';
+                }
+                else if (field) {
+                    field.value = value || '';
+                }
+            });
+        }
+        const self = this;
+        $(document).off('click', '#execution-dialog #saveBtn').on('click', '#execution-dialog #saveBtn', async function () {
+            if (currentSGI.agree) {
+                self.createNotification('Нельзя редактировать выполненное мероприятие', NotificationType.INFO);
+                return;
+            }
+            if (dialog.find(`[data-field="executionDate"]`).val() === '') {
+                self.createNotification('Не заполнена дата выполнения', NotificationType.INFO);
+                return;
+            }
+            const formData = new FormData();
+            formData.append('id', currentId);
+            formData.append('factExecutionSGIBool', 'true');
+            $(dialog).find('[data-field]').each((_, el) => {
+                var _a;
+                const input = el;
+                const files = Array.from((_a = input.files) !== null && _a !== void 0 ? _a : []);
+                for (const file of files) {
+                    formData.append(input.dataset.field, file);
+                }
+            });
+            try {
+                const updateSGI = await $.ajax({
+                    url: '/api/sgi/update',
+                    type: 'PATCH',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json'
+                });
+                self.localCache.set(currentId, updateSGI);
+                self.localCache.delete('validFileMap');
+                await self.updateRow(updateSGI, currentId);
+                self.createNotification('Факт выполнения сохранен', NotificationType.SUCCESS);
+                self.dialog.close('execution-dialog');
+            }
+            catch (error) {
+                self.dialog.close('execution-dialog');
+                self.createNotification('Редактировать может только создатель задачи', NotificationType.WARNING);
+                console.error(error);
+            }
+        });
+        this.dialog.open('execution-dialog');
+        await this.renderImages(dialog, 'fact', currentSGI, (_a = currentSGI.factExecution) === null || _a === void 0 ? void 0 : _a.imagesFactSGI);
+        // Клик на крестик
+        dialog.find('#cancelButton').off('click').on('click', () => {
+            this.localCache.delete('validFileMap');
+            this.localCache.delete('imagesMap');
+            this.dialog.close('execution-dialog');
+        });
+        // Клик вне диалога
+        dialog.off('click').on('click', (e) => {
+            if (e.target.nodeName === 'DIALOG') {
+                this.localCache.delete('validFileMap');
+                this.localCache.delete('imagesMap');
+                this.dialog.close('execution-dialog');
+            }
+        });
+        // Нажатие esc
+        $(document).off('keydown').on('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                this.localCache.delete('validFileMap');
+                this.localCache.delete('imagesMap');
+                this.dialog.close('execution-dialog');
+            }
+        });
+    }
+    async agree(event) {
+        var _a;
+        event.preventDefault();
+        const checkbox = event.target;
+        const isChecked = checkbox.checked;
+        const currentRow = $(checkbox).closest('.row-items-row');
+        const currentId = $(currentRow).attr('id');
+        const currentSGI = this.localCache.get(currentId);
+        if (!currentSGI)
+            return;
+        const self = this;
+        const formData = new FormData();
+        formData.append("id", currentId);
+        formData.append("agreed", isChecked.toString());
+        if (!currentSGI.planDate) {
+            this.createNotification('Не заполнено поле планируемый срок!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        if (isChecked && currentSGI.subSGI && !currentSGI.subSGI.every(sub => sub.agree)) {
+            this.createNotification('Все подзадачи должны быть согласованы!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        if (!isChecked && (currentSGI === null || currentSGI === void 0 ? void 0 : currentSGI.parent) && ((_a = this.localCache.get(currentSGI.parent)) === null || _a === void 0 ? void 0 : _a.agree)) {
+            this.createNotification('Нельзя отменить согласование подзадачи, если родительская задача согласована!', NotificationType.ERROR);
+            checkbox.checked = !isChecked;
+            return;
+        }
+        try {
+            await $.ajax({
+                url: '/api/sgi/agree',
+                method: 'PATCH',
+                data: formData,
+                contentType: false,
+                processData: false
+            });
+            currentSGI.agree = isChecked;
+            this.localCache.set(currentId, currentSGI);
+            if (isChecked) {
+                currentRow.addClass('complete');
+            }
+            else {
+                currentRow.removeClass('complete');
+            }
+            currentRow.find('input[type="checkbox"]').prop('checked', isChecked);
+            this.createNotification(isChecked ? 'Мероприятие согласовано' : 'Согласование отменено', NotificationType.SUCCESS);
+        }
+        catch (error) {
+            checkbox.checked = !isChecked;
+            this.createNotification('Вы не можете закрывать/открывать мероприятие', NotificationType.ERROR);
+        }
+    }
+    selectRow(event) {
+        const row = $(event.target).closest('.row-items-row');
+        const rowId = $(row).attr('id');
+        if (row.hasClass('selected-row')) {
+            row.removeClass('selected-row');
+            this.selectedRows.delete(rowId);
+        }
+        else {
+            row.addClass('selected-row');
+            this.selectedRows.add(rowId);
+        }
+    }
+    async filterDialog(event) {
+        event.preventDefault();
+        const dialog = $('#filter-dialog');
+        this.dialog.open('filter-dialog');
+        // Заполняем select сотрудников
+        const employeeField = dialog.find('[data-field="employee"]');
+        employeeField.empty();
+        employeeField.append($('<option>', { value: '', text: 'Все сотрудники' }));
+        const employeesData = await this.cache.get('employee');
+        const filteredEmployees = employeesData.filter((employee) => ['EVENT', 'CONTROL'].some((role) => role === employee.role));
+        filteredEmployees.forEach((employee) => {
+            employeeField.append($('<option>', {
+                value: employee.name,
+                text: employee.name
+            }));
+        });
+        // Сохраняем контекст this
+        const self = this;
+        // Обработчик применения фильтров
+        $(document).off('click', '#filtered').on('click', '#filtered', () => {
+            var _a, _b, _c, _d, _e, _f, _g, _h;
+            self.filters = {
+                number: ((_a = dialog.find('[data-field="number"]').val()) === null || _a === void 0 ? void 0 : _a.toString().trim()) || '',
+                workcenter: ((_b = dialog.find('[data-field="workcenter"]').val()) === null || _b === void 0 ? void 0 : _b.toString().trim()) || '',
+                event: ((_c = dialog.find('[data-field="event"]').val()) === null || _c === void 0 ? void 0 : _c.toString().trim()) || '',
+                actions: ((_d = dialog.find('[data-field="actions"]').val()) === null || _d === void 0 ? void 0 : _d.toString().trim()) || '',
+                departament: (dialog.find('[data-field="department"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="department"] option:selected').text().trim(),
+                employee: ((_e = dialog.find('[data-field="employee"]').val()) === null || _e === void 0 ? void 0 : _e.toString()) || '',
+                desiredDate: ((_f = dialog.find('[data-field="desiredDate"]').val()) === null || _f === void 0 ? void 0 : _f.toString()) || '',
+                planDate: ((_g = dialog.find('[data-field="planDate"]').val()) === null || _g === void 0 ? void 0 : _g.toString()) || '',
+                note: ((_h = dialog.find('[data-field="note"]').val()) === null || _h === void 0 ? void 0 : _h.toString().trim()) || ''
+            };
+            // Применяем фильтры к текущей странице
+            self.applyFiltersToCurrentPage();
+            self.dialog.close('filter-dialog');
+        });
+        // Обработчик сброса фильтров
+        dialog.find('#default-filter').off('click').on('click', () => {
+            dialog.find('input, textarea, select').val('');
+            $('.row-items').show();
+            this.dialog.close('filter-dialog');
+        });
+        // Клик на крестик
+        dialog.find('#cancelButton').off('click').on('click', (e) => {
+            this.localCache.delete('validFileMap');
+            this.localCache.delete('imagesMap');
+            this.dialog.close('filter-dialog');
+        });
+        // Клик вне диалога
+        dialog.off('click').on('click', (e) => {
+            if (e.target.nodeName === 'DIALOG') {
+                this.localCache.delete('validFileMap');
+                this.localCache.delete('imagesMap');
+                e.target.close();
+            }
+        });
+    }
+    applyFiltersToCurrentPage() {
+        let hasActiveFilters = false;
+        Object.keys(this.filters).forEach(key => {
+            const value = this.filters[key];
+            if (value && value.trim() !== '') {
+                hasActiveFilters = true;
+            }
+        });
+        if (hasActiveFilters) {
+            const rows = document.querySelectorAll('.row-items');
+            rows.forEach(row => {
+                var _a;
+                let notMatch = null;
+                for (const key of Object.keys(this.filters)) {
+                    const value = this.filters[key];
+                    if (!value)
+                        continue;
+                    notMatch = true;
+                    const cell = row.querySelector(`[data-field="${key}"]`);
+                    if (!cell)
+                        continue;
+                    const cellValue = ((_a = cell.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '';
+                    if (key === 'desiredDate' || key === 'planDate') {
+                        const formattedDate = this.formatDate(value);
+                        if (cellValue === formattedDate) {
+                            notMatch = false;
+                            break;
+                        }
+                    }
+                    else if (cellValue.toLowerCase() === value.toLowerCase()) {
+                        notMatch = false;
+                        break;
+                    }
+                }
+                row.style.display = notMatch != null && notMatch ? 'none' : '';
+            });
+        }
+    }
+    printFromMenu(event) {
+        const department = $(event.target).data('department');
+        $('<a>', {
+            href: `/api/report/print/sgi?department=${department}`,
+            download: ''
+        }).appendTo('body')[0].click().remove();
+    }
+    async openDocument(event) {
+        const dialog = $('#documentDialog');
+        const currentSGIId = $(event.currentTarget).attr('id');
+        const sgi = this.localCache.get(currentSGIId);
+        if (!sgi)
+            return;
+        const rowContainer = dialog.find('.dialog-content-rows');
+        rowContainer.empty();
+        if (sgi.documentId !== null) {
+            const document = await this.requestToApi(`/api/document/get-document/${sgi.documentId}`, "GET");
+            this.localCache.set('document', document);
+            document.files.forEach((file) => {
+                rowContainer.append(`
+                    <div class="dialog-content-rows-row" id="${file.id}">
+                        <div class="content-row-column col-450">${file.baseFileName}</div>
+                        <div class="content-row-column col-100">${file.type}</div>
                         <div class="content-row-column col-100"><i style="float: right; font-size:1rem; padding: 12px 10px" class="download fas fa-download"></i></div>
-                    </div>`)})}a.append(`
+                    </div>`);
+            });
+        }
+        rowContainer.append(`
             <div class="dialog-content-rows-row">
                 <div class="content-row-column col-450"></div>
                 <div class="content-row-column col-100"></div>
@@ -122,12 +998,59 @@ var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=
                     <i style="float: right; font-size:1rem; padding: 12px 10px" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
-            </div>`),$(document).off("change","#fileInput").on("change","#fileInput",e=>this.addFileToDocument(e,i)),$(document).on("contextmenu",".dialog-content-rows-row",e=>{let o=$(e.currentTarget).attr("id");if(!o)return;e.preventDefault();let d=e;this.createContextMenu([{label:"\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u0430\u0439\u043B",idAction:"deleteFileDocumentButton",action:()=>{this.deleteEntity(`/api/document/delete-file-from-document/${o}`).then(()=>{this.createNotification("\u0424\u0430\u0439\u043B \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D",NotificationType.SUCCESS),this.deleteRow(o)})}}],d.clientX,d.clientY)}),this.dialog.open("documentDialog")})}addFileToDocument(n,l){let i=new FormData,c=n.currentTarget,a=this.localCache.get(l);c.files&&Array.from(c.files).forEach(o=>{i.append("files",o)});let e=a.documentId?`/api/document/add-file-to-document-and-get/${a.documentId}`:`/api/sgi/create-document/${a.id}`,t=a.documentId?"PATCH":"POST";this.requestToApi(e,t,i).then(o=>{let s=$("#documentDialog").find(".dialog-content-rows");s.empty();for(let f of o.files)s.append(`
-                    <div class="dialog-content-rows-row" id="${f.id}">
-                        <div class="content-row-column col-450">${f.baseFileName}</div>
-                        <div class="content-row-column col-100">${f.type}</div>
+            </div>`);
+        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSGIId));
+        $(document).on('contextmenu', '.dialog-content-rows-row', (event) => {
+            const $row = $(event.currentTarget);
+            const fileId = $row.attr('id');
+            if (!fileId) {
+                return;
+            }
+            event.preventDefault();
+            const mouseEvent = event;
+            this.createContextMenu([
+                {
+                    label: 'Удалить файл',
+                    idAction: "deleteFileDocumentButton",
+                    action: () => {
+                        this.deleteEntity(`/api/document/delete-file-from-document/${fileId}`).then(() => {
+                            this.createNotification('Файл успешно удален', NotificationType.SUCCESS);
+                            this.deleteRow(fileId);
+                        });
+                    }
+                }
+            ], mouseEvent.clientX, mouseEvent.clientY);
+        });
+        this.dialog.open('documentDialog');
+    }
+    addFileToDocument(event, sgiId) {
+        const formData = new FormData();
+        const currentInput = event.currentTarget;
+        const sgi = this.localCache.get(sgiId);
+        if (!sgi)
+            return;
+        if (currentInput.files) {
+            Array.from(currentInput.files).forEach(file => {
+                formData.append('files', file);
+            });
+        }
+        const url = sgi.documentId
+            ? `/api/document/add-file-to-document-and-get/${sgi.documentId}`
+            : `/api/sgi/create-document/${sgi.id}`;
+        const requestType = sgi.documentId ? 'PATCH' : 'POST';
+        this.requestToApi(url, requestType, formData).then((document) => {
+            const dialog = $('#documentDialog');
+            const rowContainer = dialog.find('.dialog-content-rows');
+            rowContainer.empty();
+            for (const file of document.files) {
+                rowContainer.append(`
+                    <div class="dialog-content-rows-row" id="${file.id}">
+                        <div class="content-row-column col-450">${file.baseFileName}</div>
+                        <div class="content-row-column col-100">${file.type}</div>
                         <div class="content-row-column col-100"><i style="float: right; font-size:1rem; padding: 12px 10px" class="download fas fa-download"></i></div>
-                    </div>`);s.append(`
+                    </div>`);
+            }
+            rowContainer.append(`
             <div class="dialog-content-rows-row">
                 <div class="content-row-column col-450"></div>
                 <div class="content-row-column col-100"></div>
@@ -135,4 +1058,19 @@ var S=(w,n)=>()=>(n||w((n={exports:{}}).exports,n),n.exports);var D=S(x=>{var g=
                     <i style="float: right; font-size:1rem; padding: 12px 10px" class="uploadIcon upload-file fas fa-file-upload" onclick="$('#fileInput').click()"></i>
                     <input type="file" id="fileInput" style="display: none;"/>
                 </div>
-            </div>`),a.documentId=o.id,this.localCache.set(a.id,a),this.createNotification("\u0424\u0430\u0439\u043B\u044B \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B",NotificationType.SUCCESS)}).catch(console.error),c.value=""}handleDownloadFile(n){let l=$(n.target).closest(".dialog-content-rows-row").attr("id");this.downloadFile(`/api/document/download-document-file/${l}`).catch(console.error)}};$(document).ready(()=>{new k})});export default D();
+            </div>`);
+            sgi.documentId = document.id;
+            this.localCache.set(sgi.id, sgi);
+            this.createNotification("Файлы добавлены", NotificationType.SUCCESS);
+        }).catch(console.error);
+        currentInput.value = '';
+    }
+    handleDownloadFile(event) {
+        const fileId = $(event.target).closest('.dialog-content-rows-row').attr('id');
+        this.downloadFile(`/api/document/download-document-file/${fileId}`).catch(console.error);
+    }
+}
+$(document).ready(() => {
+    new Sgi();
+});
+//# sourceMappingURL=sgi.js.map
