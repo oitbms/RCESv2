@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -44,8 +45,11 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login", "/machines/*", "/api/v1/machines/*").permitAll()
-                        .requestMatchers("/css/modern.css", "/css/bootstrap.min.css", "/js/machines.js").permitAll()
+                        .requestMatchers("/css/modern.css","/css/bootstrap/bootstrap.min.css", "/js/machines.js",
+                                "/js/bootstrap/bootstrap.bundle.min.js", "/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/machines/documents/*","/api/v1/machines/*").permitAll()
+                        .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login",
+                                "/machines/*").permitAll()
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")
