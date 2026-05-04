@@ -378,7 +378,7 @@ class MachineManager {
             console.error('Элементы для QR-кода не найдены.');
             return;
         }
-        const machineLink = `http://192.168.30.80:2005/machines/${machineNumber}`;
+        const machineLink = `http://web.bormash.ru:2005/machines/${machineNumber}`;
         QRCode.toCanvas(qrCodeCanvas, machineLink, { width: 200, margin: 1 }, (error) => {
             if (error) {
                 console.error('Ошибка при генерации QR-кода:', error);
