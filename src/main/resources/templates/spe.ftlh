@@ -13,6 +13,7 @@
     <script src="/js/dist/base/cache.js"></script>
     <script src="/js/dist/base/type/generalType.js"></script>
     <script src="/js/dist/base/type/speConstants.js"></script>
+    <script src="/js/dist/base/dialogTemplates.js"></script>
     <script src="/js/dist/base/base.js"></script>
     <script src="/js/dist/spe.js"></script>
 </head>

@@ -1,241 +1,962 @@
-var T=(g,i)=>()=>(i||g((i={exports:{}}).exports,i),i.exports);var x=T(S=>{var b=S&&S.__awaiter||function(g,i,n,t){function e(c){return c instanceof n?c:new n(function(a){a(c)})}return new(n||(n=Promise))(function(c,a){function o(l){try{d(t.next(l))}catch(v){a(v)}}function s(l){try{d(t.throw(l))}catch(v){a(v)}}function d(l){l.done?c(l.value):e(l.value).then(o,s)}d((t=t.apply(g,i||[])).next())})},D=class extends Base{constructor(i=1/0,n=1/0){super($(".inspection-list"),i,n,()=>{this.displayPage("/api/inspection/get-page-inspection",void 0).catch(console.error)}),this.createInspection=t=>b(this,void 0,void 0,function*(){t.preventDefault();let e=$(t.target),c=e.closest("form").get(0),a=$("#create-dialog");if(!c.checkValidity()){c.reportValidity();return}e.prop("disabled",!0);let o={subDivision:a.find('select[name="subDivision"]').val()};try{let s=yield this.createEntity("/api/inspection/create-inspection",o);this.saveMassive={},this.localCache.set(s.id,s),this.dialog.close("create-dialog");let d=this.createRow(s);this.addInspectionToGroup(s),e.prop("disabled",!1),this.createNotification("\u0418\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0441\u043E\u0437\u0434\u0430\u043D\u0430",NotificationType.SUCCESS)}catch{this.saveMassive={},c.reset(),e.prop("disabled",!1)}}),this.viewInspection=t=>b(this,void 0,void 0,function*(){t.preventDefault();let e=$("#viewInspectionDialog"),a=$(t.currentTarget).closest(".table-card").attr("id"),o=this.localCache.get(Number(a));(!o.violation||o.violation.length===0)&&(o.violation=yield this.requestToApi(`/api/inspection/get-violation/${a}`,"GET"),this.localCache.set(Number(a),o));let s=e.find(".violations-container");s.empty(),e.find("#closeBtn").off("click").on("click",()=>{this.dialog.close("viewInspectionDialog")}),e.find("#addViolationBtn").off("click").on("click",()=>{this.openAddViolationDialog(a)}),!o.violation||o.violation.length===0?s.append(`
+"use strict";
+class Inspection extends Base {
+    constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
+        super($(`.inspection-list`), itemsPerPage, visibleRow, () => {
+            this.displayPage('/api/inspection/get-page-inspection', undefined).catch(console.error);
+        });
+        this.createInspection = async (event) => {
+            event.preventDefault();
+            const button = $(event.target);
+            const form = button.closest('form').get(0);
+            const dialog = $('#create-dialog');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            button.prop('disabled', true);
+            const formData = {
+                subDivision: dialog.find('select[name="subDivision"]').val()
+            };
+            try {
+                const newInspection = await this.createEntity('/api/inspection/create-inspection', formData);
+                this.saveMassive = {};
+                this.localCache.set(newInspection.id, newInspection);
+                this.dialog.close("create-dialog");
+                const newRow = this.createRow(newInspection);
+                this.addInspectionToGroup(newInspection); // вместо прямого добавления
+                button.prop('disabled', false);
+                this.createNotification('Инспекция успешно создана', NotificationType.SUCCESS);
+            }
+            catch (error) {
+                this.saveMassive = {};
+                form.reset();
+                button.prop('disabled', false);
+            }
+        };
+        this.viewInspection = async (event) => {
+            event.preventDefault();
+            const dialog = $('#viewInspectionDialog');
+            const currentCard = $(event.currentTarget).closest('.table-card');
+            const currentInspectionId = currentCard.attr('id');
+            const inspection = this.localCache.get(Number(currentInspectionId));
+            if (!inspection.violation || inspection.violation.length === 0) {
+                inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET");
+                this.localCache.set(Number(currentInspectionId), inspection);
+            }
+            const violationsContainer = dialog.find('.violations-container');
+            violationsContainer.empty();
+            dialog.find('#closeBtn').off('click').on('click', () => {
+                this.dialog.close('viewInspectionDialog');
+            });
+            dialog.find('#addViolationBtn').off('click').on('click', () => {
+                this.openAddViolationDialog(currentInspectionId);
+            });
+            if (!inspection.violation || inspection.violation.length === 0) {
+                violationsContainer.append(`
                 <div class="no-violations">
-                    \u041D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E
+                    Нарушений не найдено
                 </div>
-            `):o.violation.forEach(d=>{var l,v;let p=5;switch(d.criteria){case"\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u0434\u0438\u0441\u0446\u0438\u043F\u043B\u0438\u043D\u0430":p=3;break;case"\u041E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0431\u043E\u0447\u0438\u0445 \u043C\u0435\u0441\u0442":p=2;break;case"\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F":p=3;break;case"\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430":p=5;break}let r=`
-                    <div class="violation-card" id="${a}" data-violation-id="${d.id}">
+            `);
+            }
+            else {
+                inspection.violation.forEach((violation) => {
+                    var _a, _b;
+                    let maxScore = 5;
+                    switch (violation.criteria) {
+                        case 'Технологическая дисциплина':
+                            maxScore = 3;
+                            break;
+                        case 'Организация рабочих мест':
+                            maxScore = 2;
+                            break;
+                        case 'Документация':
+                            maxScore = 3;
+                            break;
+                        case 'Безопасность и охрана труда':
+                            maxScore = 5;
+                            break;
+                    }
+                    const violationCard = `
+                    <div class="violation-card" id="${currentInspectionId}" data-violation-id="${violation.id}">
                         <div class="violation-card-header">
-                            <div class="score">${d.score}/${p}</div>
-                            <div class="criteria">${d.criteria}</div>
+                            <div class="score">${violation.score}/${maxScore}</div>
+                            <div class="criteria">${violation.criteria}</div>
                         </div>
                         <div class="violation-card-body">
                             <div class="field-row">
-                                <div class="label">\u041E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0439:</div>
-                                <div class="value">${(l=d.subDivision)===null||l===void 0?void 0:l.name}</div>
+                                <div class="label">Ответственный:</div>
+                                <div class="value">${(_a = violation.subDivision) === null || _a === void 0 ? void 0 : _a.name}</div>
                             </div>
                             <div class="field-row">
-                                <div class="label">\u0414\u0430\u0442\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F:</div>
-                                <div class="value">${this.formatDateTime(d.createdDate)}</div>
+                                <div class="label">Дата обнаружения:</div>
+                                <div class="value">${this.formatDateTime(violation.createdDate)}</div>
                             </div>
                             <div class="field-row">
-                                <div class="label">\u0421\u0442\u0430\u0442\u0443\u0441:</div>
-                                <div class="value" name="status">${d.status}</div>
+                                <div class="label">Статус:</div>
+                                <div class="value" name="status">${violation.status}</div>
                             </div>
                             <div class="field-row">
-                                <div class="label">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435:</div>
-                                <div class="value">${d.description}</div>
+                                <div class="label">Описание:</div>
+                                <div class="value">${violation.description}</div>
                             </div>
                             <div class="field-row">
-                                <div class="label">\u0421\u043E\u0437\u0434\u0430\u043B:</div>
-                                <div class="value">${(v=d.createdBy)===null||v===void 0?void 0:v.name}</div>
+                                <div class="label">Создал:</div>
+                                <div class="value">${(_b = violation.createdBy) === null || _b === void 0 ? void 0 : _b.name}</div>
                             </div>
                             <div class="field-row">
-                                <div class="label">\u0424\u043E\u0442\u043E:</div>
-                                <button class="dialog-btn print photo-icon">\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440</button>
+                                <div class="label">Фото:</div>
+                                <button class="dialog-btn print photo-icon">Просмотр</button>
                             </div>
                         </div>
                         <div class="violation-card-footer">
-                            <button class="btn btn-delete" data-violation-id="${d.id}">
-                                \u0423\u0434\u0430\u043B\u0438\u0442\u044C
+                            <button class="btn btn-delete" data-violation-id="${violation.id}">
+                                Удалить
                             </button>
-                            <button class="btn btn-fixed" data-violation-id="${d.id}">
-                                \u041E\u0442\u043C\u0435\u0442\u0438\u0442\u044C \u043A\u0430\u043A \u0438\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043D\u043E\u0435
+                            <button class="btn btn-fixed" data-violation-id="${violation.id}">
+                                Отметить как исправленное
                             </button>
                         </div>
                     </div>
-                `;s.append(r)}),e.off("click",".btn-delete").on("click",".btn-delete",d=>{let l=$(d.currentTarget);if(o.haveSecondInspection){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u044F\u0442\u044C \u043D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0435 \u0443 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0438, \u0435\u0441\u043B\u0438 \u0435\u0441\u0442\u044C \u0432\u0442\u043E\u0440\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F",NotificationType.WARNING);return}let v=l.attr("data-violation-id");this.createConfirmationDialog("\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435 \u043D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u044F").then(p=>{p&&this.deleteEntity(`/api/inspection/delete-violation/${v}`).then(()=>{l.closest(".violation-card").remove(),o.violation=o.violation.filter(r=>r.id!==v),this.localCache.set(o.id,o),(!o.violation||o.violation.length===0)&&s.append(`
+                `;
+                    violationsContainer.append(violationCard);
+                });
+            }
+            dialog.off('click', '.btn-delete').on('click', '.btn-delete', (event) => {
+                const button = $(event.currentTarget);
+                if (inspection.haveSecondInspection) {
+                    this.createNotification("Нельзя удалять нарушение у инспекции, если есть вторичная инспекция", NotificationType.WARNING);
+                    return;
+                }
+                const violationId = button.attr('data-violation-id');
+                this.createConfirmationDialog("Подтвердите удаление нарушения").then((confirmed) => {
+                    // @ts-ignore
+                    if (confirmed) {
+                        this.deleteEntity(`/api/inspection/delete-violation/${violationId}`).then(() => {
+                            button.closest('.violation-card').remove();
+                            inspection.violation = inspection.violation.filter((v) => v.id !== violationId);
+                            this.localCache.set(inspection.id, inspection);
+                            if (!inspection.violation || inspection.violation.length === 0) {
+                                violationsContainer.append(`
                                 <div class="no-violations">
-                                    \u041D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E
+                                    Нарушений не найдено
                                 </div>
-                            `),this.createNotification("\u041D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u043E",NotificationType.SUCCESS)})})}),e.off("click",".btn-fixed").on("click",".btn-fixed",d=>{let l=$(d.currentTarget);if(o.haveSecondInspection){this.createNotification("\u0423 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0438 \u0435\u0441\u0442\u044C \u0432\u0442\u043E\u0440\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F",NotificationType.WARNING);return}let v=l.attr("data-violation-id"),p=o.violation.find(r=>r.id===v);this.requestToApi(`/api/inspection/change-status-violation/${v}`,"PATCH").then(()=>{p.status=p.status==="\u041D\u0435 \u0438\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E"?"\u0418\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E":"\u041D\u0435 \u0438\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E",o.violation=o.violation.map(r=>r.id===v?p:r),this.localCache.set(o.id,o),l.closest(".violation-card").find('[name="status"]').text(p.status),this.createNotification("\u0421\u0442\u0430\u0442\u0443\u0441 \u0438\u0437\u043C\u0435\u043D\u0435\u043D",NotificationType.SUCCESS)})}),e.off("click",".photo-icon").on("click",".photo-icon",this.openImagesDialog.bind(this)),this.dialog.open("viewInspectionDialog")}),this.openImagesDialog=t=>b(this,void 0,void 0,function*(){t.preventDefault();let c=$(t.currentTarget).closest(".violation-card").data("violation-id"),a=this.lockScreen();try{let o=yield this.requestToApi(`/api/inspection/get-images-inspection/${c}`,"GET");if(!o||o.length===0){this.createNotification("\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u043F\u0440\u0438\u043A\u0440\u0435\u043F\u043B\u0435\u043D\u044B",NotificationType.INFO);return}let s=$("#photosDialog"),d=s.find(".photos-gallery");d.empty(),o.forEach((l,v)=>{d.append(`
-                    <div class="photo-item ${v===0?"active":""}">
-                        <img src="${l.data}" id="${l.id}" 
-                             alt="${l.name||"\u0424\u043E\u0442\u043E \u043D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u044F"} ${v+1}"
+                            `);
+                            }
+                            this.createNotification('Нарушение успешно удалено', NotificationType.SUCCESS);
+                        });
+                    }
+                });
+            });
+            dialog.off('click', '.btn-fixed').on('click', '.btn-fixed', (event) => {
+                const button = $(event.currentTarget);
+                if (inspection.haveSecondInspection) {
+                    this.createNotification("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+                    return;
+                }
+                const violationId = button.attr('data-violation-id');
+                const violation = inspection.violation.find((v) => v.id === violationId);
+                this.requestToApi(`/api/inspection/change-status-violation/${violationId}`, "PATCH").then(() => {
+                    violation.status = violation.status === 'Не исправлено' ? 'Исправлено' : 'Не исправлено';
+                    inspection.violation = inspection.violation.map((v) => v.id === violationId ? violation : v);
+                    this.localCache.set(inspection.id, inspection);
+                    button.closest('.violation-card').find('[name="status"]').text(violation.status);
+                    this.createNotification('Статус изменен', NotificationType.SUCCESS);
+                });
+            });
+            dialog.off('click', '.photo-icon').on('click', '.photo-icon', this.openImagesDialog.bind(this));
+            this.dialog.open('viewInspectionDialog');
+        };
+        this.openImagesDialog = async (event) => {
+            event.preventDefault();
+            const button = $(event.currentTarget);
+            const violationId = button.closest('.violation-card').data('violation-id');
+            const unlock = this.lockScreen();
+            try {
+                const images = await this.requestToApi(`/api/inspection/get-images-inspection/${violationId}`, "GET");
+                if (!images || images.length === 0) {
+                    this.createNotification('Фотографии не прикреплены', NotificationType.INFO);
+                    return;
+                }
+                const dialog = $('#photosDialog');
+                const gallery = dialog.find('.photos-gallery');
+                gallery.empty();
+                images.forEach((image, index) => {
+                    gallery.append(`
+                    <div class="photo-item ${index === 0 ? 'active' : ''}">
+                        <img src="${image.data}" id="${image.id}"
+                             alt="${image.name || 'Фото нарушения'} ${index + 1}"
                              loading="lazy">
                     </div>
-                `)}),s.find(".current-photo").text("1"),s.find(".total-photos").text(o.length),this.setupPhotoNavigation(s,o.length),this.dialog.open("photosDialog")}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0439",NotificationType.ERROR)}finally{a()}}),this.createHandler("click","#create-button",()=>this.dialog.open("create-dialog"),!0),this.createHandler("click","#createBtn",this.createInspection.bind(this),!0),this.createHandler("click","#createSecondaryBtn",this.createSecondaryInspection.bind(this),!0),this.createHandler("click",".view-btn",this.viewInspection.bind(this),!0),this.createHandler("click","#createViolation",this.createViolation.bind(this),!0),this.createHandler("click",".modal-input-change",this.changeSubDivision.bind(this),!0),this.createHandler("click",".delete-inspection",t=>{let e=$(t.target).closest(".table-card").attr("id"),c=this.localCache.get(Number(e));if(c.haveSecondInspection){this.createNotification("\u041D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u044F\u0442\u044C \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044E \u0441 \u0432\u0442\u043E\u0440\u0438\u0447\u043D\u043E\u0439 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0435\u0438\u0306",NotificationType.WARNING);return}this.createConfirmationDialog("\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0438").then(a=>{a&&this.deleteEntity(`/api/inspection/delete-inspection/${e}`).then(()=>{if(this.deleteRow(e),this.createNotification("\u0418\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u0430",NotificationType.SUCCESS),c.primaryInspectionId!=null){let o=this.localCache.get(c.primaryInspectionId);o.haveSecondInspection=!1}})})}),this.createHandler("click","#report-btn",this.makeReport.bind(this),!0),this.createHandler("click","#print-button",t=>this.print(t),!0)}createRow(i){var n;let t=`
-            <div class="table-card" id="${i.id}" data-index="${i.id}">
+                `);
+                });
+                dialog.find('.current-photo').text('1');
+                dialog.find('.total-photos').text(images.length);
+                this.setupPhotoNavigation(dialog, images.length);
+                this.dialog.open('photosDialog');
+            }
+            catch (error) {
+                this.createNotification('Ошибка загрузки фотографий', NotificationType.ERROR);
+            }
+            finally {
+                unlock();
+            }
+        };
+        this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
+        this.createHandler('click', '#createBtn', this.createInspection.bind(this), true);
+        this.createHandler('click', '#createSecondaryBtn', this.createSecondaryInspection.bind(this), true);
+        this.createHandler('click', '.view-btn', this.viewInspection.bind(this), true);
+        this.createHandler('click', '#createViolation', this.createViolation.bind(this), true);
+        this.createHandler('click', '.modal-input-change', this.changeSubDivision.bind(this), true);
+        this.createHandler('click', '.delete-inspection', (event) => {
+            const id = $(event.target).closest('.table-card').attr('id');
+            const inspection = this.localCache.get(Number(id));
+            if (inspection.haveSecondInspection) {
+                this.createNotification("Нельзя удалять инспекцию с вторичной инспекцией", NotificationType.WARNING);
+                return;
+            }
+            this.createConfirmationDialog('Подтвердите удаление инспекции').then((confirmed) => {
+                // @ts-ignore
+                if (confirmed) {
+                    this.deleteEntity(`/api/inspection/delete-inspection/${id}`).then(() => {
+                        this.deleteRow(id);
+                        this.createNotification('Инспекция успешно удалена', NotificationType.SUCCESS);
+                        if (inspection.primaryInspectionId != null) {
+                            const primaryInspection = this.localCache.get(inspection.primaryInspectionId);
+                            primaryInspection.haveSecondInspection = false;
+                        }
+                    });
+                }
+            });
+        });
+        this.createHandler('click', '#report-btn', this.makeReport.bind(this), true);
+        this.createHandler('click', '#print-button', (event) => this.print(event), true);
+    }
+    createRow(inspection) {
+        var _a;
+        const card = `
+            <div class="table-card" id="${inspection.id}" data-index="${inspection.id}">
                <div class="card-body">
                    <div class="card-title">
-                       <h5>\u0418\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F \u2116${i.id}</h5>
+                       <h5>Инспекция №${inspection.id}</h5>
                    </div>
                        <p class="card-text">
-                           \u0414\u0430\u0442\u0430: ${this.formatDateTime(i.dateInspection)}<br>
-                           \u0422\u0438\u043F: ${i.type}<br>
-                           \u0426\u0435\u0445: <span data-inspection-id="${i.id}">${(n=i.subDivision)===null||n===void 0?void 0:n.name}</span>
-                           ${i.primaryInspectionId!=null?`<br> \u041F\u0435\u0440\u0432\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F: <span data-inspection-id="${i.primaryInspectionId}">\u2116${i.primaryInspectionId}</span>`:""}       
+                           Дата: ${this.formatDateTime(inspection.dateInspection)}<br>
+                           Тип: ${inspection.type}<br>
+                           Цех: <span data-inspection-id="${inspection.id}">${(_a = inspection.subDivision) === null || _a === void 0 ? void 0 : _a.name}</span>
+                           ${inspection.primaryInspectionId != null ?
+            `<br> Первичная инспекция: <span data-inspection-id="${inspection.primaryInspectionId}">№${inspection.primaryInspectionId}</span>`
+            : ''}
                        </p>
                    <div class="buttons">
-                       <button class="btn btn-outline-primary view-btn">\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435</button>
-                       ${i.primaryInspectionId!=null?"":'<button class="btn btn-warning" id="createSecondaryBtn">\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043F\u043E\u0432\u0442\u043E\u0440\u043D\u0443\u044E \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0443</button>'}
-                       <button class="btn btn-success" data-inspectionId="${i.id}" id="report-btn">\u041E\u0442\u0447\u0435\u0442\u044B</button>
-                       <button class="btn btn-danger delete-inspection">\u0423\u0434\u0430\u043B\u0438\u0442\u044C</button>
+                       <button class="btn btn-outline-primary view-btn">Подробнее</button>
+                       ${inspection.primaryInspectionId != null ? '' : '<button class="btn btn-warning" id="createSecondaryBtn">Создать повторную проверку</button>'}
+                       <button class="btn btn-success" data-inspectionId="${inspection.id}" id="report-btn">Отчеты</button>
+                       <button class="btn btn-danger delete-inspection">Удалить</button>
                    </div>
-               </div>     
-            </div>`;return $(t)}onScroll(){}createSecondaryInspection(i){return b(this,void 0,void 0,function*(){let n=$(i.target).closest(".table-card").attr("id"),t=this.localCache.get(Number(n));try{let e=yield this.createEntity(`/api/inspection/create-secondary-inspection/${n}`);this.localCache.set(e.id,e);let c=this.createRow(e);this.addInspectionToGroup(e),t.haveSecondInspection=!0,this.localCache.set(t.id,t),this.createNotification("\u0412\u0442\u043E\u0440\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0441\u043E\u0437\u0434\u0430\u043D\u0430",NotificationType.SUCCESS)}catch{this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 \u0432\u0442\u043E\u0440\u0438\u0447\u043D\u043E\u0439 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0438",NotificationType.ERROR)}})}openAddViolationDialog(i){let n=$("#addViolationDialog"),t=n.find("#addViolationForm")[0];n.data("inspection-id",i),t.reset();let e=n.find("#criteriaSelect"),c=n.find("#scoreSelect"),a=o=>{c.empty();for(let s=1;s<=o;s++){let d=$("<option>",{value:s,text:this.getScoreText(s)});s===1&&d.prop("selected",!0),c.append(d)}};a(5),e.off("change").on("change",function(){let o=$(this).val(),s=5;switch(o){case"\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u0434\u0438\u0441\u0446\u0438\u043F\u043B\u0438\u043D\u0430":s=3;break;case"\u041E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0431\u043E\u0447\u0438\u0445 \u043C\u0435\u0441\u0442":s=2;break;case"\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F":s=3;break;case"\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430":s=5;break;default:s=5;break}a(s)}),n.find("#cancelAddBtn").off("click").on("click",()=>{this.dialog.close("addViolationDialog")}),this.dialog.open("addViolationDialog")}getScoreText(i){let n=i%10,t=i%100;return t>=11&&t<=14?`${i} \u0431\u0430\u043B\u043B\u043E\u0432`:n===1?`${i} \u0431\u0430\u043B\u043B`:n>=2&&n<=4?`${i} \u0431\u0430\u043B\u043B\u0430`:`${i} \u0431\u0430\u043B\u043B\u043E\u0432`}createViolation(i){return b(this,void 0,void 0,function*(){var n,t;i.preventDefault();let e=$(i.target),c=e.closest("form").get(0),a=$("#addViolationDialog"),o=a.data("inspection-id");if(!c.checkValidity()){c.reportValidity();return}if(this.localCache.get(Number(o)).haveSecondInspection){this.createNotification("\u0423 \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u0438 \u0435\u0441\u0442\u044C \u0432\u0442\u043E\u0440\u0438\u0447\u043D\u0430\u044F \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F",NotificationType.WARNING);return}e.prop("disabled",!0);let d=new FormData,l={inspectionId:o,description:a.find('textarea[name="description"]').val(),criteria:a.find('select[name="criteria"]').val(),score:a.find('select[name="score"]').val(),subDivision:a.find('input[name="subDivision"]').val()},v=new Blob([JSON.stringify(l)],{type:"application/json"});d.append("data",v,"data.json");let p=a.find('input[name="additionalFiles"]')[0];if(p?.files)for(let r=0;r<p.files.length;r++)d.append("additionalFiles",p.files[r]);try{let r=yield this.createEntity("/api/inspection/create-violation",d);this.saveMassive={};let h=this.localCache.get(r.inspectionId);h.violation.push(r),this.localCache.set(h.id,h),this.dialog.close("addViolationDialog");let m=$("#viewInspectionDialog").find(".violations-container");m.find(".no-violations").remove();let y=`
-                <div class="violation-card" id="${h.id}" data-violation-id="${r.id}">
+               </div>
+            </div>`;
+        return $(card);
+    }
+    onScroll() {
+    }
+    async createSecondaryInspection(event) {
+        const inspectionId = $(event.target).closest('.table-card').attr('id');
+        const primaryInspection = this.localCache.get(Number(inspectionId));
+        try {
+            const newInspection = await this.createEntity(`/api/inspection/create-secondary-inspection/${inspectionId}`);
+            this.localCache.set(newInspection.id, newInspection);
+            const newRow = this.createRow(newInspection);
+            this.addInspectionToGroup(newInspection);
+            primaryInspection.haveSecondInspection = true;
+            this.localCache.set(primaryInspection.id, primaryInspection);
+            this.createNotification('Вторичная инспекция успешно создана', NotificationType.SUCCESS);
+        }
+        catch (error) {
+            this.createNotification('Ошибка при создании вторичной инспекции', NotificationType.ERROR);
+        }
+    }
+    openAddViolationDialog(inspectionId) {
+        const addDialog = $('#addViolationDialog');
+        const form = addDialog.find('#addViolationForm')[0];
+        addDialog.data('inspection-id', inspectionId);
+        form.reset();
+        const criteriaSelect = addDialog.find('#criteriaSelect');
+        const scoreSelect = addDialog.find('#scoreSelect');
+        const updateScoreOptions = (maxScore) => {
+            scoreSelect.empty();
+            for (let i = 1; i <= maxScore; i++) {
+                const option = $('<option>', {
+                    value: i,
+                    text: this.getScoreText(i)
+                });
+                if (i === 1) {
+                    option.prop('selected', true);
+                }
+                scoreSelect.append(option);
+            }
+        };
+        updateScoreOptions(5);
+        criteriaSelect.off('change').on('change', function () {
+            const criteria = $(this).val();
+            let maxScore = 5;
+            switch (criteria) {
+                case 'Технологическая дисциплина':
+                    maxScore = 3;
+                    break;
+                case 'Организация рабочих мест':
+                    maxScore = 2;
+                    break;
+                case 'Документация':
+                    maxScore = 3;
+                    break;
+                case 'Безопасность и охрана труда':
+                    maxScore = 5;
+                    break;
+                default:
+                    maxScore = 5; // По умолчанию, если критерий не выбран
+                    break;
+            }
+            updateScoreOptions(maxScore);
+        });
+        addDialog.find('#cancelAddBtn').off('click').on('click', () => {
+            this.dialog.close('addViolationDialog');
+        });
+        this.dialog.open('addViolationDialog');
+    }
+    getScoreText(score) {
+        const lastDigit = score % 10;
+        const lastTwoDigits = score % 100;
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+            return `${score} баллов`;
+        }
+        if (lastDigit === 1) {
+            return `${score} балл`;
+        }
+        if (lastDigit >= 2 && lastDigit <= 4) {
+            return `${score} балла`;
+        }
+        return `${score} баллов`;
+    }
+    async createViolation(event) {
+        var _a, _b;
+        event.preventDefault();
+        const button = $(event.target);
+        const form = button.closest('form').get(0);
+        const dialog = $('#addViolationDialog');
+        const currentInspectionId = dialog.data('inspection-id');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        const inspection = this.localCache.get(Number(currentInspectionId));
+        if (inspection.haveSecondInspection) {
+            this.createNotification("У инспекции есть вторичная инспекция", NotificationType.WARNING);
+            return;
+        }
+        button.prop('disabled', true);
+        const formData = new FormData();
+        const jsonData = {
+            inspectionId: currentInspectionId,
+            description: dialog.find('textarea[name="description"]').val(),
+            criteria: dialog.find('select[name="criteria"]').val(),
+            score: dialog.find('select[name="score"]').val(),
+            subDivision: dialog.find('input[name="subDivision"]').val(),
+        };
+        const jsonBlob = new Blob([JSON.stringify(jsonData)], { type: 'application/json' });
+        formData.append('data', jsonBlob, 'data.json');
+        const fileInput = dialog.find('input[name="additionalFiles"]')[0];
+        if (fileInput === null || fileInput === void 0 ? void 0 : fileInput.files) {
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('additionalFiles', fileInput.files[i]);
+            }
+        }
+        try {
+            const newViolation = (await this.createEntity('/api/inspection/create-violation', formData));
+            this.saveMassive = {};
+            const inspection = this.localCache.get(newViolation.inspectionId);
+            inspection.violation.push(newViolation);
+            this.localCache.set(inspection.id, inspection);
+            this.dialog.close("addViolationDialog");
+            const violationContainer = $("#viewInspectionDialog").find('.violations-container');
+            violationContainer.find('.no-violations').remove();
+            const violationCard = `
+                <div class="violation-card" id="${inspection.id}" data-violation-id="${newViolation.id}">
                     <div class="violation-card-header">
-                        <div class="score">${r.score}/5</div>
-                        <div class="criteria">${r.criteria}</div>
+                        <div class="score">${newViolation.score}/5</div>
+                        <div class="criteria">${newViolation.criteria}</div>
                     </div>
                     <div class="violation-card-body">
                         <div class="field-row">
-                            <div class="label">\u041E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0439:</div>
-                            <div class="value">${(n=r.subDivision)===null||n===void 0?void 0:n.name}</div>
+                            <div class="label">Ответственный:</div>
+                            <div class="value">${(_a = newViolation.subDivision) === null || _a === void 0 ? void 0 : _a.name}</div>
                         </div>
                         <div class="field-row">
-                            <div class="label">\u0414\u0430\u0442\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F:</div>
-                            <div class="value">${this.formatDateTime(r.createdDate)}</div>
+                            <div class="label">Дата обнаружения:</div>
+                            <div class="value">${this.formatDateTime(newViolation.createdDate)}</div>
                         </div>
                         <div class="field-row">
-                            <div class="label">\u0421\u0442\u0430\u0442\u0443\u0441:</div>
-                            <div class="value">${r.status}</div>
+                            <div class="label">Статус:</div>
+                            <div class="value">${newViolation.status}</div>
                         </div>
                         <div class="field-row">
-                            <div class="label">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435:</div>
-                            <div class="value">${r.description}</div>
+                            <div class="label">Описание:</div>
+                            <div class="value">${newViolation.description}</div>
                         </div>
                         <div class="field-row">
-                            <div class="label">\u0421\u043E\u0437\u0434\u0430\u043B:</div>
-                            <div class="value">${(t=r.createdBy)===null||t===void 0?void 0:t.name}</div>
+                            <div class="label">Создал:</div>
+                            <div class="value">${(_b = newViolation.createdBy) === null || _b === void 0 ? void 0 : _b.name}</div>
                         </div>
                         <div class="field-row">
-                            <div class="label">\u0424\u043E\u0442\u043E:</div>
-                            <button class="dialog-btn print photo-icon">\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440</button>
+                            <div class="label">Фото:</div>
+                            <button class="dialog-btn print photo-icon">Просмотр</button>
                         </div>
                     </div>
                     <div class="violation-card-footer">
-                        <button class="btn btn-delete" data-violation-id="${r.id}">
-                            \u0423\u0434\u0430\u043B\u0438\u0442\u044C
+                        <button class="btn btn-delete" data-violation-id="${newViolation.id}">
+                            Удалить
                         </button>
-                        <button class="btn btn-fixed" data-violation-id="${r.id}">
-                            \u041E\u0442\u043C\u0435\u0442\u0438\u0442\u044C \u043A\u0430\u043A \u0438\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043D\u043E\u0435
+                        <button class="btn btn-fixed" data-violation-id="${newViolation.id}">
+                            Отметить как исправленное
                         </button>
                     </div>
                 </div>
-                `;m.append(y),e.prop("disabled",!1),this.createNotification("\u041D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0441\u043E\u0437\u0434\u0430\u043D\u043E",NotificationType.SUCCESS)}catch{this.saveMassive={},c.reset(),e.prop("disabled",!1)}})}changeSubDivision(i){return b(this,void 0,void 0,function*(){var n;i.preventDefault();let t=$(i.currentTarget),e=t.closest("#addViolationDialog").data("inspection-id"),c=e?this.localCache.get(Number(e)):null,a=(n=c?.subDivision)===null||n===void 0?void 0:n.name,o=["\u041E\u0413\u0422","\u041E\u0413\u041C","\u041E\u0422\u0438\u0422\u0411","\u041F\u0414\u041E"],s=d=>{let l=d.filter(r=>a&&r.name===a?!0:o.some(h=>r.name.includes(h))),v=[],p=new Set;for(let r of l)p.has(r.name)||(p.add(r.name),v.push(r));return v};yield this.openSelectionDialog("subDivision","subDivisionDialog",t,e,s)})}setupPhotoNavigation(i,n){let t=i.find(".photos-gallery"),e=i.find("#prevPhotoBtn"),c=i.find("#nextPhotoBtn"),a=i.find(".current-photo"),o=0,s=()=>{t.find(".photo-item").removeClass("active").hide(),t.find(`.photo-item:eq(${o})`).addClass("active").show(),a.text(o+1),e.prop("disabled",o===0),c.prop("disabled",o===n-1)};e.off("click").on("click",()=>{o>0&&(o--,s())}),c.off("click").on("click",()=>{o<n-1&&(o++,s())}),i.find("#closePhotosBtn").off("click").on("click",()=>{this.dialog.close("photosDialog")}),s(),i.off("dialog:open").on("dialog:open",()=>{i.find("#closePhotosBtn").focus()})}makeReport(i){return b(this,void 0,void 0,function*(){i.preventDefault();let n=$(i.target).closest(".table-card").attr("id"),t=this.localCache.get(Number(n));if((!t.violation||t.violation.length===0)&&(t.violation=yield this.requestToApi(`/api/inspection/get-violation/${n}`,"GET"),this.localCache.set(Number(n),t),!t.violation||t.violation.length===0)){this.createNotification("\u041D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0439 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E",NotificationType.INFO);return}let e=$("#reportDialog"),c=`
+                `;
+            violationContainer.append(violationCard);
+            button.prop('disabled', false);
+            this.createNotification('Нарушение успешно создано', NotificationType.SUCCESS);
+        }
+        catch (error) {
+            this.saveMassive = {};
+            form.reset();
+            button.prop('disabled', false);
+        }
+    }
+    async changeSubDivision(event) {
+        var _a;
+        event.preventDefault();
+        const modalDiv = $(event.currentTarget);
+        const currentId = modalDiv.closest('#addViolationDialog').data('inspection-id');
+        const currentInspection = currentId ? this.localCache.get(Number(currentId)) : null;
+        const currentSubDivisionName = (_a = currentInspection === null || currentInspection === void 0 ? void 0 : currentInspection.subDivision) === null || _a === void 0 ? void 0 : _a.name;
+        const allowedNames = ['ОГТ', 'ОГМ', 'ОТиТБ', 'ПДО'];
+        const dataFilter = (items) => {
+            const filtered = items.filter((item) => {
+                if (currentSubDivisionName && item.name === currentSubDivisionName)
+                    return true;
+                return allowedNames.some(name => item.name.includes(name));
+            });
+            const unique = [];
+            const seen = new Set();
+            for (const item of filtered) {
+                if (!seen.has(item.name)) {
+                    seen.add(item.name);
+                    unique.push(item);
+                }
+            }
+            return unique;
+        };
+        await this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, dataFilter);
+    }
+    setupPhotoNavigation(dialog, totalPhotos) {
+        const gallery = dialog.find('.photos-gallery');
+        const prevBtn = dialog.find('#prevPhotoBtn');
+        const nextBtn = dialog.find('#nextPhotoBtn');
+        const currentPhotoSpan = dialog.find('.current-photo');
+        let currentIndex = 0;
+        const updateNavigation = () => {
+            gallery.find('.photo-item').removeClass('active').hide();
+            gallery.find(`.photo-item:eq(${currentIndex})`).addClass('active').show();
+            currentPhotoSpan.text(currentIndex + 1);
+            prevBtn.prop('disabled', currentIndex === 0);
+            nextBtn.prop('disabled', currentIndex === totalPhotos - 1);
+        };
+        prevBtn.off('click').on('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateNavigation();
+            }
+        });
+        nextBtn.off('click').on('click', () => {
+            if (currentIndex < totalPhotos - 1) {
+                currentIndex++;
+                updateNavigation();
+            }
+        });
+        dialog.find('#closePhotosBtn').off('click').on('click', () => {
+            this.dialog.close('photosDialog');
+        });
+        updateNavigation();
+        dialog.off('dialog:open').on('dialog:open', () => {
+            dialog.find('#closePhotosBtn').focus();
+        });
+    }
+    async makeReport(event) {
+        event.preventDefault();
+        const currentInspectionId = $(event.target).closest('.table-card').attr('id');
+        const inspection = this.localCache.get(Number(currentInspectionId));
+        if (!inspection.violation || inspection.violation.length === 0) {
+            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET");
+            this.localCache.set(Number(currentInspectionId), inspection);
+            if (!inspection.violation || inspection.violation.length === 0) {
+                this.createNotification('Нарушений не найдено', NotificationType.INFO);
+                return;
+            }
+        }
+        const dialog = $('#reportDialog');
+        const tabsHtml = `
         <div class="report-tabs">
-            <button class="report-tab active" data-tab="workshop">\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u0446\u0435\u0445\u0443</button>
-            <button class="report-tab" data-tab="special">\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u0441\u043B\u0443\u0436\u0431\u0430\u043C</button>
+            <button class="report-tab active" data-tab="workshop">Отчет по цеху</button>
+            <button class="report-tab" data-tab="special">Отчет по службам</button>
         </div>
-    `;e.find(".report-tabs").length||e.find(".dialog-container-header").append(c);let a=`
+    `;
+        if (!dialog.find('.report-tabs').length) {
+            dialog.find('.dialog-container-header').append(tabsHtml);
+        }
+        const contentHtml = `
         <div class="report-tab-content active" id="workshopReport">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column">\u0426\u0435\u0445/\u041F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435</div>
-                <div class="dialog-content-header-column">\u041A\u0440\u0438\u0442\u0435\u0440\u0438\u0439</div>
-                <div class="dialog-content-header-column">\u0421\u0443\u043C\u043C\u0430 \u0431\u0430\u043B\u043B\u043E\u0432</div>
+                <div class="dialog-content-header-column">Цех/Подразделение</div>
+                <div class="dialog-content-header-column">Критерий</div>
+                <div class="dialog-content-header-column">Сумма баллов</div>
             </div>
             <div class="dialog-content-rows workshop-rows"></div>
         </div>
         <div class="report-tab-content" id="specialReport">
             <div class="dialog-content-header">
-                <div class="dialog-content-header-column">\u0426\u0435\u0445/\u041F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435</div>
-                <div class="dialog-content-header-column">\u041A\u0440\u0438\u0442\u0435\u0440\u0438\u0439</div>
-                <div class="dialog-content-header-column">\u0421\u0443\u043C\u043C\u0430 \u0431\u0430\u043B\u043B\u043E\u0432</div>
+                <div class="dialog-content-header-column">Цех/Подразделение</div>
+                <div class="dialog-content-header-column">Критерий</div>
+                <div class="dialog-content-header-column">Сумма баллов</div>
             </div>
             <div class="dialog-content-rows special-rows"></div>
         </div>
-    `;e.find(".report-tab-content").length||e.find(".dialog-container-content").html(a),$("#print-button").data("inspectionId",t.id),yield this.fillWorkshopReport(t),yield this.fillSpecialReport(),e.find(".report-tab").off("click").on("click",function(){var o;let s=$(this).data("tab");if(e.find(".report-tab").removeClass("active"),$(this).addClass("active"),e.find(".report-tab-content").removeClass("active"),e.find(`#${s}Report`).addClass("active"),s==="workshop"){let d=new Date(t.dateInspection),v=["\u044F\u043D\u0432\u0430\u0440\u044C","\u0444\u0435\u0432\u0440\u0430\u043B\u044C","\u043C\u0430\u0440\u0442","\u0430\u043F\u0440\u0435\u043B\u044C","\u043C\u0430\u0439","\u0438\u044E\u043D\u044C","\u0438\u044E\u043B\u044C","\u0430\u0432\u0433\u0443\u0441\u0442","\u0441\u0435\u043D\u0442\u044F\u0431\u0440\u044C","\u043E\u043A\u0442\u044F\u0431\u0440\u044C","\u043D\u043E\u044F\u0431\u0440\u044C","\u0434\u0435\u043A\u0430\u0431\u0440\u044C"][d.getMonth()],p=d.getFullYear();$("#reportDialog .dialog-name").text(`\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u0446\u0435\u0445\u0443 "${(o=t.subDivision)===null||o===void 0?void 0:o.name}" \u0437\u0430 ${v} ${p} \u0433\u043E\u0434\u0430`)}else $("#reportDialog .dialog-name").text("\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u041F\u0414\u041E/\u041E\u0413\u041C/\u041E\u0422\u0438\u0422\u0411/\u041E\u0413\u0422 \u0437\u0430 \u0442\u0435\u043A\u0443\u0449\u0438\u0439 \u043C\u0435\u0441\u044F\u0446")}),e.find(".dialog-btn.close").off("click").on("click",()=>{this.dialog.close("reportDialog")}),this.dialog.open("reportDialog")})}fillWorkshopReport(i){return b(this,void 0,void 0,function*(){var n,t,e,c,a,o,s;let d=$("#reportDialog .workshop-rows");d.empty();let l={};i.violation.forEach(u=>{if(u.subDivision&&u.subDivision.name===i.subDivision.name){let f=u.criteria;l[f]||(l[f]={subDivisionName:i.subDivision.name,totalScore:0,description:f}),l[f].totalScore+=u.score}});let v=0;for(let u in l)if(l.hasOwnProperty(u)){let f=l[u],w=`
-                    <div class="report-row" data-index="${v}">
-                        <div class="report-column">${f.subDivisionName}</div>
-                        <div class="report-column">${f.description}</div>
-                        <div class="report-column score-column">${f.totalScore}</div>
+    `;
+        if (!dialog.find('.report-tab-content').length) {
+            dialog.find('.dialog-container-content').html(contentHtml);
+        }
+        $('#print-button').data('inspectionId', inspection.id);
+        await this.fillWorkshopReport(inspection);
+        await this.fillSpecialReport();
+        dialog.find('.report-tab').off('click').on('click', function () {
+            var _a;
+            const tabId = $(this).data('tab');
+            dialog.find('.report-tab').removeClass('active');
+            $(this).addClass('active');
+            dialog.find('.report-tab-content').removeClass('active');
+            dialog.find(`#${tabId}Report`).addClass('active');
+            // Обновляем заголовок при переключении вкладок
+            if (tabId === 'workshop') {
+                const inspectionDate = new Date(inspection.dateInspection);
+                const monthNames = [
+                    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+                    'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+                ];
+                const monthName = monthNames[inspectionDate.getMonth()];
+                const year = inspectionDate.getFullYear();
+                $('#reportDialog .dialog-name').text(`Отчет по цеху "${(_a = inspection.subDivision) === null || _a === void 0 ? void 0 : _a.name}" за ${monthName} ${year} года`);
+            }
+            else {
+                $('#reportDialog .dialog-name').text('Отчет по ПДО/ОГМ/ОТиТБ/ОГТ за текущий месяц');
+            }
+        });
+        dialog.find('.dialog-btn.close').off('click').on('click', () => {
+            this.dialog.close('reportDialog');
+        });
+        this.dialog.open('reportDialog');
+    }
+    async fillWorkshopReport(inspection) {
+        var _a, _b, _c, _d, _e, _f, _g;
+        const rowsContainer = $('#reportDialog .workshop-rows');
+        rowsContainer.empty();
+        const violationsByCriteria = {};
+        inspection.violation.forEach((violation) => {
+            if (violation.subDivision && violation.subDivision.name === inspection.subDivision.name) {
+                const criteria = violation.criteria;
+                if (!violationsByCriteria[criteria]) {
+                    violationsByCriteria[criteria] = {
+                        subDivisionName: inspection.subDivision.name,
+                        totalScore: 0,
+                        description: criteria
+                    };
+                }
+                violationsByCriteria[criteria].totalScore += violation.score;
+            }
+        });
+        let index = 0;
+        for (const key in violationsByCriteria) {
+            if (violationsByCriteria.hasOwnProperty(key)) {
+                const violation = violationsByCriteria[key];
+                const row = `
+                    <div class="report-row" data-index="${index}">
+                        <div class="report-column">${violation.subDivisionName}</div>
+                        <div class="report-column">${violation.description}</div>
+                        <div class="report-column score-column">${violation.totalScore}</div>
                     </div>
-                `;d.append(w),v++}v===0&&d.append(`
+                `;
+                rowsContainer.append(row);
+                index++;
+            }
+        }
+        if (index === 0) {
+            rowsContainer.append(`
                 <div class="no-data">
-                    \u041D\u0435\u0442 \u043D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0439 \u0434\u043B\u044F \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044F "${i.subDivision.name}"
+                    Нет нарушений для подразделения "${inspection.subDivision.name}"
                 </div>
-            `),d.append('<div class="report-divider"></div>');let p=5,r=0,h=[],m=((n=i.subDivision)===null||n===void 0?void 0:n.name)||"";if(["\u041F\u0414\u041E","\u041E\u0413\u041C","\u041E\u0422\u0438\u0422\u0411"].some(u=>m.toUpperCase().indexOf(u)!==-1)){let u=((t=l["\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430"])===null||t===void 0?void 0:t.totalScore)||0,f=((e=l.\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F)===null||e===void 0?void 0:e.totalScore)||0;u>=6&&(r+=2.5,h.push("\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430: -2.5%")),f>=6&&(r+=2.5,h.push("\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F: -2.5%"))}else{let u=((c=l["\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430"])===null||c===void 0?void 0:c.totalScore)||0,f=((a=l["\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u0434\u0438\u0441\u0446\u0438\u043F\u043B\u0438\u043D\u0430"])===null||a===void 0?void 0:a.totalScore)||0,w=((o=l["\u041E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0431\u043E\u0447\u0438\u0445 \u043C\u0435\u0441\u0442"])===null||o===void 0?void 0:o.totalScore)||0,k=((s=l.\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F)===null||s===void 0?void 0:s.totalScore)||0;u>=9&&(r+=1.25,h.push("\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430: -1.25%")),f>=9&&(r+=1.25,h.push("\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u0434\u0438\u0441\u0446\u0438\u043F\u043B\u0438\u043D\u0430: -1.25%")),w>=9&&(r+=1.25,h.push("\u041E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0440\u0430\u0431\u043E\u0447\u0438\u0445 \u043C\u0435\u0441\u0442: -1.25%")),k>=9&&(r+=1.25,h.push("\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F: -1.25%"))}let N=Math.max(0,p-r),I="";h.length>0&&h.forEach(u=>{I+=`
+            `);
+        }
+        rowsContainer.append('<div class="report-divider"></div>');
+        const baseBonus = 5.0;
+        let totalPenalty = 0;
+        const appliedPenalties = [];
+        const subDivisionName = ((_a = inspection.subDivision) === null || _a === void 0 ? void 0 : _a.name) || '';
+        const isSpecialDivision = ['ПДО', 'ОГМ', 'ОТиТБ'].some(name => subDivisionName.toUpperCase().indexOf(name) !== -1);
+        if (isSpecialDivision) {
+            const safetyScore = ((_b = violationsByCriteria['Безопасность и охрана труда']) === null || _b === void 0 ? void 0 : _b.totalScore) || 0;
+            const docsScore = ((_c = violationsByCriteria['Документация']) === null || _c === void 0 ? void 0 : _c.totalScore) || 0;
+            if (safetyScore >= 6) {
+                totalPenalty += 2.5;
+                appliedPenalties.push('Безопасность и охрана труда: -2.5%');
+            }
+            if (docsScore >= 6) {
+                totalPenalty += 2.5;
+                appliedPenalties.push('Документация: -2.5%');
+            }
+        }
+        else {
+            const safetyScore = ((_d = violationsByCriteria['Безопасность и охрана труда']) === null || _d === void 0 ? void 0 : _d.totalScore) || 0;
+            const techScore = ((_e = violationsByCriteria['Технологическая дисциплина']) === null || _e === void 0 ? void 0 : _e.totalScore) || 0;
+            const orgScore = ((_f = violationsByCriteria['Организация рабочих мест']) === null || _f === void 0 ? void 0 : _f.totalScore) || 0;
+            const docsScore = ((_g = violationsByCriteria['Документация']) === null || _g === void 0 ? void 0 : _g.totalScore) || 0;
+            if (safetyScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Безопасность и охрана труда: -1.25%');
+            }
+            if (techScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Технологическая дисциплина: -1.25%');
+            }
+            if (orgScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Организация рабочих мест: -1.25%');
+            }
+            if (docsScore >= 9) {
+                totalPenalty += 1.25;
+                appliedPenalties.push('Документация: -1.25%');
+            }
+        }
+        const finalBonus = Math.max(0, baseBonus - totalPenalty);
+        let penaltiesHtml = '';
+        if (appliedPenalties.length > 0) {
+            appliedPenalties.forEach(penalty => {
+                penaltiesHtml += `
                     <div class="penalty-row">
-                        <span class="penalty-label">${u}</span>
+                        <span class="penalty-label">${penalty}</span>
                     </div>
-                `});let C=`
+                `;
+            });
+        }
+        const bonusRow = `
             <div class="bonus-calculation">
-                <h4>\u0420\u0430\u0441\u0447\u0435\u0442 \u043F\u0440\u0435\u043C\u0438\u0438 \u0434\u043B\u044F ${i.subDivision.name}</h4>
+                <h4>Расчет премии для ${inspection.subDivision.name}</h4>
                 <div class="bonus-row">
-                    <span class="bonus-label">\u0411\u0430\u0437\u043E\u0432\u0430\u044F \u043F\u0440\u0435\u043C\u0438\u044F:</span>
-                    <span class="bonus-value">${p.toFixed(2)} %</span>
+                    <span class="bonus-label">Базовая премия:</span>
+                    <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
                 </div>
-                ${h.length>0?`
+                ${appliedPenalties.length > 0 ? `
                     <div class="bonus-section">
-                        <div class="bonus-section-title">\u041F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0448\u0442\u0440\u0430\u0444\u044B:</div>
-                        ${I}
+                        <div class="bonus-section-title">Примененные штрафы:</div>
+                        ${penaltiesHtml}
                     </div>
-                `:`
+                ` : `
                     <div class="bonus-row">
-                        <span class="bonus-label">\u0428\u0442\u0440\u0430\u0444\u044B \u043D\u0435 \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u044B</span>
+                        <span class="bonus-label">Штрафы не применены</span>
                         <span class="bonus-value">-</span>
                     </div>
                 `}
                 <div class="bonus-row final-bonus">
-                    <span class="bonus-label">\u0424\u0438\u043D\u0430\u043B\u044C\u043D\u0430\u044F \u043F\u0440\u0435\u043C\u0438\u044F:</span>
-                    <span class="bonus-value">${N.toFixed(2)} %</span>
+                    <span class="bonus-label">Финальная премия:</span>
+                    <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
                 </div>
             </div>
-        `;d.append(C)})}fillSpecialReport(){return b(this,void 0,void 0,function*(){let i=$("#reportDialog .special-rows");i.empty();try{let n=yield this.requestToApi("/api/inspection/get-all-services-violation","GET");if(n.length===0){i.append(`
+        `;
+        rowsContainer.append(bonusRow);
+    }
+    async fillSpecialReport() {
+        const rowsContainer = $('#reportDialog .special-rows');
+        rowsContainer.empty();
+        try {
+            const allInspectionsViolation = (await this.requestToApi('/api/inspection/get-all-services-violation', 'GET'));
+            if (allInspectionsViolation.length === 0) {
+                rowsContainer.append(`
                     <div class="no-data">
-                        \u041D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445 \u043F\u043E \u0438\u043D\u0441\u043F\u0435\u043A\u0446\u0438\u044F\u043C
+                        Нет данных по инспекциям
                     </div>
-                `);return}let t={},e=["\u041F\u0414\u041E","\u041E\u0413\u041C","\u041E\u0422\u0438\u0422\u0411","\u041E\u0413\u0422"];for(let a of n){if(!a||!a.subDivision||!a.criteria)continue;let o=a.subDivision.name,s=a.criteria;e.some(l=>o&&o.toUpperCase()===l.toUpperCase())&&(t[o]||(t[o]={}),t[o][s]||(t[o][s]=0),t[o][s]+=a.score||0)}if(Object.keys(t).length===0){i.append(`
+                `);
+                return;
+            }
+            const violationsBySubDivision = {};
+            const specialDivisions = ['ПДО', 'ОГМ', 'ОТиТБ', 'ОГТ'];
+            for (const violation of allInspectionsViolation) {
+                if (!violation || !violation.subDivision || !violation.criteria)
+                    continue;
+                const subDivName = violation.subDivision.name;
+                const criteria = violation.criteria;
+                const isSpecial = specialDivisions.some(div => subDivName && subDivName.toUpperCase() === div.toUpperCase());
+                if (!isSpecial)
+                    continue;
+                if (!violationsBySubDivision[subDivName]) {
+                    violationsBySubDivision[subDivName] = {};
+                }
+                if (!violationsBySubDivision[subDivName][criteria]) {
+                    violationsBySubDivision[subDivName][criteria] = 0;
+                }
+                violationsBySubDivision[subDivName][criteria] += violation.score || 0;
+            }
+            if (Object.keys(violationsBySubDivision).length === 0) {
+                rowsContainer.append(`
                     <div class="no-data">
-                        \u041D\u0435\u0442 \u043D\u0430\u0440\u0443\u0448\u0435\u043D\u0438\u0439 \u043F\u043E \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u044B\u043C \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044F\u043C (\u041F\u0414\u041E/\u041E\u0413\u041C/\u041E\u0422\u0438\u0422\u0411/\u041E\u0413\u0422)
+                        Нет нарушений по специальным подразделениям (ПДО/ОГМ/ОТиТБ/ОГТ)
                     </div>
-                `);return}let c=0;for(let a in t)if(t.hasOwnProperty(a)){let o=t[a];i.append(`
-                        <div class="subdivision-header" data-subdivision="${a}">
-                            <strong>${a}</strong>
+                `);
+                return;
+            }
+            let totalIndex = 0;
+            for (const subDivName in violationsBySubDivision) {
+                if (violationsBySubDivision.hasOwnProperty(subDivName)) {
+                    const criteriaScores = violationsBySubDivision[subDivName];
+                    rowsContainer.append(`
+                        <div class="subdivision-header" data-subdivision="${subDivName}">
+                            <strong>${subDivName}</strong>
                         </div>
-                    `);for(let s in o)if(o.hasOwnProperty(s)){let d=o[s],l=`
-                                <div class="report-row" data-index="${c}">
-                                    <div class="report-column">${a}</div>
-                                    <div class="report-column">${s}</div>
-                                    <div class="report-column score-column">${d}</div>
+                    `);
+                    for (const criteria in criteriaScores) {
+                        if (criteriaScores.hasOwnProperty(criteria)) {
+                            const totalScore = criteriaScores[criteria];
+                            const row = `
+                                <div class="report-row" data-index="${totalIndex}">
+                                    <div class="report-column">${subDivName}</div>
+                                    <div class="report-column">${criteria}</div>
+                                    <div class="report-column score-column">${totalScore}</div>
                                 </div>
-                            `;i.append(l),c++}i.append('<div class="subdivision-divider"></div>')}i.find(".subdivision-divider").last().remove(),i.append('<div class="report-divider"></div>');for(let a in t)if(t.hasOwnProperty(a)){let o=t[a],s=5,d=0,l=[],v=o["\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430"]||0,p=o.\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F||0;v>=6&&(d+=2.5,l.push("\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C \u0438 \u043E\u0445\u0440\u0430\u043D\u0430 \u0442\u0440\u0443\u0434\u0430: -2.5%")),p>=6&&(d+=2.5,l.push("\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u0430\u0446\u0438\u044F: -2.5%"));let r=Math.max(0,s-d),h="";l.length>0&&l.forEach(y=>{h+=`
+                            `;
+                            rowsContainer.append(row);
+                            totalIndex++;
+                        }
+                    }
+                    rowsContainer.append('<div class="subdivision-divider"></div>');
+                }
+            }
+            rowsContainer.find('.subdivision-divider').last().remove();
+            rowsContainer.append('<div class="report-divider"></div>');
+            for (const subDivName in violationsBySubDivision) {
+                if (violationsBySubDivision.hasOwnProperty(subDivName)) {
+                    const criteriaScores = violationsBySubDivision[subDivName];
+                    const baseBonus = 5.0;
+                    let totalPenalty = 0;
+                    const appliedPenalties = [];
+                    const safetyScore = criteriaScores['Безопасность и охрана труда'] || 0;
+                    const docsScore = criteriaScores['Документация'] || 0;
+                    if (safetyScore >= 6) {
+                        totalPenalty += 2.5;
+                        appliedPenalties.push('Безопасность и охрана труда: -2.5%');
+                    }
+                    if (docsScore >= 6) {
+                        totalPenalty += 2.5;
+                        appliedPenalties.push('Документация: -2.5%');
+                    }
+                    const finalBonus = Math.max(0, baseBonus - totalPenalty);
+                    let penaltiesHtml = '';
+                    if (appliedPenalties.length > 0) {
+                        appliedPenalties.forEach(penalty => {
+                            penaltiesHtml += `
                             <div class="penalty-row">
-                                <span class="penalty-label">${y}</span>
+                                <span class="penalty-label">${penalty}</span>
                             </div>
-                        `});let m=`
+                        `;
+                        });
+                    }
+                    const bonusRow = `
                         <div class="bonus-calculation">
-                            <h4>\u0420\u0430\u0441\u0447\u0435\u0442 \u043F\u0440\u0435\u043C\u0438\u0438 \u0434\u043B\u044F ${a}</h4>
+                            <h4>Расчет премии для ${subDivName}</h4>
                             <div class="bonus-row">
-                                <span class="bonus-label">\u0411\u0430\u0437\u043E\u0432\u0430\u044F \u043F\u0440\u0435\u043C\u0438\u044F:</span>
-                                <span class="bonus-value">${s.toFixed(2)} %</span>
+                                <span class="bonus-label">Базовая премия:</span>
+                                <span class="bonus-value">${baseBonus.toFixed(2)} %</span>
                             </div>
-                            ${l.length>0?`
+                            ${appliedPenalties.length > 0 ? `
                                 <div class="bonus-section">
-                                    <div class="bonus-section-title">\u041F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0448\u0442\u0440\u0430\u0444\u044B:</div>
-                                    ${h}
+                                    <div class="bonus-section-title">Примененные штрафы:</div>
+                                    ${penaltiesHtml}
                                 </div>
-                            `:`
+                            ` : `
                                 <div class="bonus-row">
-                                    <span class="bonus-label">\u0428\u0442\u0440\u0430\u0444\u044B \u043D\u0435 \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u044B</span>
+                                    <span class="bonus-label">Штрафы не применены</span>
                                     <span class="bonus-value">-</span>
                                 </div>
                             `}
                             <div class="bonus-row final-bonus">
-                                <span class="bonus-label">\u0424\u0438\u043D\u0430\u043B\u044C\u043D\u0430\u044F \u043F\u0440\u0435\u043C\u0438\u044F:</span>
-                                <span class="bonus-value">${r.toFixed(2)} %</span>
+                                <span class="bonus-label">Финальная премия:</span>
+                                <span class="bonus-value">${finalBonus.toFixed(2)} %</span>
                             </div>
                         </div>
                         <div style="height: 20px;"></div>
-                    `;i.append(m)}}catch(n){console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0434\u0430\u043D\u043D\u044B\u0445 \u0434\u043B\u044F \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u043E\u0442\u0447\u0435\u0442\u0430:",n),i.append(`
+                    `;
+                    rowsContainer.append(bonusRow);
+                }
+            }
+        }
+        catch (error) {
+            console.error('Ошибка при загрузке данных для специального отчета:', error);
+            rowsContainer.append(`
                 <div class="no-data error">
-                    \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0434\u0430\u043D\u043D\u044B\u0445: ${n.message||"\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430"}
+                    Ошибка при загрузке данных: ${error.message || 'Неизвестная ошибка'}
                 </div>
-            `)}})}print(i){let n=Object.create(null,{print:{get:()=>super.print}});return b(this,void 0,void 0,function*(){let t=$(i.currentTarget).data("inspectionId");this.reports=[{name:"\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u0443\u0447\u0430\u0441\u0442\u043A\u0443",api:"/api/report/print/inspection-workshop",params:{id:t}},{name:"\u041E\u0442\u0447\u0435\u0442 \u043F\u043E \u0441\u043B\u0443\u0436\u0431\u0430\u043C",api:"/api/report/print/inspection-services",params:{}}],yield n.print.call(this,i)})}displayPage(i,n,...t){return b(this,void 0,void 0,function*(){let e=yield this.requestToApi(i,"GET",n);this.renderInspections(e.data),t.forEach(c=>c?.(e.data,e.count))})}groupByMonth(i){let n={};return i.forEach(t=>{let c=new Date(t.dateInspection).toLocaleString("ru-RU",{month:"long",year:"numeric"}),a=c.charAt(0).toUpperCase()+c.slice(1);n[a]||(n[a]=[]),n[a].push(t)}),n}parseMonthString(i){let[n,t]=i.split(" "),e=this.getMonthIndex(n);return new Date(parseInt(t),e,1)}getMonthIndex(i){return["\u044F\u043D\u0432\u0430\u0440\u044C","\u0444\u0435\u0432\u0440\u0430\u043B\u044C","\u043C\u0430\u0440\u0442","\u0430\u043F\u0440\u0435\u043B\u044C","\u043C\u0430\u0439","\u0438\u044E\u043D\u044C","\u0438\u044E\u043B\u044C","\u0430\u0432\u0433\u0443\u0441\u0442","\u0441\u0435\u043D\u0442\u044F\u0431\u0440\u044C","\u043E\u043A\u0442\u044F\u0431\u0440\u044C","\u043D\u043E\u044F\u0431\u0440\u044C","\u0434\u0435\u043A\u0430\u0431\u0440\u044C"].findIndex(t=>t.toLowerCase()===i.toLowerCase())}renderInspections(i){let n=this.groupByMonth(i),t=this.rowContainer;t.empty();let e=Object.keys(n).sort((c,a)=>this.parseMonthString(c).getTime()-this.parseMonthString(a).getTime());for(let c of e){let a=n[c],o=$(`
-                <div class="month-section" data-month="${c}">
+            `);
+        }
+    }
+    async print(event) {
+        const inspectionId = $(event.currentTarget).data('inspectionId');
+        this.reports = [
+            {
+                name: 'Отчет по участку',
+                api: '/api/report/print/inspection-workshop',
+                params: {
+                    'id': inspectionId
+                }
+            },
+            {
+                name: 'Отчет по службам',
+                api: '/api/report/print/inspection-services',
+                params: {}
+            }
+        ];
+        await super.print(event);
+    }
+    async displayPage(url, param, ...callbacks) {
+        const request = await this.requestToApi(url, 'GET', param);
+        this.renderInspections(request.data);
+        callbacks.forEach(callback => callback === null || callback === void 0 ? void 0 : callback(request.data, request.count));
+    }
+    // Группировка инспекций по месяцам
+    groupByMonth(inspections) {
+        const groups = {};
+        inspections.forEach(insp => {
+            const date = new Date(insp.dateInspection);
+            const monthKey = date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+            const formattedKey = monthKey.charAt(0).toUpperCase() + monthKey.slice(1);
+            if (!groups[formattedKey])
+                groups[formattedKey] = [];
+            groups[formattedKey].push(insp);
+        });
+        return groups;
+    }
+    parseMonthString(monthKey) {
+        const [monthName, year] = monthKey.split(' ');
+        const monthIndex = this.getMonthIndex(monthName);
+        return new Date(parseInt(year), monthIndex, 1);
+    }
+    getMonthIndex(monthName) {
+        const months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+            'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+        return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
+    }
+    // Основной метод отрисовки
+    renderInspections(inspections) {
+        const grouped = this.groupByMonth(inspections);
+        const container = this.rowContainer;
+        container.empty();
+        const sortedMonths = Object.keys(grouped).sort((a, b) => {
+            return this.parseMonthString(a).getTime() - this.parseMonthString(b).getTime();
+        });
+        for (const monthKey of sortedMonths) {
+            const monthInspections = grouped[monthKey];
+            const monthSection = $(`
+                <div class="month-section" data-month="${monthKey}">
                     <div class="month-header">
-                        <span class="month-name">${c}</span>
-                        <span class="month-toggle">\u25BC</span>
+                        <span class="month-name">${monthKey}</span>
+                        <span class="month-toggle">▼</span>
                     </div>
                     <div class="month-cards"></div>
                 </div>
-            `),s=o.find(".month-cards");a.forEach(d=>{let l=this.createRow(d);s.append(l),this.localCache.set(d.id,d)}),s.hide(),o.find(".month-header").on("click",()=>{s.slideToggle(200),o.find(".month-toggle").text(s.is(":visible")?"\u25BC":"\u25B6")}),t.append(o)}}insertMonthSection(i){let n=this.rowContainer,t=i.data("month"),e=this.parseMonthString(t),c=!1;n.children(".month-section").each((a,o)=>{let s=$(o),d=this.parseMonthString(s.data("month"));if(e<d)return i.insertBefore(s),c=!0,!1}),c||n.append(i),i.find(".month-header").on("click",()=>{let a=i.find(".month-cards");a.slideToggle(200),i.find(".month-toggle").text(a.is(":visible")?"\u25BC":"\u25B6")})}addInspectionToGroup(i){let t=new Date(i.dateInspection).toLocaleString("ru-RU",{month:"long",year:"numeric"}),e=t.charAt(0).toUpperCase()+t.slice(1),c=$(`.month-section[data-month="${e}"]`);c.length===0&&(c=$(`
-                <div class="month-section" data-month="${e}">
+            `);
+            const cardsContainer = monthSection.find('.month-cards');
+            monthInspections.forEach(inspection => {
+                const card = this.createRow(inspection);
+                cardsContainer.append(card);
+                this.localCache.set(inspection.id, inspection);
+            });
+            // По умолчанию скрываем карточки
+            cardsContainer.hide();
+            // Обработчик клика на заголовок
+            monthSection.find('.month-header').on('click', () => {
+                cardsContainer.slideToggle(200);
+                monthSection.find('.month-toggle').text(cardsContainer.is(':visible') ? '▼' : '▶');
+            });
+            container.append(monthSection);
+        }
+    }
+    // Вставка новой секции месяца в правильном порядке
+    insertMonthSection($newSection) {
+        const container = this.rowContainer;
+        const newMonthKey = $newSection.data('month');
+        const newDate = this.parseMonthString(newMonthKey);
+        let inserted = false;
+        container.children('.month-section').each((_, el) => {
+            const $el = $(el);
+            const existingDate = this.parseMonthString($el.data('month'));
+            if (newDate < existingDate) {
+                $newSection.insertBefore($el);
+                inserted = true;
+                return false;
+            }
+        });
+        if (!inserted) {
+            container.append($newSection);
+        }
+        // Добавляем обработчик клика
+        $newSection.find('.month-header').on('click', () => {
+            const $cards = $newSection.find('.month-cards');
+            $cards.slideToggle(200);
+            $newSection.find('.month-toggle').text($cards.is(':visible') ? '▼' : '▶');
+        });
+    }
+    // Добавление одной инспекции в соответствующую группу
+    addInspectionToGroup(inspection) {
+        const date = new Date(inspection.dateInspection);
+        const monthKey = date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+        const formattedKey = monthKey.charAt(0).toUpperCase() + monthKey.slice(1);
+        let monthSection = $(`.month-section[data-month="${formattedKey}"]`);
+        if (monthSection.length === 0) {
+            monthSection = $(`
+                <div class="month-section" data-month="${formattedKey}">
                     <div class="month-header">
-                        <span class="month-name">${e}</span>
-                        <span class="month-toggle">\u25BC</span>
+                        <span class="month-name">${formattedKey}</span>
+                        <span class="month-toggle">▼</span>
                     </div>
                     <div class="month-cards"></div>
                 </div>
-            `),this.insertMonthSection(c));let a=c.find(".month-cards"),o=this.createRow(i);a.append(o),this.localCache.set(i.id,i)}deleteRow(i){return new Promise(n=>{let t=$(`#${i}`),e=t.closest(".month-section");t.fadeOut(300,()=>{t.remove(),this.localCache.delete(i),e.find(".table-card").length===0&&e.remove(),n()})})}};$(document).ready(()=>{new D})});export default x();
+            `);
+            this.insertMonthSection(monthSection);
+        }
+        const cardsContainer = monthSection.find('.month-cards');
+        const card = this.createRow(inspection);
+        cardsContainer.append(card);
+        this.localCache.set(inspection.id, inspection);
+    }
+    deleteRow(rowIndex) {
+        return new Promise((resolve) => {
+            const $row = $(`#${rowIndex}`);
+            const $monthSection = $row.closest('.month-section');
+            $row.fadeOut(300, () => {
+                $row.remove();
+                this.localCache.delete(rowIndex);
+                if ($monthSection.find('.table-card').length === 0) {
+                    $monthSection.remove();
+                }
+                resolve();
+            });
+        });
+    }
+}
+$(document).ready(() => {
+    new Inspection();
+});
+//# sourceMappingURL=inspection.js.map
