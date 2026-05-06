@@ -49,6 +49,12 @@
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
+            <div class="tool load-1c tooltip-trigger" id="load-1c-button" data-description="Открыть загрузку заказа из 1C">
+                <button type="button" class="toolbar-text-button">
+                    <i class="fas fa-file-import"></i>
+                    <span>1C</span>
+                </button>
+            </div>
             <div class="tool teams tooltip-trigger" id="teams-button" data-description="Управление бригадами">
                 <button>
                     <i class="fas fa-users"></i>
@@ -188,6 +194,46 @@
         <div class="modal-footer">
             <button class="btn btn-primary" name="closeDialog">Отмена</button>
             <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
+        </div>
+    </form>
+</dialog>
+<dialog id="load-1c-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Загрузка с 1C</h2>
+    </div>
+    <form id="loadFrom1cForm">
+        <div class="modal-body">
+            <div class="form-group load-1c-form-group">
+                <label class="form-label">Номер заказа</label>
+                <input type="text" class="form-control" name="orderNumber" placeholder="Введите номер заказа" required>
+            </div>
+            <div class="load-1c-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="loadFrom1cSearchInput" placeholder="Фильтр по загруженным строкам">
+            </div>
+            <div class="load-1c-results" id="load-1c-results" hidden>
+                <div class="load-1c-results__summary" id="load-1c-result-summary"></div>
+                <div class="load-1c-grid">
+                    <div class="load-1c-grid__header">
+                        <label class="load-1c-grid__cell load-1c-grid__cell--checkbox">
+                            <input type="checkbox" id="load-1c-select-all" aria-label="Выбрать все строки">
+                        </label>
+                        <div class="load-1c-grid__cell">Номер заказа</div>
+                        <div class="load-1c-grid__cell">ТМЦ</div>
+                        <div class="load-1c-grid__cell">Кол-во</div>
+                        <div class="load-1c-grid__cell">Размер</div>
+                        <div class="load-1c-grid__cell">Сталь</div>
+                    </div>
+                    <div class="load-1c-grid__body" id="load-1c-rows"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" name="closeDialog">Отмена</button>
+            <div class="load-1c-actions">
+                <button type="button" class="btn btn-primary" id="loadFrom1cBtn">Загрузить</button>
+                <button type="button" class="btn btn-primary" id="createFrom1cBtn" disabled>Создать</button>
+            </div>
         </div>
     </form>
 </dialog>

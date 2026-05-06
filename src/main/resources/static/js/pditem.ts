@@ -40,13 +40,23 @@ class PdItem extends Base {
     private allTeamsCache: any[] = [];
     private allEmployeesCache: any[] = [];
     private selectedReadinessRowId: string | null = null;
+    private loadFrom1cRows: partsDirectoryFrom1CPreviewRow[] = [];
+    private selectedLoadFrom1cRowIndexes = new Set<number>();
+    private loadFrom1cSearchText = '';
 
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/parts-directory/get-page-pdi', undefined).catch(console.error);
         });
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
+        this.createHandler('click', '#load-1c-button', () => this.openLoadFrom1cDialog(), true);
         this.createHandler('click', '#createBtn', this.createPdi, true);
+        this.createHandler('submit', '#loadFrom1cForm', (event: Event) => event.preventDefault());
+        this.createHandler('click', '#loadFrom1cBtn', this.handleLoadFrom1c.bind(this), true);
+        this.createHandler('click', '#createFrom1cBtn', this.createSelectedFrom1cItems.bind(this), true);
+        this.createHandler('input', '#loadFrom1cSearchInput', this.handleLoadFrom1cSearch.bind(this), true);
+        this.createHandler('change', '#load-1c-select-all', this.toggleAllLoadFrom1cRowsSelection.bind(this), true);
+        this.createHandler('change', '.load-1c-row-checkbox', this.toggleLoadFrom1cRowSelection.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
@@ -122,7 +132,7 @@ class PdItem extends Base {
                 </div>
                 <div class="table-cell" style="width: var(--thickness); padding: 0">
                     <div class="field-container center" data-name="thickness" contenteditable="false">
-                        ${this.escapeHtml(String(pdi.thickness))}
+                        ${this.escapeHtml(pdi.thickness || '')}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--steel); padding: 0">
@@ -295,6 +305,320 @@ class PdItem extends Base {
             form.reset();
             this.createNotification('Ошибка при создании PDI', NotificationType.ERROR);
         } finally {
+            button.prop('disabled', false);
+        }
+    }
+
+    private resetLoadFrom1cPreview(): void {
+        const dialog = $('#load-1c-dialog');
+
+        this.loadFrom1cRows = [];
+        this.loadFrom1cSearchText = '';
+        this.selectedLoadFrom1cRowIndexes.clear();
+
+        dialog.removeClass('has-results has-loaded-1c show-create-from-1c');
+        dialog.find('#load-1c-results').attr('hidden', 'hidden');
+        dialog.find('#load-1c-result-summary').text('');
+        dialog.find('#load-1c-rows').empty();
+        dialog.find('#loadFrom1cSearchInput').val('');
+        dialog.find('#load-1c-select-all')
+            .prop('checked', false)
+            .prop('indeterminate', false)
+            .prop('disabled', true);
+        dialog.find('#createFrom1cBtn').prop('disabled', true);
+    }
+
+    private extractLoadFrom1cOrderNumber(customerOrder: string): string {
+        const value = customerOrder?.trim() || '';
+        if (!value) {
+            return '';
+        }
+
+        const match = value.match(/\d[\d./-]*/);
+        return match ? match[0] : value;
+    }
+
+    private getLoadFrom1cField<T>(item: partsDirectoryFrom1CRowIn, camelKey: keyof partsDirectoryFrom1CRowIn, russianKey: keyof partsDirectoryFrom1CRowIn): T | undefined {
+        const camelValue = item[camelKey] as T | undefined;
+        if (camelValue !== undefined && camelValue !== null && camelValue !== '') {
+            return camelValue;
+        }
+
+        const russianValue = item[russianKey] as T | undefined;
+        return russianValue !== undefined && russianValue !== null && russianValue !== '' ? russianValue : undefined;
+    }
+
+    private mapLoadFrom1cRows(response: partsDirectoryFrom1CIn): partsDirectoryFrom1CPreviewRow[] {
+        const rows = Array.isArray(response?.response)
+            ? response.response
+            : Array.isArray(response?.['Запрос'])
+                ? response['Запрос']
+                : [];
+
+        return rows.map((item, index) => {
+            const customerOrder = this.getLoadFrom1cField<string>(item, 'customerOrder', 'НаименованиеПодзаказа') || '';
+            const drawing = this.getLoadFrom1cField<string>(item, 'item', 'Чертеж') || '';
+            const detail = this.getLoadFrom1cField<string>(item, 'scheme', 'Деталь') || '';
+            const quantity = this.getLoadFrom1cField<string | number>(item, 'name', 'КоличествоДеталей');
+            const size = this.getLoadFrom1cField<string>(item, 'thickness', 'Размер') || '';
+            const steel = this.getLoadFrom1cField<string>(item, 'steel', 'Сталь') || '';
+            const quantityNumber = Number(quantity);
+
+            return {
+                index,
+                customerOrder: this.extractLoadFrom1cOrderNumber(customerOrder),
+                drawing: [drawing, detail].filter(Boolean).join(' '),
+                detail,
+                quantity: quantity != null ? String(quantity) : '',
+                quantityNumber: Number.isFinite(quantityNumber) ? quantityNumber : 0,
+                size,
+                steel
+            };
+        });
+    }
+
+    private getFilteredLoadFrom1cRows(): partsDirectoryFrom1CPreviewRow[] {
+        if (!this.loadFrom1cSearchText) {
+            return this.loadFrom1cRows;
+        }
+
+        return this.loadFrom1cRows.filter((row) =>
+            [
+                row.customerOrder,
+                row.drawing,
+                row.detail,
+                row.quantity,
+                row.size,
+                row.steel
+            ].some((value) => value.toLowerCase().includes(this.loadFrom1cSearchText))
+        );
+    }
+
+    private handleLoadFrom1cSearch(event: Event): void {
+        this.loadFrom1cSearchText = $(event.target).val()?.toString().toLowerCase().trim() || '';
+        this.renderLoadFrom1cRows();
+    }
+
+    private updateLoadFrom1cSummary(): void {
+        const dialog = $('#load-1c-dialog');
+        const total = this.loadFrom1cRows.length;
+        const filteredRows = this.getFilteredLoadFrom1cRows();
+        const filteredTotal = filteredRows.length;
+        const selected = this.selectedLoadFrom1cRowIndexes.size;
+        const selectedVisible = filteredRows.filter((row) => this.selectedLoadFrom1cRowIndexes.has(row.index)).length;
+
+        let summary = 'По этому заказу строки не найдены.';
+        if (total > 0) {
+            summary = this.loadFrom1cSearchText
+                ? `Загружено строк: ${total}. По фильтру: ${filteredTotal}. Выбрано: ${selected}.`
+                : `Найдено строк: ${total}. Выбрано: ${selected}.`;
+        }
+
+        dialog.find('#load-1c-result-summary').text(summary);
+
+        dialog.find('#load-1c-select-all')
+            .prop('checked', filteredTotal > 0 && selectedVisible === filteredTotal)
+            .prop('indeterminate', selectedVisible > 0 && selectedVisible < filteredTotal)
+            .prop('disabled', filteredTotal === 0);
+        dialog.find('#createFrom1cBtn').prop('disabled', selected === 0);
+    }
+
+    private renderLoadFrom1cRows(): void {
+        const dialog = $('#load-1c-dialog');
+        const rowsContainer = dialog.find('#load-1c-rows');
+        const createButton = dialog.find('#createFrom1cBtn');
+        const filteredRows = this.getFilteredLoadFrom1cRows();
+
+        dialog.addClass('has-results');
+        dialog.find('#load-1c-results').removeAttr('hidden');
+
+        if (!this.loadFrom1cRows.length) {
+            dialog.removeClass('has-loaded-1c show-create-from-1c');
+            createButton.prop('disabled', true);
+            rowsContainer.html('<div class="load-1c-empty">По этому заказу строки не найдены.</div>');
+            this.updateLoadFrom1cSummary();
+            return;
+        }
+
+        dialog.addClass('has-loaded-1c show-create-from-1c');
+        createButton.prop('disabled', this.selectedLoadFrom1cRowIndexes.size === 0);
+
+        if (!filteredRows.length) {
+            rowsContainer.html('<div class="load-1c-empty">По фильтру строки не найдены.</div>');
+            this.updateLoadFrom1cSummary();
+            return;
+        }
+
+        const rowsHtml = filteredRows.map((row) => {
+            const checked = this.selectedLoadFrom1cRowIndexes.has(row.index) ? 'checked' : '';
+            const selectedClass = checked ? ' is-selected' : '';
+
+            return `
+                <div class="load-1c-grid__row${selectedClass}">
+                    <label class="load-1c-grid__cell load-1c-grid__cell--checkbox">
+                        <input type="checkbox" class="load-1c-row-checkbox" data-row-index="${row.index}" ${checked} aria-label="Выбрать строку">
+                    </label>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.customerOrder)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.drawing)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.quantity)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.size)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.steel)}</span></div>
+                </div>
+            `;
+        }).join('');
+
+        rowsContainer.html(rowsHtml);
+        this.updateLoadFrom1cSummary();
+    }
+
+    private toggleAllLoadFrom1cRowsSelection(event: Event): void {
+        const isChecked = (event.currentTarget as HTMLInputElement).checked;
+        const filteredRows = this.getFilteredLoadFrom1cRows();
+        const rowCheckboxes = $('#load-1c-rows').find('.load-1c-row-checkbox');
+
+        rowCheckboxes.each((_, checkbox) => {
+            const input = checkbox as HTMLInputElement;
+            const rowIndex = Number($(input).attr('data-row-index'));
+
+            input.checked = isChecked;
+            $(input).closest('.load-1c-grid__row').toggleClass('is-selected', isChecked);
+
+            if (isChecked && !Number.isNaN(rowIndex)) {
+                this.selectedLoadFrom1cRowIndexes.add(rowIndex);
+            } else if (!isChecked && !Number.isNaN(rowIndex)) {
+                this.selectedLoadFrom1cRowIndexes.delete(rowIndex);
+            }
+        });
+
+        filteredRows.forEach((row) => {
+            if (isChecked) {
+                this.selectedLoadFrom1cRowIndexes.add(row.index);
+            } else {
+                this.selectedLoadFrom1cRowIndexes.delete(row.index);
+            }
+        });
+
+        this.updateLoadFrom1cSummary();
+    }
+
+    private toggleLoadFrom1cRowSelection(event: Event): void {
+        const checkbox = event.currentTarget as HTMLInputElement;
+        const rowIndex = Number($(checkbox).attr('data-row-index'));
+
+        if (Number.isNaN(rowIndex)) {
+            return;
+        }
+
+        if (checkbox.checked) {
+            this.selectedLoadFrom1cRowIndexes.add(rowIndex);
+        } else {
+            this.selectedLoadFrom1cRowIndexes.delete(rowIndex);
+        }
+
+        $(checkbox).closest('.load-1c-grid__row').toggleClass('is-selected', checkbox.checked);
+        this.updateLoadFrom1cSummary();
+    }
+
+    private openLoadFrom1cDialog(): void {
+        this.resetLoadFrom1cPreview();
+        $('#load-1c-dialog').find('input[name="orderNumber"]').val('');
+        this.dialog.open('load-1c-dialog', {
+            onOpen: () => {
+                $('#load-1c-dialog').find('input[name="orderNumber"]').trigger('focus');
+            }
+        });
+    }
+
+    private async handleLoadFrom1c(event: Event): Promise<void> {
+        event.preventDefault();
+
+        const dialog = $('#load-1c-dialog');
+        const form = dialog.find('#loadFrom1cForm').get(0) as HTMLFormElement;
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const orderNumber = dialog.find('input[name="orderNumber"]').val()?.toString().trim();
+        if (!orderNumber) {
+            this.createNotification('Введите номер заказа', NotificationType.WARNING);
+            return;
+        }
+
+        const button = dialog.find('#loadFrom1cBtn');
+        const unlock = this.lockScreen('Загрузка данных из 1C...');
+
+        this.resetLoadFrom1cPreview();
+        button.prop('disabled', true);
+
+        try {
+            const response = await this.requestToApi(
+                `/api/parts-directory/from-1c?customerOrder=${encodeURIComponent(orderNumber)}`,
+                'GET'
+            ) as partsDirectoryFrom1CIn;
+
+            this.loadFrom1cRows = this.mapLoadFrom1cRows(response);
+            this.loadFrom1cSearchText = '';
+            this.selectedLoadFrom1cRowIndexes.clear();
+            this.renderLoadFrom1cRows();
+
+            if (this.loadFrom1cRows.length) {
+                this.createNotification(`Получено строк из 1C: ${this.loadFrom1cRows.length}`, NotificationType.SUCCESS);
+            } else {
+                this.createNotification('По этому заказу строки в 1C не найдены', NotificationType.INFO);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            unlock();
+            button.prop('disabled', false);
+        }
+    }
+
+    private async createSelectedFrom1cItems(event: Event): Promise<void> {
+        event.preventDefault();
+
+        if (this.selectedLoadFrom1cRowIndexes.size === 0) {
+            this.createNotification('Выберите хотя бы одну строку', NotificationType.WARNING);
+            return;
+        }
+
+        const payload = this.loadFrom1cRows
+            .filter(row => this.selectedLoadFrom1cRowIndexes.has(row.index))
+            .map(row => ({
+                customerOrder: row.customerOrder,
+                scheme: row.drawing,
+                name: row.detail,
+                qty: row.quantityNumber,
+                steel: row.steel,
+                measurements: row.size
+            }));
+
+        const button = $('#createFrom1cBtn');
+        const unlock = this.lockScreen('Создание строк из 1C...');
+
+        button.prop('disabled', true);
+
+        try {
+            const createdRows = await this.requestToApi(
+                '/api/parts-directory/create-item-from-1c',
+                'POST',
+                payload
+            ) as pdItemIn[];
+
+            createdRows.forEach((row) => {
+                this.localCache.set(row.id, row);
+                $('.table-body').append(this.createRow(row));
+            });
+
+            this.dialog.close('load-1c-dialog');
+            this.resetLoadFrom1cPreview();
+            this.createNotification(`Создано строк: ${createdRows.length}`, NotificationType.SUCCESS);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            unlock();
             button.prop('disabled', false);
         }
     }
@@ -493,13 +817,6 @@ class PdItem extends Base {
 
         const mouseEvent = event as MouseEvent;
         this.createContextMenu([
-            {
-                label: 'Подробнее',
-                idAction: 'Detail',
-                action: () => {
-
-                }
-            },
             {
                 label: 'Удалить запись',
                 idAction: 'deletePdi',

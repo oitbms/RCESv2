@@ -27,3 +27,36 @@ type TeamIn = {
     name: string;
     employees: Employee[];
 }
+
+type partsDirectoryFrom1CIn = {
+    response?: partsDirectoryFrom1CRowIn[];
+    'Запрос'?: partsDirectoryFrom1CRowIn[];
+}
+
+type partsDirectoryFrom1CRowIn = {
+    customerOrder?: string;
+    item?: string;
+    scheme?: string;
+    name?: string | number;
+    thickness?: string;
+    steel?: string;
+    qty?: number | string | null;
+    'НаименованиеПодзаказа'?: string;
+    'Чертеж'?: string;
+    'Деталь'?: string;
+    'КоличествоДеталей'?: string | number;
+    'Размер'?: string;
+    'Сталь'?: string;
+    'КоличествоСтали'?: number | string | null;
+}
+
+type partsDirectoryFrom1CPreviewRow = {
+    index: number;
+    customerOrder: string;
+    drawing: string;
+    detail: string;
+    quantity: string;
+    quantityNumber: number;
+    size: string;
+    steel: string;
+}

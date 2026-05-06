@@ -20,7 +20,7 @@ public class PartsDirectoryCreateDTO {
     private String scheme;
 
     @NotNull
-    @Min(1)
+    @Min(0)
     private Integer qty;
 
     @Min(0)

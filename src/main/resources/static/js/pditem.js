@@ -19,6 +19,8 @@ class PdItem extends Base {
         this.allTeamsCache = [];
         this.allEmployeesCache = [];
         this.selectedReadinessRowId = null;
+        this.loadFrom1cRows = [];
+        this.selectedLoadFrom1cRowIndexes = new Set();
         this.createPdi = (event) => __awaiter(this, void 0, void 0, function* () {
             event.preventDefault();
             const button = $(event.target);
@@ -77,6 +79,51 @@ class PdItem extends Base {
                 this.createNotification('Ошибка при создании PDI', NotificationType.ERROR);
             }
             finally {
+                button.prop('disabled', false);
+            }
+        });
+        this.openLoadFrom1cDialog = () => {
+            this.resetLoadFrom1cPreview();
+            this.dialog.open('load-1c-dialog', {
+                onOpen: () => {
+                    $('#load-1c-dialog').find('input[name="orderNumber"]').trigger('focus');
+                }
+            });
+        };
+        this.handleLoadFrom1c = (event) => __awaiter(this, void 0, void 0, function* () {
+            event.preventDefault();
+            const dialog = $('#load-1c-dialog');
+            const form = dialog.find('#loadFrom1cForm').get(0);
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            const orderNumberValue = dialog.find('input[name="orderNumber"]').val();
+            const orderNumber = orderNumberValue ? orderNumberValue.toString().trim() : '';
+            if (!orderNumber) {
+                this.createNotification('Введите номер заказа', NotificationType.WARNING);
+                return;
+            }
+            const button = dialog.find('#loadFrom1cBtn');
+            const unlock = this.lockScreen('Загрузка данных из 1C...');
+            button.prop('disabled', true);
+            try {
+                const response = yield this.requestToApi(`/api/parts-directory/from-1c?customerOrder=${encodeURIComponent(orderNumber)}`, 'POST');
+                this.loadFrom1cRows = this.mapLoadFrom1cRows(response);
+                this.selectedLoadFrom1cRowIndexes.clear();
+                this.renderLoadFrom1cRows();
+                if (this.loadFrom1cRows.length) {
+                    this.createNotification(`Получено строк из 1C: ${this.loadFrom1cRows.length}`, NotificationType.SUCCESS);
+                }
+                else {
+                    this.createNotification('По этому заказу строки в 1C не найдены', NotificationType.INFO);
+                }
+            }
+            catch (error) {
+                console.error(error);
+            }
+            finally {
+                unlock();
                 button.prop('disabled', false);
             }
         });
@@ -661,7 +708,12 @@ class PdItem extends Base {
         });
         this.editDateFields = ['dateCompletion'];
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
+        this.createHandler('click', '#load-1c-button', () => this.openLoadFrom1cDialog(), true);
         this.createHandler('click', '#createBtn', this.createPdi, true);
+        this.createHandler('submit', '#loadFrom1cForm', (event) => event.preventDefault());
+        this.createHandler('click', '#loadFrom1cBtn', this.handleLoadFrom1c.bind(this), true);
+        this.createHandler('change', '#load-1c-select-all', this.toggleAllLoadFrom1cRowsSelection.bind(this), true);
+        this.createHandler('change', '.load-1c-row-checkbox', this.toggleLoadFrom1cRowSelection.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.circle-header', this.selectAllRows.bind(this), true);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
@@ -738,7 +790,7 @@ class PdItem extends Base {
                 </div>
                 <div class="table-cell" style="width: var(--thickness); padding: 0">
                     <div class="field-container center" data-name="thickness" contenteditable="false">
-                        ${this.escapeHtml(String(pdi.thickness))}
+                        ${this.escapeHtml(pdi.thickness || '')}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--steel); padding: 0">
@@ -793,6 +845,111 @@ class PdItem extends Base {
                 </div>
             </div>`;
         return $(row);
+    }
+    resetLoadFrom1cPreview() {
+        const dialog = $('#load-1c-dialog');
+        this.loadFrom1cRows = [];
+        this.selectedLoadFrom1cRowIndexes.clear();
+        dialog.removeClass('has-results');
+        dialog.find('#load-1c-results').attr('hidden', 'hidden');
+        dialog.find('#load-1c-result-summary').text('');
+        dialog.find('#load-1c-rows').empty();
+        dialog.find('#load-1c-select-all')
+            .prop('checked', false)
+            .prop('indeterminate', false)
+            .prop('disabled', true);
+    }
+    extractLoadFrom1cOrderNumber(customerOrder) {
+        const value = (customerOrder === null || customerOrder === void 0 ? void 0 : customerOrder.trim()) || '';
+        if (!value) {
+            return '';
+        }
+        const match = value.match(/\d[\d./-]*/);
+        return match ? match[0] : value;
+    }
+    mapLoadFrom1cRows(response) {
+        const rows = Array.isArray(response === null || response === void 0 ? void 0 : response.response)
+            ? response.response
+            : Array.isArray(response === null || response === void 0 ? void 0 : response["Запрос"])
+                ? response["Запрос"]
+                : [];
+        return rows.map((item, index) => ({
+            index,
+            customerOrder: this.extractLoadFrom1cOrderNumber(item.customerOrder || ''),
+            drawing: item.item || '',
+            quantity: item.name != null ? String(item.name) : '',
+            size: item.thickness || '',
+            steel: item.steel || ''
+        }));
+    }
+    updateLoadFrom1cSummary() {
+        const dialog = $('#load-1c-dialog');
+        const total = this.loadFrom1cRows.length;
+        const selected = this.selectedLoadFrom1cRowIndexes.size;
+        dialog.find('#load-1c-result-summary').text(total ? `Найдено строк: ${total}. Выбрано: ${selected}.` : 'По этому заказу строки не найдены.');
+        dialog.find('#load-1c-select-all')
+            .prop('checked', total > 0 && selected === total)
+            .prop('indeterminate', selected > 0 && selected < total)
+            .prop('disabled', total === 0);
+    }
+    renderLoadFrom1cRows() {
+        const dialog = $('#load-1c-dialog');
+        const rowsContainer = dialog.find('#load-1c-rows');
+        dialog.addClass('has-results');
+        dialog.find('#load-1c-results').removeAttr('hidden');
+        if (!this.loadFrom1cRows.length) {
+            rowsContainer.html('<div class="load-1c-empty">По этому заказу строки не найдены.</div>');
+            this.updateLoadFrom1cSummary();
+            return;
+        }
+        const rowsHtml = this.loadFrom1cRows.map((row) => {
+            const checked = this.selectedLoadFrom1cRowIndexes.has(row.index) ? 'checked' : '';
+            const selectedClass = checked ? ' is-selected' : '';
+            return `
+                <div class="load-1c-grid__row${selectedClass}">
+                    <label class="load-1c-grid__cell load-1c-grid__cell--checkbox">
+                        <input type="checkbox" class="load-1c-row-checkbox" data-row-index="${row.index}" ${checked} aria-label="Выбрать строку">
+                    </label>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.customerOrder)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.drawing)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.quantity)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.size)}</span></div>
+                    <div class="load-1c-grid__cell"><span>${this.escapeHtml(row.steel)}</span></div>
+                </div>
+            `;
+        }).join('');
+        rowsContainer.html(rowsHtml);
+        this.updateLoadFrom1cSummary();
+    }
+    toggleAllLoadFrom1cRowsSelection(event) {
+        const isChecked = event.currentTarget.checked;
+        const rowCheckboxes = $('#load-1c-rows').find('.load-1c-row-checkbox');
+        this.selectedLoadFrom1cRowIndexes.clear();
+        rowCheckboxes.each((_, checkbox) => {
+            const input = checkbox;
+            const rowIndex = Number($(input).attr('data-row-index'));
+            input.checked = isChecked;
+            $(input).closest('.load-1c-grid__row').toggleClass('is-selected', isChecked);
+            if (isChecked && !Number.isNaN(rowIndex)) {
+                this.selectedLoadFrom1cRowIndexes.add(rowIndex);
+            }
+        });
+        this.updateLoadFrom1cSummary();
+    }
+    toggleLoadFrom1cRowSelection(event) {
+        const checkbox = event.currentTarget;
+        const rowIndex = Number($(checkbox).attr('data-row-index'));
+        if (Number.isNaN(rowIndex)) {
+            return;
+        }
+        if (checkbox.checked) {
+            this.selectedLoadFrom1cRowIndexes.add(rowIndex);
+        }
+        else {
+            this.selectedLoadFrom1cRowIndexes.delete(rowIndex);
+        }
+        $(checkbox).closest('.load-1c-grid__row').toggleClass('is-selected', checkbox.checked);
+        this.updateLoadFrom1cSummary();
     }
     onScroll() {
     }

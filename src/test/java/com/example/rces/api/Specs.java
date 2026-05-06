@@ -13,7 +13,7 @@ public class Specs {
 
     public static RequestSpecification request() {
         return allureRequest()
-                .baseUri(PROPERTIES.getBaseUrl())
+                .baseUri("192.168.0.2/B5/hs/ObmenDoc/LoadData/?ИмяПроцедуры=ОбработкаДопФункцииДокОбмен")
                 .contentType(ContentType.JSON);
     }
 

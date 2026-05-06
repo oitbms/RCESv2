@@ -1,10 +1,12 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.dto.PartsDirectoryCreateDTO;
+import com.example.rces.dto.PartsDirectoryCreateDTOFrom1C;
 import com.example.rces.dto.PartsDirectoryDTO;
 import com.example.rces.mapper.PartsDirectoryMapper;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.PartsDirectory;
+import com.example.rces.dto.PartsDirectoryFrom1C;
 import com.example.rces.repository.PartsDirectoryRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
@@ -17,6 +19,7 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.example.rces.utils.OneCHelper.*;
 import static com.example.rces.utils.ServiceUtil.colorCalculate;
+import static io.restassured.RestAssured.given;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -35,14 +40,16 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     private final EmployeeService employeeService;
     private final CustomerOrderService customerOrderService;
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
 
     @Autowired
-    public PartsDirectoryServiceImpl(PartsDirectoryRepository repository, PartsDirectoryMapper mapper, EmployeeService employeeService, CustomerOrderService customerOrderService, ObjectMapper objectMapper) {
+    public PartsDirectoryServiceImpl(PartsDirectoryRepository repository, PartsDirectoryMapper mapper, EmployeeService employeeService, CustomerOrderService customerOrderService, ObjectMapper objectMapper, RestTemplate restTemplate) {
         this.repository = repository;
         this.mapper = mapper;
         this.employeeService = employeeService;
         this.customerOrderService = customerOrderService;
         this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -118,6 +125,49 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         pdiEntity.setColor(colorCalculate(pdiEntity));
         repository.save(pdiEntity);
         return mapper.toDTO(pdiEntity);
+    }
+
+    @Override
+    public PartsDirectoryFrom1C downloadFrom1C(String customerOrder) {
+        String query = buildCustomerOrderQuery(customerOrder);
+        String jsonBody = buildJsonBody(query);
+
+        try {
+            String rawResponse = given()
+                    .spec(getOneCSpec())
+                    .queryParam("ИмяПроцедуры", "ОбработкаДопФункцииДокОбмен")
+                    .body(jsonBody)
+                    .when()
+                    .post()
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .asString();
+
+            String cleanJson = rawResponse
+                    .replace("\uFEFF", "")
+                    .replace("﻿", "")
+                    .trim();
+
+            return objectMapper.readValue(cleanJson, PartsDirectoryFrom1C.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("Ошибка 1C", e);
+        }
+    }
+
+    @Override
+    public List<PartsDirectoryDTO> createItemFrom1C(List<PartsDirectoryCreateDTOFrom1C> listDTO) {
+        List<PartsDirectory> pdiList = new ArrayList<>();
+        listDTO.forEach(dto -> {
+            PartsDirectory pdi = new PartsDirectory(dto, employeeService.getCurrentUser());
+            CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(employeeService.getCurrentUser(),
+                    dto.getCustomerOrder(), null);
+            pdi.setCustomerOrder(customerOrder);
+            PartsDirectory savedPdi = repository.save(pdi);
+            pdiList.add(savedPdi);
+        });
+
+        return mapper.toDTOList(pdiList);
     }
 
     @Scheduled(cron = "0 0 9 * * *")

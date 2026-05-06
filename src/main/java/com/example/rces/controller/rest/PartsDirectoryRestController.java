@@ -1,8 +1,6 @@
 package com.example.rces.controller.rest;
 
-import com.example.rces.dto.PartsDirectoryCreateDTO;
-import com.example.rces.dto.PartsDirectoryDTO;
-import com.example.rces.dto.RequestDataDTO;
+import com.example.rces.dto.*;
 import com.example.rces.service.PartsDirectoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +50,22 @@ public class PartsDirectoryRestController {
 
     @PatchMapping("/ready")
     public ResponseEntity<PartsDirectoryDTO> coordination(@RequestParam Long id,
-                                                @RequestParam(name = "ready") Boolean readyBoolean,
-                                                @RequestParam(required = false) List<String> operations) {
+                                                          @RequestParam(name = "ready") Boolean readyBoolean,
+                                                          @RequestParam(required = false) List<String> operations) {
         PartsDirectoryDTO dto = service.readyOrNot(id, readyBoolean, operations);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/from-1c")
+    public ResponseEntity<PartsDirectoryFrom1C> from1C(@RequestParam String customerOrder) {
+        PartsDirectoryFrom1C dtoList = service.downloadFrom1C(customerOrder);
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @PostMapping("/create-item-from-1c")
+    public ResponseEntity<List<PartsDirectoryDTO>> createItemsFrom1C(@RequestBody List<PartsDirectoryCreateDTOFrom1C> listDTO) {
+        List<PartsDirectoryDTO> dtoList = service.createItemFrom1C(listDTO);
+        return ResponseEntity.ok(dtoList);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.rces.models;
 
+import com.example.rces.dto.PartsDirectoryCreateDTOFrom1C;
 import com.example.rces.models.enums.Color;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -67,7 +68,7 @@ public class PartsDirectory extends BaseAuditingEntity {
     private String steel;
 
     @NotNull
-    @Min(1)
+    @Min(0)
     @Column(name = "qty", nullable = false)
     private Integer qty;
 
@@ -264,5 +265,20 @@ public class PartsDirectory extends BaseAuditingEntity {
 
     public void setOperation(List<Operation> operation) {
         this.operation = operation;
+    }
+
+    public PartsDirectory() {
+
+    }
+
+    public PartsDirectory(PartsDirectoryCreateDTOFrom1C dto, Employee currentUser) {
+        this.employee = currentUser;
+        this.scheme = dto.getScheme();
+        this.name = dto.getName();
+        this.qty = dto.getQty();
+        this.steel = dto.getSteel();
+        this.measurements = dto.getMeasurements();
+        this.status = Status.NEW;
+        this.color = Color.NONE;
     }
 }
