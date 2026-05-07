@@ -391,6 +391,26 @@
                 <input type="checkbox" id="operationLocksmith" value="locksmith">
                 <span>Слесарные работы</span>
             </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationBaikal" value="baikal">
+                <span>Байкал</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationShearingPunching" value="shearingpunching">
+                <span>Рубка, пробивка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationDrilling" value="drilling">
+                <span>Сверление</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationBending" value="bending">
+                <span>Гибка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" id="operationPressing" value="pressing">
+                <span>Прессование</span>
+            </label>
         </div>
     </div>
     <div class="modal-footer">

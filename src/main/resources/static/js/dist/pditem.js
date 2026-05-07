@@ -202,12 +202,27 @@ class PdItem extends Base {
             const dialog = $('#readiness-dialog');
             const isThermal = dialog.find('#operationThermal').is(':checked');
             const isLocksmith = dialog.find('#operationLocksmith').is(':checked');
+            const isBaikal = dialog.find('#operationBaikal').is(':checked');
+            const isShearingPunching = dialog.find('#operationShearingPunching').is(':checked');
+            const isDrilling = dialog.find('#operationDrilling').is(':checked');
+            const isBending = dialog.find('#operationBending').is(':checked');
+            const isPressing = dialog.find('#operationPressing').is(':checked');
             // Собираем выбранные операции
             const operations = [];
             if (isThermal)
                 operations.push('thermal');
             if (isLocksmith)
                 operations.push('locksmith');
+            if (isBaikal)
+                operations.push('baikal');
+            if (isShearingPunching)
+                operations.push('shearingpunching');
+            if (isDrilling)
+                operations.push('drilling');
+            if (isBending)
+                operations.push('bending');
+            if (isPressing)
+                operations.push('pressing');
             // Готовность = true если выбрана хотя бы одна операция
             const ready = operations.length > 0;
             const unlock = this.lockScreen('Сохранение готовности...');
@@ -816,7 +831,7 @@ class PdItem extends Base {
             const qtyValue = (_a = changes.qty) !== null && _a !== void 0 ? _a : pdItem.qty;
             const qtyCompletedValue = (_b = changes.qtyCompleted) !== null && _b !== void 0 ? _b : pdItem.qtyCompleted;
             const validatedFields = this.validateIntegerFields([
-                { key: 'qty', value: qtyValue, min: 1, label: 'Количество' },
+                { key: 'qty', value: qtyValue, min: 0, label: 'Количество' },
                 {
                     key: 'qtyCompleted',
                     value: qtyCompletedValue,
@@ -1113,6 +1128,11 @@ class PdItem extends Base {
         const dialog = $('#readiness-dialog');
         dialog.find('#operationThermal').prop('checked', operations.indexOf('thermal') !== -1);
         dialog.find('#operationLocksmith').prop('checked', operations.indexOf('locksmith') !== -1);
+        dialog.find('#operationBaikal').prop('checked', operations.indexOf('baikal') !== -1);
+        dialog.find('#operationShearingPunching').prop('checked', operations.indexOf('shearingpunching') !== -1);
+        dialog.find('#operationDrilling').prop('checked', operations.indexOf('drilling') !== -1);
+        dialog.find('#operationBending').prop('checked', operations.indexOf('bending') !== -1);
+        dialog.find('#operationPressing').prop('checked', operations.indexOf('pressing') !== -1);
         this.dialog.open('readiness-dialog');
     }
     applyFilters() {

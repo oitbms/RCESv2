@@ -32,7 +32,7 @@ public class PartsDirectory extends BaseAuditingEntity {
     }
 
     public enum Operation {
-        thermal, locksmith;
+        thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing;
 
         public static List<Operation> fromString(List<String> values) {
             return values.stream()
