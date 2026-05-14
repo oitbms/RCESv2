@@ -98,6 +98,7 @@
                                    href="http://192.168.30.80:2001/">Оснастка</a>
                                 <a class="btn btn-primary bottom-margin" id="inspectionPageButton" href="/inspection">Чек-листы</a>
                                 <a class="btn btn-primary bottom-margin" href="/machines">Станки</a>
+                                <a class="btn btn-primary" id="pdiPageButton" href="/parts-directory">СЗЦ</a>
                             <#elseif user.getRole() == 'MASTER'>
                                 <a class="btn btn-primary" id="BidPageButton" href="/createBid">Создать заявку</a>
                             <#elseif user.getRole() == 'TECHNOLOGIST'>
@@ -112,6 +113,7 @@
                                 <a class="btn btn-primary bottom-margin" id="inspectionPageButton" href="/inspection">Чек-листы</a>
                                 <a class="btn btn-primary" id="sgiPageButton" href="/sgi">СГИ</a>
                                 <a class="btn btn-primary" id="spePageButton" href="/spe">СПЕ</a>
+                                <a class="btn btn-primary" id="pdiPageButton" href="/parts-directory">ПДИ</a>
                             </#if>
                             <a class="btn btn-primary " id="logoutButton" href="/logout">Выйти</a>
                         </li>

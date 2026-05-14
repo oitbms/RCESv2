@@ -206,12 +206,32 @@ public class ReportServiceImpl implements ReportService {
                 .setParameter("ids", ids)
                 .setParameter("operation", PartsDirectory.Operation.locksmith)
                 .getResultList();
+        List<PartsDirectory> baikal = entityManager.createQuery(query, PartsDirectory.class)
+                .setParameter("ids", ids)
+                .setParameter("operation", PartsDirectory.Operation.baikal)
+                .getResultList();
+        List<PartsDirectory> shearingpunching = entityManager.createQuery(query, PartsDirectory.class)
+                .setParameter("ids", ids)
+                .setParameter("operation", PartsDirectory.Operation.shearingpunching)
+                .getResultList();
+        List<PartsDirectory> drilling = entityManager.createQuery(query, PartsDirectory.class)
+                .setParameter("ids", ids)
+                .setParameter("operation", PartsDirectory.Operation.drilling)
+                .getResultList();
+        List<PartsDirectory> bending = entityManager.createQuery(query, PartsDirectory.class)
+                .setParameter("ids", ids)
+                .setParameter("operation", PartsDirectory.Operation.bending)
+                .getResultList();
+        List<PartsDirectory> pressing = entityManager.createQuery(query, PartsDirectory.class)
+                .setParameter("ids", ids)
+                .setParameter("operation", PartsDirectory.Operation.pressing)
+                .getResultList();
         String employee = Stream.concat(thermal.stream(), locksmith.stream())
                 .map(p -> p.getEmployee().getName())
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.joining(", "));
-        PdItem model = new PdItem(employee, thermal, locksmith);
+        PdItem model = new PdItem(employee, thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing);
         return jasperReportExporter.generateJrxmlReport("Pditem", null, List.of(model), format);
     }
 
