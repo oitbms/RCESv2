@@ -294,85 +294,48 @@
         <div class="dialog-container-header">
             <div class="dialog-name">Управление бригадами</div>
         </div>
-        <div class="dialog-container-content">
-            <div class="team-edit-tabs">
-                <button type="button" class="team-tab active" data-tab="team-list">Список бригад</button>
-                <button type="button" class="team-tab" data-tab="team-edit">Редактирование</button>
-                <button type="button" class="team-tab" data-tab="team-create">Создание</button>
-            </div>
-            <!-- Tab: Team List -->
-            <div class="team-tab-content active" data-tab-content="team-list">
+        <div class="dialog-container-content team-edit-layout">
+            <div class="team-list-panel">
                 <div class="choice-field">
-                    <input type="text" id="teamSearchInput" placeholder="Введите название бригады">
+                    <input type="text" id="teamSearchInput" placeholder="Поиск бригад...">
                 </div>
+                <button type="button" class="btn-new-team" id="createNewTeamBtn">+ Новая бригада</button>
                 <div class="dialog-content-header">
-                    <div class="dialog-content-header-column" style="width: 160px">Название бригады</div>
-                    <div class="dialog-content-header-column" style="width: 500px">Сотрудники</div>
+                    <div class="dialog-content-header-column" style="flex: 1">Название бригады</div>
+                    <div class="dialog-content-header-column" style="flex: 2">Сотрудники</div>
                 </div>
                 <div class="dialog-content-rows" id="teamListRows"></div>
             </div>
-            <!-- Tab: Team Edit -->
-            <div class="team-tab-content" data-tab-content="team-edit">
+            <div class="team-form-panel">
                 <div class="form-group">
                     <label class="form-label">Название бригады</label>
-                    <input type="text" class="form-control" id="editTeamName">
+                    <input type="text" class="form-control" id="editTeamName" placeholder="Введите название бригады">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Сотрудники</label>
                     <div class="employee-selection">
                         <div class="choice-field">
-                            <input type="text" id="employeeSearchInput" placeholder="Введите фамилию сотрудника">
+                            <input type="text" id="employeeSearchInput" placeholder="Поиск сотрудников...">
                         </div>
                         <div class="dialog-content-header">
-                            <div class="dialog-content-header-column col-250">
+                            <div class="dialog-content-header-column" style="flex: 1">
                                 <input type="checkbox" id="selectAllEmployees">
                                 <label for="selectAllEmployees">Выбрать всех</label>
                             </div>
-                            <div class="dialog-content-header-column col-250">Имя</div>
-                            <div class="dialog-content-header-column col-250">Подразделение</div>
+                            <div class="dialog-content-header-column" style="flex: 1">Имя</div>
+                            <div class="dialog-content-header-column" style="flex: 1">Подразделение</div>
                         </div>
                         <div class="dialog-content-rows" id="employeeRows"></div>
                     </div>
                 </div>
             </div>
-            <!-- Tab: Team Create -->
-            <div class="team-tab-content" data-tab-content="team-create">
-                <div class="form-group">
-                    <label class="form-label">Название бригады</label>
-                    <input type="text" class="form-control" id="createTeamName">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Сотрудники</label>
-                    <div class="employee-selection">
-                        <div class="choice-field">
-                            <input type="text" id="createEmployeeSearchInput" placeholder="Введите фамилию сотрудника">
-                        </div>
-                        <div class="dialog-content-header">
-                            <div class="dialog-content-header-column col-250">
-                                <input type="checkbox" id="createSelectAllEmployees">
-                                <label for="createSelectAllEmployees">Выбрать всех</label>
-                            </div>
-                            <div class="dialog-content-header-column col-250">Имя</div>
-                            <div class="dialog-content-header-column col-250">Подразделение</div>
-                        </div>
-                        <div class="dialog-content-rows" id="createEmployeeRows"></div>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="dialog-container-footer">
-            <button name="closeDialog" class="dialog-btn">
-                Закрыть
-            </button>
-            <button class="dialog-btn danger" id="deleteTeam">
-                Удалить
-            </button>
-            <button class="dialog-btn primary" id="saveTeam">
-                Сохранить
-            </button>
-            <button class="dialog-btn primary" id="createTeam">
-                Создать
-            </button>
+            <button name="closeDialog" class="dialog-btn">Закрыть</button>
+            <div>
+                <button class="dialog-btn danger" id="deleteTeam">Удалить</button>
+                <button class="dialog-btn primary" id="saveTeam">Сохранить</button>
+            </div>
         </div>
     </div>
 </dialog>

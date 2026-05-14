@@ -36,7 +36,6 @@ class PdItem extends Base {
         ];
         this.selectedTeamForEdit = null;
         this.selectedEmployeeIds = [];
-        this.createSelectedEmployeeIds = [];
         this.allTeamsCache = [];
         this.allEmployeesCache = [];
         this.selectedReadinessRowId = null;
@@ -293,34 +292,21 @@ class PdItem extends Base {
         };
         this.openTeamEditDialog = async () => {
             const dialog = $('#teamEditDialog');
-            // Загружаем данные
             const teamsResponse = await this.requestToApi('/api/team/get-page', 'GET');
             this.allTeamsCache = teamsResponse.data || [];
             this.allEmployeesCache = await this.cache.get("employee");
-            // Сбрасываем состояние
             this.selectedTeamForEdit = null;
             this.selectedEmployeeIds = [];
-            this.createSelectedEmployeeIds = [];
-            // Рендерим список бригад
             this.renderTeamList();
-            // Скрываем кнопки редактирования/удаления по умолчанию
-            dialog.find('#deleteTeam').hide();
-            dialog.find('#saveTeam').hide();
-            dialog.find('#createTeam').show();
-            // Активируем первую вкладку
-            this.switchTeamTab('team-list');
-            // Обработчик поиска бригад
+            this.renderEmployeeList();
+            this.updateFooterButtons();
+            dialog.find('#editTeamName').val('');
             dialog.find('#teamSearchInput').off('input').on('input', () => {
                 const searchText = dialog.find('#teamSearchInput').val().toString().toLowerCase().trim();
                 this.renderTeamList(searchText);
             });
-            // Обработчик переключения вкладок
-            dialog.find('.team-tab').off('click').on('click', (e) => {
-                const tab = $(e.currentTarget).data('tab');
-                this.switchTeamTab(tab);
-            });
-            // Обработчик выбора бригады из списка
             dialog.find('#teamListRows').off('click').on('click', '.dialog-content-rows-row', (e) => {
+                var _a;
                 const $row = $(e.currentTarget);
                 const teamId = $row.data('id');
                 const team = this.allTeamsCache.find((t) => t.id === teamId);
@@ -329,38 +315,26 @@ class PdItem extends Base {
                 this.selectedTeamForEdit = team;
                 dialog.find('#teamListRows .dialog-content-rows-row').removeClass('selected');
                 $row.addClass('selected');
-                // Показываем кнопки редактирования и удаления
-                dialog.find('#deleteTeam').show();
-                dialog.find('#saveTeam').show();
+                dialog.find('#editTeamName').val(team.name);
+                this.selectedEmployeeIds = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.id)) || [];
+                this.renderEmployeeList();
+                this.updateFooterButtons();
             });
-            // Двойной клик - переход к редактированию
-            dialog.find('#teamListRows').off('dblclick').on('dblclick', '.dialog-content-rows-row', (e) => {
-                const $row = $(e.currentTarget);
-                const teamId = $row.data('id');
-                const team = this.allTeamsCache.find((t) => t.id === teamId);
-                if (!team)
-                    return;
-                this.selectedTeamForEdit = team;
-                this.switchTeamTab('team-edit');
-                this.populateTeamEditForm(team);
+            dialog.find('#createNewTeamBtn').off('click').on('click', () => {
+                this.selectedTeamForEdit = null;
+                this.selectedEmployeeIds = [];
+                dialog.find('#editTeamName').val('');
+                dialog.find('#teamListRows .dialog-content-rows-row').removeClass('selected');
+                this.renderEmployeeList();
+                this.updateFooterButtons();
+                dialog.find('#editTeamName').focus();
             });
-            // Обработчик кнопки "Сохранить"
             dialog.find('#saveTeam').off('click').on('click', () => this.saveTeamHandler());
-            // Обработчик кнопки "Удалить"
             dialog.find('#deleteTeam').off('click').on('click', () => this.deleteTeamHandler());
-            // Обработчик кнопки "Создать"
-            dialog.find('#createTeam').off('click').on('click', () => this.createTeamHandler());
-            // Поиск сотрудников в режиме редактирования
             dialog.find('#employeeSearchInput').off('input').on('input', () => {
                 const searchText = dialog.find('#employeeSearchInput').val().toString().toLowerCase().trim();
-                this.renderEmployeeListForEdit(searchText);
+                this.renderEmployeeList(searchText);
             });
-            // Поиск сотрудников в режиме создания
-            dialog.find('#createEmployeeSearchInput').off('input').on('input', () => {
-                const searchText = dialog.find('#createEmployeeSearchInput').val().toString().toLowerCase().trim();
-                this.renderEmployeeListForCreate(searchText);
-            });
-            // Select all employees (edit)
             dialog.find('#selectAllEmployees').off('change').on('change', (e) => {
                 const target = e.currentTarget;
                 const isChecked = target.checked;
@@ -380,7 +354,6 @@ class PdItem extends Base {
                     }
                 });
             });
-            // Individual employee checkboxes (edit)
             dialog.find('#employeeRows').off('change', '.employee-checkbox').on('change', '.employee-checkbox', (e) => {
                 const target = e.currentTarget;
                 const empId = parseInt($(target).data('id'));
@@ -398,46 +371,16 @@ class PdItem extends Base {
                 const checkedBoxes = dialog.find('#employeeRows .employee-checkbox:checked');
                 dialog.find('#selectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
             });
-            // Select all employees (create)
-            dialog.find('#createSelectAllEmployees').off('change').on('change', (e) => {
-                const target = e.currentTarget;
-                const isChecked = target.checked;
-                dialog.find('#createEmployeeRows .employee-checkbox').each((_, el) => {
-                    const checkbox = el;
-                    const empId = parseInt($(checkbox).data('id'));
-                    checkbox.checked = isChecked;
-                    if (isChecked) {
-                        if (!this.createSelectedEmployeeIds.includes(empId)) {
-                            this.createSelectedEmployeeIds.push(empId);
-                        }
-                    }
-                    else {
-                        const idx = this.createSelectedEmployeeIds.indexOf(empId);
-                        if (idx > -1)
-                            this.createSelectedEmployeeIds.splice(idx, 1);
-                    }
-                });
-            });
-            // Individual employee checkboxes (create)
-            dialog.find('#createEmployeeRows').off('change', '.employee-checkbox').on('change', '.employee-checkbox', (e) => {
-                const checkbox = e.currentTarget;
-                const $checkbox = $(checkbox);
-                const empId = Number($checkbox.data('id'));
-                if (checkbox.checked) {
-                    if (!this.createSelectedEmployeeIds.includes(empId)) {
-                        this.createSelectedEmployeeIds.push(empId);
-                    }
-                }
-                else {
-                    const idx = this.createSelectedEmployeeIds.indexOf(empId);
-                    if (idx > -1)
-                        this.createSelectedEmployeeIds.splice(idx, 1);
-                }
-                const allCheckboxes = dialog.find('#createEmployeeRows .employee-checkbox');
-                const checkedBoxes = dialog.find('#createEmployeeRows .employee-checkbox:checked');
-                dialog.find('#createSelectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
-            });
             this.dialog.open('teamEditDialog');
+        };
+        this.updateFooterButtons = () => {
+            const dialog = $('#teamEditDialog');
+            if (this.selectedTeamForEdit) {
+                dialog.find('#deleteTeam').show();
+            }
+            else {
+                dialog.find('#deleteTeam').hide();
+            }
         };
         this.renderTeamList = (searchText = '') => {
             const dialog = $('#teamEditDialog');
@@ -450,13 +393,13 @@ class PdItem extends Base {
                 const isSelected = ((_b = this.selectedTeamForEdit) === null || _b === void 0 ? void 0 : _b.id) === team.id ? 'selected' : '';
                 rowContainer.append(`
                 <div class="dialog-content-rows-row ${isSelected}" data-id="${team.id}">
-                    <div class="content-row-column" style="width: 160px">${this.escapeHtml(team.name)}</div>
-                    <div class="content-row-column" style="width: 500px">${this.escapeHtml(employeesText)}</div>
+                    <div class="content-row-column" style="flex: 1">${this.escapeHtml(team.name)}</div>
+                    <div class="content-row-column" style="flex: 2">${this.escapeHtml(employeesText)}</div>
                 </div>
             `);
             });
         };
-        this.renderEmployeeListForEdit = (searchText = '') => {
+        this.renderEmployeeList = (searchText = '') => {
             const dialog = $('#teamEditDialog');
             const rowContainer = dialog.find('#employeeRows');
             rowContainer.empty();
@@ -467,159 +410,80 @@ class PdItem extends Base {
                 const isChecked = this.selectedEmployeeIds.includes(emp.id) ? 'checked' : '';
                 rowContainer.append(`
                 <div class="dialog-content-rows-row" data-id="${emp.id}">
-                    <div class="content-row-column col-250">
+                    <div class="content-row-column" style="flex: 1">
                         <input type="checkbox" class="employee-checkbox" data-id="${emp.id}" ${isChecked}>
                     </div>
-                    <div class="content-row-column col-250">${this.escapeHtml(emp.name)}</div>
-                    <div class="content-row-column col-250">${this.escapeHtml(subDivisionName)}</div>
+                    <div class="content-row-column" style="flex: 1">${this.escapeHtml(emp.name)}</div>
+                    <div class="content-row-column" style="flex: 1">${this.escapeHtml(subDivisionName)}</div>
                 </div>
             `);
             });
-        };
-        this.renderEmployeeListForCreate = (searchText = '') => {
-            const dialog = $('#teamEditDialog');
-            const rowContainer = dialog.find('#createEmployeeRows');
-            rowContainer.empty();
-            const filtered = this.allEmployeesCache.filter((e) => e.name.toLowerCase().includes(searchText.toLowerCase()));
-            filtered.forEach((emp) => {
-                var _a;
-                const subDivisionName = ((_a = emp.subDivision) === null || _a === void 0 ? void 0 : _a.name) || '';
-                const isChecked = this.createSelectedEmployeeIds.includes(emp.id) ? 'checked' : '';
-                rowContainer.append(`
-                <div class="dialog-content-rows-row" data-id="${emp.id}">
-                    <div class="content-row-column col-250">
-                        <input type="checkbox" class="employee-checkbox" data-id="${emp.id}" ${isChecked}>
-                    </div>
-                    <div class="content-row-column col-250">${this.escapeHtml(emp.name)}</div>
-                    <div class="content-row-column col-250">${this.escapeHtml(subDivisionName)}</div>
-                </div>
-            `);
-            });
-        };
-        this.switchTeamTab = (tabName) => {
-            const dialog = $('#teamEditDialog');
-            // Обновляем кнопки вкладок
-            dialog.find('.team-tab').removeClass('active');
-            dialog.find(`.team-tab[data-tab="${tabName}"]`).addClass('active');
-            // Обновляем контент вкладок
-            dialog.find('.team-tab-content').removeClass('active');
-            dialog.find(`.team-tab-content[data-tab-content="${tabName}"]`).addClass('active');
-            // Действия при переключении
-            if (tabName === 'team-list') {
-                dialog.find('#deleteTeam').hide();
-                dialog.find('#saveTeam').hide();
-                dialog.find('#createTeam').show();
-                this.renderTeamList();
-            }
-            else if (tabName === 'team-edit') {
-                if (this.selectedTeamForEdit) {
-                    dialog.find('#deleteTeam').show();
-                    dialog.find('#saveTeam').show();
-                    dialog.find('#createTeam').hide();
-                    this.populateTeamEditForm(this.selectedTeamForEdit);
-                }
-            }
-            else if (tabName === 'team-create') {
-                dialog.find('#deleteTeam').hide();
-                dialog.find('#saveTeam').hide();
-                dialog.find('#createTeam').show();
-                this.clearTeamCreateForm();
-            }
-        };
-        this.populateTeamEditForm = (team) => {
-            var _a;
-            const dialog = $('#teamEditDialog');
-            dialog.find('#editTeamName').val(team.name);
-            this.selectedEmployeeIds = ((_a = team.employees) === null || _a === void 0 ? void 0 : _a.map((e) => e.id)) || [];
-            this.renderEmployeeListForEdit();
-            const allCheckboxes = dialog.find('#employeeRows .employee-checkbox');
-            const checkedBoxes = dialog.find('#employeeRows .employee-checkbox:checked');
-            dialog.find('#selectAllEmployees').prop('checked', allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0);
-        };
-        this.clearTeamCreateForm = () => {
-            const dialog = $('#teamEditDialog');
-            dialog.find('#createTeamName').val('');
-            this.createSelectedEmployeeIds = [];
-            this.renderEmployeeListForCreate();
-            dialog.find('#createSelectAllEmployees').prop('checked', false);
         };
         this.saveTeamHandler = async () => {
-            if (!this.selectedTeamForEdit) {
-                this.createNotification('Выберите бригаду для редактирования', NotificationType.WARNING);
-                return;
-            }
             const dialog = $('#teamEditDialog');
             const name = dialog.find('#editTeamName').val().toString().trim();
             if (!name) {
                 this.createNotification('Введите название бригады', NotificationType.WARNING);
                 return;
             }
-            const version = this.selectedTeamForEdit.version;
-            if (version === undefined || version === null) {
-                this.createNotification('Ошибка: версия бригады не определена', NotificationType.ERROR);
-                return;
-            }
-            const changes = { name };
-            if (this.selectedEmployeeIds.length > 0) {
-                changes.employeeIds = this.selectedEmployeeIds;
-            }
-            const unlock = this.lockScreen('Сохранение бригады...');
-            try {
-                const updatedTeam = await this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
-                // Обновляем кэш
-                const idx = this.allTeamsCache.findIndex((t) => t.id === updatedTeam.id);
-                if (idx !== -1) {
-                    this.allTeamsCache[idx] = updatedTeam;
+            if (this.selectedTeamForEdit) {
+                const version = this.selectedTeamForEdit.version;
+                if (version === undefined || version === null) {
+                    this.createNotification('Ошибка: версия бригады не определена', NotificationType.ERROR);
+                    return;
                 }
-                // Обновляем localCache для PDI записей с этой бригадой
-                this.localCache.forEach((pdi, key) => {
-                    var _a;
-                    if (((_a = pdi.team) === null || _a === void 0 ? void 0 : _a.id) === updatedTeam.id) {
-                        pdi.team = updatedTeam;
-                        // Обновляем отображение в таблице
-                        const $row = $(`.table-row[id="${key}"]`);
-                        $row.find('[data-name="team"]').text(updatedTeam.name);
+                const changes = { name };
+                if (this.selectedEmployeeIds.length > 0) {
+                    changes.employeeIds = this.selectedEmployeeIds;
+                }
+                const unlock = this.lockScreen('Сохранение бригады...');
+                try {
+                    const updatedTeam = await this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
+                    const idx = this.allTeamsCache.findIndex((t) => t.id === updatedTeam.id);
+                    if (idx !== -1) {
+                        this.allTeamsCache[idx] = updatedTeam;
                     }
-                });
-                this.createNotification('Бригада успешно обновлена', NotificationType.SUCCESS);
-                this.renderTeamList();
-                this.switchTeamTab('team-list');
+                    this.localCache.forEach((pdi, key) => {
+                        var _a;
+                        if (((_a = pdi.team) === null || _a === void 0 ? void 0 : _a.id) === updatedTeam.id) {
+                            pdi.team = updatedTeam;
+                            const $row = $(`.table-row[id="${key}"]`);
+                            $row.find('[data-name="team"]').text(updatedTeam.name);
+                        }
+                    });
+                    this.createNotification('Бригада успешно обновлена', NotificationType.SUCCESS);
+                    this.selectedTeamForEdit = updatedTeam;
+                    this.renderTeamList();
+                }
+                catch (_a) {
+                    this.createNotification('Ошибка при сохранении бригады', NotificationType.ERROR);
+                }
+                finally {
+                    unlock();
+                }
             }
-            catch (_a) {
-                this.createNotification('Ошибка при сохранении бригады', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
-            }
-        };
-        this.createTeamHandler = async () => {
-            const dialog = $('#teamEditDialog');
-            const name = dialog.find('#createTeamName').val().toString().trim();
-            if (!name) {
-                this.createNotification('Введите название бригады', NotificationType.WARNING);
-                return;
-            }
-            const dto = {
-                name,
-                employeeIds: this.createSelectedEmployeeIds
-            };
-            console.log('=== Creating Team ===');
-            console.log('createSelectedEmployeeIds:', this.createSelectedEmployeeIds);
-            console.log('DTO being sent:', dto);
-            const unlock = this.lockScreen('Создание бригады...');
-            try {
-                const newTeam = await this.requestToApi('/api/team/create', 'POST', dto);
-                // Добавляем в кэш
-                this.allTeamsCache.push(newTeam);
-                this.createNotification('Бригада успешно создана', NotificationType.SUCCESS);
-                this.renderTeamList();
-                this.switchTeamTab('team-list');
-            }
-            catch (_a) {
-                this.createNotification('Ошибка при создании бригады', NotificationType.ERROR);
-            }
-            finally {
-                unlock();
+            else {
+                const dto = {
+                    name,
+                    employeeIds: this.selectedEmployeeIds
+                };
+                const unlock = this.lockScreen('Создание бригады...');
+                try {
+                    const newTeam = await this.requestToApi('/api/team/create', 'POST', dto);
+                    this.allTeamsCache.push(newTeam);
+                    this.createNotification('Бригада успешно создана', NotificationType.SUCCESS);
+                    this.selectedTeamForEdit = newTeam;
+                    this.renderTeamList();
+                    dialog.find('#teamListRows .dialog-content-rows-row').removeClass('selected');
+                    dialog.find(`#teamListRows .dialog-content-rows-row[data-id="${newTeam.id}"]`).addClass('selected');
+                    this.updateFooterButtons();
+                }
+                catch (_b) {
+                    this.createNotification('Ошибка при создании бригады', NotificationType.ERROR);
+                }
+                finally {
+                    unlock();
+                }
             }
         };
         this.deleteTeamHandler = async () => {
@@ -647,7 +511,11 @@ class PdItem extends Base {
                             });
                             this.createNotification('Бригада успешно удалена', NotificationType.SUCCESS);
                             this.selectedTeamForEdit = null;
+                            this.selectedEmployeeIds = [];
+                            $('#teamEditDialog').find('#editTeamName').val('');
                             this.renderTeamList();
+                            this.renderEmployeeList();
+                            this.updateFooterButtons();
                         });
                     }
                 });

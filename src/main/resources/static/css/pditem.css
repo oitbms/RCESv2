@@ -1125,53 +1125,39 @@ dialog::backdrop {
     }
 }
 
-/* Team Edit Dialog Styles */
-.team-edit-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 0;
-}
-
-.team-tab {
-    padding: 10px 20px;
-    border: none;
-    background: transparent;
-    color: #666;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s ease;
-}
-
-.team-tab:hover {
-    color: #333;
-    background: rgba(0, 0, 0, 0.03);
-}
-
-.team-tab.active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
-}
-
-.team-tab-content {
-    display: none;
+/* Team Edit Dialog - Split Layout */
+.team-edit-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0;
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
+    padding: 16px;
+    background: #fafafa;
 }
 
-.team-tab-content.active {
-    display: block;
+.team-list-panel {
+    width: 260px;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e0e0e0;
+    padding-right: 16px;
+    margin-right: 16px;
 }
 
-.team-tab-content .form-group {
+.team-form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.team-form-panel .form-group {
     margin-bottom: 16px;
 }
 
-.team-tab-content .form-label {
+.team-form-panel .form-label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
@@ -1179,31 +1165,63 @@ dialog::backdrop {
     color: #424242;
 }
 
-.team-tab-content .form-control {
+.team-form-panel .form-control {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 0.875rem;
+    box-sizing: border-box;
 }
 
-.team-tab-content .employee-selection {
+.team-form-panel .employee-selection {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 12px;
     background: #ffffff;
 }
 
-.team-tab-content .choice-field {
+.team-form-panel .choice-field {
     margin-bottom: 12px;
 }
 
-.team-tab-content .dialog-content-header {
+.team-form-panel .dialog-content-header {
     margin-bottom: 8px;
 }
 
-.team-tab-content .dialog-content-rows {
-    max-height: 300px;
+.team-form-panel .dialog-content-rows {
+    max-height: 240px;
+}
+
+.team-list-panel .dialog-content-header {
+    margin-bottom: 0;
+}
+
+.team-list-panel .dialog-content-rows {
+    max-height: none;
+    flex: 1;
+}
+
+.team-list-panel .choice-field {
+    margin-bottom: 8px;
+}
+
+.btn-new-team {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    background: #e8f0fe;
+    color: #1a73e8;
+    border: 1px dashed #1a73e8;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-new-team:hover {
+    background: #d2e3fc;
 }
 
 .dialog-btn.danger {
@@ -1218,7 +1236,7 @@ dialog::backdrop {
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
-/* Скрываем кнопку создания на вкладке списка по умолчанию */
-#teamEditDialog #createTeam {
-    display: none;
+#teamEditDialog .dialog-container-footer > div {
+    display: flex;
+    gap: 12px;
 }
