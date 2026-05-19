@@ -20,6 +20,7 @@ class PdItem extends Base {
         this.selectedReadinessRowId = null;
         this.loadFrom1cRows = [];
         this.selectedLoadFrom1cRowIndexes = new Set();
+        this.readinessFilter = 'ALL';
         this.createPdi = (event) => __awaiter(this, void 0, void 0, function* () {
             event.preventDefault();
             const button = $(event.target);
@@ -71,6 +72,7 @@ class PdItem extends Base {
                 this.localCache.set(newPdi.id, newPdi);
                 this.dialog.close("create-dialog");
                 $(`.table-body`).append(this.createRow(newPdi));
+                this.applyFilters();
             }
             catch (_a) {
                 this.saveMassive = {};
@@ -282,6 +284,7 @@ class PdItem extends Base {
                 params.set('ready', String(ready));
                 operations.forEach(op => params.append('operations', op));
                 yield this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH');
+                setTimeout(() => this.applyFilters(), 150);
                 // Обновляем кэш и UI
                 const cacheData = this.localCache.get(this.selectedReadinessRowId);
                 if (cacheData) {
@@ -302,35 +305,88 @@ class PdItem extends Base {
                 unlock();
             }
         });
+        this.getSelectedPdiIds = (fallbackId) => {
+            const selectedIds = Array.from(this.selectedRows)
+                .map(id => String(id))
+                .filter(id => id && $(`.table-row[id="${id}"]`).hasClass('selected'));
+            if (!selectedIds.includes(fallbackId)) {
+                selectedIds.push(fallbackId);
+            }
+            return Array.from(new Set(selectedIds));
+        };
+        this.removeDeletedPdiRow = (id) => {
+            const $row = $(`.table-row[id="${id}"]`);
+            $row.removeClass('selected');
+            $row.find('.circle-row').removeClass('active-critical');
+            this.deleteRow(id);
+            this.selectedRows.delete(id);
+            const numericId = Number(id);
+            if (!Number.isNaN(numericId)) {
+                this.selectedRows.delete(numericId);
+                this.localCache.delete(numericId);
+            }
+            delete this.saveMassive[id];
+        };
         this.showRowContextMenu = (event) => {
             event.preventDefault();
             const $row = $(event.currentTarget);
             const rowId = $row.attr('id');
             if (!rowId)
                 return;
+            const idsToDelete = this.getSelectedPdiIds(rowId);
             const mouseEvent = event;
             this.createContextMenu([
                 {
-                    label: 'Удалить запись',
+                    label: idsToDelete.length > 1 ? `Удалить выбранные (${idsToDelete.length})` : 'Удалить запись',
                     idAction: 'deletePdi',
                     action: () => {
-                        this.deletePdiHandler(rowId);
+                        this.deletePdiHandler(idsToDelete);
                     }
                 },
             ], mouseEvent.clientX, mouseEvent.clientY);
         };
-        this.deletePdiHandler = (id) => __awaiter(this, void 0, void 0, function* () {
-            const confirmed = yield this.createConfirmationDialog('Вы действительно хотите удалить эту запись?');
-            if (!confirmed)
+        this.deletePdiHandler = (ids) => __awaiter(this, void 0, void 0, function* () {
+            const idsToDelete = Array.from(new Set(ids.map(id => String(id)).filter(Boolean)));
+            if (idsToDelete.length === 0)
                 return;
+            let unlock = null;
             try {
-                yield this.deleteEntity(`/api/parts-directory/delete/${id}`);
-                this.createNotification('Запись успешно удалена', NotificationType.SUCCESS);
-                this.deleteRow(id);
-                this.selectedRows.delete(id);
+                const confirmed = yield this.createConfirmationDialog(idsToDelete.length > 1
+                    ? `Подтвердите удаление выбранных записей: ${idsToDelete.length}`
+                    : 'Подтвердите удаление мероприятия');
+                if (!confirmed)
+                    return;
+                unlock = this.lockScreen(idsToDelete.length > 1 ? 'Удаление выбранных записей...' : 'Удаление записи...');
+                const deletedIds = [];
+                const failedIds = [];
+                for (const id of idsToDelete) {
+                    try {
+                        yield this.deleteEntity(`/api/parts-directory/delete/${id}`);
+                        deletedIds.push(id);
+                    }
+                    catch (_a) {
+                        failedIds.push(id);
+                    }
+                }
+                deletedIds.forEach(id => this.removeDeletedPdiRow(id));
+                if ($('.table-row.selected').length === 0) {
+                    this.selectedRows.clear();
+                    $('.circle-header').removeClass('active');
+                }
+                if (failedIds.length > 0) {
+                    this.createNotification(deletedIds.length > 0
+                        ? `Удалено записей: ${deletedIds.length}. Ошибка при удалении записей: ${failedIds.length}`
+                        : 'Ошибка при удалении записей', NotificationType.ERROR);
+                    return;
+                }
+                this.createNotification(deletedIds.length > 1 ? `Удалено записей: ${deletedIds.length}` : 'Запись успешно удалена', NotificationType.SUCCESS);
             }
-            catch (_a) {
-                this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
+            catch (_b) {
+                this.createNotification('Ошибка при удалении записей', NotificationType.ERROR);
+            }
+            finally {
+                if (unlock)
+                    unlock();
             }
         });
         // ========== TEAM MANAGEMENT ==========
@@ -476,10 +532,10 @@ class PdItem extends Base {
                     this.createNotification('Ошибка: версия бригады не определена', NotificationType.ERROR);
                     return;
                 }
-                const changes = { name };
-                if (this.selectedEmployeeIds.length > 0) {
-                    changes.employeeIds = this.selectedEmployeeIds;
-                }
+                const changes = {
+                    name,
+                    employeeIds: this.selectedEmployeeIds
+                };
                 const unlock = this.lockScreen('Сохранение бригады...');
                 try {
                     const updatedTeam = yield this.requestToApi(`/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`, 'PATCH', changes);
@@ -598,15 +654,19 @@ class PdItem extends Base {
         this.createHandler('input', '[data-name]', this.inputChanges.bind(this), true);
         this.createHandler('click', '.ready-checkbox', (event) => {
             const $row = $(event.currentTarget).closest('.table-row');
-            const rowId = $row.attr('id');
-            if (!rowId) return;
-            
+            const rowId = Number($row.attr('id'));
             const cacheData = this.localCache.get(rowId);
-            
-            if (cacheData && cacheData.ready) {
+            if (cacheData.ready) {
                 // Если уже ready - просто отправляем false на API
-                this.requestToApi("/api/parts-directory/ready", "PATCH", {id: rowId, ready: false});
-            } else {
+                const params = new URLSearchParams();
+                params.set('id', String(rowId));
+                params.set('ready', 'false');
+                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH").then((pdi) => {
+                    this.updateRow(pdi, rowId);
+                    setTimeout(() => this.applyFilters(), 150);
+                });
+            }
+            else {
                 // Если не ready - открываем диалог
                 this.openReadinessDialog(event);
             }
@@ -614,6 +674,7 @@ class PdItem extends Base {
         this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
         this.createHandler('click', '#cancelReadiness', this.closeReadinessDialog.bind(this), true);
         this.createHandler('click', '#closeReadinessDialog', this.closeReadinessDialog.bind(this), true);
+        this.createHandler('click', '#readyFilterButton', this.toggleReadinessFilter.bind(this), true);
         this.createHandler('input', '#searchInput', (event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
             this.applyFilters();
@@ -675,6 +736,11 @@ class PdItem extends Base {
                  <div class="table-cell" style="width: var(--measurements);">
                     <div class="field-container center" data-name="measurements" contenteditable="false">
                         ${this.escapeHtml(pdi.measurements)}
+                    </div>
+                </div>
+                <div class="table-cell" style="width: var(--machine);">
+                    <div class="field-container center" data-name="machine" contenteditable="false">
+                        ${this.escapeHtml(pdi.machine || '')}
                     </div>
                 </div>
                 <div class="table-cell" style="width: var(--program);">
@@ -921,15 +987,59 @@ class PdItem extends Base {
             }
         });
     }
-    applyFilters() {
-        if (!this.searchText) {
-            $('.table-row').show();
-            return;
+    toggleReadinessFilter(event) {
+        event.preventDefault();
+        const nextFilter = {
+            ALL: 'READY',
+            READY: 'NOT_READY',
+            NOT_READY: 'ALL'
+        };
+        this.readinessFilter = nextFilter[this.readinessFilter];
+        this.updateReadinessFilterButton();
+        this.applyFilters();
+    }
+    updateReadinessFilterButton() {
+        const config = {
+            ALL: {
+                icon: 'fa-filter',
+                description: 'Фильтр по готовности: все',
+                className: ''
+            },
+            READY: {
+                icon: 'fa-check',
+                description: 'Фильтр по готовности: только готовые',
+                className: 'ready-filter-button--ready active'
+            },
+            NOT_READY: {
+                icon: 'fa-xmark',
+                description: 'Фильтр по готовности: только не готовые',
+                className: 'ready-filter-button--not-ready active'
+            }
+        }[this.readinessFilter];
+        const $button = $('#readyFilterButton');
+        $button
+            .removeClass('ready-filter-button--ready ready-filter-button--not-ready active')
+            .addClass(config.className)
+            .attr('data-description', config.description)
+            .attr('aria-label', config.description);
+        $button.find('i').attr('class', `fas ${config.icon}`);
+    }
+    matchesReadinessFilter($row) {
+        if (this.readinessFilter === 'ALL') {
+            return true;
         }
+        const rowId = $row.attr('id');
+        const numericRowId = Number(rowId);
+        const pdItem = this.localCache.get(Number.isNaN(numericRowId) ? rowId : numericRowId);
+        const isReady = pdItem ? Boolean(pdItem.ready) : $row.find('.ready-checkbox').prop('checked') === true;
+        return this.readinessFilter === 'READY' ? isReady : !isReady;
+    }
+    applyFilters() {
         $('.table-row').each((_, row) => {
             const $row = $(row);
             const text = $row.text().toLowerCase();
-            $row.toggle(text.includes(this.searchText));
+            const textMatches = !this.searchText || text.includes(this.searchText);
+            $row.toggle(textMatches && this.matchesReadinessFilter($row));
         });
     }
 }

@@ -226,12 +226,7 @@ public class ReportServiceImpl implements ReportService {
                 .setParameter("ids", ids)
                 .setParameter("operation", PartsDirectory.Operation.pressing)
                 .getResultList();
-        String employee = Stream.concat(thermal.stream(), locksmith.stream())
-                .map(p -> p.getEmployee().getName())
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.joining(", "));
-        PdItem model = new PdItem(employee, thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing);
+        PdItem model = new PdItem(thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing);
         return jasperReportExporter.generateJrxmlReport("Pditem", null, List.of(model), format);
     }
 

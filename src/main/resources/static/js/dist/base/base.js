@@ -71,8 +71,11 @@ class Base {
                 processData: !(param instanceof FormData),
                 data: param instanceof FormData ? param : JSON.stringify(param)
             }).catch((xhr) => {
+                var _a, _b, _c;
                 const errorResponse = xhr.responseJSON;
-                this.createNotification(errorResponse.message, errorResponse.notificationType);
+                const message = (_b = (_a = errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.message) !== null && _a !== void 0 ? _a : xhr.statusText) !== null && _b !== void 0 ? _b : 'Ошибка запроса';
+                const notificationType = (_c = errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.notificationType) !== null && _c !== void 0 ? _c : NotificationType.ERROR;
+                this.createNotification(message, notificationType);
                 throw xhr;
             });
         };
@@ -90,29 +93,28 @@ class Base {
         //Скачивает все файлы с api
         this.downloadFile = async (url, params) => {
             try {
-                url = url + (params ? `?${new URLSearchParams(params).toString()}` : '');
-                const response = await this.requestToApi(url, 'GET');
-                const files = Array.isArray(response) ? response : [response];
-                for (const file of files) {
-                    // @ts-ignore
-                    //Тут может быть какая-то ошибка
-                    const binaryString = atob(file.data);
-                    const uint8Array = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        uint8Array[i] = binaryString.charCodeAt(i);
-                    }
-                    const blob = new Blob([uint8Array]);
-                    const objectUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = objectUrl;
-                    link.download = file.name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
-                    if (files.length > 1)
-                        await new Promise(resolve => setTimeout(resolve, 1250));
-                }
+                const response = await this.requestToApi(this.appendQueryParams(url, params), 'GET');
+                await this.saveFilesFromDto(response);
+            }
+            catch (error) {
+                this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
+                console.error(error);
+            }
+        };
+        this.downloadReportFile = async (url, format, idList) => {
+            try {
+                const response = await this.requestToApi(url, 'POST', { format, idList });
+                await this.saveFilesFromDto(response);
+            }
+            catch (error) {
+                this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
+                console.error(error);
+            }
+        };
+        this.downloadIdListFile = async (url, idList) => {
+            try {
+                const response = await this.requestToApi(url, 'POST', { idList });
+                await this.saveFilesFromDto(response);
             }
             catch (error) {
                 this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
@@ -221,11 +223,22 @@ class Base {
                 const tooltip = document.createElement('div');
                 tooltip.className = 'custom-tooltip';
                 tooltip.textContent = description;
+                tooltip.style.visibility = 'hidden';
                 document.body.appendChild(tooltip);
                 const rect = element.getBoundingClientRect();
-                tooltip.style.position = 'absolute';
-                tooltip.style.left = `${rect.left + window.pageXOffset}px`;
-                tooltip.style.top = `${rect.bottom + window.pageYOffset + 5}px`;
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const gap = 6;
+                let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                let top = rect.bottom + gap;
+                left = Math.min(Math.max(gap, left), window.innerWidth - tooltipRect.width - gap);
+                if (top + tooltipRect.height > window.innerHeight - gap) {
+                    top = rect.top - tooltipRect.height - gap;
+                }
+                top = Math.max(gap, top);
+                tooltip.style.position = 'fixed';
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+                tooltip.style.visibility = 'visible';
                 element._currentTooltip = tooltip;
             }, 450);
             element._tooltipTimeout = tooltipTimeout;
@@ -891,6 +904,46 @@ class Base {
                 }
             });
         });
+    }
+    appendQueryParams(url, params) {
+        if (!params)
+            return url;
+        if (typeof params === 'string') {
+            return url + (params.startsWith('?') ? params : `?${params}`);
+        }
+        const search = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+            if (Array.isArray(value)) {
+                value.forEach(v => search.append(key, String(v)));
+            }
+            else if (value != null) {
+                search.append(key, String(value));
+            }
+        }
+        return `${url}?${search.toString()}`;
+    }
+    async saveFilesFromDto(response) {
+        const files = Array.isArray(response) ? response : [response];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const binaryString = atob(file.data);
+            const uint8Array = new Uint8Array(binaryString.length);
+            for (let j = 0; j < binaryString.length; j++) {
+                uint8Array[j] = binaryString.charCodeAt(j);
+            }
+            const blob = new Blob([uint8Array]);
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
+            if (i < files.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1250));
+            }
+        }
     }
     parseInteger(value) {
         if (value === null || value === undefined || value === '') {

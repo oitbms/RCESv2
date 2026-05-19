@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,5 +108,9 @@ public class AppUtil implements LogoutHandler {
         if (timer != null) {
             timer.cancel();
         }
+    }
+
+    public static <T> T coalesce(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
     }
 }

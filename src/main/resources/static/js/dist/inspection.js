@@ -455,7 +455,7 @@ class Inspection extends Base {
             }
             return unique;
         };
-        await this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, dataFilter);
+        await this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, undefined, dataFilter);
     }
     setupPhotoNavigation(dialog, totalPhotos) {
         const gallery = dialog.find('.photos-gallery');

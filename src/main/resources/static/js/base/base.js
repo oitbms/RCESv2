@@ -236,11 +236,22 @@ class Base {
                 const tooltip = document.createElement('div');
                 tooltip.className = 'custom-tooltip';
                 tooltip.textContent = description;
+                tooltip.style.visibility = 'hidden';
                 document.body.appendChild(tooltip);
                 const rect = element.getBoundingClientRect();
-                tooltip.style.position = 'absolute';
-                tooltip.style.left = `${rect.left + window.pageXOffset}px`;
-                tooltip.style.top = `${rect.bottom + window.pageYOffset + 5}px`;
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const gap = 6;
+                let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                let top = rect.bottom + gap;
+                left = Math.min(Math.max(gap, left), window.innerWidth - tooltipRect.width - gap);
+                if (top + tooltipRect.height > window.innerHeight - gap) {
+                    top = rect.top - tooltipRect.height - gap;
+                }
+                top = Math.max(gap, top);
+                tooltip.style.position = 'fixed';
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+                tooltip.style.visibility = 'visible';
                 element._currentTooltip = tooltip;
             }, 450);
             element._tooltipTimeout = tooltipTimeout;

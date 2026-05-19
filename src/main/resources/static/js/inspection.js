@@ -468,7 +468,7 @@ class Inspection extends Base {
                 }
                 return unique;
             };
-            yield this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, dataFilter);
+            yield this.openSelectionDialog('subDivision', 'subDivisionDialog', modalDiv, currentId, undefined, dataFilter);
         });
     }
     setupPhotoNavigation(dialog, totalPhotos) {

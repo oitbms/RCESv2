@@ -8,6 +8,7 @@ import com.example.rces.models.Team;
 import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.repository.TeamRepository;
 import com.example.rces.service.TeamService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
@@ -16,8 +17,10 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional(transactionManager = "primaryTransactionManager")
@@ -64,16 +67,39 @@ public class TeamServiceImpl implements TeamService {
             throw new OptimisticLockException("Бригада с id " + id + " устарела");
         }
 
+        Map<String, Object> scalarChanges = new HashMap<>(changes);
+        boolean employeesChanged = scalarChanges.containsKey("employeeIds");
+        List<Long> employeeIds = employeesChanged ? extractEmployeeIds(scalarChanges.remove("employeeIds")) : List.of();
+
         try {
             objectMapper.readerForUpdating(team)
-                    .readValue(objectMapper.writeValueAsBytes(changes));
+                    .readValue(objectMapper.writeValueAsBytes(scalarChanges));
         } catch (Exception e) {
             throw new ApplicationContextException("Ошибка при обновлении бригады", e);
         }
 
-        Team savedTeam = teamRepository.save(team);
-        savedTeam.setVersion(savedTeam.getVersion() + 1);
+        if (employeesChanged) {
+            List<Employee> employees = employeeIds.isEmpty() ? List.of() : employeeRepository.findAllById(employeeIds);
+            team.getEmployees().clear();
+            team.getEmployees().addAll(employees);
+        }
+
+        Team savedTeam = teamRepository.saveAndFlush(team);
         return teamMapper.toDTO(savedTeam);
+    }
+
+    private List<Long> extractEmployeeIds(Object rawEmployeeIds) {
+        if (rawEmployeeIds == null) {
+            return List.of();
+        }
+
+        List<Long> employeeIds = objectMapper.convertValue(rawEmployeeIds, new TypeReference<>() {
+        });
+
+        return employeeIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     @Override

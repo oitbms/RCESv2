@@ -182,12 +182,14 @@ class Spe extends Base {
             {
                 name: 'Извещения о предъявлении СИ на поверку/калибровку',
                 api: '/api/report/print/spe',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&')
+                function: async (format: string) => {
+                    const idList = Array.from(this.selectedRows).map(id => Number(id));
+                    await this.downloadReportFile('/api/report/print/spe', format, idList);
+                }
             },
             {
                 name: 'Графики поверки (калибровки) средств измерений',
                 api: '/api/report/print/spe-schedule',
-                params: Array.from(this.selectedRows).map(id => `idList=${id}`).join('&'),
                 function: async (format: string) => {
                     const nonOrganization: string[] = []
                     const groupByOrganization = Array.from(this.selectedRows)
@@ -205,9 +207,9 @@ class Spe extends Base {
                     if (nonOrganization.length > 0) {
                         this.createNotification("Оборудование без организации не попавшие в отчет: " + nonOrganization.join(', '), NotificationType.INFO);
                     }
-                    for (const [organization, speList] of Array.from(groupByOrganization)) {
-                        const params = `?format=${format}&${speList.map(spe => `idList=${spe.id}`).join('&')}`;
-                        await this.downloadFile('/api/report/print/spe-schedule', params);
+                    for (const [, speList] of Array.from(groupByOrganization)) {
+                        const idList = speList.map(spe => spe.id);
+                        await this.downloadReportFile('/api/report/print/spe-schedule', format, idList);
                     }
                 }
             }
@@ -219,8 +221,8 @@ class Spe extends Base {
         if (!this.selectedRows || this.selectedRows.size === 0) {
             return this.createNotification('Не выбрано ни одной строки', NotificationType.WARNING);
         }
-        const param = Array.from(this.selectedRows).map(id => `idList=${id}`).join('&');
-        await this.downloadFile('/api/report/print/spe-unload', param);
+        const idList = Array.from(this.selectedRows).map(id => Number(id));
+        await this.downloadIdListFile('/api/report/print/spe-unload', idList);
     }
 
     private saveSpe() {

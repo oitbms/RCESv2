@@ -3,10 +3,10 @@ package com.example.rces.service.impl;
 import com.example.rces.dto.PartsDirectoryCreateDTO;
 import com.example.rces.dto.PartsDirectoryCreateDTOFrom1C;
 import com.example.rces.dto.PartsDirectoryDTO;
+import com.example.rces.dto.PartsDirectoryFrom1C;
 import com.example.rces.mapper.PartsDirectoryMapper;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.PartsDirectory;
-import com.example.rces.dto.PartsDirectoryFrom1C;
 import com.example.rces.repository.PartsDirectoryRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,7 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(employeeService.getCurrentUser(),
                 dto.getCustomerOrder(), null);
         pdi.setCustomerOrder(customerOrder);
+        pdi.setEmployee(employeeService.getCurrentUser());
         pdi.setStatus(calculateStatus(pdi));
         pdi.setColor(colorCalculate(pdi));
         PartsDirectory savedPdi = repository.save(pdi);
@@ -133,16 +136,16 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         String jsonBody = buildJsonBody(query);
 
         try {
-            String rawResponse = given()
+            byte[] bytes = given()
                     .spec(getOneCSpec())
                     .queryParam("ИмяПроцедуры", "ОбработкаДопФункцииДокОбмен")
                     .body(jsonBody)
                     .when()
                     .post()
                     .then()
-                    .statusCode(200)
                     .extract()
-                    .asString();
+                    .asByteArray();
+            String rawResponse = new String(bytes, StandardCharsets.UTF_8);
 
             String cleanJson = rawResponse
                     .replace("\uFEFF", "")

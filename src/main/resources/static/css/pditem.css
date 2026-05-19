@@ -15,12 +15,13 @@
     --qty: minmax(55px, 0.5fr);
     --qtyCompleted: minmax(80px, 0.5fr);
     --dimensions: minmax(70px, 0.5fr);
+    --machine: minmax(95px, 0.55fr);
     --program: minmax(120px, 0.78fr);
     --comment: minmax(140px, 0.85fr);
     --status: 100px;
     --team: 140px;
     --dateCompletion: 160px;
-    --ready: 80px;
+    --ready: 105px;
 }
 
 .container {
@@ -123,6 +124,7 @@ header {
         var(--qty)
         var(--qtyCompleted)
         var(--dimensions)
+        var(--machine)
         var(--program)
         var(--comment)
         var(--status)
@@ -178,6 +180,7 @@ header {
         var(--qty)
         var(--qtyCompleted)
         var(--dimensions)
+        var(--machine)
         var(--program)
         var(--comment)
         var(--status)
@@ -279,7 +282,8 @@ header {
     width: 470px;
     position: relative;
     left: -14px;
-    bottom: -44px;
+    bottom: -36px;
+    margin-bottom: 8px;
 
     & input {
         width: inherit;
@@ -303,6 +307,44 @@ header {
         transform: translateY(-50%);
         color: var(--text-secondary);
     }
+}
+
+.table-header-cell--ready {
+    gap: 6px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+.ready-filter-button {
+    all: unset;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    background: rgba(255, 255, 255, 0.16);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.ready-filter-button:hover,
+.ready-filter-button.active {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.ready-filter-button:active {
+    transform: scale(0.96);
+}
+
+.ready-filter-button--ready {
+    background: rgba(16, 185, 129, 0.35);
+}
+
+.ready-filter-button--not-ready {
+    background: rgba(245, 158, 11, 0.35);
 }
 
 .toolbar-text-button {
@@ -473,6 +515,44 @@ dialog::backdrop {
     overflow: hidden;
     font-size: 0.85rem;
     border-right: 1px solid var(--border-color);
+}
+
+#teamDialog .dialog-content-header,
+#teamDialog .dialog-content-rows-row {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    padding: 0;
+}
+
+#teamDialog .dialog-content-header {
+    border: 1px solid #eaeaea;
+    border-bottom: 2px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+    margin-top: 8px;
+}
+
+#teamDialog .dialog-content-rows {
+    margin-top: 0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+#teamDialog .dialog-content-header-column,
+#teamDialog .content-row-column {
+    width: auto !important;
+    min-width: 0;
+    padding: 10px 12px;
+    border-right: 1px solid var(--border-color);
+}
+
+#teamDialog .dialog-content-header-column:last-child,
+#teamDialog .content-row-column:last-child {
+    border-right: none;
+}
+
+#teamDialog .content-row-column {
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .dialog-container-footer {
@@ -716,8 +796,13 @@ dialog::backdrop {
         margin-bottom: 0;
     }
 
-    & .load-1c-search-box {
+    & .load-1c-filters {
         display: none;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    & .load-1c-search-box {
         position: relative;
     }
 
@@ -749,8 +834,8 @@ dialog::backdrop {
         display: none;
     }
 
-    &.has-loaded-1c .load-1c-search-box {
-        display: block;
+    &.has-loaded-1c .load-1c-filters {
+        display: flex;
     }
 
     &.has-loaded-1c #loadFrom1cBtn {
@@ -971,6 +1056,15 @@ dialog::backdrop {
     display: inline-block;
     width: 25px;
     height: 20px;
+
+    body.pd-edit-mode & {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    body.pd-edit-mode & .ready-checkbox {
+        pointer-events: none;
+    }
 
     &:hover {
         .check {

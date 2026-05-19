@@ -1,6 +1,8 @@
 package com.example.rces.controller.rest;
 
 import com.example.rces.dto.FileDTO;
+import com.example.rces.dto.SpeIdListRequest;
+import com.example.rces.dto.SpePrintRequest;
 import com.example.rces.models.SGI;
 import com.example.rces.models.enums.Format;
 import com.example.rces.service.ReportService;
@@ -8,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -66,26 +65,22 @@ public class ReportRestController {
 
     @GetMapping("/print/spe")
     public ResponseEntity<FileDTO> printSPE(@RequestParam(name = "format") String formatString, @RequestParam List<Integer> idList) {
-        Format format = Format.valueOf(formatString);
-        byte[] report = service.createSpeReport(format, idList);
-        String fileName = String.format("Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_%s.%s",
-                formatedDate(LocalDate.now()), format.getFileExtension());
-        FileDTO fileDTO = new FileDTO(fileName, report);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(fileDTO);
+        return buildSpeReport(Format.valueOf(formatString), idList);
+    }
+
+    @PostMapping("/print/spe")
+    public ResponseEntity<FileDTO> printSpePost(@RequestBody SpePrintRequest request) {
+        return buildSpeReport(Format.valueOf(request.getFormat()), request.getIdList());
     }
 
     @GetMapping("/print/spe-schedule")
     public ResponseEntity<FileDTO> printSpeSchedule(@RequestParam(name = "format") String formatString, @RequestParam List<Integer> idList) {
-        Format format = Format.valueOf(formatString);
-        byte[] report = service.createSpeSchedule(format, idList);
-        String fileName = String.format("График_поверки_от_%s.%s",
-                formatedDate(LocalDateTime.now()), format.getFileExtension());
-        FileDTO fileDTO = new FileDTO(fileName, report);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(fileDTO);
+        return buildSpeScheduleReport(Format.valueOf(formatString), idList);
+    }
+
+    @PostMapping("/print/spe-schedule")
+    public ResponseEntity<FileDTO> printSpeSchedulePost(@RequestBody SpePrintRequest request) {
+        return buildSpeScheduleReport(Format.valueOf(request.getFormat()), request.getIdList());
     }
 
     @GetMapping("/print/inspection-workshop")
@@ -114,13 +109,12 @@ public class ReportRestController {
 
     @GetMapping("print/spe-unload")
     public ResponseEntity<FileDTO> unloadSPE(@RequestParam List<Integer> idList) {
-        byte[] report = service.unloadSpeReport(idList);
-        String fileName = String.format("Выгрузка_от_%s.%s",
-                formatedDate(LocalDate.now()), Format.XLSX);
-        FileDTO fileDTO = new FileDTO(fileName, report);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(fileDTO);
+        return buildSpeUnloadReport(idList);
+    }
+
+    @PostMapping("print/spe-unload")
+    public ResponseEntity<FileDTO> unloadSpePost(@RequestBody SpeIdListRequest request) {
+        return buildSpeUnloadReport(request.getIdList());
     }
 
     @GetMapping("print/pdi-act")
@@ -134,6 +128,33 @@ public class ReportRestController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(fileDTO);
+    }
+
+    private ResponseEntity<FileDTO> buildSpeReport(Format format, List<Integer> idList) {
+        byte[] report = service.createSpeReport(format, idList);
+        String fileName = String.format("Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_%s.%s",
+                formatedDate(LocalDate.now()), format.getFileExtension());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new FileDTO(fileName, report));
+    }
+
+    private ResponseEntity<FileDTO> buildSpeScheduleReport(Format format, List<Integer> idList) {
+        byte[] report = service.createSpeSchedule(format, idList);
+        String fileName = String.format("График_поверки_от_%s.%s",
+                formatedDate(LocalDateTime.now()), format.getFileExtension());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new FileDTO(fileName, report));
+    }
+
+    private ResponseEntity<FileDTO> buildSpeUnloadReport(List<Integer> idList) {
+        byte[] report = service.unloadSpeReport(idList);
+        String fileName = String.format("Выгрузка_от_%s.%s",
+                formatedDate(LocalDate.now()), Format.XLSX);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new FileDTO(fileName, report));
     }
 
 }

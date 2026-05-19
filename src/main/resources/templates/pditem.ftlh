@@ -89,6 +89,9 @@
             <div class="table-header-cell" style="width: var(--dimensions);">
                 Размеры
             </div>
+            <div class="table-header-cell" style="width: var(--machine);">
+                Станок
+            </div>
             <div class="table-header-cell" style="width: var(--program);">
                 Программа
             </div>
@@ -104,8 +107,15 @@
             <div class="table-header-cell" style="width: var(--dateCompletion);">
                 Дата готовности
             </div>
-            <div class="table-header-cell last-child" style="width: var(--ready);">
-                Готовность
+            <div class="table-header-cell table-header-cell--ready last-child" style="width: var(--ready);">
+                <span>Готовность</span>
+                <button type="button"
+                        id="readyFilterButton"
+                        class="ready-filter-button tooltip-trigger"
+                        data-description="Фильтр по готовности: все"
+                        aria-label="Фильтр по готовности: все">
+                    <i class="fas fa-filter"></i>
+                </button>
             </div>
         </div>
         <div class="table-body">
@@ -140,7 +150,7 @@
 
             <div class="form-group">
                 <label class="form-label">Сталь</label>
-                <input type="text" class="form-control" name="steel" required>
+                <input type="text" class="form-control" name="steel">
             </div>
 
             <div class="form-group">
@@ -165,7 +175,7 @@
 
             <div class="form-group">
                 <label class="form-label">Станок</label>
-                <input type="text" class="form-control" name="machine" required>
+                <input type="text" class="form-control" name="machine">
             </div>
 
             <div class="form-group">
@@ -173,11 +183,11 @@
                 <input type="text" class="form-control" name="program">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Автор</label>
-                <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть модальное окно" data-field="employee" name="employee" readonly  required></textarea>
-                <input type="hidden" name="hiddenEmployee">
-            </div>
+<#--            <div class="form-group">-->
+<#--                <label class="form-label">Автор</label>-->
+<#--                <textarea class="area-modal form-control tooltip-trigger" data-description="Открыть модальное окно" data-field="employee" name="employee" readonly ></textarea>-->
+<#--                <input type="hidden" name="hiddenEmployee">-->
+<#--            </div>-->
 
             <div class="form-group">
                 <label class="form-label">Бригада</label>
@@ -207,9 +217,15 @@
                 <label class="form-label">Номер заказа</label>
                 <input type="text" class="form-control" name="orderNumber" placeholder="Введите номер заказа" required>
             </div>
-            <div class="load-1c-search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="loadFrom1cSearchInput" placeholder="Фильтр по загруженным строкам">
+            <div class="load-1c-filters">
+                <div class="load-1c-search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="loadFrom1cSearchInput" placeholder="Фильтр по всем строкам">
+                </div>
+                <div class="load-1c-search-box load-1c-steel-filter">
+                    <i class="fas fa-filter"></i>
+                    <input type="text" id="loadFrom1cSteelFilterInput" placeholder="Фильтр по стали">
+                </div>
             </div>
             <div class="load-1c-results" id="load-1c-results" hidden>
                 <div class="load-1c-results__summary" id="load-1c-result-summary"></div>

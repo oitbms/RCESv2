@@ -1,12 +1,18 @@
 package com.example.rces.dto.report;
 
+import com.example.rces.models.Employee;
 import com.example.rces.models.PartsDirectory;
+import com.example.rces.models.Team;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.example.rces.utils.DateUtil.formatedDate;
+import static org.hibernate.internal.util.StringHelper.coalesce;
 
 public class PdItem {
 
@@ -28,9 +34,18 @@ public class PdItem {
 
     private List<Pressing> pressing = new ArrayList<>();
 
-    public PdItem(String employee, List<PartsDirectory> thermal, List<PartsDirectory> locksmith, List<PartsDirectory> baikal,
+    public PdItem(List<PartsDirectory> thermal, List<PartsDirectory> locksmith, List<PartsDirectory> baikal,
                   List<PartsDirectory> shearingpunching, List<PartsDirectory> drilling, List<PartsDirectory> bending, List<PartsDirectory> pressing) {
-        setEmployee(employee);
+        String employees = Stream.of(thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .map(PartsDirectory::getTeam)
+                .filter(Objects::nonNull)
+                .map(Team::getEmployees)
+                .flatMap(List::stream)
+                .map(Employee::getName)
+                .distinct().collect(Collectors.joining(", "));
+        setEmployee(employees);
         setDate(formatedDate(LocalDate.now()) + " г.");
         thermal.forEach(t -> {
             Thermal model = new Thermal(t);
@@ -149,7 +164,7 @@ public class PdItem {
 
         public Thermal(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -195,6 +210,7 @@ public class PdItem {
             this.comment = comment;
         }
     }
+
     public static class Locksmith {
 
         private String customerOrder;
@@ -209,7 +225,7 @@ public class PdItem {
 
         public Locksmith(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -255,6 +271,7 @@ public class PdItem {
             this.comment = comment;
         }
     }
+
     public static class Baikal {
 
         private String customerOrder;
@@ -269,7 +286,7 @@ public class PdItem {
 
         public Baikal(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -315,7 +332,8 @@ public class PdItem {
             this.comment = comment;
         }
     }
-    public static class Shearingpunching{
+
+    public static class Shearingpunching {
 
         private String customerOrder;
 
@@ -329,7 +347,7 @@ public class PdItem {
 
         public Shearingpunching(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -375,7 +393,8 @@ public class PdItem {
             this.comment = comment;
         }
     }
-    public static class Drilling{
+
+    public static class Drilling {
 
         private String customerOrder;
 
@@ -389,7 +408,7 @@ public class PdItem {
 
         public Drilling(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -435,7 +454,8 @@ public class PdItem {
             this.comment = comment;
         }
     }
-    public static class Bending{
+
+    public static class Bending {
 
         private String customerOrder;
 
@@ -449,7 +469,7 @@ public class PdItem {
 
         public Bending(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
@@ -495,7 +515,8 @@ public class PdItem {
             this.comment = comment;
         }
     }
-    public static class Pressing{
+
+    public static class Pressing {
 
         private String customerOrder;
 
@@ -509,7 +530,7 @@ public class PdItem {
 
         public Pressing(PartsDirectory pdi) {
             setCustomerOrder(pdi.getCustomerOrder().getName());
-            setName(pdi.getName());
+            setName(String.format("%s %s", pdi.getName(), coalesce(pdi.getThickness(), "")));
             setScheme(pdi.getScheme());
             setQty(pdi.getQty());
             setComment(pdi.getComment());
