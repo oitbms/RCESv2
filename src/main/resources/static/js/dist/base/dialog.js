@@ -1,5 +1,4 @@
-"use strict";
-class DialogImpl {
+export class DialogImpl {
     constructor() {
         this.activeDialogs = new Map();
         this.BASE_Z_INDEX = 999;
@@ -32,7 +31,6 @@ class DialogImpl {
                     el.style.display = 'none';
             });
         }
-        // Используем show() вместо showModal() — backdrop управляется вручную
         dialogElement.show();
         this.activeDialogs.set(dialogId, this.currentZIndex);
         this.currentZIndex++;
@@ -104,7 +102,6 @@ class DialogImpl {
         const dialogElement = document.getElementById(dialogId);
         if (!dialogElement)
             return;
-        // Клик по backdrop закрывает диалог
         const handleBackdropClick = (e) => {
             const rect = dialogElement.getBoundingClientRect();
             const isInDialog = (rect.top <= e.clientY &&
@@ -117,7 +114,6 @@ class DialogImpl {
                     onCloseCallback();
             }
         };
-        // Escape закрывает верхний диалог
         const handleKeyDown = (e) => {
             if (e.key === 'Escape' && this.isOpen(dialogId)) {
                 const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
@@ -130,31 +126,27 @@ class DialogImpl {
                 }
             }
         };
-        // Удаляем старые обработчики (по новым ссылкам)
-        const oldBackdropClick = dialogElement._dialogBackdropClick;
-        const oldKeyDown = dialogElement._dialogKeyDown;
-        if (oldBackdropClick)
-            dialogElement.removeEventListener('click', oldBackdropClick);
-        if (oldKeyDown)
-            document.removeEventListener('keydown', oldKeyDown);
+        const el = dialogElement;
+        if (el._dialogBackdropClick)
+            dialogElement.removeEventListener('click', el._dialogBackdropClick);
+        if (el._dialogKeyDown)
+            document.removeEventListener('keydown', el._dialogKeyDown);
         dialogElement.addEventListener('click', handleBackdropClick);
         document.addEventListener('keydown', handleKeyDown);
-        // Сохраняем ссылки для последующего удаления
-        dialogElement._dialogBackdropClick = handleBackdropClick;
-        dialogElement._dialogKeyDown = handleKeyDown;
-        // Кнопка отмены
+        el._dialogBackdropClick = handleBackdropClick;
+        el._dialogKeyDown = handleKeyDown;
         const cancelBtn = dialogElement.querySelector('[name="closeDialog"], #cancelButton');
         if (cancelBtn) {
-            const oldCancel = cancelBtn._dialogCancelClick;
-            if (oldCancel)
-                cancelBtn.removeEventListener('click', oldCancel);
+            const btn = cancelBtn;
+            if (btn._dialogCancelClick)
+                cancelBtn.removeEventListener('click', btn._dialogCancelClick);
             const handleCancel = () => {
                 this.close(dialogId);
                 if (onCloseCallback)
                     onCloseCallback();
             };
             cancelBtn.addEventListener('click', handleCancel);
-            cancelBtn._dialogCancelClick = handleCancel;
+            btn._dialogCancelClick = handleCancel;
         }
     }
     addBackdrop() {

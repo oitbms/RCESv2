@@ -1,5 +1,5 @@
-// @ts-ignore
-declare const $: any;
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 
 class Spe extends Base {
 
@@ -7,22 +7,20 @@ class Spe extends Base {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/spe/get-page-spe', undefined, (data: any[]) => this.fullData(data)).catch(console.error);
         });
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this),true);
+        this.bindTableSelection();
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode(['datePreparation', 'dateVerification'], undefined, this.speSpecialFields);
-                $('#edit-button').addClass('active');
-            } else {
-                this.disableEditMode(['datePreparation', 'dateVerification'], []);
-                if (!this.editMode) $('#edit-button').removeClass('active');
-            }
-        }, true);
+        this.bindRegistryToolbar({
+            onSave: () => this.saveSpe(),
+            searchSelector: '#searchInput',
+            edit: {
+                dateFields: ['datePreparation', 'dateVerification'],
+                specialFields: this.speSpecialFields,
+            },
+        });
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#unload-button',() => this.unload(), true);
         this.createHandler('click', '#create-fgis-button', () => this.dialog.open('create-fgis-dialog'), true);
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
-        this.createHandler('click', '#save-button', () => this.saveSpe(), true);
         this.bindFieldChanges();
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
@@ -33,10 +31,6 @@ class Spe extends Base {
         this.createHandler('click', '.filter-status', this.filterButtonHandler, true);
         this.createHandler('click', '.employee-button', this.employeeHandler.bind(this), true);
         this.createHandler('click', '.subdivision-button', this.subDivisionHandler.bind(this), true);
-        this.createHandler('input', '#searchInput', (event) => {
-            this.searchText = $(event.target).val().toString().toLowerCase().trim();
-            this.applyFilters();
-        }, true);
         this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu, true);
     }
 
@@ -385,7 +379,7 @@ class Spe extends Base {
             this.saveSpe();
         });
 
-        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSpeId));
+        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e as unknown as Event, currentSpeId));
         $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
             const $row = $(event.currentTarget);
             const fileId = $row.attr('id');

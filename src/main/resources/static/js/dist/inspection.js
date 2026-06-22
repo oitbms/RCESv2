@@ -1,4 +1,5 @@
-"use strict";
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 class Inspection extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.inspection-list`), itemsPerPage, visibleRow, () => {
@@ -49,7 +50,7 @@ class Inspection extends Base {
                 this.dialog.close('viewInspectionDialog');
             });
             dialog.find('#addViolationBtn').off('click').on('click', () => {
-                this.openAddViolationDialog(currentInspectionId);
+                this.openAddViolationDialog(Number(currentInspectionId));
             });
             if (!inspection.violation || inspection.violation.length === 0) {
                 violationsContainer.append(`

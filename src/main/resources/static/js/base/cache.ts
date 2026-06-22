@@ -1,11 +1,11 @@
-interface CacheBormash {
-    endpoints: { [key: string]: string };
-    get<T = any>(key: string): Promise<T>;
-    set(key: string, data: any): this;
+export interface CacheBormash {
+    endpoints: Record<string, string>;
+    get<T = unknown>(key: string): Promise<T>;
+    set(key: string, data: unknown): this;
 }
 
-class CacheBormashImpl implements CacheBormash {
-    endpoints: { [key: string]: string } = {
+export class CacheBormashImpl implements CacheBormash {
+    endpoints: Record<string, string> = {
         employee: '/api/employees',
         subDivision: '/api/sub-divisions',
         team: '/api/team/get-page',
@@ -32,7 +32,7 @@ class CacheBormashImpl implements CacheBormash {
         return data;
     }
 
-    set(key: string, data: any): this {
+    set(key: string, data: unknown): this {
         sessionStorage.setItem(key, JSON.stringify(data));
         return this;
     }

@@ -1,4 +1,5 @@
-"use strict";
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 class Team extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
@@ -45,7 +46,7 @@ class Team extends Base {
             modalDiv.addClass('change');
         };
         this.openEmployeeSelectionDialog = async (modalDiv) => {
-            await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, undefined, undefined, [
+            await this.openSelectionDialog('employee', 'employeeDialog', modalDiv, undefined, undefined, undefined, [
                 { key: 'name', label: 'Имя', width: '250' },
                 { label: 'Подразделение', width: '250', renderer: (e) => { var _a; return ((_a = e.subDivision) === null || _a === void 0 ? void 0 : _a.name) || ''; } }
             ], true);
@@ -104,25 +105,10 @@ class Team extends Base {
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
         this.createHandler('click', '#createBtn', this.createTeam, true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
+        this.bindTableSelection();
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode();
-                $('#edit-button').addClass('active');
-            }
-            else {
-                this.disableEditMode();
-                if (!this.editMode)
-                    $('#edit-button').removeClass('active');
-            }
-        }, true);
-        this.createHandler('click', '#save-button', () => this.saveTeam(), true);
+        this.bindRegistryToolbar({ onSave: () => this.saveTeam(), searchSelector: '#searchInput' });
         this.bindFieldChanges();
-        this.createHandler('input', '#searchInput', (event) => {
-            this.searchText = $(event.target).val().toString().toLowerCase().trim();
-            this.applyFilters();
-        }, true);
         this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu.bind(this), true);
     }
     createRow(team) {

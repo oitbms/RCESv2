@@ -66,10 +66,11 @@
         ];
     </script>
     <script src="/js/jquery.min.js"></script>
-    <script src="/js/menu.js"></script>
+    <script src="/js/dist/shared/toast.js"></script>
+    <script src="/js/dist/menu.js" defer></script>
     <script src="/js/sockjs.min.js"></script>
     <script src="/js/stomp.min.js"></script>
-    <script src="/js/notifications.js"></script>
+    <script src="/js/dist/notifications.js" defer></script>
 </head>
 <body>
 <div class="container mb-1" id="menuContainer">

@@ -1,4 +1,5 @@
-"use strict";
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 class PdItem extends Base {
     constructor(itemsPerPage = Infinity, visibleRow = Infinity) {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
@@ -54,7 +55,8 @@ class PdItem extends Base {
                 return;
             }
             button.prop('disabled', true);
-            const employee = this.saveMassive['employee'] || (dialog.find('input[name="hiddenEmployee"]').val() ? JSON.parse(dialog.find('input[name="hiddenEmployee"]').val()) : null);
+            const hiddenEmployee = dialog.find('input[name="hiddenEmployee"]').val();
+            const employee = this.saveMassive['employee'] || (hiddenEmployee ? JSON.parse(String(hiddenEmployee)) : null);
             const validatedFields = this.validateIntegerFields([
                 { key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество' },
                 {
@@ -597,7 +599,7 @@ class PdItem extends Base {
         this.createHandler('change', '#load-1c-select-all', this.toggleAllLoadFrom1cRowsSelection.bind(this), true);
         this.createHandler('change', '.load-1c-row-checkbox', this.toggleLoadFrom1cRowSelection.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
+        this.bindTableSelection();
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -840,7 +842,9 @@ class PdItem extends Base {
             const quantity = this.getLoadFrom1cField(item, 'name', 'КоличествоДеталей');
             const size = this.getLoadFrom1cField(item, 'thickness', 'Размер') || '';
             const steel = this.getLoadFrom1cField(item, 'steel', 'Сталь') || '';
+            const steelQty = this.getLoadFrom1cField(item, 'qty', 'КоличествоСтали');
             const quantityNumber = Number(quantity);
+            const steelQtyNumber = Number(steelQty);
             return {
                 index,
                 customerOrder: this.extractLoadFrom1cOrderNumber(customerOrder),
@@ -849,7 +853,9 @@ class PdItem extends Base {
                 quantity: quantity != null ? String(quantity) : '',
                 quantityNumber: Number.isFinite(quantityNumber) ? quantityNumber : 0,
                 size,
-                steel
+                steel,
+                steelQty: steelQty != null ? String(steelQty) : '',
+                steelQtyNumber: Number.isFinite(steelQtyNumber) ? steelQtyNumber : 0,
             };
         });
     }

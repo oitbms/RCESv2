@@ -1530,9 +1530,10 @@
     </#if>
 </script>
 
-<script src="/js/notifications.js"></script>
-<script src="/js/script.js"></script>
-<script src="/js/list.js"></script>
+<script src="/js/dist/shared/toast.js"></script>
+<script src="/js/dist/script.js" defer></script>
+<script src="/js/dist/list.js" defer></script>
+<script src="/js/dist/notifications.js" defer></script>
 
 <script>
     $(document).ready(function () {

@@ -1,4 +1,6 @@
-interface Dialog {
+import type { DialogOptions } from '../core/types';
+
+export interface Dialog {
     open(dialogId: string, options?: DialogOptions): void;
     close(dialogId: string): void;
     clearDialog(dialogId: string): void;
@@ -6,7 +8,7 @@ interface Dialog {
     closeAll(): void;
 }
 
-class DialogImpl implements Dialog {
+export class DialogImpl implements Dialog {
     private activeDialogs = new Map<string, number>();
     private currentZIndex: number;
     private readonly BASE_Z_INDEX = 999;
@@ -45,7 +47,6 @@ class DialogImpl implements Dialog {
             });
         }
 
-        // Используем show() вместо showModal() — backdrop управляется вручную
         dialogElement.show();
         this.activeDialogs.set(dialogId, this.currentZIndex);
         this.currentZIndex++;
@@ -112,7 +113,7 @@ class DialogImpl implements Dialog {
             fileList.innerHTML = '';
         }
 
-        const localCache = (window as any).localCache as Map<string, any>;
+        const localCache = (window as unknown as { localCache?: Map<string, unknown> }).localCache;
         if (localCache) {
             localCache.delete('validFileMap');
             localCache.delete('imagesMap');
@@ -123,7 +124,6 @@ class DialogImpl implements Dialog {
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
         if (!dialogElement) return;
 
-        // Клик по backdrop закрывает диалог
         const handleBackdropClick = (e: MouseEvent) => {
             const rect = dialogElement.getBoundingClientRect();
             const isInDialog = (
@@ -139,7 +139,6 @@ class DialogImpl implements Dialog {
             }
         };
 
-        // Escape закрывает верхний диалог
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && this.isOpen(dialogId)) {
                 const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
@@ -152,31 +151,30 @@ class DialogImpl implements Dialog {
             }
         };
 
-        // Удаляем старые обработчики (по новым ссылкам)
-        const oldBackdropClick = (dialogElement as any)._dialogBackdropClick;
-        const oldKeyDown = (dialogElement as any)._dialogKeyDown;
-        if (oldBackdropClick) dialogElement.removeEventListener('click', oldBackdropClick);
-        if (oldKeyDown) document.removeEventListener('keydown', oldKeyDown);
+        const el = dialogElement as HTMLDialogElement & {
+            _dialogBackdropClick?: (e: MouseEvent) => void;
+            _dialogKeyDown?: (e: KeyboardEvent) => void;
+        };
+        if (el._dialogBackdropClick) dialogElement.removeEventListener('click', el._dialogBackdropClick);
+        if (el._dialogKeyDown) document.removeEventListener('keydown', el._dialogKeyDown);
 
         dialogElement.addEventListener('click', handleBackdropClick);
         document.addEventListener('keydown', handleKeyDown);
 
-        // Сохраняем ссылки для последующего удаления
-        (dialogElement as any)._dialogBackdropClick = handleBackdropClick;
-        (dialogElement as any)._dialogKeyDown = handleKeyDown;
+        el._dialogBackdropClick = handleBackdropClick;
+        el._dialogKeyDown = handleKeyDown;
 
-        // Кнопка отмены
         const cancelBtn = dialogElement.querySelector('[name="closeDialog"], #cancelButton') as HTMLElement;
         if (cancelBtn) {
-            const oldCancel = (cancelBtn as any)._dialogCancelClick;
-            if (oldCancel) cancelBtn.removeEventListener('click', oldCancel);
+            const btn = cancelBtn as HTMLElement & { _dialogCancelClick?: () => void };
+            if (btn._dialogCancelClick) cancelBtn.removeEventListener('click', btn._dialogCancelClick);
 
             const handleCancel = () => {
                 this.close(dialogId);
                 if (onCloseCallback) onCloseCallback();
             };
             cancelBtn.addEventListener('click', handleCancel);
-            (cancelBtn as any)._dialogCancelClick = handleCancel;
+            btn._dialogCancelClick = handleCancel;
         }
     }
 

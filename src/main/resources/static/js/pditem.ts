@@ -1,5 +1,5 @@
-// @ts-ignore
-declare const $: any;
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 
 class PdItem extends Base {
 
@@ -60,7 +60,7 @@ class PdItem extends Base {
         this.createHandler('change', '#load-1c-select-all', this.toggleAllLoadFrom1cRowsSelection.bind(this), true);
         this.createHandler('change', '.load-1c-row-checkbox', this.toggleLoadFrom1cRowSelection.bind(this), true);
         this.createHandler('click', '.area-modal', this.workWithModal.bind(this), true);
-        this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
+        this.bindTableSelection();
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
         this.createHandler('click', '#edit-button', () => {
             if (!this.editMode) {
@@ -272,7 +272,8 @@ class PdItem extends Base {
         }
         button.prop('disabled', true);
 
-        const employee = this.saveMassive['employee'] || (dialog.find('input[name="hiddenEmployee"]').val() ? JSON.parse(dialog.find('input[name="hiddenEmployee"]').val()) : null);
+        const hiddenEmployee = dialog.find('input[name="hiddenEmployee"]').val();
+        const employee = this.saveMassive['employee'] || (hiddenEmployee ? JSON.parse(String(hiddenEmployee)) : null);
         const validatedFields = this.validateIntegerFields([
             {key: 'qty', value: dialog.find('input[name="qty"]').val(), min: 1, label: 'Количество'},
             {
@@ -380,7 +381,9 @@ class PdItem extends Base {
             const quantity = this.getLoadFrom1cField<string | number>(item, 'name', 'КоличествоДеталей');
             const size = this.getLoadFrom1cField<string>(item, 'thickness', 'Размер') || '';
             const steel = this.getLoadFrom1cField<string>(item, 'steel', 'Сталь') || '';
+            const steelQty = this.getLoadFrom1cField<string | number>(item, 'qty', 'КоличествоСтали');
             const quantityNumber = Number(quantity);
+            const steelQtyNumber = Number(steelQty);
 
             return {
                 index,
@@ -390,7 +393,9 @@ class PdItem extends Base {
                 quantity: quantity != null ? String(quantity) : '',
                 quantityNumber: Number.isFinite(quantityNumber) ? quantityNumber : 0,
                 size,
-                steel
+                steel,
+                steelQty: steelQty != null ? String(steelQty) : '',
+                steelQtyNumber: Number.isFinite(steelQtyNumber) ? steelQtyNumber : 0,
             };
         });
     }
@@ -1213,7 +1218,7 @@ class PdItem extends Base {
                     `/api/team/update/${this.selectedTeamForEdit.id}?version=${version}`,
                     'PATCH',
                     changes
-                );
+                ) as TeamIn;
 
                 const idx = this.allTeamsCache.findIndex((t: any) => t.id === updatedTeam.id);
                 if (idx !== -1) {
@@ -1244,7 +1249,7 @@ class PdItem extends Base {
 
             const unlock = this.lockScreen('Создание бригады...');
             try {
-                const newTeam = await this.requestToApi('/api/team/create', 'POST', dto);
+                const newTeam = await this.requestToApi('/api/team/create', 'POST', dto) as TeamIn;
 
                 this.allTeamsCache.push(newTeam);
 

@@ -1,7 +1,4 @@
-"use strict";
-// @ts-ignore
-// Global template helpers for common dialog HTML structures
-function confirmDialogTemplate() {
+export function confirmDialogTemplate() {
     return `
     <dialog id="confirmDialog" class="confirm-dialog">
         <div class="confirm-content">
@@ -14,8 +11,10 @@ function confirmDialogTemplate() {
     </dialog>
     `;
 }
-function printDialogTemplate(reports) {
-    const options = (reports || []).map(r => `<option value="${r.api}">${r.name}</option>`).join('');
+export function printDialogTemplate(reports) {
+    const options = (reports || [])
+        .map(r => `<option value="${r.api}">${r.name}</option>`)
+        .join('');
     return `
     <dialog id="printDialog" class="print-dialog">
         <div class="print-content">

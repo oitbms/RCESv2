@@ -1,4 +1,5 @@
-"use strict";
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 class Sgi extends Base {
     constructor(itemsPerPage = 16, visibleRow = Infinity) {
         super($(`.table-content-rows`), itemsPerPage, visibleRow, () => {
@@ -49,7 +50,7 @@ class Sgi extends Base {
                 this.dialog.close("create-dialog");
                 const newRow = this.createRow(newSgi);
                 if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage &&
-                    !dialog.find('[name="parentId"]').val().length) {
+                    !String(dialog.find('[name="parentId"]').val() || '').length) {
                     await $('#last-page').click();
                     $(`.table-content-rows`).append(newRow);
                     this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
@@ -173,12 +174,14 @@ class Sgi extends Base {
                 formData.append('id', currentId);
                 formData.append('factExecutionSGIBool', 'false');
                 $(dialog).find('[data-field]').each((_, el) => {
-                    if (el.type !== 'file') {
-                        formData.append(el.dataset.field, el.value);
+                    var _a;
+                    const input = el;
+                    if (input.type !== 'file') {
+                        formData.append(input.dataset.field, input.value);
                     }
                     else {
-                        for (let file of el.files) {
-                            formData.append(el.dataset.field, file);
+                        for (const file of (_a = input.files) !== null && _a !== void 0 ? _a : []) {
+                            formData.append(input.dataset.field, file);
                         }
                     }
                 });
@@ -287,7 +290,7 @@ class Sgi extends Base {
                 validFileMap.set(image.name, base64ToFile(image.data, image.name));
             }
             this.localCache.set('validFileMap', validFileMap);
-            let input = dialog.find('input[type="file"]').clone()[0];
+            const input = dialog.find('input[type="file"]').clone()[0];
             const dataTransfer = new DataTransfer();
             validFileMap.forEach(file => dataTransfer.items.add(file));
             input.files = dataTransfer.files;
@@ -381,7 +384,8 @@ class Sgi extends Base {
                 menu.remove();
             });
             const closeMenu = (e) => {
-                if (!menu.is(e.target) && menu.has(e.target).length === 0) {
+                const target = e.target;
+                if (!menu.is(target) && menu.has(target).length === 0) {
                     menu.remove();
                     $(document).off('click', closeMenu);
                 }
@@ -876,7 +880,7 @@ class Sgi extends Base {
         const employeeField = dialog.find('[data-field="employee"]');
         employeeField.empty();
         employeeField.append($('<option>', { value: '', text: 'Все сотрудники' }));
-        const employeesData = await this.cache.get('employee');
+        const employeesData = (await this.cache.get('employee'));
         const filteredEmployees = employeesData.filter((employee) => ['EVENT', 'CONTROL'].some((role) => role === employee.role));
         filteredEmployees.forEach((employee) => {
             employeeField.append($('<option>', {
@@ -968,7 +972,10 @@ class Sgi extends Base {
         $('<a>', {
             href: `/api/report/print/sgi?department=${department}`,
             download: ''
-        }).appendTo('body')[0].click().remove();
+        }).appendTo('body');
+        const link = $('body').children('a').last()[0];
+        link.click();
+        link.remove();
     }
     async openDocument(event) {
         const dialog = $('#documentDialog');

@@ -1,5 +1,5 @@
-// @ts-ignore
-declare const $: any;
+import { Base } from './base/base';
+import { Color, NotificationType } from './core/types';
 
 class NtDocuments extends Base {
 
@@ -7,28 +7,28 @@ class NtDocuments extends Base {
         super($(`.table-body`), itemsPerPage, visibleRow, () => {
             this.displayPage('/api/ntd/get-page-ntd', undefined).catch(console.error);
         });
+        this.bindTableSelection(false);
         this.createHandler('click', '.circle-row', this.selectRow.bind(this), true);
-        this.createHandler('click', '#edit-button', () => {
-            if (!this.editMode) {
-                this.enableEditMode(['dateVerification'], undefined, [
+        this.bindRegistryToolbar({
+            onSave: () => this.saveNtd(),
+            searchSelector: '#searchInput',
+            edit: {
+                dateFields: ['dateVerification'],
+                disableFields: ['document', 'references'],
+                readOnlyFields: ['dateVerification', 'type'],
+                specialFields: [
                     { name: 'document', transform: ($d) => $d },
-                    { name: 'references', transform: ($d) => $d }
-                ]);
-                $('#edit-button').addClass('active');
-            } else {
-                this.disableEditMode(['dateVerification'], ['document', 'references'], undefined, ['dateVerification', 'type']);
-                if (!this.editMode) $('#edit-button').removeClass('active');
-            }
-        }, true);
+                    { name: 'references', transform: ($d) => $d },
+                ],
+            },
+        });
         this.createHandler('click', '#create-button', () => this.dialog.open('create-dialog'), true);
-        this.createHandler('click', '#save-button', () => this.saveNtd(), true);
         this.bindFieldChanges();
         this.createHandler('click', '.document', this.openDocument.bind(this), true);
         this.createHandler('click', '.references', this.openReferences.bind(this), true);
         this.createHandler('click', '.download', this.handleDownloadFile.bind(this), true);
         this.createHandler('click', '#createBtn', this.createNtd, true);
         this.createHandler('contextmenu', '.table-row.selected', this.showRowContextMenu, true);
-        this.bindSearchInput('#searchInput');
     }
 
     public createRow(ntd: NtdIn) {
@@ -213,11 +213,11 @@ class NtDocuments extends Base {
         };
 
         if (ntd.references.length > 0) {
-            const references: NtdRefIn[] = await this.requestToApi(`/api/ntd/get-references?ids=${ntd.references}`, "GET");
+            const references = await this.requestToApi(`/api/ntd/get-references?ids=${ntd.references}`, "GET") as NtdRefIn[];
             this.localCache.set('references', references);
             renderReference(references, true);
         }
-        const references: NtdRefIn[] = await this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET");
+        const references = await this.requestToApi(`/api/ntd/get-all-references?id=${ntd.id}&ids=${ntd.references}`, "GET") as NtdRefIn[];
         renderReference(references, false);
 
         dialog.off('input', '.search-input').on('input', '.search-input', (e) => {

@@ -9,13 +9,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/sgi.css">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/dist/base/dialog.js"></script>
-    <script src="/js/dist/base/cache.js"></script>
-    <script src="/js/dist/base/type/generalType.js"></script>
-    <script src="/js/dist/base/type/sgiConstants.js"></script>
-    <script src="/js/dist/base/base.js"></script>
-    <script src="/js/dist/sgi.js" defer></script>
+    <#include "macros/registry-scripts.ftlh">
+    <@registryScripts module="sgi" />
 </head>
 <body>
 <main>

@@ -1,8 +1,15 @@
-"use strict";
-/// <reference path="type/generalType.ts" />
-class Base {
+import { requestToApi as apiRequest } from '../core/api';
+import { appendQueryParams, downloadFilesFromDto } from '../core/files';
+import { escapeHtml as escapeHtmlText } from '../core/html';
+import { createAsyncLock } from '../core/lock';
+import { ensureNotificationContainer, showNotification } from '../core/notifications';
+import { Color, NotificationType, } from '../core/types';
+import { CacheBormashImpl } from './cache';
+import { DialogImpl } from './dialog';
+import { confirmDialogTemplate, printDialogTemplate } from './dialogTemplates';
+export class Base {
     constructor(rowContainer, itemsPerPage = Infinity, visibleRow = Infinity, ...initCallbacks) {
-        this.locks = new Map();
+        this.asyncLock = createAsyncLock();
         this.handlers = [];
         this.selectedRows = new Set();
         this.localCache = new Map();
@@ -13,19 +20,7 @@ class Base {
         this.editMode = false;
         this.cache = new CacheBormashImpl();
         this.dialog = new DialogImpl();
-        //Блокировка параллельного выполнения
-        this.lock = (fn) => async (...args) => {
-            const key = fn.name;
-            if (this.locks.get(key))
-                return;
-            this.locks.set(key, true);
-            try {
-                return await fn(...args);
-            }
-            finally {
-                this.locks.set(key, false);
-            }
-        };
+        this.lock = (fn) => this.asyncLock(fn);
         this.createHandler = (event, selector, handler, locked = false) => {
             this.handlers.push({
                 event,
@@ -34,8 +29,7 @@ class Base {
             });
         };
         this.createNotificationContainer = () => {
-            const notificationsContainer = $(`<div id="notifications-container" popover="manual"></div>`);
-            $('body').append(notificationsContainer);
+            ensureNotificationContainer();
         };
         this.updateRow = (item, rowIndex) => {
             const $oldRow = $(`[data-index="${rowIndex}"]`);
@@ -56,45 +50,19 @@ class Base {
                 const changes = item.changes;
                 return this.requestToApi(`${url}/${id}${version != null ? `?version=${version}` : ''}`, 'PATCH', changes);
             }));
-            results.forEach(item => {
+            results.forEach((item) => {
                 this.updateRow(item, item.id);
                 delete this.saveMassive[item.id];
             });
             this.createNotification('Успешно обновлено', NotificationType.SUCCESS);
             return results;
         };
-        this.requestToApi = async (url, type, param) => {
-            return await $.ajax({
-                url: url,
-                method: type,
-                contentType: param instanceof FormData ? false : 'application/json',
-                processData: !(param instanceof FormData),
-                data: param instanceof FormData ? param : JSON.stringify(param)
-            }).catch((xhr) => {
-                var _a, _b, _c;
-                const errorResponse = xhr.responseJSON;
-                const message = (_b = (_a = errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.message) !== null && _a !== void 0 ? _a : xhr.statusText) !== null && _b !== void 0 ? _b : 'Ошибка запроса';
-                const notificationType = (_c = errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.notificationType) !== null && _c !== void 0 ? _c : NotificationType.ERROR;
-                this.createNotification(message, notificationType);
-                throw xhr;
-            });
-        };
-        // Экранирование HTML для защиты от XSS
-        this.escapeHtml = (unsafe) => {
-            if (unsafe == null)
-                return '';
-            return String(unsafe)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        };
-        //Скачивает все файлы с api
+        this.requestToApi = apiRequest;
+        this.escapeHtml = escapeHtmlText;
         this.downloadFile = async (url, params) => {
             try {
-                const response = await this.requestToApi(this.appendQueryParams(url, params), 'GET');
-                await this.saveFilesFromDto(response);
+                const response = await this.requestToApi(appendQueryParams(url, params), 'GET');
+                await downloadFilesFromDto(response);
             }
             catch (error) {
                 this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
@@ -104,7 +72,7 @@ class Base {
         this.downloadReportFile = async (url, format, idList) => {
             try {
                 const response = await this.requestToApi(url, 'POST', { format, idList });
-                await this.saveFilesFromDto(response);
+                await downloadFilesFromDto(response);
             }
             catch (error) {
                 this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
@@ -114,7 +82,7 @@ class Base {
         this.downloadIdListFile = async (url, idList) => {
             try {
                 const response = await this.requestToApi(url, 'POST', { idList });
-                await this.saveFilesFromDto(response);
+                await downloadFilesFromDto(response);
             }
             catch (error) {
                 this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
@@ -124,41 +92,10 @@ class Base {
         this.createEntity = (url, dto) => {
             return this.requestToApi(url, 'POST', dto);
         };
-        this.deleteEntity = (url) => {
-            return this.requestToApi(`${url}`, 'DELETE');
+        this.deleteEntity = async (url) => {
+            await this.requestToApi(`${url}`, 'DELETE');
         };
-        //Создание уведомления в левом верхнем углу
-        this.createNotification = (message, type, params, error) => {
-            try {
-                const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
-                const container = document.getElementById('notifications-container');
-                if (!container)
-                    return;
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.innerHTML = `<div class="msg">${text}</div>`;
-                container.appendChild(notification);
-                if (!container.matches(':popover-open')) {
-                    container.showPopover();
-                }
-                if (error)
-                    console.error(error);
-                setTimeout(() => notification.classList.add('show'), 10);
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                    notification.classList.add('hiding');
-                    setTimeout(() => {
-                        notification.remove();
-                        if (container.children.length === 0) {
-                            container.hidePopover();
-                        }
-                    }, 350);
-                }, 3000);
-            }
-            catch (error) {
-                console.error(error);
-            }
-        };
+        this.createNotification = (message, type, params, error) => showNotification(message, type, params, error);
         //Диалог с подтверждением действия
         this.createConfirmationDialog = this.lock((message, params) => {
             return new Promise((resolve) => {
@@ -892,7 +829,9 @@ class Base {
                         resolve();
                         return;
                     }
-                    const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
+                    const params = `?format=${format}` + (report.params
+                        ? `&${new URLSearchParams(report.params).toString()}`
+                        : '');
                     await this.downloadFile(report.api, params);
                 }
                 catch (_a) {
@@ -904,46 +843,6 @@ class Base {
                 }
             });
         });
-    }
-    appendQueryParams(url, params) {
-        if (!params)
-            return url;
-        if (typeof params === 'string') {
-            return url + (params.startsWith('?') ? params : `?${params}`);
-        }
-        const search = new URLSearchParams();
-        for (const [key, value] of Object.entries(params)) {
-            if (Array.isArray(value)) {
-                value.forEach(v => search.append(key, String(v)));
-            }
-            else if (value != null) {
-                search.append(key, String(value));
-            }
-        }
-        return `${url}?${search.toString()}`;
-    }
-    async saveFilesFromDto(response) {
-        const files = Array.isArray(response) ? response : [response];
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const binaryString = atob(file.data);
-            const uint8Array = new Uint8Array(binaryString.length);
-            for (let j = 0; j < binaryString.length; j++) {
-                uint8Array[j] = binaryString.charCodeAt(j);
-            }
-            const blob = new Blob([uint8Array]);
-            const objectUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
-            if (i < files.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1250));
-            }
-        }
     }
     parseInteger(value) {
         if (value === null || value === undefined || value === '') {
@@ -969,6 +868,33 @@ class Base {
             result[field.key] = parsedValue;
         }
         return result;
+    }
+    /** DRY: заголовок таблицы — выделить все строки; circle-row — в подклассах через selectRow */
+    bindTableSelection(withHeader = true) {
+        if (withHeader) {
+            this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
+        }
+    }
+    /** DRY: edit/save toolbar for registry pages */
+    bindRegistryToolbar(options) {
+        var _a;
+        const editOpts = (_a = options.edit) !== null && _a !== void 0 ? _a : {};
+        this.createHandler('click', '#edit-button', () => {
+            var _a, _b, _c, _d;
+            if (!this.editMode) {
+                this.enableEditMode((_a = editOpts.dateFields) !== null && _a !== void 0 ? _a : [], undefined, (_b = editOpts.specialFields) !== null && _b !== void 0 ? _b : []);
+                $('#edit-button').addClass('active');
+            }
+            else {
+                this.disableEditMode((_c = editOpts.dateFields) !== null && _c !== void 0 ? _c : [], (_d = editOpts.disableFields) !== null && _d !== void 0 ? _d : [], undefined, editOpts.readOnlyFields);
+                if (!this.editMode)
+                    $('#edit-button').removeClass('active');
+            }
+        }, true);
+        this.createHandler('click', '#save-button', options.onSave, true);
+        if (options.searchSelector) {
+            this.bindSearchInput(options.searchSelector);
+        }
     }
     applyFilters() {
     }

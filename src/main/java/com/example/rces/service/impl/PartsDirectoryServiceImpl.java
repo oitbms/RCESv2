@@ -1,9 +1,6 @@
 package com.example.rces.service.impl;
 
-import com.example.rces.dto.PartsDirectoryCreateDTO;
-import com.example.rces.dto.PartsDirectoryCreateDTOFrom1C;
-import com.example.rces.dto.PartsDirectoryDTO;
-import com.example.rces.dto.PartsDirectoryFrom1C;
+import com.example.rces.dto.*;
 import com.example.rces.mapper.PartsDirectoryMapper;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.PartsDirectory;
@@ -171,6 +168,11 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
         });
 
         return mapper.toDTOList(pdiList);
+    }
+
+    @Override
+    public List<PartsDirectoryDTO> createItemFromSpm(List<PartsDirectoryCreateDTOFromSpm> listDTO) {
+        return List.of();
     }
 
     @Scheduled(cron = "0 0 9 * * *")

@@ -1,5 +1,4 @@
-"use strict";
-class CacheBormashImpl {
+export class CacheBormashImpl {
     constructor() {
         this.endpoints = {
             employee: '/api/employees',

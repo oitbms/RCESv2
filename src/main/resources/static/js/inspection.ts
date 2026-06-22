@@ -1,5 +1,5 @@
-// @ts-ignore
-declare const $: any;
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 
 class Inspection extends Base {
 
@@ -126,7 +126,7 @@ class Inspection extends Base {
         const inspection = this.localCache.get(Number(currentInspectionId)) as InspectionIn;
 
         if (!inspection.violation || inspection.violation.length === 0) {
-            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET");
+            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET") as InspectionViolationIn[];
             this.localCache.set(Number(currentInspectionId), inspection);
         }
 
@@ -138,7 +138,7 @@ class Inspection extends Base {
         });
 
         dialog.find('#addViolationBtn').off('click').on('click', () => {
-            this.openAddViolationDialog(currentInspectionId);
+            this.openAddViolationDialog(Number(currentInspectionId));
         });
 
         if (!inspection.violation || inspection.violation.length === 0) {
@@ -476,7 +476,7 @@ class Inspection extends Base {
 
         const unlock = this.lockScreen();
         try {
-            const images: Array<Image> = await this.requestToApi(`/api/inspection/get-images-inspection/${violationId}`, "GET");
+            const images = await this.requestToApi(`/api/inspection/get-images-inspection/${violationId}`, "GET") as AppImage[];
 
             if (!images || images.length === 0) {
                 this.createNotification('Фотографии не прикреплены', NotificationType.INFO);
@@ -560,7 +560,7 @@ class Inspection extends Base {
         const inspection = this.localCache.get(Number(currentInspectionId)) as InspectionIn;
 
         if (!inspection.violation || inspection.violation.length === 0) {
-            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET");
+            inspection.violation = await this.requestToApi(`/api/inspection/get-violation/${currentInspectionId}`, "GET") as InspectionViolationIn[];
             this.localCache.set(Number(currentInspectionId), inspection);
             if (!inspection.violation || inspection.violation.length === 0) {
                 this.createNotification('Нарушений не найдено', NotificationType.INFO);
@@ -956,8 +956,8 @@ class Inspection extends Base {
     }
 
     public override async displayPage(url: string, param?: object, ...callbacks: Function[]): Promise<void> {
-        const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
-        this.renderInspections(request.data);
+        const request = await this.requestToApi(url, 'GET', param) as RequestDataDTO;
+        this.renderInspections(request.data as InspectionIn[]);
         callbacks.forEach(callback => callback?.(request.data, request.count));
     }
 

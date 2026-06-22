@@ -68,4 +68,10 @@ public class PartsDirectoryRestController {
         return ResponseEntity.ok(dtoList);
     }
 
+    @PostMapping("/create-item-from-spm")
+    public ResponseEntity<List<PartsDirectoryDTO>> createItemFromSpm(@RequestBody List<PartsDirectoryCreateDTOFromSpm> listDTO) {
+        List<PartsDirectoryDTO> dtoList = service.createItemFromSpm(listDTO);
+        return ResponseEntity.ok(dtoList);
+    }
+
 }

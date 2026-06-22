@@ -1,7 +1,24 @@
-/// <reference path="type/generalType.ts" />
+import { requestToApi as apiRequest } from '../core/api';
+import { appendQueryParams, downloadFilesFromDto } from '../core/files';
+import { escapeHtml as escapeHtmlText } from '../core/html';
+import { createAsyncLock } from '../core/lock';
+import { ensureNotificationContainer, showNotification } from '../core/notifications';
+import {
+    Color,
+    NotificationType,
+    type EditModeOptions,
+    type FileDTO,
+    type IntegerFieldValidationConfig,
+    type ReportItem,
+    type RequestDataDTO,
+    type SpecialFieldTransform,
+} from '../core/types';
+import { CacheBormashImpl, type CacheBormash } from './cache';
+import { DialogImpl, type Dialog } from './dialog';
+import { confirmDialogTemplate, printDialogTemplate } from './dialogTemplates';
 
-abstract class Base {
-    private locks = new Map<string, boolean>();
+export abstract class Base {
+    private readonly asyncLock = createAsyncLock();
     private handlers: { event: string, selector: string, handler: Function }[] = [];
     public selectedRows = new Set<string | number>();
     public localCache = new Map<string | number, object>();
@@ -45,22 +62,11 @@ abstract class Base {
 
     private initializeHandlers(): void {
         this.handlers.forEach(({event, selector, handler}) => {
-            $(document).on(event, selector, handler);
+            $(document).on(event, selector, handler as JQuery.EventHandler<Document>);
         });
     }
 
-    //Блокировка параллельного выполнения
-    private lock = (fn: Function) => async (...args: any[]): Promise<void> => {
-        const key = fn.name;
-        if (this.locks.get(key)) return;
-
-        this.locks.set(key, true);
-        try {
-            return await fn(...args);
-        } finally {
-            this.locks.set(key, false);
-        }
-    };
+    private lock = (fn: Function) => this.asyncLock(fn as (...args: unknown[]) => Promise<unknown>);
 
     public readonly createHandler = (event: string, selector: string, handler: Function, locked: boolean = false): void => {
         this.handlers.push({
@@ -70,10 +76,9 @@ abstract class Base {
         });
     };
 
-    public readonly createNotificationContainer = () => {
-        const notificationsContainer = $(`<div id="notifications-container" popover="manual"></div>`);
-        $('body').append(notificationsContainer);
-    }
+    public readonly createNotificationContainer = (): void => {
+        ensureNotificationContainer();
+    };
 
     //Всегда должен возвращать jquery объект в виде any
     public abstract createRow(item: any): any;
@@ -108,7 +113,7 @@ abstract class Base {
         if (this.currentPage > 1) {
             param = {...param, page: this.currentPage};
         }
-        const request: RequestDataDTO = await this.requestToApi(url, 'GET', param);
+        const request = await this.requestToApi(url, 'GET', param) as RequestDataDTO;
 
         const visibleItems = request.data.slice(0, this.visibleRow);
         const hiddenItems = request.data.slice(this.visibleRow);
@@ -136,7 +141,7 @@ abstract class Base {
             return this.requestToApi(`${url}/${id}${version != null ? `?version=${version}` : ''}`, 'PATCH', changes);
         }));
 
-        results.forEach(item => {
+        results.forEach((item: { id: string | number }) => {
             this.updateRow(item, item.id);
             delete this.saveMassive[item.id];
         });
@@ -145,32 +150,9 @@ abstract class Base {
         return results;
     }
 
-    public readonly requestToApi = async (url: string, type: string, param?: object | FormData): Promise<any> => {
-        return await $.ajax({
-            url: url,
-            method: type,
-            contentType: param instanceof FormData ? false : 'application/json',
-            processData: !(param instanceof FormData),
-            data: param instanceof FormData ? param : JSON.stringify(param)
-        }).catch((xhr) => {
-            const errorResponse: ErrorResponse | undefined = xhr.responseJSON;
-            const message = errorResponse?.message ?? xhr.statusText ?? 'Ошибка запроса';
-            const notificationType = errorResponse?.notificationType ?? NotificationType.ERROR;
-            this.createNotification(message, notificationType);
-            throw xhr;
-        });
-    }
+    public readonly requestToApi = apiRequest;
 
-    // Экранирование HTML для защиты от XSS
-    public readonly escapeHtml = (unsafe: string): string => {
-        if (unsafe == null) return '';
-        return String(unsafe)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
+    public readonly escapeHtml = escapeHtmlText;
 
     public async print(param?: any): Promise<void> {
         if (!this.reports.length) return this.createNotification("Нет доступных для печати отчетов", NotificationType.INFO);
@@ -214,7 +196,9 @@ abstract class Base {
                         resolve();
                         return;
                     }
-                    const params = `?format=${format}` + (report.params ? `&${new URLSearchParams(report.params).toString()}` : '');
+                    const params = `?format=${format}` + (report.params
+                        ? `&${new URLSearchParams(report.params as Record<string, string>).toString()}`
+                        : '');
                     await this.downloadFile(report.api, params);
                 } catch {
                     this.createNotification('Ошибка при печати', NotificationType.ERROR);
@@ -226,118 +210,50 @@ abstract class Base {
         });
     }
 
-    private appendQueryParams(url: string, params?: string | Record<string, unknown>): string {
-        if (!params) return url;
-        if (typeof params === 'string') {
-            return url + (params.startsWith('?') ? params : `?${params}`);
-        }
-        const search = new URLSearchParams();
-        for (const [key, value] of Object.entries(params)) {
-            if (Array.isArray(value)) {
-                value.forEach(v => search.append(key, String(v)));
-            } else if (value != null) {
-                search.append(key, String(value));
-            }
-        }
-        return `${url}?${search.toString()}`;
-    }
-
-    private async saveFilesFromDto(response: FileDTO | FileDTO[]): Promise<void> {
-        const files = Array.isArray(response) ? response : [response];
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const binaryString = atob(file.data as unknown as string);
-            const uint8Array = new Uint8Array(binaryString.length);
-            for (let j = 0; j < binaryString.length; j++) {
-                uint8Array[j] = binaryString.charCodeAt(j);
-            }
-            const blob = new Blob([uint8Array]);
-            const objectUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.download = file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(objectUrl), 250);
-
-            if (i < files.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1250));
-            }
-        }
-    }
-
-    //Скачивает все файлы с api
     public readonly downloadFile = async (url: string, params?: string | Record<string, unknown>): Promise<void> => {
         try {
-            const response = await this.requestToApi(this.appendQueryParams(url, params), 'GET') as FileDTO | FileDTO[];
-            await this.saveFilesFromDto(response);
+            const response = await this.requestToApi(appendQueryParams(url, params), 'GET') as FileDTO | FileDTO[];
+            await downloadFilesFromDto(response);
         } catch (error) {
             this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
             console.error(error);
         }
-    }
+    };
 
     public readonly downloadReportFile = async (url: string, format: string, idList: number[]): Promise<void> => {
         try {
             const response = await this.requestToApi(url, 'POST', {format, idList}) as FileDTO | FileDTO[];
-            await this.saveFilesFromDto(response);
+            await downloadFilesFromDto(response);
         } catch (error) {
             this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
             console.error(error);
         }
-    }
+    };
 
     public readonly downloadIdListFile = async (url: string, idList: number[]): Promise<void> => {
         try {
             const response = await this.requestToApi(url, 'POST', {idList}) as FileDTO | FileDTO[];
-            await this.saveFilesFromDto(response);
+            await downloadFilesFromDto(response);
         } catch (error) {
             this.createNotification('Ошибка при скачивании файла', NotificationType.ERROR);
             console.error(error);
         }
-    }
+    };
 
     public readonly createEntity = (url: string, dto?: any): any => {
         return this.requestToApi(url, 'POST', dto);
     }
 
-    public readonly deleteEntity = (url: string): Promise<void> => {
-        return this.requestToApi(`${url}`, 'DELETE');
-    }
-
-    //Создание уведомления в левом верхнем углу
-    public readonly createNotification = (
-        message: string, type: NotificationType,
-        params?: any, error?: Error): void => {
-        try {
-            const text = params ? message.replace(/{(\w+)}/g, (m, k) => params[k]) : message;
-            const container = document.getElementById('notifications-container');
-            if (!container) return;
-            const notification = document.createElement('div');
-
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `<div class="msg">${text}</div>`;
-            container.appendChild(notification);
-            if (!container.matches(':popover-open')) {
-                container.showPopover();
-            }
-            if (error) console.error(error);
-            setTimeout(() => notification.classList.add('show'), 10);
-            setTimeout(() => {
-                notification.classList.remove('show');
-                notification.classList.add('hiding');
-                setTimeout(() => {
-                    notification.remove();
-                    if (container.children.length === 0) {
-                        container.hidePopover();
-                    }
-                }, 350);
-            }, 3000);
-        } catch (error) {
-            console.error(error);
-        }
+    public readonly deleteEntity = async (url: string): Promise<void> => {
+        await this.requestToApi(`${url}`, 'DELETE');
     };
+
+    public readonly createNotification = (
+        message: string,
+        type: NotificationType,
+        params?: Record<string, string>,
+        error?: Error
+    ): void => showNotification(message, type, params, error);
 
     //Диалог с подтверждением действия
     public readonly createConfirmationDialog = this.lock((message: string, params?: any): Promise<boolean> => {
@@ -503,7 +419,7 @@ abstract class Base {
         return result;
     }
 
-    public readonly calculateColor = (color: Color): string => {
+    public readonly calculateColor = (color: Color | string): string => {
         switch (color) {
             case Color.NONE:
                 return 'var(--default-color, #f1f1f1)';
@@ -540,6 +456,44 @@ abstract class Base {
             }
         }, true);
     };
+
+    /** DRY: заголовок таблицы — выделить все строки; circle-row — в подклассах через selectRow */
+    protected bindTableSelection(withHeader = true): void {
+        if (withHeader) {
+            this.createHandler('click', '.circle-header', this.toggleAllRowsSelection.bind(this), true);
+        }
+    }
+
+    /** DRY: edit/save toolbar for registry pages */
+    protected bindRegistryToolbar(options: {
+        onSave: () => void;
+        edit?: EditModeOptions;
+        searchSelector?: string;
+    }): void {
+        const editOpts = options.edit ?? {};
+        this.createHandler('click', '#edit-button', () => {
+            if (!this.editMode) {
+                this.enableEditMode(
+                    editOpts.dateFields ?? [],
+                    undefined,
+                    editOpts.specialFields ?? []
+                );
+                $('#edit-button').addClass('active');
+            } else {
+                this.disableEditMode(
+                    editOpts.dateFields ?? [],
+                    editOpts.disableFields ?? [],
+                    undefined,
+                    editOpts.readOnlyFields
+                );
+                if (!this.editMode) $('#edit-button').removeClass('active');
+            }
+        }, true);
+        this.createHandler('click', '#save-button', options.onSave, true);
+        if (options.searchSelector) {
+            this.bindSearchInput(options.searchSelector);
+        }
+    }
 
     protected applyFilters(): void {
     }
@@ -757,8 +711,8 @@ abstract class Base {
         const changeButton = dialog.find('[id^="change"]').first();
         let selected: any;
 
-        const raw = rawData ? rawData : await this.cache.get(fieldName);
-        const data = dataFilter ? dataFilter(raw) : raw || [];
+        const raw = rawData ? rawData : await this.cache.get<any[]>(fieldName);
+        const data: any[] = dataFilter ? dataFilter(raw as any[]) : (raw as any[]) || [];
 
         const getValue = (item: any, col: any) => {
             if (col.renderer) return col.renderer(item);
@@ -910,7 +864,7 @@ abstract class Base {
                         this.createNotification(`Файл "${fileName}" уже существует`, NotificationType.WARNING);
                         return;
                     }
-                    this.uploadDocumentFile(e, rowId, documentId, uploadUrlBase, (files) => {
+                    this.uploadDocumentFile(e as unknown as Event, rowId, documentId, uploadUrlBase, (files) => {
                         rowContainer.find('#newFileRow').remove();
                         const fileList = files.files || files;
                         for (const f of fileList) {

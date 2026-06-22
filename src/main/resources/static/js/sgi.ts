@@ -1,5 +1,5 @@
-// @ts-ignore
-declare const $: any;
+import { Base } from './base/base';
+import { NotificationType } from './core/types';
 
 class Sgi extends Base {
 
@@ -281,7 +281,7 @@ class Sgi extends Base {
 
             const newRow = this.createRow(newSgi);
             if ($(`.table-content-rows`).find('.row-items-row').length === this.itemsPerPage &&
-                !dialog.find('[name="parentId"]').val().length) {
+                !String(dialog.find('[name="parentId"]').val() || '').length) {
                 await $('#last-page').click();
                 $(`.table-content-rows`).append(newRow);
                 this.createNotification('Создано новое мероприятие под номером ' + newSgi.number, NotificationType.SUCCESS);
@@ -504,11 +504,12 @@ class Sgi extends Base {
             formData.append('id', currentId);
             formData.append('factExecutionSGIBool', 'false')
             $(dialog).find('[data-field]').each((_, el) => {
-                if (el.type !== 'file') {
-                    formData.append(el.dataset.field, el.value);
+                const input = el as HTMLInputElement;
+                if (input.type !== 'file') {
+                    formData.append(input.dataset.field!, input.value);
                 } else {
-                    for (let file of el.files) {
-                        formData.append(el.dataset.field, file);
+                    for (const file of input.files ?? []) {
+                        formData.append(input.dataset.field!, file);
                     }
                 }
             });
@@ -546,7 +547,7 @@ class Sgi extends Base {
                         },
                         stopPropagation: () => {
                         }
-                    } as Event;
+                    } as unknown as Event;
 
                     await this.openSubSgi(fakeEvent);
                 }
@@ -783,7 +784,7 @@ class Sgi extends Base {
         }
         this.localCache.set('validFileMap', validFileMap);
 
-        let input = dialog.find('input[type="file"]').clone()[0];
+        const input = dialog.find('input[type="file"]').clone()[0] as HTMLInputElement;
         const dataTransfer = new DataTransfer();
         validFileMap.forEach(file => dataTransfer.items.add(file));
         input.files = dataTransfer.files;
@@ -900,15 +901,16 @@ class Sgi extends Base {
             menu.remove();
         });
 
-        const closeMenu = (e: Event): void => {
-            if (!menu.is(e.target) && menu.has(e.target).length === 0) {
+        const closeMenu = (e: JQuery.TriggeredEvent): void => {
+            const target = e.target as Element;
+            if (!menu.is(target) && menu.has(target).length === 0) {
                 menu.remove();
                 $(document).off('click', closeMenu);
             }
         };
 
         setTimeout(() => {
-            $(document).on('click', closeMenu);
+            $(document).on('click', closeMenu as any);
         }, 0);
     }
 
@@ -986,7 +988,7 @@ class Sgi extends Base {
         employeeField.empty();
         employeeField.append($('<option>', {value: '', text: 'Все сотрудники'}));
 
-        const employeesData = await this.cache.get('employee');
+        const employeesData = (await this.cache.get('employee')) as any[];
         const filteredEmployees = employeesData.filter((employee: any) =>
             ['EVENT', 'CONTROL'].some((role: string) => role === employee.role)
         );
@@ -1093,7 +1095,10 @@ class Sgi extends Base {
         $('<a>', {
             href: `/api/report/print/sgi?department=${department}`,
             download: ''
-        }).appendTo('body')[0].click().remove();
+        }).appendTo('body');
+        const link = $('body').children('a').last()[0] as HTMLAnchorElement;
+        link.click();
+        link.remove();
     }
 
     private async openDocument(event: Event): Promise<void> {
@@ -1130,7 +1135,7 @@ class Sgi extends Base {
             </div>`
         );
 
-        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e, currentSGIId));
+        $(document).off('change', '#fileInput').on('change', '#fileInput', (e) => this.addFileToDocument(e as unknown as Event, currentSGIId));
         $(document).on('contextmenu', '.dialog-content-rows-row', (event: Event) => {
             const $row = $(event.currentTarget);
             const fileId = $row.attr('id');

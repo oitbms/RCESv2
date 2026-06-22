@@ -40,25 +40,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return response.json();
     }
 
-    /**
-     * Show notification
-     */
-    function notification(message, duration = 3000, type = 'info') {
-        const container = document.getElementById('notification-container');
-        if (!container) return;
-        const notification = document.createElement('div');
-
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-
-        container.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 10);
-
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 500);
-        }, duration);
-    }
+    const notification = (message, duration = 3000, type = 'info') =>
+        (window.showPageNotification || ((msg, d, t) => console.log(`[${t}]`, msg)))(message, duration, type);
 
     // ==============================
     // 3. Data Saving

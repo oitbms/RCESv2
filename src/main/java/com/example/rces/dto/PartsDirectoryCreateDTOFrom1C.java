@@ -1,7 +1,5 @@
 package com.example.rces.dto;
 
-import java.math.BigDecimal;
-
 public class PartsDirectoryCreateDTOFrom1C {
 
     private String customerOrder;

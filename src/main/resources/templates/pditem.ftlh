@@ -9,13 +9,8 @@
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/pditem.css">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/dist/base/dialog.js"></script>
-    <script src="/js/dist/base/dialogTemplates.js"></script>
-    <script src="/js/dist/base/cache.js"></script>
-    <script src="/js/dist/base/type/generalType.js"></script>
-    <script src="/js/dist/base/base.js"></script>
-    <script src="/js/dist/pditem.js"></script>
+    <#include "macros/registry-scripts.ftlh">
+    <@registryScripts module="pditem" />
     <title>Справочник</title>
 </head>
 <body>
