@@ -55,6 +55,12 @@
                     <i class="fas fa-users"></i>
                 </button>
             </div>
+            <div class="tool spm-switch tooltip-trigger" id="spm-switch-button" data-description="Перейти в СПМ">
+                <button type="button" onclick="window.location.href='/spm'">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>СПМ</span>
+                </button>
+            </div>
         </div>
     </header>
     <div class="data-container">
