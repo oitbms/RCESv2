@@ -55,4 +55,9 @@ public class SpmRestController {
         List<SpmDTO> dtoList = service.createItemFromSpm(listDTO);
         return ResponseEntity.ok(dtoList);
     }
+
+    @PatchMapping("/mark-loaded/{id}")
+    public ResponseEntity<SpmDTO> markLoaded(@PathVariable Long id) {
+        return ResponseEntity.ok(service.markAsLoaded(id));
+    }
 }

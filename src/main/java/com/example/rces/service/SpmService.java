@@ -17,4 +17,6 @@ public interface SpmService {
     void deleteSpm(Long id);
 
     List<SpmDTO> createItemFromSpm(List<SpmCreateDTO> listDTO);
+
+    SpmDTO markAsLoaded(Long id);
 }

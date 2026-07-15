@@ -15,6 +15,13 @@ public class Spm extends BaseAuditingEntity {
     @Column(name = "customer_order_line")
     private String customerOrderLine;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_order_id")
+    private CustomerOrder customerOrder;
+
+    @Column(name = "loaded", nullable = false)
+    private Boolean loaded = false;
+
     @Column(name = "date_start")
     private LocalDate dateStart;
 
@@ -49,6 +56,22 @@ public class Spm extends BaseAuditingEntity {
 
     public void setCustomerOrderLine(String customerOrderLine) {
         this.customerOrderLine = customerOrderLine;
+    }
+
+    public CustomerOrder getCustomerOrder() {
+        return customerOrder;
+    }
+
+    public void setCustomerOrder(CustomerOrder customerOrder) {
+        this.customerOrder = customerOrder;
+    }
+
+    public Boolean getLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(Boolean loaded) {
+        this.loaded = loaded;
     }
 
     public LocalDate getDateStart() {
