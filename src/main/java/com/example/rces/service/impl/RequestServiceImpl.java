@@ -16,6 +16,9 @@ import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -305,6 +308,12 @@ public class RequestServiceImpl implements RequestsService {
             );
         }
     }
+
+    @Override
+    public Page<Requests> findAllByTypeRequest(Specification<Requests> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable);
+    }
+
 
     private void updateRequestCreatedBy(UUID requestId, Long userId) {
         try {

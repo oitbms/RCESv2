@@ -21,6 +21,10 @@ public interface ImageService {
 
     List<Images> createImages(MultipartFile[] additionalFiles, InspectionViolation request, Boolean save);
 
+    List<Images> createImage(MultipartFile[] additionalFiles, AuthorControlDeviation deviation, Boolean save);
+
+    List<Images> createImageCorrections(MultipartFile[] additionalFiles, AuthorControlDeviation deviationCorrections, Boolean save);
+
     List<ImagesDTO> getImagesByRequestId(UUID param);
 
     List<ImagesDTO> getImagesForSgiId(UUID sgiId);
