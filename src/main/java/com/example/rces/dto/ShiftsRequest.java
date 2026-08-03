@@ -12,7 +12,7 @@ public class ShiftsRequest {
     private Long id;
 
     @NotNull(message = "Наименование смены должно быть указано!")
-    private String name;
+    private String shiftName;
 
     @NotNull(message = "Время начала смены должно быть указано!")
     private LocalTime startTime;

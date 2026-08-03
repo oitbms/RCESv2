@@ -130,6 +130,20 @@ public class ReportRestController {
                 .body(fileDTO);
     }
 
+    @GetMapping("/print/author-control")
+    public ResponseEntity<byte[]> printAuthorControl(@RequestParam(name = "format") String formatString, @RequestParam Long id) {
+        Format format = Format.valueOf(formatString);
+        byte[] report = service.createAuthorControlReport(format, id);
+        String fileName = String.format("Авторский_надзор_%s.%s",
+                formatedDate(LocalDateTime.now()), format.getFileExtension());
+        String encodedFilename = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(report.length)
+                .body(report);
+    }
+
     private ResponseEntity<FileDTO> buildSpeReport(Format format, List<Integer> idList) {
         byte[] report = service.createSpeReport(format, idList);
         String fileName = String.format("Извещение_о_предъявлении_СИ_на_поверку_ОТК_от_%s.%s",

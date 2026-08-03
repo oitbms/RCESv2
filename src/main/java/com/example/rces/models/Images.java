@@ -42,10 +42,19 @@ public class Images {
     @JoinColumn(name = "document_id")
     private Document document;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "authorcontrol_deviation_id")
+    private AuthorControlDeviation authorControlDeviation;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "authorcontrol_deviation_correction_id")
+    private AuthorControlDeviation authorControlDeviationCorrection;
+
     public Images() {
     }
 
-    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, Document document, InspectionViolation insVio, String name) {
+    public Images(byte[] data, Requests request, FactExecutionSGI sgi, SGI sgim, Document document, InspectionViolation insVio,
+                  AuthorControlDeviation deviation, AuthorControlDeviation deviationCorrection, String name) {
         this.data = data;
         this.request = request;
         this.sgi = sgi;
@@ -53,6 +62,8 @@ public class Images {
         this.document = document;
         this.insVio = insVio;
         this.name = name;
+        this.authorControlDeviation = deviation;
+        this.authorControlDeviationCorrection = deviationCorrection;
     }
 
     public Images(String base64, Requests request) {
@@ -168,5 +179,21 @@ public class Images {
 
     public void setInsVio(InspectionViolation insVio) {
         this.insVio = insVio;
+    }
+
+    public AuthorControlDeviation getAuthorControlDeviation() {
+        return authorControlDeviation;
+    }
+
+    public void setAuthorControlDeviation(AuthorControlDeviation authorControlDeviation) {
+        this.authorControlDeviation = authorControlDeviation;
+    }
+
+    public AuthorControlDeviation getAuthorControlDeviationCorrection() {
+        return authorControlDeviationCorrection;
+    }
+
+    public void setAuthorControlDeviationCorrection(AuthorControlDeviation authorControlDeviationCorrection) {
+        this.authorControlDeviationCorrection = authorControlDeviationCorrection;
     }
 }

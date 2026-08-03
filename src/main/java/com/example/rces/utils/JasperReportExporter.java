@@ -5,6 +5,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.*;
 import org.springframework.context.ApplicationContextException;
@@ -42,6 +43,7 @@ public class JasperReportExporter {
             case XLS -> exportToXls(jasperPrint);
             case XLSX -> exportToXlsx(jasperPrint);
             case PDF -> exportToPdf(jasperPrint);
+            case DOC -> exportToDoc(jasperPrint);
             default -> throw new IllegalArgumentException("Неподдерживаемый формат отчета: " + format);
         };
     }
@@ -83,4 +85,9 @@ public class JasperReportExporter {
         }
     }
 
+    private byte[] exportToDoc(JasperPrint jasperPrint) throws JRException {
+        JRDocxExporter exporter = new JRDocxExporter();
+        exporter.setConfiguration(new SimpleDocxReportConfiguration());
+        return exportWithStream(exporter, jasperPrint);
+    }
 }

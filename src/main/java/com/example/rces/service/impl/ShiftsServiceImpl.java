@@ -97,8 +97,8 @@ public class ShiftsServiceImpl implements ShiftsService {
             throw new RuntimeException("Время начала и окончания смены не могут совпадать");
         }
 
-        if (shiftsRepository.existsByName(request.getName())) {
-            throw new RuntimeException("Смена с названием '" + request.getName() + "' уже существует");
+        if (shiftsRepository.existsByName(request.getShiftName())) {
+            throw new RuntimeException("Смена с названием '" + request.getShiftName() + "' уже существует");
         }
     }
 

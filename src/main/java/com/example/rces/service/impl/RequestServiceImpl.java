@@ -16,6 +16,9 @@ import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -304,6 +307,34 @@ public class RequestServiceImpl implements RequestsService {
                     Status.Closed.getName()
             );
         }
+    }
+
+    @Override
+    public Page<Requests> findAllByTypeRequest(Specification<Requests> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<RequestDto> findAllRequestsByStatus(String role) {
+        List<RequestDto> requestDtos = new ArrayList<>();
+
+        if (role.equals(Status.InWork.getName())){
+            requestDtos = repository.findAll().stream()
+                    .filter(requests -> requests.getStatus().equals(Status.Rejected))
+                    .sorted(Comparator.comparing(Requests::getCreatedDate).reversed())
+                    .limit(10)
+                    .map(requestMapper::toDTO)
+                    .toList();
+        } else if (role.equals(Status.Rejected.getName())) {
+            requestDtos = repository.findAll().stream()
+                    .filter(requests -> requests.getStatus().equals(Status.InWork))
+                    .sorted(Comparator.comparing(Requests::getCreatedDate).reversed())
+                    .limit(10)
+                    .map(requestMapper::toDTO)
+                    .toList();
+        }
+
+        return requestDtos;
     }
 
     private void updateRequestCreatedBy(UUID requestId, Long userId) {

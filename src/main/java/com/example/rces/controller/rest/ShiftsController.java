@@ -34,7 +34,7 @@ public class ShiftsController {
     @PostMapping
     public ShiftsResponse createShifts(@RequestBody @Validated(ShiftsRequest.Create.class) ShiftsRequest request) {
 
-        log.info("Создаем новую смену - {}", request.getName() );
+        log.info("Создаем новую смену - {}", request.getShiftName() );
 
         ShiftsResponse response = shiftsService.createShifts(request);
 

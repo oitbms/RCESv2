@@ -5,9 +5,15 @@ import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.service.*;
+import com.example.rces.specifications.RequestSpecifications;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -130,36 +136,55 @@ public class RequestController {
         return "/requests";
     }
 
-    /**
-     *
-     * @param type Наименование отдела(Аббревиатура)
-     * @param model
-     * @return Возвращает все заявки указанного в параметрах отдела, за форму отвечает BootstrapTable
-     */
     @GetMapping("/requestslist/{type}")
-    public String getRequestList(@PathVariable String type,
-                                 Model model) {
+    public String getRequestList(
+            @PathVariable String type,
+            @PageableDefault(size = 25, sort = "requestNumber", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String filterNumber,
+            @RequestParam(required = false) String filterCreator,
+            @RequestParam(required = false) String filterEmployee,
+            @RequestParam(required = false) String filterOrder,
+            @RequestParam(required = false) String filterDivision,
+            @RequestParam(required = false) String filterReason,
+            @RequestParam(required = false) String filterItem,
+            @RequestParam(required = false) String filterStatus,
+            @RequestParam(required = false) String filterDefectCount,
+            @RequestParam(required = false) String filterCreateDate,
+            @RequestParam(required = false) String filterUpdateDate,
+            Model model) {
 
         log.info("Запрос на открытие формы с заявками для отдела - {}", type);
 
-        List<Requests> requestsList = requestsService.findAllByTypeRequest(Requests.Type.valueOf(type)).stream()
-                .sorted(Comparator.comparing(Requests::getRequestNumber).reversed())
-                .toList();
-        List<String> formattedDates = requestsList.stream()
-                .map(request -> formatedDate(request.getCreatedDate()))
-                .toList();
-        List<String> updateDate = requestsList.stream()
-                .map(requests -> requests.getUpdatedDate().atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
-                .toList();
+        Specification<Requests> spec = RequestSpecifications.filterBy(
+                type, filterNumber, filterCreator, filterEmployee,
+                filterOrder, filterDivision, filterReason, filterItem,
+                filterStatus, filterDefectCount, filterCreateDate, filterUpdateDate
+        );
 
-        model.addAttribute("requestsList", requestsList);
+        Page<Requests> requestsPage = requestsService.findAllByTypeRequest(spec, pageable);
+
+        model.addAttribute("requestsList", requestsPage.getContent());
         model.addAttribute("typeRequest", type);
-        model.addAttribute("formattedBidList", formattedDates);
-        model.addAttribute("updateDateList", updateDate);
+        model.addAttribute("currentPage", requestsPage.getNumber());
+        model.addAttribute("totalPages", requestsPage.getTotalPages());
+        model.addAttribute("totalElements", requestsPage.getTotalElements());
+        model.addAttribute("pageSize", requestsPage.getSize());
+
+        model.addAttribute("filterNumber", filterNumber);
+        model.addAttribute("filterCreator", filterCreator);
+        model.addAttribute("filterEmployee", filterEmployee);
+        model.addAttribute("filterOrder", filterOrder);
+        model.addAttribute("filterDivision", filterDivision);
+        model.addAttribute("filterReason", filterReason);
+        model.addAttribute("filterItem", filterItem);
+        model.addAttribute("filterStatus", filterStatus);
+        model.addAttribute("filterDefectCount", filterDefectCount);
+        model.addAttribute("filterCreateDate", filterCreateDate);
+        model.addAttribute("filterUpdateDate", filterUpdateDate);
 
         log.info("Форма заявок для отдела - {} успешно загружена", type);
 
-        return "requestslist";
+        return "requestslisttailwind";
     }
 
     @GetMapping("/work-calendar/{role}")

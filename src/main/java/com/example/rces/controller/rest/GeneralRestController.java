@@ -26,17 +26,17 @@ public class GeneralRestController {
     private final SubDivisionService subDivisionService;
     private final ImageService imageService;
     private final RequestsService requestsService;
-    private final UserShiftsService shiftsService;
+    private final SiteService siteService;
 
     @Autowired
-    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService, ImageService imageService, RequestsService requestsService, RequestsService requestsService1, UserShiftsService shiftsService) {
+    public GeneralRestController(CustomerOrderService customerOrderService, EmployeeService employeeService, InconsistenciesService inconsistenciesService, SubDivisionService subDivisionService, ImageService imageService, RequestsService requestsService, RequestsService requestsService1, SiteService siteService) {
         this.customerOrderService = customerOrderService;
         this.employeeService = employeeService;
         this.inconsistenciesService = inconsistenciesService;
         this.subDivisionService = subDivisionService;
         this.imageService = imageService;
         this.requestsService = requestsService1;
-        this.shiftsService = shiftsService;
+        this.siteService = siteService;
     }
 
     @GetMapping("/employees")
@@ -130,5 +130,10 @@ public class GeneralRestController {
     public ResponseEntity<Void> deleteImage(@PathVariable UUID id) {
         imageService.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/site")
+    public List<SiteDto> getSites() {
+        return siteService.getAll();
     }
 }

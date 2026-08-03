@@ -1,5 +1,6 @@
 package com.example.rces.service.impl;
 
+import com.example.rces.dto.AuthorControlReportModel;
 import com.example.rces.dto.report.*;
 import com.example.rces.models.*;
 import com.example.rces.models.enums.Format;
@@ -23,11 +24,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.WordExporter.generateManyWordFile;
@@ -228,6 +228,32 @@ public class ReportServiceImpl implements ReportService {
                 .getResultList();
         PdItem model = new PdItem(thermal, locksmith, baikal, shearingpunching, drilling, bending, pressing);
         return jasperReportExporter.generateJrxmlReport("Pditem", null, List.of(model), format);
+    }
+
+    @Override
+    public byte[] createAuthorControlReport(Format format, Long id) {
+        AuthorControl authorControl = entityManager.createQuery(
+                        "SELECT e FROM AuthorControl e " +
+                                "LEFT JOIN FETCH e.createdBy cb " +
+                                "LEFT JOIN FETCH e.subDivision s " +
+                                "LEFT JOIN FETCH e.authorControlDeviations d " +
+                                "LEFT JOIN FETCH d.subDivision ds " +
+                                "WHERE e.id = :id", AuthorControl.class)
+                .setParameter("id", id)
+                .getSingleResult();
+
+        AuthorControlReportModel model = new AuthorControlReportModel(authorControl);
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("now", LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
+
+        return jasperReportExporter.generateJrxmlReport(
+                "AuthorControl",
+                parameters,
+                List.of(model),
+                format
+        );
     }
 
 }

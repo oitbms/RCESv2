@@ -43,22 +43,32 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, Requests request, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, null,null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), request, null, null, null,null,null,null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, SGI sgi, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, null,null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, sgi, null,null,null,null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, FactExecutionSGI factExecutionSGI, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, null,null, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, factExecutionSGI, null, null,null,null,null, file.getOriginalFilename()), save);
     }
 
     @Override
     public List<Images> createImages(MultipartFile[] additionalFiles, InspectionViolation inspectionViolation, Boolean save) {
-        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, null, null,inspectionViolation, file.getOriginalFilename()), save);
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, null, null,inspectionViolation,null,null, file.getOriginalFilename()), save);
+    }
+
+    @Override
+    public List<Images> createImage(MultipartFile[] additionalFiles, AuthorControlDeviation deviation, Boolean save) {
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, null, null, null, deviation, null, file.getOriginalFilename()), save);
+    }
+
+    @Override
+    public List<Images> createImageCorrections(MultipartFile[] additionalFiles, AuthorControlDeviation deviationCorrections, Boolean save) {
+        return createImages(additionalFiles, file -> new Images(getBytes(file), null, null, null, null, null, null, deviationCorrections, file.getOriginalFilename()), save);
     }
 
     @Override

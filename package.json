@@ -3,20 +3,23 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "build": "npm run build:js && npm run build:css",
+    "build": "npm run build:js && npm run build:css && npm run build:tailwind",
     "build:js": "node esbuild.config.mjs",
     "check:ts": "tsc -p src/main/resources/static/js/tsconfig.json --noEmit",
     "typecheck": "npm run check:ts",
     "build:css": "sass src/main/resources/static/css:src/main/resources/static/css --no-source-map --style=compressed",
+    "build:tailwind": "npx tailwindcss -i ./src/main/resources/static/css/tailwind.css -o ./src/main/resources/static/css/tailwind-output.css --minify",
     "watch:css": "sass --watch src/main/resources/static/css:src/main/resources/static/css",
     "watch:js": "node esbuild.config.mjs --watch",
-    "start:watch": "concurrently \"npm:watch:js\" \"npm:watch:css\""
+    "watch:tailwind": "npx tailwindcss -i ./src/main/resources/static/css/tailwind.css -o ./src/main/resources/static/css/tailwind-output.css --watch",
+    "start:watch": "concurrently \"npm:watch:js\" \"npm:watch:css\" \"npm:watch:tailwind\""
   },
   "devDependencies": {
     "@types/jquery": "^4.0.0",
     "concurrently": "^8.2.0",
     "esbuild": "^0.18.17",
     "sass": "^1.72.1",
+    "tailwindcss": "^3.4.19",
     "typescript": "^6.0.3"
   }
 }

@@ -28,4 +28,6 @@ public interface ReportService {
     byte[] createInspectionReport(Format format, Integer id);
 
     byte[] createPdItemReport(Format format, List<Long> ids);
+
+    byte[] createAuthorControlReport(Format format, Long id);
 }

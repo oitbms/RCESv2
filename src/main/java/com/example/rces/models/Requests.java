@@ -10,7 +10,10 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Entity
@@ -420,6 +423,20 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
         this.childRequests = childRequests;
     }
 
+    public String getFormattedCreatedDate() {
+        return formatInstant(getCreatedDate(), "dd.MM.yyyy HH:mm");
+    }
+
+    public String getFormattedUpdatedDate() {
+        return formatInstant(getUpdatedDate(), "dd.MM.yyyy HH:mm");
+    }
+
+    private String formatInstant(Instant instant, String pattern) {
+        if (instant == null) return "";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern)
+                .withZone(ZoneId.systemDefault());
+        return formatter.format(instant);
+    }
 
     @Deprecated(forRemoval = true)
     public List<RequestLog> getLog() {

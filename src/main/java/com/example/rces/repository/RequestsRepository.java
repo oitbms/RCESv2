@@ -5,7 +5,11 @@ import com.example.rces.models.Requests;
 import com.example.rces.models.enums.Role;
 import com.example.rces.models.enums.Status;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface RequestsRepository extends BaseAuditingRepository<Requests, UUID> {
+public interface RequestsRepository extends BaseAuditingRepository<Requests, UUID>, JpaSpecificationExecutor<Requests> {
 
     @Override
     @EntityGraph(attributePaths = {"employee", "createdBy", "customerOrder", "subDivision"})
@@ -49,4 +53,8 @@ public interface RequestsRepository extends BaseAuditingRepository<Requests, UUI
             "JOIN FETCH r.employee as e " +
             "WHERE e.id IN (:ids) AND r.status = :status AND e.role = :role")
     List<Requests> findByEmployeeIds(@Param("ids") List<Long> ids, @Param("status") Status status, @Param("role") String param);
+
+    @Override
+    @EntityGraph(attributePaths = {"subDivision", "employee", "customerOrder"})
+    Page<Requests> findAll(Specification<Requests> spec, Pageable pageable);
 }

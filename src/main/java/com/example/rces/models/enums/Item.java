@@ -44,6 +44,15 @@ public enum Item {
         return name;
     }
 
+    public static Item fromName(String name) {
+        for (Item item : Item.values()) {
+            if (item.getName().equals(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     @JsonCreator
     public static Item fromField(JsonNode node) {
         if (node == null) {
