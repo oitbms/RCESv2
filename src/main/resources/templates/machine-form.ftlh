@@ -14,15 +14,15 @@
 <body>
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
-        <h1 id="form-title" class="page-title mb-0">Создание нового станка</h1>
-        <a href="/machines" class="btn btn-secondary icon-text">
+    <div class="page-header fade-in-up">
+        <h1 id="form-title" class="page-title">Создание нового станка</h1>
+        <a href="/machines" class="btn btn-outline-secondary icon-text">
             <i class="bi bi-arrow-left"></i>
             <span>Назад к списку</span>
         </a>
     </div>
 
-    <div class="card fade-in-up" style="animation-delay: 100ms;">
+    <div class="card fade-in-up">
         <div class="card-body p-4">
             <form id="machine-form" enctype="multipart/form-data">
                 <input type="hidden" id="machine-id" name="machineId">
@@ -33,8 +33,20 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="number" class="form-label">Серийный номер</label>
+                    <label for="number" class="form-label">Инвентарный номер</label>
                     <input type="number" class="form-control" id="number" name="number" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="subDivision" class="form-label">Цех(Отдел)</label>
+                    <select id="subDivision" name="subDivisionId" class="form-select">
+
+                    </select>
+                </div>
+
+                <div class="mb-3" data-create-only>
+                    <label for="passportFiles" class="form-label">Паспорт</label>
+                    <input class="form-control" type="file" id="passportFiles" name="passportFiles" multiple accept="application/pdf">
                 </div>
 
                 <div class="mb-3">
@@ -57,18 +69,22 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="documentFiles" class="form-label">Документы (PDF)</label>
+                <p class="form-text text-muted d-none" data-edit-only>
+                    <i class="bi bi-info-circle me-1"></i>Документы и фотографии добавляются и удаляются в карточке станка.
+                </p>
+
+                <div class="mb-3" data-create-only>
+                    <label for="documentFiles" class="form-label">Руководство по эксплуатации и инструкция по ОТ</label>
                     <input class="form-control" type="file" id="documentFiles" name="documentFiles" multiple accept="application/pdf">
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3" data-create-only>
                     <label for="additionalFiles" class="form-label">Фотографии</label>
                     <input class="form-control" type="file" id="additionalFiles" name="additionalFiles" multiple accept="image/*">
                 </div>
 
-                <div class="mt-4 d-flex justify-content-end gap-2">
-                    <a href="/machines" class="btn btn-secondary icon-text">
+                <div class="form-actions">
+                    <a href="/machines" class="btn btn-outline-secondary icon-text">
                         <i class="bi bi-x-circle"></i>
                         <span>Отмена</span>
                     </a>
@@ -82,7 +98,17 @@
     </div>
 </div>
 
-<script src="/js/machines.js"></script>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="app-toast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="app-toast-body"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/js/dist/machines.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 </body>
 </html>

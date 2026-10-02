@@ -6,7 +6,9 @@ import com.example.rces.models.enums.Format;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +20,28 @@ public class FilesUtil {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "PDF", "DOC", "XLS", "XLSX", "DOCX", "XML", "TXT", "JSON"
     );
+
+    public static void addPdfFilesToDocument(Document document, MultipartFile[] files) {
+        if (files == null) return;
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+            String fileName = file.getOriginalFilename();
+            if (fileName == null || !fileName.toLowerCase().endsWith(".pdf")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Можно загружать только PDF-файлы: " + fileName);
+            }
+            try {
+                DocumentFile documentFile = new DocumentFile();
+                documentFile.setBaseFileName(fileName);
+                documentFile.setContent(file.getBytes());
+                documentFile.setType(determineFileType(fileName));
+                documentFile.setDocument(document);
+                document.getFiles().add(documentFile);
+            } catch (IOException e) {
+                throw new RuntimeException("Не удалось прочитать файл " + fileName, e);
+            }
+        }
+    }
 
     public static List<Images> addImages(MultipartFile[] files, Requests requests) {
         List<Images> images = new ArrayList<>();

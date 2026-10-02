@@ -1,6 +1,7 @@
 package com.example.rces.service.impl;
 
 import com.example.rces.dto.SubDivisionDTO;
+import com.example.rces.exception.SubDivisionNotFoundException;
 import com.example.rces.mapper.SubDivisionMapper;
 import com.example.rces.models.SubDivision;
 import com.example.rces.repository.SubDivisionRepository;
@@ -53,6 +54,13 @@ public class SubDivisionServiceImpl implements SubDivisionService {
     public SubDivisionDTO getDTOByName(String name) {
         var subDivision = cache.computeIfAbsent(name, repository::findByName);
         return mapper.toDTO(subDivision);
+    }
+
+    @Override
+    public SubDivision findById(Long id) {
+        return repository.findById(id).orElseThrow(
+                () -> new SubDivisionNotFoundException(id)
+        );
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.rces.models;
 
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,10 @@ public class Machine {
     @Column(name = "number", unique = true, nullable = false)
     private Integer number;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subdivision_id", nullable = false)
+    private SubDivision subdivision;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "machine_admitted_employees",
@@ -37,9 +42,20 @@ public class Machine {
     )
     private List<Employee> responsibleEmployees = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "document_id", referencedColumnName = "id")
     private Document document;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "passport_id", referencedColumnName = "id")
+    private Document passport;
+
+    @Column(name = "other_text", columnDefinition = "TEXT")
+    private String otherText;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "other_document_id", referencedColumnName = "id")
+    private Document otherDocument;
 
     public Long getId() {
         return id;
@@ -103,5 +119,37 @@ public class Machine {
 
     public void addResponsibleEmployees(Employee employee) {
         this.responsibleEmployees.add(employee);
+    }
+
+    public SubDivision getSubdivision() {
+        return subdivision;
+    }
+
+    public void setSubdivision(SubDivision subdivision) {
+        this.subdivision = subdivision;
+    }
+
+    public Document getPassport() {
+        return passport;
+    }
+
+    public void setPassport(Document passport) {
+        this.passport = passport;
+    }
+
+    public String getOtherText() {
+        return otherText;
+    }
+
+    public void setOtherText(String otherText) {
+        this.otherText = otherText;
+    }
+
+    public Document getOtherDocument() {
+        return otherDocument;
+    }
+
+    public void setOtherDocument(Document otherDocument) {
+        this.otherDocument = otherDocument;
     }
 }

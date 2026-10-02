@@ -16,6 +16,8 @@ public interface SubDivisionService {
 
     SubDivisionDTO getDTOByName(String name);
 
+    SubDivision findById(Long id);
+
     List<SubDivisionDTO> getAll();
 
 }

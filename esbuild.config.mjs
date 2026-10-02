@@ -5,7 +5,7 @@ import { join } from 'path';
 const JS_DIR = 'src/main/resources/static/js';
 const OUT_DIR = join(JS_DIR, 'dist');
 
-const REGISTRY_ENTRIES = ['team', 'spe', 'sgi', 'ntd', 'inspection', 'pditem', 'spm'];
+const REGISTRY_ENTRIES = ['team', 'spe', 'sgi', 'ntd', 'inspection', 'pditem', 'spm', 'machines', 'sub-division', 'equipment-tabs'];
 
 const LEGACY_ENTRIES = [
     'shared/toast', 'menu', 'list', 'notifications', 'report', 'admin', 'workCalendar', 'script',

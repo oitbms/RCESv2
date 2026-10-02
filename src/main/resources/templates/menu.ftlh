@@ -97,6 +97,7 @@
                                     заявку</a>
                                 <a class="btn btn-primary bottom-margin" id="equipmentPageButton"
                                    href="http://192.168.30.80:2001/">Оснастка</a>
+                                <a class="btn btn-primary bottom-margin" href="/machines">Список станков</a>
                             <a class="btn btn-primary bottom-margin" id="inspectionPageButton" href="/inspection">Чек-листы</a>
                                 <a class="btn btn-primary" id="pdiPageButton" href="/parts-directory">СЗЦ</a>
                                 <a class="btn btn-primary" id="spmPageButton" href="/spm">СПМ</a>

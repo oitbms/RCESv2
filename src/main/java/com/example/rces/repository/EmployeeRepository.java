@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends BaseAuditingRepository<Employee, Long> {
@@ -16,7 +17,7 @@ public interface EmployeeRepository extends BaseAuditingRepository<Employee, Lon
     List<Employee> findAllByRole(String role);
 
     @EntityGraph(attributePaths = {"subDivision"})
-    Employee findByName(String name);
+    Optional<Employee> findByName(String name);
 
     @Query("SELECT NEW com.example.rces.dto.EmployeeWorkCalendarDto( " +
             "e.id as id, " +

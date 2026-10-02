@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,12 +19,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
+    public static final String[] MACHINE_EDITOR_ROLES = {"ADMIN", "CONTROL"};
+
+    public static boolean isMachineEditor(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(Arrays.asList(MACHINE_EDITOR_ROLES)::contains);
+    }
 
     private final WebSecurityService webSecurityService;
     private final CustomAuthenticationProvider customAuthenticationProvider;
@@ -45,11 +59,21 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/css/modern.css","/css/bootstrap/bootstrap.min.css", "/js/machines.js",
-                                "/js/bootstrap/bootstrap.bundle.min.js", "/images/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/machines/documents/*","/api/v1/machines/*").permitAll()
-                        .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login",
-                                "/machines/*").permitAll()
+                        .requestMatchers("/css/modern.css","/css/bootstrap/bootstrap.min.css", "/js/dist/machines.js",
+                                "/js/dist/sub-division.js", "/js/bootstrap/bootstrap.bundle.min.js", "/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/machines/{number:\\d+}",
+                                "/api/v1/machines/{number:\\d+}", "/api/v1/machines/documents/*").permitAll()
+                        .requestMatchers("/machines/new", "/machines/*/edit").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/machines/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/machines/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/machines/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.GET, "/sub-division/{id:\\d+}",
+                                "/api/v1/sub-division/{id:\\d+}", "/api/v1/sub-division/documents/*").permitAll()
+                        .requestMatchers("/sub-division/new", "/sub-division/*/edit").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/sub-division/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/sub-division/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/sub-division/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
+                        .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login").permitAll()
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")

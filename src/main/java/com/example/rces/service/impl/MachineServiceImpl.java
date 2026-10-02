@@ -3,27 +3,29 @@ package com.example.rces.service.impl;
 import com.example.rces.dto.EmployeeDTO;
 import com.example.rces.dto.MachineCreateDto;
 import com.example.rces.dto.MachineDto;
+import com.example.rces.exception.EntityNotFoundExceptionBormash;
 import com.example.rces.mapper.DocumentFileMapper;
 import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.mapper.ImagesMapper;
 import com.example.rces.mapper.MachineMapper;
-import com.example.rces.models.Document;
-import com.example.rces.models.DocumentFile;
-import com.example.rces.models.Images;
-import com.example.rces.models.Machine;
+import com.example.rces.models.*;
+import com.example.rces.models.enums.NotificationType;
 import com.example.rces.repository.MachineRepository;
+import com.example.rces.service.DocumentService;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.MachineService;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
+import static com.example.rces.utils.FilesUtil.addPdfFilesToDocument;
 import static com.example.rces.utils.FilesUtil.determineFileType;
 
 @Service
@@ -35,16 +37,20 @@ public class MachineServiceImpl implements MachineService {
     private final EmployeeMapper employeeMapper;
     private final ImagesMapper imagesMapper;
     private final DocumentFileMapper documentFileMapper;
+    private final SubDivisionService subDivisionService;
+    private final DocumentService documentService;
 
 
     @Autowired
-    public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper, EmployeeService employeeService, EmployeeMapper employeeMapper, ImagesMapper imagesMapper, DocumentFileMapper documentFileMapper) {
+    public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper, EmployeeService employeeService, EmployeeMapper employeeMapper, ImagesMapper imagesMapper, DocumentFileMapper documentFileMapper, SubDivisionService subDivisionService, DocumentService documentService) {
         this.machineRepository = machineRepository;
         this.machineMapper = machineMapper;
         this.employeeService = employeeService;
         this.employeeMapper = employeeMapper;
         this.imagesMapper = imagesMapper;
         this.documentFileMapper = documentFileMapper;
+        this.subDivisionService = subDivisionService;
+        this.documentService = documentService;
     }
 
     @Override
@@ -59,7 +65,7 @@ public class MachineServiceImpl implements MachineService {
         Machine machine = machineRepository.findByNumber(number);
 
         if (machine == null) {
-            throw new EntityNotFoundException("Machine not found with number: " + number);
+            throw new EntityNotFoundExceptionBormash("Станок с инвентарным номером " + number + " не найден", NotificationType.ERROR);
         }
 
         MachineDto dto = machineMapper.toDto(machine);
@@ -83,13 +89,57 @@ public class MachineServiceImpl implements MachineService {
                 .map(documentFileMapper::toDTO)
                 .toList());
 
+        Optional.ofNullable(machine.getOtherDocument())
+                .map(Document::getFiles)
+                .ifPresent(files -> dto.setOtherPdfs(files.stream()
+                        .filter(Objects::nonNull)
+                        .map(documentFileMapper::toDTO)
+                        .toList()));
+
+        Optional.ofNullable(machine.getPassport())
+                .map(Document::getFiles)
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .ifPresent(file -> dto.setPassportId(file.getId()));
+
         return dto;
     }
 
     @Override
     @Transactional
     public MachineDto createMachine(MachineCreateDto dto) {
+        if (dto.getNumber() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заполните инвентарный номер");
+        }
+        if (machineRepository.existsByNumber(dto.getNumber())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Станок с инвентарным номером " + dto.getNumber() + " уже существует");
+        }
+
         Machine machine = machineMapper.toEntityFromCreateDto(dto);
+        SubDivision subDivision = subDivisionService.findById(dto.getSubDivisionId());
+
+        Document passportDocument = new Document();
+        passportDocument.setName("Паспорт: станок № " + dto.getNumber());
+
+        if (dto.getPassportFiles() != null) {
+            for (MultipartFile file : dto.getPassportFiles()) {
+                if (file.isEmpty()) continue;
+                try {
+                    DocumentFile documentFile = new DocumentFile();
+                    documentFile.setContent(file.getBytes());
+                    documentFile.setBaseFileName(file.getOriginalFilename());
+
+                    documentFile.setDocument(passportDocument);
+
+                    passportDocument.getFiles().add(documentFile);
+                } catch (IOException e) {
+                    throw new RuntimeException("Document file not found");
+                }
+            }
+        }
 
         Document document = new Document();
         document.setName("Документация для станка № " + dto.getNumber());
@@ -114,14 +164,14 @@ public class MachineServiceImpl implements MachineService {
         if (dto.getAdmittedEmployeesList() != null) {
             dto.getAdmittedEmployeesList().stream()
                     .filter(Objects::nonNull)
-                    .map(employeeService::loadUserByUsername)
+                    .map(this::findEmployee)
                     .forEach(machine::addAdmittedEmployees);
         }
 
         if (dto.getResponsibleEmployeesList() != null) {
             dto.getResponsibleEmployeesList().stream()
                     .filter(Objects::nonNull)
-                    .map(employeeService::loadUserByUsername)
+                    .map(this::findEmployee)
                     .forEach(machine::addResponsibleEmployees);
         }
 
@@ -141,6 +191,10 @@ public class MachineServiceImpl implements MachineService {
             }
         }
         machine.setDocument(document);
+        if (!passportDocument.getFiles().isEmpty()) {
+            machine.setPassport(passportDocument);
+        }
+        machine.setSubdivision(subDivision);
 
         Machine savedMachine = machineRepository.save(machine);
 
@@ -152,23 +206,27 @@ public class MachineServiceImpl implements MachineService {
     public MachineDto updateMachine(MachineDto dto) {
         Machine machine = machineRepository.findByNumber(dto.getNumber());
 
+        if (machine == null) {
+            throw new EntityNotFoundExceptionBormash("Станок с инвентарным номером " + dto.getNumber() + " не найден", NotificationType.ERROR);
+        }
+
         List<EmployeeDTO> employeeDto = dto.getAdmittedEmployeesList().stream()
-                .map(employeeDTO -> employeeMapper.toDTO(employeeService.loadUserByUsername(employeeDTO.getName())))
+                .map(employeeDTO -> employeeMapper.toDTO(findEmployee(employeeDTO.getName())))
                 .toList();
 
         dto.setAdmittedEmployeesList(employeeDto);
 
         employeeDto = dto.getResponsibleEmployeesList().stream()
-                .map(employeeDTO -> employeeMapper.toDTO(employeeService.loadUserByUsername(employeeDTO.getName())))
+                .map(employeeDTO -> employeeMapper.toDTO(findEmployee(employeeDTO.getName())))
                 .toList();
 
         dto.setResponsibleEmployeesList(employeeDto);
 
-        if (machine == null) {
-            throw new EntityNotFoundException("Machine not found with number: " + dto.getNumber());
-        }
-
         Machine updatedMachine = machineMapper.updateEntity(machine, dto);
+
+        if (dto.getSubDivisionId() != null) {
+            updatedMachine.setSubdivision(subDivisionService.findById(dto.getSubDivisionId()));
+        }
 
         return machineMapper.toDto(machineRepository.save(updatedMachine));
     }
@@ -191,7 +249,7 @@ public class MachineServiceImpl implements MachineService {
         Machine machine = machineRepository.findByNumber(machineNumber);
 
         if (machine == null) {
-            throw new EntityNotFoundException("Machine not found with number: " + machineNumber);
+            throw new EntityNotFoundExceptionBormash("Станок с инвентарным номером " + machineNumber + " не найден", NotificationType.ERROR);
         }
 
         Document document = machine.getDocument();
@@ -212,5 +270,64 @@ public class MachineServiceImpl implements MachineService {
         }
 
         machineRepository.save(machine);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DocumentFile getMachineFile(UUID fileId) {
+        checkMachineFile(fileId);
+        return documentService.getDocumentFileById(fileId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMachineFile(UUID fileId) {
+        checkMachineFile(fileId);
+        documentService.deleteFileFromDocument(fileId);
+    }
+
+    private void checkMachineFile(UUID fileId) {
+        if (!machineRepository.existsMachineFile(fileId)) {
+            throw new EntityNotFoundExceptionBormash("Файл станка не найден", NotificationType.ERROR);
+        }
+    }
+
+    private Employee findEmployee(String name) {
+        Employee employee = employeeService.loadUserByUsername(name);
+        if (employee == null) {
+            throw new EntityNotFoundExceptionBormash("Сотрудник «" + name + "» не найден", NotificationType.ERROR);
+        }
+        return employee;
+    }
+
+    @Override
+    @Transactional
+    public void updateOtherText(Integer number, String text) {
+        Machine machine = getMachineByNumber(number);
+        machine.setOtherText(text == null || text.isBlank() ? null : text.strip());
+    }
+
+    @Override
+    @Transactional
+    public void addOtherDocuments(Integer number, MultipartFile[] files) {
+        Machine machine = getMachineByNumber(number);
+
+        Document otherDocument = machine.getOtherDocument();
+        if (otherDocument == null) {
+            otherDocument = new Document();
+            otherDocument.setName("Прочее: станок № " + machine.getNumber());
+            machine.setOtherDocument(otherDocument);
+        }
+
+        addPdfFilesToDocument(otherDocument, files);
+        machineRepository.save(machine);
+    }
+
+    private Machine getMachineByNumber(Integer number) {
+        Machine machine = machineRepository.findByNumber(number);
+        if (machine == null) {
+            throw new EntityNotFoundExceptionBormash("Станок с инвентарным номером " + number + " не найден", NotificationType.ERROR);
+        }
+        return machine;
     }
 }

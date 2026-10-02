@@ -1,6 +1,7 @@
 package com.example.rces.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -14,12 +15,17 @@ public class MachineCreateDto {
     @NotBlank(message = "Заполните описание")
     private String description;
 
-    @NotBlank(message = "Заполните серийный номер")
+    @NotNull(message = "Заполните инвентарный номер")
     private Integer number;
+
+    @NotNull(message = "Заполните местонахождение")
+    private Long subDivisionId;
 
     private MultipartFile[] documentFiles;
 
     private MultipartFile[] additionalFiles;
+
+    private MultipartFile[] passportFiles;
 
     private List<String> admittedEmployeesList = new ArrayList<>();
 
@@ -79,5 +85,21 @@ public class MachineCreateDto {
 
     public void setAdditionalFiles(MultipartFile[] additionalFiles) {
         this.additionalFiles = additionalFiles;
+    }
+
+    public Long getSubDivisionId() {
+        return subDivisionId;
+    }
+
+    public void setSubDivisionId(Long subDivisionId) {
+        this.subDivisionId = subDivisionId;
+    }
+
+    public MultipartFile[] getPassportFiles() {
+        return passportFiles;
+    }
+
+    public void setPassportFiles(MultipartFile[] passportFiles) {
+        this.passportFiles = passportFiles;
     }
 }

@@ -6,6 +6,7 @@ import com.example.rces.mapper.EmployeeMapper;
 import com.example.rces.models.Employee;
 import com.example.rces.models.SubDivision;
 import com.example.rces.models.enums.NotificationApp;
+import com.example.rces.models.enums.NotificationType;
 import com.example.rces.models.enums.Role;
 import com.example.rces.repository.EmployeeRepository;
 import com.example.rces.service.EmployeeService;
@@ -66,7 +67,8 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
 
     @Override
     public void update(String userName, String mlmNodeName, String notificationAppName, String roleName, Long chatId, Boolean active) {
-        Employee employee = repository.findByName(userName);
+        Employee employee = repository.findByName(userName)
+                .orElseThrow(() -> new com.example.rces.exception.UsernameNotFoundException("Пользователь не найден!", NotificationType.ERROR));
         SubDivision subDivision = subDivisionService.getByName(mlmNodeName);
         employee.setName(userName);
         if (subDivision != null) {
@@ -89,7 +91,8 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService, Employe
     @Override
     public Employee loadUserByUsername(String name) {
         try {
-            return repository.findByName(name);
+            return repository.findByName(name)
+                    .orElseThrow(() -> new com.example.rces.exception.UsernameNotFoundException("Пользователь не найден!", NotificationType.ERROR));
         } catch (Exception e) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }

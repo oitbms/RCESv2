@@ -2,9 +2,10 @@ package com.example.rces.controller.rest;
 
 import com.example.rces.dto.MachineCreateDto;
 import com.example.rces.dto.MachineDto;
+import com.example.rces.dto.OtherTextDto;
 import com.example.rces.models.DocumentFile;
-import com.example.rces.service.DocumentService;
 import com.example.rces.service.MachineService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -22,12 +23,10 @@ import java.util.UUID;
 public class MachineRestController {
 
     private final MachineService machineService;
-    private final DocumentService documentService;
 
     @Autowired
-    public MachineRestController(MachineService machineService, DocumentService documentService) {
+    public MachineRestController(MachineService machineService) {
         this.machineService = machineService;
-        this.documentService = documentService;
     }
 
     @GetMapping
@@ -72,9 +71,21 @@ public class MachineRestController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{number}/other")
+    public ResponseEntity<Void> updateOtherText(@PathVariable Integer number, @Valid @RequestBody OtherTextDto dto) {
+        machineService.updateOtherText(number, dto.getText());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{number}/other/documents")
+    public ResponseEntity<Void> addOtherDocuments(@PathVariable Integer number, @RequestParam("files") MultipartFile[] files) {
+        machineService.addOtherDocuments(number, files);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/documents/{id}")
     public ResponseEntity<byte[]> getDocument(@PathVariable UUID id) {
-        DocumentFile documentFile = documentService.getDocumentFileById(id);
+        DocumentFile documentFile = machineService.getMachineFile(id);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -93,7 +104,7 @@ public class MachineRestController {
 
     @DeleteMapping("/documents/{id}")
     public ResponseEntity<Void> deleteDocument(@PathVariable UUID id) {
-        documentService.deleteFileFromDocument(id);
+        machineService.deleteMachineFile(id);
         return ResponseEntity.noContent().build();
     }
 
