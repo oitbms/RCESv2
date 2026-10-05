@@ -2,6 +2,7 @@ package com.example.rces.controller.mvc;
 
 import com.example.rces.dto.*;
 import com.example.rces.mapper.SubDivisionMapper;
+import com.example.rces.models.DocumentFile;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.service.*;
@@ -14,13 +15,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
@@ -77,7 +83,7 @@ public class RequestController {
         model.addAttribute("mlmNodeEmployee", subDivisionMapper.toDTO(employee.getSubDivision()));
         model.addAttribute("subDivision", subDivisionDTOList);
 
-        return "/requests";
+        return "requests";
     }
 
     /**
@@ -133,7 +139,7 @@ public class RequestController {
 
         log.info("Форма просмотра/редактирования заявки с RequestNumber - {} успешно открыта!", requestNumber);
 
-        return "/requests";
+        return "requests";
     }
 
     @GetMapping("/requestslist/{type}")
@@ -195,6 +201,26 @@ public class RequestController {
         model.addAttribute("employeeDTOList", employeeWorkCalendarList);
 
         return "work-calendar";
+    }
+
+    @GetMapping("/bids/{id}/document/{fileId}")
+    public ResponseEntity<byte[]> getDocumentFile(@PathVariable UUID id,
+                                                  @PathVariable UUID fileId) {
+        Requests bid = requestsService.findById(id);
+        if (bid == null || bid.getDocument() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        DocumentFile file = bid.getDocument().getFiles().stream()
+                .filter(f -> f.getId().equals(fileId))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline().filename(file.getBaseFileName(), StandardCharsets.UTF_8).build().toString())
+                .body(file.getContent());
     }
 
 }

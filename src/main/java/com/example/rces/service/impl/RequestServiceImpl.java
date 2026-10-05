@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.rces.utils.FilesUtil.addPdfFilesToDocument;
 import static com.example.rces.service.impl.CustomUserDetailsServiceImpl.currentUser;
 import static com.example.rces.utils.FilesUtil.handleImageCollection;
 import static com.example.rces.utils.FilesUtil.isJson;
@@ -108,7 +109,6 @@ public class RequestServiceImpl implements RequestsService {
             }
         }
 
-
         createRequestDto.setRequestNumber(repository.findNextRequestNumber());
         Requests requests = repository.save(requestMapper.createFullRequest(
                 createRequestDto,
@@ -119,6 +119,14 @@ public class RequestServiceImpl implements RequestsService {
                 customerOrder,
                 createdEmployee
         ));
+
+
+        Document document = new Document();
+        document.setName("Документы заявки № " + requests.getRequestNumber());
+        addPdfFilesToDocument(document, createRequestDto.getDocumentFiles());
+        if (!document.getFiles().isEmpty()) {
+            requests.setDocument(document);
+        }
 
         if (additionalFiles != null && additionalFiles.length > 0) {
             imageService.createImages(additionalFiles, requests, true);

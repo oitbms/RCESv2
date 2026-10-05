@@ -16,6 +16,7 @@ public class CreateRequestDto {
     private String reasonsJson;
     private String comment;
     private MultipartFile[] additionalFiles;
+    private MultipartFile[] documentFiles;
     private int requestNumber;
 
     public int getRequestNumber() {
@@ -120,5 +121,13 @@ public class CreateRequestDto {
 
     public void setAdditionalFiles(MultipartFile[] additionalFiles) {
         this.additionalFiles = additionalFiles;
+    }
+
+    public MultipartFile[] getDocumentFiles() {
+        return documentFiles;
+    }
+
+    public void setDocumentFiles(MultipartFile[] documentFiles) {
+        this.documentFiles = documentFiles;
     }
 }

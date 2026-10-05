@@ -179,6 +179,10 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
 
     private boolean frozen;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "document_id", referencedColumnName = "id")
+    private Document document;
+
     public int getQtyCompleted() {
         return qtyCompleted;
     }
@@ -429,6 +433,14 @@ public class Requests extends BaseAuditingEntity implements Cloneable {
 
     public String getFormattedUpdatedDate() {
         return formatInstant(getUpdatedDate(), "dd.MM.yyyy HH:mm");
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
     }
 
     private String formatInstant(Instant instant, String pattern) {
