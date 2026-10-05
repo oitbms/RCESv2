@@ -20,10 +20,6 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     @EntityGraph(attributePaths = {"document","otherDocument"})
     Optional<Building> findById(Long id);
 
-    boolean existsByItemNumber(int itemNumber);
-
-    boolean existsByItemNumberAndIdNot(int itemNumber, Long id);
-
     @Query("""
             select count(f) > 0 from DocumentFile f
             where f.id = :fileId

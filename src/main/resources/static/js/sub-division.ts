@@ -8,7 +8,7 @@ interface SubDivision {
     id: number;
     subDivisionId?: number;
     subDivisionName: string;
-    itemNumber: number;
+    name: string;
     pdfs?: DocumentFile[];
     imageUrls?: any[];
     otherText?: string | null;
@@ -78,12 +78,13 @@ class MachineManager {
             const subDivisions: SubDivision[] = await this.fetchData(this.apiUrl);
 
             const items: FilterableItem[] = subDivisions.map(s => {
+                const name = escapeHtml(s.name);
                 const subDivision = escapeHtml(s.subDivisionName);
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>${name}</td>
                     <td>${subDivision || '—'}</td>
-                    <td class="tabular-nums">${s.itemNumber}</td>
                     <td>
                         <div class="d-flex justify-content-end gap-2">
                             <a href="/sub-division/${s.id}" class="btn btn-sm btn-outline-secondary icon-text" title="Просмотр">
@@ -100,8 +101,8 @@ class MachineManager {
                 card.className = 'card mb-3';
                 card.innerHTML = `
                         <div>
-                            <h5 class="card-title mt-2 ms-2">${subDivision || 'Подразделение не указано'}</h5>
-                            <h6 class="card-subtitle mb-2 ms-2 text-muted">Инвентарный номер: ${s.itemNumber}</h6>
+                            <h5 class="card-title mt-2 ms-2">${name}</h5>
+                            <h6 class="card-subtitle mb-2 ms-2 text-muted">Подразделение: ${subDivision || 'не указано'}</h6>
                             <div class="d-flex justify-content-end gap-2 mt-3 mb-2 me-2">
                                 <a href="/sub-division/${s.id}" class="btn btn-sm btn-outline-secondary icon-text">
                                     <i class="bi bi-eye"></i>
@@ -116,7 +117,7 @@ class MachineManager {
                 `;
 
                 return {
-                    searchText: [s.subDivisionName, s.itemNumber].join(' '),
+                    searchText: [s.name, s.subDivisionName].join(' '),
                     subDivisionName: s.subDivisionName,
                     row,
                     card,
@@ -142,7 +143,7 @@ class MachineManager {
     private async initFormPage(): Promise<void> {
         const form = document.getElementById('sub-division-form') as HTMLFormElement;
         const formTitle = document.getElementById('form-title')!;
-        const numberInput = document.getElementById('number') as HTMLInputElement;
+        const nameInput = document.getElementById('name') as HTMLInputElement;
 
         const pathParts = window.location.pathname.split('/');
         const subDivisionCode = pathParts[pathParts.length - 2];
@@ -158,7 +159,7 @@ class MachineManager {
             this.showLoading(true);
             try {
                 const subDivision: SubDivision = await this.fetchData(`${this.apiUrl}/${subDivisionCode}`);
-                numberInput.value = String(subDivision.itemNumber);
+                nameInput.value = subDivision.name ?? '';
                 if (subDivision.subDivisionId != null) {
                     this.choicesInstances['subDivision']?.setChoiceByValue(String(subDivision.subDivisionId));
                 }
@@ -178,7 +179,7 @@ class MachineManager {
             try {
                 if (isEditMode) {
                     const subDivisionData = {
-                        itemNumber: Number(numberInput.value),
+                        name: nameInput.value.trim(),
                         subDivisionId: Number((form.elements.namedItem('subDivisionId') as HTMLSelectElement).value) || null,
                     };
                     await this.fetchData(url, {
@@ -235,8 +236,8 @@ class MachineManager {
         try {
             const subDivision: SubDivision = await this.fetchData(`${this.apiUrl}/${subDivisionCode}`);
 
-            document.getElementById('machine-name')!.textContent = `Здание № ${subDivision.itemNumber}`;
-            document.getElementById('subdivision-item-number')!.textContent = String(subDivision.itemNumber);
+            document.getElementById('machine-name')!.textContent = subDivision.name;
+            document.getElementById('building-name')!.textContent = subDivision.name;
             const editButton = document.getElementById('edit-button') as HTMLAnchorElement | null;
             if (editButton) editButton.href = `/sub-division/${subDivision.id}/edit`;
             document.getElementById('machine-subdivision-name')!.textContent = subDivision.subDivisionName || 'Подразделение не указано.';
@@ -256,7 +257,7 @@ class MachineManager {
             });
 
             document.getElementById('delete-button')?.addEventListener('click', async () => {
-                if (confirm(`Вы уверены, что хотите удалить здание № ${subDivision.itemNumber}?`)) {
+                if (confirm(`Вы уверены, что хотите удалить здание «${subDivision.name}»?`)) {
                     try {
                         await this.fetchData(`${this.apiUrl}/${subDivision.id}`, {method: 'DELETE'});
                         this.showToast('Здание успешно удалено.', 'success');

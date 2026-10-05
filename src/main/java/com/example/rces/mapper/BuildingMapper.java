@@ -21,6 +21,7 @@ public interface BuildingMapper {
     BuildingDto toDto(Building building);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "name", ignore = true)
     @Mapping(target = "subdivision", ignore = true)
     @Mapping(target = "document", ignore = true)
     @Mapping(target = "otherText", ignore = true)

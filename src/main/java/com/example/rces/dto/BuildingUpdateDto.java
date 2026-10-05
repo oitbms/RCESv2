@@ -2,16 +2,16 @@ package com.example.rces.dto;
 
 public class BuildingUpdateDto {
 
-    private Integer itemNumber;
+    private String name;
 
     private Long subDivisionId;
 
-    public Integer getItemNumber() {
-        return itemNumber;
+    public String getName() {
+        return name;
     }
 
-    public void setItemNumber(Integer itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getSubDivisionId() {

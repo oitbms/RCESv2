@@ -15,11 +15,9 @@ import com.example.rces.service.BuildingService;
 import com.example.rces.service.DocumentService;
 import com.example.rces.service.SubDivisionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,15 +41,18 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     @Transactional
     public BuildingDto create(BuildingCreateDto buildingDto) {
-        checkItemNumberIsFree(buildingDto.getItemNumber(), null);
-
         Building building = buildingMapper.toEntity(buildingDto);
+        building.setName(buildingDto.getName().strip());
 
         SubDivision subDivision = subDivisionService.findById(buildingDto.getSubDivisionId());
         building.setSubdivision(subDivision);
 
+        // Имя документа в documents уникально, а названия зданий могут повторяться —
+        // поэтому сначала сохраняем здание и называем документ по его id
+        buildingRepository.save(building);
+
         Document document = new Document();
-        document.setName("Документация здания № " + buildingDto.getItemNumber());
+        document.setName("Документация здания id " + building.getId());
 
         if (buildingDto.getDocumentFiles() != null && buildingDto.getDocumentFiles().length > 0 && !buildingDto.getDocumentFiles()[0].isEmpty()) {
             for (MultipartFile file : buildingDto.getDocumentFiles()) {
@@ -89,7 +90,6 @@ public class BuildingServiceImpl implements BuildingService {
 
         building.setDocument(document);
 
-        buildingRepository.save(building);
         return buildingMapper.toDto(building);
     }
 
@@ -109,11 +109,11 @@ public class BuildingServiceImpl implements BuildingService {
         Building oldBuilding = buildingRepository.findById(id)
                 .orElseThrow(() -> new BuildingNotFoundException(id, NotificationType.ERROR));
 
-        if (buildingDto.getItemNumber() != null) {
-            checkItemNumberIsFree(buildingDto.getItemNumber(), id);
-        }
-
         Building building = buildingMapper.toUpdateEntity(oldBuilding, buildingDto);
+
+        if (buildingDto.getName() != null && !buildingDto.getName().isBlank()) {
+            building.setName(buildingDto.getName().strip());
+        }
 
         if (buildingDto.getSubDivisionId() != null) {
             building.setSubdivision(subDivisionService.findById(buildingDto.getSubDivisionId()));
@@ -205,16 +205,6 @@ public class BuildingServiceImpl implements BuildingService {
         }
     }
 
-    private void checkItemNumberIsFree(int itemNumber, Long buildingId) {
-        boolean taken = buildingId == null
-                ? buildingRepository.existsByItemNumber(itemNumber)
-                : buildingRepository.existsByItemNumberAndIdNot(itemNumber, buildingId);
-        if (taken) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Здание с инвентарным номером " + itemNumber + " уже существует");
-        }
-    }
-
     @Override
     @Transactional
     public void updateOtherText(Long id, String text) {
@@ -232,7 +222,7 @@ public class BuildingServiceImpl implements BuildingService {
         Document otherDocument = building.getOtherDocument();
         if (otherDocument == null) {
             otherDocument = new Document();
-            otherDocument.setName("Прочее: здание № " + building.getItemNumber());
+            otherDocument.setName("Прочее: здание id " + building.getId());
             building.setOtherDocument(otherDocument);
         }
 

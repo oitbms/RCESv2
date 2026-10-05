@@ -283,11 +283,12 @@
       try {
         const subDivisions = await this.fetchData(this.apiUrl);
         const items = subDivisions.map((s) => {
+          const name = escapeHtml(s.name);
           const subDivision = escapeHtml(s.subDivisionName);
           const row = document.createElement("tr");
           row.innerHTML = `
+                    <td>${name}</td>
                     <td>${subDivision || "\u2014"}</td>
-                    <td class="tabular-nums">${s.itemNumber}</td>
                     <td>
                         <div class="d-flex justify-content-end gap-2">
                             <a href="/sub-division/${s.id}" class="btn btn-sm btn-outline-secondary icon-text" title="\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440">
@@ -303,8 +304,8 @@
           card.className = "card mb-3";
           card.innerHTML = `
                         <div>
-                            <h5 class="card-title mt-2 ms-2">${subDivision || "\u041F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435 \u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D\u043E"}</h5>
-                            <h6 class="card-subtitle mb-2 ms-2 text-muted">\u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u043D\u044B\u0439 \u043D\u043E\u043C\u0435\u0440: ${s.itemNumber}</h6>
+                            <h5 class="card-title mt-2 ms-2">${name}</h5>
+                            <h6 class="card-subtitle mb-2 ms-2 text-muted">\u041F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0435: ${subDivision || "\u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D\u043E"}</h6>
                             <div class="d-flex justify-content-end gap-2 mt-3 mb-2 me-2">
                                 <a href="/sub-division/${s.id}" class="btn btn-sm btn-outline-secondary icon-text">
                                     <i class="bi bi-eye"></i>
@@ -318,7 +319,7 @@
                         </div>
                 `;
           return {
-            searchText: [s.subDivisionName, s.itemNumber].join(" "),
+            searchText: [s.name, s.subDivisionName].join(" "),
             subDivisionName: s.subDivisionName,
             row,
             card
@@ -340,10 +341,10 @@
       }
     }
     async initFormPage() {
-      var _a;
+      var _a, _b;
       const form = document.getElementById("sub-division-form");
       const formTitle = document.getElementById("form-title");
-      const numberInput = document.getElementById("number");
+      const nameInput = document.getElementById("name");
       const pathParts = window.location.pathname.split("/");
       const subDivisionCode = pathParts[pathParts.length - 2];
       const isEditMode = pathParts[pathParts.length - 1] === "edit" && subDivisionCode;
@@ -355,9 +356,9 @@
         this.showLoading(true);
         try {
           const subDivision = await this.fetchData(`${this.apiUrl}/${subDivisionCode}`);
-          numberInput.value = String(subDivision.itemNumber);
+          nameInput.value = (_a = subDivision.name) != null ? _a : "";
           if (subDivision.subDivisionId != null) {
-            (_a = this.choicesInstances["subDivision"]) == null ? void 0 : _a.setChoiceByValue(String(subDivision.subDivisionId));
+            (_b = this.choicesInstances["subDivision"]) == null ? void 0 : _b.setChoiceByValue(String(subDivision.subDivisionId));
           }
         } catch (error) {
           this.showError(error, "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u0437\u0434\u0430\u043D\u0438\u044F");
@@ -371,7 +372,7 @@
         try {
           if (isEditMode) {
             const subDivisionData = {
-              itemNumber: Number(numberInput.value),
+              name: nameInput.value.trim(),
               subDivisionId: Number(form.elements.namedItem("subDivisionId").value) || null
             };
             await this.fetchData(url, {
@@ -419,8 +420,8 @@
       this.showLoading(true);
       try {
         const subDivision = await this.fetchData(`${this.apiUrl}/${subDivisionCode}`);
-        document.getElementById("machine-name").textContent = `\u0417\u0434\u0430\u043D\u0438\u0435 \u2116 ${subDivision.itemNumber}`;
-        document.getElementById("subdivision-item-number").textContent = String(subDivision.itemNumber);
+        document.getElementById("machine-name").textContent = subDivision.name;
+        document.getElementById("building-name").textContent = subDivision.name;
         const editButton = document.getElementById("edit-button");
         if (editButton)
           editButton.href = `/sub-division/${subDivision.id}/edit`;
@@ -438,7 +439,7 @@
           notify: (message, type) => this.showToast(message, type)
         });
         (_a = document.getElementById("delete-button")) == null ? void 0 : _a.addEventListener("click", async () => {
-          if (confirm(`\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0437\u0434\u0430\u043D\u0438\u0435 \u2116 ${subDivision.itemNumber}?`)) {
+          if (confirm(`\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0437\u0434\u0430\u043D\u0438\u0435 \xAB${subDivision.name}\xBB?`)) {
             try {
               await this.fetchData(`${this.apiUrl}/${subDivision.id}`, { method: "DELETE" });
               this.showToast("\u0417\u0434\u0430\u043D\u0438\u0435 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u043E.", "success");

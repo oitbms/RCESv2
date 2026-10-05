@@ -46,8 +46,8 @@
             </div>
             <div class="card-body">
                 <dl class="info-grid">
-                    <dt>Инвентарный номер</dt>
-                    <dd id="subdivision-item-number" class="tabular-nums"></dd>
+                    <dt>Полное название</dt>
+                    <dd id="building-name"></dd>
                     <dt>Подразделение</dt>
                     <dd id="machine-subdivision-name"></dd>
                 </dl>

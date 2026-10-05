@@ -1,6 +1,8 @@
 package com.example.rces.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 public class BuildingCreateDto {
@@ -8,8 +10,9 @@ public class BuildingCreateDto {
     @NotNull(message = "Подразделение должно быть указано")
     private Long subDivisionId;
 
-    @NotNull(message = "Инвентарный номер должен быть указан")
-    private Integer itemNumber;
+    @NotBlank(message = "Укажите полное название здания")
+    @Size(max = 255, message = "Название не должно превышать 255 символов")
+    private String name;
 
     private MultipartFile[] documentFiles;
 
@@ -23,12 +26,12 @@ public class BuildingCreateDto {
         this.subDivisionId = subDivisionId;
     }
 
-    public Integer getItemNumber() {
-        return itemNumber;
+    public String getName() {
+        return name;
     }
 
-    public void setItemNumber(Integer itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public MultipartFile[] getDocumentFiles() {

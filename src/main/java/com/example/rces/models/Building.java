@@ -14,8 +14,8 @@ public class Building extends BaseAuditingEntity {
     @JoinColumn(name = "subdivision_id", nullable = false)
     private SubDivision subdivision;
 
-    @Column(name = "item_number", nullable = false, unique = true)
-    private int itemNumber;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "document_id", referencedColumnName = "id")
@@ -44,12 +44,12 @@ public class Building extends BaseAuditingEntity {
         this.subdivision = subdivision;
     }
 
-    public int getItemNumber() {
-        return itemNumber;
+    public String getName() {
+        return name;
     }
 
-    public void setItemNumber(int itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Document getDocument() {

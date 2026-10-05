@@ -6,7 +6,7 @@ import java.util.List;
 public class BuildingDto {
 
     private Long id;
-    private int itemNumber;
+    private String name;
     private Long subDivisionId;
     private String subDivisionName;
     private String otherText;
@@ -22,12 +22,12 @@ public class BuildingDto {
         this.id = id;
     }
 
-    public int getItemNumber() {
-        return itemNumber;
+    public String getName() {
+        return name;
     }
 
-    public void setItemNumber(int itemNumber) {
-        this.itemNumber = itemNumber;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getSubDivisionId() {

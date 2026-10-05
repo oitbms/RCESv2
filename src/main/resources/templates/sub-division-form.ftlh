@@ -27,16 +27,17 @@
             <form id="sub-division-form" enctype="multipart/form-data">
                 <input type="hidden" id="machine-id" name="machineId">
 
+                <div class="mb-3">
+                    <label for="name" class="form-label">Полное название</label>
+                    <input type="text" class="form-control" id="name" name="name" maxlength="255" required
+                           placeholder="Например: Корпус № 3, механосборочный цех">
+                </div>
+
                 <div class="col-md-6 mb-3">
                     <label for="subDivision" class="form-label">Подразделение</label>
                     <select id="subDivision" name="subDivisionId" class="form-select">
 
                     </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="number" class="form-label">Инвентарный номер</label>
-                    <input type="number" class="form-control" id="number" name="itemNumber" required>
                 </div>
 
                 <p class="form-text text-muted d-none" data-edit-only>
