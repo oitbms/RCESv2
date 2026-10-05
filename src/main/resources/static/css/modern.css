@@ -1,27 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Страницы станков и зданий: список, карточка, формы */
+
 :root {
     --primary-color: #0d6efd;
     --primary-hover: #0b5ed7;
-    --background-color: #f8f9fa;
+    --primary-soft: rgba(13, 110, 253, 0.08);
+    --background-color: #f4f6f9;
     --card-background: #ffffff;
-    --text-color: #212529;
+    --text-color: #1f2933;
     --muted-color: #6c757d;
-    --border-color: #dee2e6;
-    --shadow-color: rgba(0, 0, 0, 0.08);
-    --shadow-hover-color: rgba(0, 0, 0, 0.12);
+    --border-color: #e3e7ed;
+    --shadow-color: rgba(16, 24, 40, 0.06);
+    --shadow-hover-color: rgba(16, 24, 40, 0.1);
+    --radius: 0.75rem;
 }
 
 body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
+
+/* ---------- Появление блоков ---------- */
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(12px);
     }
     to {
         opacity: 1;
@@ -29,49 +36,346 @@ body {
     }
 }
 
+/* fill-mode только backwards: после анимации transform снимается.
+   Иначе блок становится отдельным слоем, и модальные окна внутри него
+   оказываются под затемнением Bootstrap — ничего нельзя нажать */
+.fade-in-up {
+    animation: fadeInUp 0.35s ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-in-up {
+        animation: none;
+    }
+}
+
+/* ---------- Заголовок страницы ---------- */
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-header .page-title {
+    margin-bottom: 0;
+}
+
+/* ---------- Карточки ---------- */
+
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px var(--shadow-color), 0 1px 2px var(--shadow-color);
+}
+
 .card-header {
     background-color: var(--card-background);
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
-    font-size: 1.1rem;
-    padding: 1rem 1.5rem;
+    font-size: 1.05rem;
+    padding: 0.875rem 1.25rem;
+}
+
+.card-header:first-child {
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* h5 в шапке карточки — без стандартного нижнего отступа Bootstrap */
+.card-header h5 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.card-header h5 .bi {
+    color: var(--muted-color);
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 1.25rem;
 }
+
+.list-group-flush > .list-group-item {
+    padding: 0.75rem 1.25rem;
+    border-color: var(--border-color);
+}
+
+.list-group-flush:last-child > .list-group-item:last-child {
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+}
+
+/* Пустые списки и «нет данных» */
+.list-group-item.text-muted,
+#photos-gallery .text-muted {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* ---------- Основная информация (label — значение) ---------- */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: minmax(140px, max-content) 1fr;
+    gap: 0.75rem 1.5rem;
+    margin: 0;
+}
+
+.info-grid dt {
+    font-weight: 500;
+    color: var(--muted-color);
+}
+
+.info-grid dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+@media (max-width: 576px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.125rem;
+    }
+
+    .info-grid dd {
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* ---------- Вкладки «Оборудование / Здания» ---------- */
+
+.segmented {
+    background-color: var(--background-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+}
+
+.segmented .btn {
+    border: 0;
+    border-radius: 0.375rem !important;
+    color: var(--muted-color);
+    font-weight: 500;
+    padding: 0.375rem 1rem;
+}
+
+.segmented .btn:hover {
+    color: var(--text-color);
+}
+
+.segmented .btn.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 1px 2px var(--shadow-hover-color);
+}
+
+/* ---------- Таблицы ---------- */
 
 .table {
     border-collapse: separate;
     border-spacing: 0;
+    margin-bottom: 0;
 }
 
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.table > thead th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-color);
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
-.page-title {
-    font-size: 2.25rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+.table > tbody td {
+    border-color: var(--border-color);
 }
+
+.table-hover > tbody > tr:hover > * {
+    --bs-table-bg-state: var(--primary-soft);
+}
+
+/* Поиск и фильтр по цеху над списком (core/list-filter.ts) */
+.list-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.list-filters .list-search {
+    flex: 1 1 280px;
+}
+
+.list-filters .form-select {
+    flex: 0 1 260px;
+}
+
+@media (max-width: 576px) {
+    .list-filters .form-select {
+        flex-basis: 100%;
+    }
+}
+
+.list-filters .input-group-text {
+    background-color: var(--card-background);
+    color: var(--muted-color);
+}
+
+.list-filters .list-search .form-control {
+    border-left: 0;
+}
+
+/* «Ничего не найдено» / «Список пуст» */
+.list-empty {
+    text-align: center;
+    color: var(--muted-color);
+    font-style: italic;
+    padding: 2rem 1rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 0.5rem;
+}
+
+/* Таблица списка — в отдельной рамке, чтобы визуально отделялась от шапки карточки */
+.table-frame {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--card-background);
+}
+
+.table-frame > .table {
+    --bs-table-striped-bg: #f8fafc;
+}
+
+.table-frame > .table > thead th {
+    background-color: #eef2f7;
+    color: #475467;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #d9dfe7;
+}
+
+.table-frame > .table > thead th:first-child,
+.table-frame > .table > tbody td:first-child {
+    padding-left: 1rem;
+}
+
+.table-frame > .table > thead th:last-child,
+.table-frame > .table > tbody td:last-child {
+    padding-right: 1rem;
+}
+
+/* Первая колонка — главное в строке */
+.table-frame > .table > tbody td:first-child {
+    font-weight: 500;
+}
+
+/* Нижнюю границу последней строки дает рамка */
+.table-frame > .table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+/* Длинный список (от 10 объектов, см. core/list-scroll.ts): своя прокрутка вместо растущей страницы */
+.list-scroll {
+    max-height: min(34rem, 70vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Шапка таблицы остается видимой при прокрутке */
+.list-scroll > .table > thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* Мобильные карточки: отступ, чтобы полоса прокрутки не наезжала на тени */
+#machines-card-view.list-scroll,
+#sub-division-card-view.list-scroll {
+    padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+}
+
+/* Номера выравниваются по разрядам */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Документы и файлы ---------- */
+
+#documents-list a,
+#other-documents-list a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--primary-color);
+    word-break: break-word;
+}
+
+#documents-list a:hover,
+#other-documents-list a:hover {
+    text-decoration: underline;
+    color: var(--primary-hover);
+}
+
+#documents-list .list-group-item:hover,
+#other-documents-list .list-group-item:hover {
+    background-color: var(--primary-soft);
+}
+
+/* Кнопка удаления файла заметна только при наведении на строку (на тач-экранах видна всегда) */
+@media (hover: hover) {
+    #documents-list .list-group-item .btn-outline-danger,
+    #other-documents-list .list-group-item .btn-outline-danger {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    #documents-list .list-group-item:hover .btn-outline-danger,
+    #other-documents-list .list-group-item:hover .btn-outline-danger,
+    #documents-list .list-group-item .btn-outline-danger:focus-visible,
+    #other-documents-list .list-group-item .btn-outline-danger:focus-visible {
+        opacity: 1;
+    }
+}
+
+/* ---------- Фотографии ---------- */
 
 #photos-gallery .card {
     overflow: hidden;
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-#documents-list a {
-    text-decoration: none;
-    font-weight: 500;
-    color: var(--primary-color);
+#photos-gallery .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-hover-color);
 }
 
-#documents-list a:hover {
-    text-decoration: underline;
-    color: var(--primary-hover);
+/* ---------- QR-код ---------- */
+
+.qr-canvas {
+    width: 200px !important;
+    height: 200px !important;
+    padding: 0.5rem;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
 }
+
+/* ---------- Кнопки и иконки ---------- */
 
 .icon-text {
     display: inline-flex;
@@ -79,9 +383,45 @@ body {
     gap: 0.5rem;
 }
 
+.btn {
+    font-weight: 500;
+    border-radius: 0.5rem;
+}
+
+.btn-sm {
+    border-radius: 0.375rem;
+}
+
+/* ---------- Формы ---------- */
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.375rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
 .choices.is-focused .choices__inner {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.2);
+}
+
+.choices__inner {
+    border-radius: 0.375rem;
+    background-color: #fff;
 }
 
 .choices__list--multiple .choices__item {
@@ -99,28 +439,57 @@ body {
     background-color: var(--primary-color);
 }
 
+/* ---------- Сотрудники ---------- */
+
 .avatar-placeholder {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--primary-soft);
+    color: var(--primary-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 .employee-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
+
+/* ---------- Сворачиваемые блоки ---------- */
 
 .collapsible-header:hover {
     opacity: 0.8;
 }
+
+/* Стрелка сворачиваемого блока: вниз — закрыт, вверх — открыт.
+   Bootstrap сам ставит класс .collapsed на ссылку, когда блок свернут */
+[data-bs-toggle="collapse"] .collapse-icon {
+    transition: transform 0.2s ease;
+}
+
+[data-bs-toggle="collapse"]:not(.collapsed) .collapse-icon {
+    transform: rotate(180deg);
+}
+
+/* Сохраняет переносы строк в многострочном тексте (блок «Прочее») */
+.text-pre-wrap {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ---------- Уведомления ---------- */
+
+.toast-container {
+    z-index: 1080;
+}
+
+/* ---------- Мобильные ---------- */
 
 @media (max-width: 768px) {
     .icon-text span {
@@ -136,8 +505,14 @@ body {
         padding: 0.5rem 0.75rem;
     }
 
+    /* Вкладки и кнопки «Сохранить/Отмена» — с текстом и на телефоне */
+    .segmented .btn span,
+    .form-actions .icon-text span {
+        display: inline;
+    }
+
     .page-title {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
     }
 
     .description-cell {
