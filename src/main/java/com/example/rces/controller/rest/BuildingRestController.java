@@ -62,6 +62,18 @@ public class BuildingRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/photos")
+    public ResponseEntity<Void> addPhotos(@PathVariable Long id, @RequestParam("photos") MultipartFile[] photos) {
+        buildingService.addPhotos(id, photos);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/photos/{id}")
+    public ResponseEntity<Void> deletePhoto(@PathVariable UUID id) {
+        buildingService.deleteBuildingPhoto(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}/other")
     public ResponseEntity<Void> updateOtherText(@PathVariable Long id, @Valid @RequestBody OtherTextDto dto) {
         buildingService.updateOtherText(id, dto.getText());

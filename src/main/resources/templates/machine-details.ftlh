@@ -82,8 +82,15 @@
         </div>
 
         <div class="card mt-4">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="bi bi-images me-2"></i>Фотографии</h5>
+                <#if canEdit>
+                <label for="photos-input" class="btn btn-sm btn-success icon-text mb-0">
+                    <i class="bi bi-camera"></i>
+                    <span>Добавить фото</span>
+                </label>
+                <input type="file" id="photos-input" accept="image/*" multiple hidden>
+                </#if>
             </div>
             <div class="card-body">
                 <div id="photos-gallery" class="row g-3">

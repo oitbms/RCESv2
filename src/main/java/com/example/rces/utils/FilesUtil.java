@@ -43,6 +43,27 @@ public class FilesUtil {
         }
     }
 
+    public static void addPhotosToDocument(Document document, MultipartFile[] files) {
+        if (files == null) return;
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Можно загружать только изображения: " + file.getOriginalFilename());
+            }
+            try {
+                Images image = new Images();
+                image.setName(file.getOriginalFilename());
+                image.setData(file.getBytes());
+                image.setDocument(document);
+                document.getImages().add(image);
+            } catch (IOException e) {
+                throw new RuntimeException("Не удалось прочитать файл " + file.getOriginalFilename(), e);
+            }
+        }
+    }
+
     public static List<Images> addImages(MultipartFile[] files, Requests requests) {
         List<Images> images = new ArrayList<>();
         for (MultipartFile file : files) {

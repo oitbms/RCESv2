@@ -30,7 +30,7 @@
                 <div class="mb-3">
                     <label for="name" class="form-label">Полное название</label>
                     <input type="text" class="form-control" id="name" name="name" maxlength="255" required
-                           placeholder="Например: Корпус № 3, механосборочный цех">
+                           placeholder="Например: Цех №3 (Механический участок)">
                 </div>
 
                 <div class="col-md-6 mb-3">

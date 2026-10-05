@@ -29,4 +29,11 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
             """)
     boolean existsBuildingFile(@Param("fileId") UUID fileId);
 
+    @Query("""
+            select count(i) > 0 from Images i
+            where i.id = :imageId
+              and exists (select b from Building b where b.document = i.document)
+            """)
+    boolean existsBuildingPhoto(@Param("imageId") UUID imageId);
+
 }

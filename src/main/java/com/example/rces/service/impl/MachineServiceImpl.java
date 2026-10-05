@@ -13,6 +13,7 @@ import com.example.rces.models.enums.NotificationType;
 import com.example.rces.repository.MachineRepository;
 import com.example.rces.service.DocumentService;
 import com.example.rces.service.EmployeeService;
+import com.example.rces.service.ImageService;
 import com.example.rces.service.MachineService;
 import com.example.rces.service.SubDivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.example.rces.utils.FilesUtil.addPdfFilesToDocument;
+import static com.example.rces.utils.FilesUtil.addPhotosToDocument;
 import static com.example.rces.utils.FilesUtil.determineFileType;
 
 @Service
@@ -39,10 +41,11 @@ public class MachineServiceImpl implements MachineService {
     private final DocumentFileMapper documentFileMapper;
     private final SubDivisionService subDivisionService;
     private final DocumentService documentService;
+    private final ImageService imageService;
 
 
     @Autowired
-    public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper, EmployeeService employeeService, EmployeeMapper employeeMapper, ImagesMapper imagesMapper, DocumentFileMapper documentFileMapper, SubDivisionService subDivisionService, DocumentService documentService) {
+    public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper, EmployeeService employeeService, EmployeeMapper employeeMapper, ImagesMapper imagesMapper, DocumentFileMapper documentFileMapper, SubDivisionService subDivisionService, DocumentService documentService, ImageService imageService) {
         this.machineRepository = machineRepository;
         this.machineMapper = machineMapper;
         this.employeeService = employeeService;
@@ -51,6 +54,7 @@ public class MachineServiceImpl implements MachineService {
         this.documentFileMapper = documentFileMapper;
         this.subDivisionService = subDivisionService;
         this.documentService = documentService;
+        this.imageService = imageService;
     }
 
     @Override
@@ -331,5 +335,30 @@ public class MachineServiceImpl implements MachineService {
             throw new EntityNotFoundExceptionBormash("Станок с инвентарным номером " + number + " не найден", NotificationType.ERROR);
         }
         return machine;
+    }
+
+    @Override
+    @Transactional
+    public void addPhotos(Integer number, MultipartFile[] photos) {
+        Machine machine = getMachineByNumber(number);
+
+        Document document = machine.getDocument();
+        if (document == null) {
+            document = new Document();
+            document.setName("Документация для станка № " + machine.getNumber());
+            machine.setDocument(document);
+        }
+
+        addPhotosToDocument(document, photos);
+        machineRepository.save(machine);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMachinePhoto(UUID imageId) {
+        if (!machineRepository.existsMachinePhoto(imageId)) {
+            throw new EntityNotFoundExceptionBormash("Фотография станка не найдена", NotificationType.ERROR);
+        }
+        imageService.deleteById(imageId);
     }
 }

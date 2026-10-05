@@ -13,6 +13,7 @@ import com.example.rces.models.enums.NotificationType;
 import com.example.rces.repository.BuildingRepository;
 import com.example.rces.service.BuildingService;
 import com.example.rces.service.DocumentService;
+import com.example.rces.service.ImageService;
 import com.example.rces.service.SubDivisionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.example.rces.utils.FilesUtil.addPdfFilesToDocument;
+import static com.example.rces.utils.FilesUtil.addPhotosToDocument;
 import static com.example.rces.utils.FilesUtil.determineFileType;
 
 @Service
@@ -37,6 +39,7 @@ public class BuildingServiceImpl implements BuildingService {
     private final DocumentFileMapper documentFileMapper;
     private final ImagesMapper imagesMapper;
     private final DocumentService documentService;
+    private final ImageService imageService;
 
     @Override
     @Transactional
@@ -47,12 +50,8 @@ public class BuildingServiceImpl implements BuildingService {
         SubDivision subDivision = subDivisionService.findById(buildingDto.getSubDivisionId());
         building.setSubdivision(subDivision);
 
-        // Имя документа в documents уникально, а названия зданий могут повторяться —
-        // поэтому сначала сохраняем здание и называем документ по его id
-        buildingRepository.save(building);
-
         Document document = new Document();
-        document.setName("Документация здания id " + building.getId());
+        document.setName("Документация здания " + UUID.randomUUID());
 
         if (buildingDto.getDocumentFiles() != null && buildingDto.getDocumentFiles().length > 0 && !buildingDto.getDocumentFiles()[0].isEmpty()) {
             for (MultipartFile file : buildingDto.getDocumentFiles()) {
@@ -90,6 +89,7 @@ public class BuildingServiceImpl implements BuildingService {
 
         building.setDocument(document);
 
+        buildingRepository.save(building);
         return buildingMapper.toDto(building);
     }
 
@@ -130,10 +130,19 @@ public class BuildingServiceImpl implements BuildingService {
 
         BuildingDto buildingDto = buildingMapper.toDto(building);
 
-        buildingDto.setPdfs(building.getDocument().getFiles().stream()
-                .filter(Objects::nonNull)
-                .map(documentFileMapper::toDTO)
-                .toList());
+        Document document = building.getDocument();
+        if (document != null) {
+            buildingDto.setPdfs(document.getFiles().stream()
+                    .filter(Objects::nonNull)
+                    .map(documentFileMapper::toDTO)
+                    .toList());
+
+            buildingDto.setImageUrls(document.getImages()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(imagesMapper::toDTO)
+                    .toList());
+        }
 
         if (building.getOtherDocument() != null) {
             buildingDto.setOtherPdfs(building.getOtherDocument().getFiles().stream()
@@ -141,12 +150,6 @@ public class BuildingServiceImpl implements BuildingService {
                     .map(documentFileMapper::toDTO)
                     .toList());
         }
-
-        buildingDto.setImageUrls(building.getDocument().getImages()
-                .stream()
-                .filter(Objects::nonNull)
-                .map(imagesMapper::toDTO)
-                .toList());
 
         return buildingDto;
     }
@@ -158,6 +161,11 @@ public class BuildingServiceImpl implements BuildingService {
                 .orElseThrow(() -> new BuildingNotFoundException(id, NotificationType.ERROR));
 
         Document document = building.getDocument();
+        if (document == null) {
+            document = new Document();
+            document.setName("Документация здания " + UUID.randomUUID());
+            building.setDocument(document);
+        }
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
@@ -228,5 +236,31 @@ public class BuildingServiceImpl implements BuildingService {
 
         addPdfFilesToDocument(otherDocument, files);
         buildingRepository.save(building);
+    }
+
+    @Override
+    @Transactional
+    public void addPhotos(Long id, MultipartFile[] photos) {
+        Building building = buildingRepository.findById(id)
+                .orElseThrow(() -> new BuildingNotFoundException(id, NotificationType.ERROR));
+
+        Document document = building.getDocument();
+        if (document == null) {
+            document = new Document();
+            document.setName("Документация здания " + UUID.randomUUID());
+            building.setDocument(document);
+        }
+
+        addPhotosToDocument(document, photos);
+        buildingRepository.save(building);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBuildingPhoto(UUID imageId) {
+        if (!buildingRepository.existsBuildingPhoto(imageId)) {
+            throw new EntityNotFoundExceptionBormash("Фотография здания не найдена", NotificationType.ERROR);
+        }
+        imageService.deleteById(imageId);
     }
 }

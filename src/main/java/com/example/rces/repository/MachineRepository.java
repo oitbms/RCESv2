@@ -27,4 +27,11 @@ public interface MachineRepository extends JpaRepository<Machine, Long> {
             """)
     boolean existsMachineFile(@Param("fileId") UUID fileId);
 
+    @Query("""
+            select count(i) > 0 from Images i
+            where i.id = :imageId
+              and exists (select m from Machine m where m.document = i.document)
+            """)
+    boolean existsMachinePhoto(@Param("imageId") UUID imageId);
+
 }

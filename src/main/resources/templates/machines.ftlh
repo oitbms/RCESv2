@@ -93,7 +93,7 @@
                     <div class="input-group list-search">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="search" id="buildings-search" class="form-control"
-                               placeholder="Подразделение или инвентарный номер" aria-label="Поиск" autocomplete="off">
+                               placeholder="Название или подразделение" aria-label="Поиск" autocomplete="off">
                     </div>
                     <select id="buildings-subdivision-filter" class="form-select" aria-label="Фильтр по подразделению">
                         <option value="">Все подразделения</option>
@@ -103,8 +103,8 @@
                     <table class="table table-hover table-striped align-middle">
                         <thead class="table-light">
                             <tr>
+                                <th scope="col">Название</th>
                                 <th scope="col">Подразделение</th>
-                                <th scope="col">Инвентарный номер</th>
                                 <th scope="col" class="text-end">Действия</th>
                             </tr>
                         </thead>

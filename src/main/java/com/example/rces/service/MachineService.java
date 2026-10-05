@@ -26,6 +26,10 @@ public interface MachineService {
 
     void addOtherDocuments(Integer number, MultipartFile[] files);
 
+    void addPhotos(Integer number, MultipartFile[] photos);
+
+    void deleteMachinePhoto(UUID imageId);
+
     DocumentFile getMachineFile(UUID fileId);
 
     void deleteMachineFile(UUID fileId);

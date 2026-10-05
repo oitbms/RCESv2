@@ -201,6 +201,84 @@
     });
   }
 
+  // src/main/resources/static/js/core/photo-gallery.ts
+  function initPhotoGallery(options) {
+    const gallery = document.getElementById("photos-gallery");
+    if (!gallery)
+      return;
+    const render = (photos) => {
+      gallery.innerHTML = "";
+      if (!photos || photos.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "col";
+        empty.innerHTML = '<p class="text-muted mb-0">\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.</p>';
+        gallery.appendChild(empty);
+        return;
+      }
+      photos.forEach((photo) => gallery.appendChild(createPhoto(photo)));
+    };
+    const createPhoto = (photo) => {
+      var _a;
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-4 col-lg-3";
+      const card = document.createElement("div");
+      card.className = "card photo-card";
+      const img = document.createElement("img");
+      img.src = photo.data;
+      img.alt = (_a = photo.name) != null ? _a : "\u0424\u043E\u0442\u043E";
+      img.className = "photo-card__img";
+      img.loading = "lazy";
+      img.addEventListener("click", () => options.openPhoto(photo));
+      card.appendChild(img);
+      if (options.canEdit) {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "btn btn-sm btn-light photo-card__delete";
+        remove.title = "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u043E\u0442\u043E";
+        remove.setAttribute("aria-label", "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u043E\u0442\u043E");
+        remove.innerHTML = '<i class="bi bi-trash"></i>';
+        remove.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          if (!confirm("\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u044D\u0442\u0443 \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u044E?"))
+            return;
+          try {
+            await fetchJson(`${options.deleteUrl}/${photo.id}`, { method: "DELETE" });
+            col.remove();
+            if (gallery.children.length === 0)
+              render([]);
+            options.notify("\u0424\u043E\u0442\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u043E.", "success");
+          } catch (error) {
+            console.error(error);
+            options.notify(describeError(error, "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u043E\u0442\u043E"), "danger");
+          }
+        });
+        card.appendChild(remove);
+      }
+      col.appendChild(card);
+      return col;
+    };
+    render(options.photos);
+    if (!options.canEdit)
+      return;
+    const input = document.getElementById("photos-input");
+    input == null ? void 0 : input.addEventListener("change", async () => {
+      if (!input.files || input.files.length === 0)
+        return;
+      const formData = new FormData();
+      Array.from(input.files).forEach((file) => formData.append("photos", file));
+      try {
+        await fetchJson(options.uploadUrl, { method: "POST", body: formData });
+        render(await options.reloadPhotos());
+        options.notify("\u0424\u043E\u0442\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B.", "success");
+      } catch (error) {
+        console.error(error);
+        options.notify(describeError(error, "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0444\u043E\u0442\u043E"), "danger");
+      } finally {
+        input.value = "";
+      }
+    });
+  }
+
   // src/main/resources/static/js/core/list-scroll.ts
   var LIST_SCROLL_FROM = 10;
   function toggleListScroll(itemCount, tableBody, cardView) {
@@ -532,7 +610,15 @@
         this.renderList("responsible-employees-list", machine.responsibleEmployeesList, "\u0421\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0438 \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B.");
         this.renderList("admitted-employees-list", machine.admittedEmployeesList, "\u0421\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u0438 \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B.");
         this.renderDocumentList("documents-list", machine.pdfs, "\u0414\u043E\u043A\u0443\u043C\u0435\u043D\u0442\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.");
-        this.renderPhotoGallery("photos-gallery", machine.imageUrls, "\u0424\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.");
+        initPhotoGallery({
+          uploadUrl: `${this.apiUrl}/${machine.number}/photos`,
+          deleteUrl: `${this.apiUrl}/photos`,
+          photos: machine.imageUrls,
+          canEdit: this.canEdit,
+          reloadPhotos: async () => (await this.fetchData(`${this.apiUrl}/${machine.number}`)).imageUrls,
+          openPhoto: (photo) => this.openPhoto(photo.data),
+          notify: (message, type) => this.showToast(message, type)
+        });
         this.generateQrCode(machine.number);
         initOtherSection({
           apiBase: `${this.apiUrl}/${machine.number}`,
@@ -606,30 +692,12 @@
         listElement.appendChild(li);
       });
     }
-    renderPhotoGallery(elementId, items, emptyMessage) {
-      const galleryElement = document.getElementById(elementId);
-      galleryElement.innerHTML = "";
-      if (!items || items.length === 0) {
-        galleryElement.innerHTML = `<div class="col"><p class="text-muted">${emptyMessage}</p></div>`;
-        return;
-      }
+    openPhoto(src) {
       const modalImageEl = document.getElementById("modalImage");
-      items.forEach((item) => {
-        const col = document.createElement("div");
-        col.className = "col-md-4 mb-3";
-        col.innerHTML = `
-                    <div class="card">
-                        <img src="${item.data}" class="img-fluid img-thumbnail" alt="${item.name}" style="height: 200px; object-fit: cover;">
-                    </div>
-                `;
-        col.addEventListener("click", () => {
-          if (modalImageEl && this.imageModalInstance) {
-            modalImageEl.src = item.data;
-            this.imageModalInstance.show();
-          }
-        });
-        galleryElement.appendChild(col);
-      });
+      if (modalImageEl && this.imageModalInstance) {
+        modalImageEl.src = src;
+        this.imageModalInstance.show();
+      }
     }
     // private renderDocumentList(elementId: string, items: DocumentFileMachine[] | undefined, emptyMessage: string): void {
     //     const listElement = document.getElementById(elementId)!;

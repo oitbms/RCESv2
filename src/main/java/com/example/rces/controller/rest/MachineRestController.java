@@ -68,7 +68,14 @@ public class MachineRestController {
 
     @PostMapping("/{number}/photos")
     public ResponseEntity<Void> addPhotosToMachine(@PathVariable Integer number, @RequestParam("photos") MultipartFile[] photos) {
-        return ResponseEntity.ok().build();
+        machineService.addPhotos(number, photos);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/photos/{id}")
+    public ResponseEntity<Void> deletePhoto(@PathVariable UUID id) {
+        machineService.deleteMachinePhoto(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{number}/other")

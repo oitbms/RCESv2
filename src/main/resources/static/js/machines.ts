@@ -1,6 +1,7 @@
 import {DocumentFile} from "./core/types";
 import {describeError, fetchJson} from "./core/http";
 import {initOtherSection, OtherFile} from "./core/other-section";
+import {initPhotoGallery} from "./core/photo-gallery";
 import {FilterableItem, initListFilter} from "./core/list-filter";
 import {escapeHtml} from "./core/html";
 
@@ -369,7 +370,15 @@ class MachineManager {
             this.renderList('responsible-employees-list', machine.responsibleEmployeesList, 'Сотрудники не назначены.');
             this.renderList('admitted-employees-list', machine.admittedEmployeesList, 'Сотрудники не назначены.');
             this.renderDocumentList('documents-list', machine.pdfs, 'Документы не найдены.');
-            this.renderPhotoGallery('photos-gallery', machine.imageUrls, 'Фотографии не найдены.');
+            initPhotoGallery({
+                uploadUrl: `${this.apiUrl}/${machine.number}/photos`,
+                deleteUrl: `${this.apiUrl}/photos`,
+                photos: machine.imageUrls,
+                canEdit: this.canEdit,
+                reloadPhotos: async () => (await this.fetchData(`${this.apiUrl}/${machine.number}`) as Machine).imageUrls,
+                openPhoto: (photo) => this.openPhoto(photo.data),
+                notify: (message, type) => this.showToast(message, type),
+            });
             this.generateQrCode(machine.number);
 
             initOtherSection({
@@ -455,34 +464,12 @@ class MachineManager {
         });
     }
 
-    private renderPhotoGallery(elementId: string, items: ImageFile[] | undefined, emptyMessage: string): void {
-        const galleryElement = document.getElementById(elementId)!;
-        galleryElement.innerHTML = '';
-        if (!items || items.length === 0) {
-            galleryElement.innerHTML = `<div class="col"><p class="text-muted">${emptyMessage}</p></div>`;
-            return;
+    private openPhoto(src: string): void {
+        const modalImageEl = document.getElementById('modalImage') as HTMLImageElement | null;
+        if (modalImageEl && this.imageModalInstance) {
+            modalImageEl.src = src;
+            this.imageModalInstance.show();
         }
-
-        const modalImageEl = document.getElementById('modalImage') as HTMLImageElement;
-
-        items.forEach(item => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-3';
-            col.innerHTML = `
-                    <div class="card">
-                        <img src="${item.data}" class="img-fluid img-thumbnail" alt="${item.name}" style="height: 200px; object-fit: cover;">
-                    </div>
-                `;
-
-            col.addEventListener('click', () => {
-                if (modalImageEl && this.imageModalInstance) {
-                    modalImageEl.src = item.data;
-                    this.imageModalInstance.show();
-                }
-            });
-
-            galleryElement.appendChild(col);
-        });
     }
 
     // private renderDocumentList(elementId: string, items: DocumentFileMachine[] | undefined, emptyMessage: string): void {

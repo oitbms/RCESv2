@@ -27,6 +27,10 @@ public interface BuildingService {
 
     void addOtherDocuments(Long id, MultipartFile[] files);
 
+    void addPhotos(Long id, MultipartFile[] photos);
+
+    void deleteBuildingPhoto(UUID imageId);
+
     DocumentFile getBuildingFile(UUID fileId);
 
     void deleteBuildingFile(UUID fileId);
