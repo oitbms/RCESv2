@@ -178,6 +178,13 @@
                           placeholder="Введите комментарий"></textarea>
             </div>
 
+            <!-- Документ -->
+            <div class="mb-3">
+                <label for="documentId" class="form-label">Загрузить документацию (PDF)</label>
+                <input type="file" id="documentId" name="documentFiles" accept="application/pdf" multiple
+                       class="form-control">
+            </div>
+
             <!-- Фото -->
             <div class="mb-3">
                 <label for="additionalFiles" class="form-label">Загрузить фотографии или сделать фото</label>
@@ -277,18 +284,37 @@
                         <p class="mb-2 m-lg-2"><strong>Количество деталей отклонено:</strong> ${(bid.qty)!0}</p>
                     </#if>
                     <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.getReason_wr())!"Не указана"}</p>
-                <#else >
-                    <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
-                </#if>
-                <#if bid.status.getName() == "В работе">
-                <p class="mb-2 m-lg-2"><strong>Комментарий:</strong>
+                    <p class="mb-2 m-lg-2"><strong>Комментарий:</strong>
                     <textarea class="form-control"
                               id="comment"
                               name="comment"
                               rows="5"
                               style="resize: both;"
                               readonly>${bid.comment!''}</textarea>
+                <#else >
+                    <p class="mb-2 m-lg-2"><strong>Причина:</strong> ${(bid.reason.getName())!"Не указана"}</p>
+                </#if>
+                <div class="mb-2 m-lg-2">
+                    <strong>Документация:</strong>
+                    <#if bid.document?? && bid.document.files?has_content>
+                        <div class="bid-docs">
+                            <#list bid.document.files as file>
+                                <#assign fileName = file.baseFileName!"Документ.pdf">
+                                <a class="btn btn-outline-secondary"
+                                   href="${springMacroRequestContext.contextPath}/bids/${bid.getId()}/document/${file.id}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   title="Открыть «${fileName}» в новой вкладке">
+                                    <span >${fileName}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                         width="14" height="14" fill="currentColor" aria-hidden="true">
+                                    </svg>
+                                </a>
+                            </#list>
+                        </div>
+                    <#else>
+                        <span class="text-muted">не приложена</span>
                     </#if>
+                </div>
             </div>
         </div>
 
@@ -1530,10 +1556,9 @@
     </#if>
 </script>
 
-<script src="/js/dist/shared/toast.js"></script>
-<script src="/js/dist/script.js" defer></script>
-<script src="/js/dist/list.js" defer></script>
-<script src="/js/dist/notifications.js" defer></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/script.js"></script>
+<script src="/js/list.js"></script>
 
 <script>
     $(document).ready(function () {
