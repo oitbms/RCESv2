@@ -131,6 +131,7 @@ public class MachineServiceImpl implements MachineService {
                     DocumentFile documentFile = new DocumentFile();
                     documentFile.setContent(file.getBytes());
                     documentFile.setBaseFileName(file.getOriginalFilename());
+                    documentFile.setType(determineFileType(file.getOriginalFilename()));
 
                     documentFile.setDocument(passportDocument);
 
@@ -151,6 +152,7 @@ public class MachineServiceImpl implements MachineService {
                     DocumentFile documentFile = new DocumentFile();
                     documentFile.setContent(file.getBytes());
                     documentFile.setBaseFileName(file.getOriginalFilename());
+                    documentFile.setType(determineFileType(file.getOriginalFilename()));
 
                     documentFile.setDocument(document);
 

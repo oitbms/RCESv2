@@ -60,6 +60,7 @@ public class BuildingServiceImpl implements BuildingService {
                     DocumentFile documentFile = new DocumentFile();
                     documentFile.setContent(file.getBytes());
                     documentFile.setBaseFileName(file.getOriginalFilename());
+                    documentFile.setType(determineFileType(file.getOriginalFilename()));
 
                     documentFile.setDocument(document);
 
