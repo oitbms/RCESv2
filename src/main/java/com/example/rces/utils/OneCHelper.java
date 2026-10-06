@@ -7,11 +7,11 @@ public class OneCHelper {
 
     public static RequestSpecification getOneCSpec() {
         return RestAssured.given()
-                .baseUri("http://192.168.0.2")
+                .baseUri("http://192.168.101.3")
                 .basePath("/B5/hs/ObmenDoc/LoadData/")
                 .header("Authorization", "Basic 0J/QsNCy0LvQuNGH0LXQvdC60L7QlNCQOjA=")
-                .contentType("application/json; charset=UTF-8")
-                .accept("*/*");
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json");
     }
 
     public static String buildCustomerOrderQuery(String customerOrder) {
@@ -29,11 +29,15 @@ public class OneCHelper {
                 "ГДЕ втсп.Номенклатура В " +
                 "(ВЫБРАТЬ ЗаказПокупателяТовары.Номенклатура " +
                 "ИЗ Документ.ЗаказПокупателя.Товары КАК ЗаказПокупателяТовары " +
-                "ГДЕ ЗаказПокупателяТовары.Номенклатура.Наименование ПОДОБНО \"%" + customerOrder + "%\" " +
+                "ГДЕ ЗаказПокупателяТовары.Номенклатура.Наименование ПОДОБНО \"%" +
+                customerOrder +
+                "%\" " +
                 "ОБЪЕДИНИТЬ " +
                 "ВЫБРАТЬ ЗаказНаПроизводствоПродукция.Номенклатура " +
                 "ИЗ Документ.ЗаказНаПроизводство.Продукция КАК ЗаказНаПроизводствоПродукция " +
-                "ГДЕ ЗаказНаПроизводствоПродукция.Номенклатура.Наименование ПОДОБНО \"%" + customerOrder + "%\") " +
+                "ГДЕ ЗаказНаПроизводствоПродукция.Номенклатура.Наименование ПОДОБНО \"%" +
+                customerOrder +
+                "%\") " +
                 "И втсп.Ссылка.Наименование ПОДОБНО \"%СМС%\" " +
                 "И НЕ втсп.Ссылка.Комментарий ПОДОБНО \"%Аннулировано%\"";
     }
@@ -52,5 +56,4 @@ public class OneCHelper {
                 + "\"ТекстЗапроса\":\"" + escapedQuery + "\""
                 + "}";
     }
-
 }

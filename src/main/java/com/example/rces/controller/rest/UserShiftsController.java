@@ -20,41 +20,28 @@ public class UserShiftsController {
 
     @GetMapping
     public List<UserShiftsResponse> getUserShifts() {
-
         log.info("Получаем информацию о назначенный сменах");
-
         List<UserShiftsResponse> response = userShiftsService.getAllUserShifts();
-
         return response;
-
     }
 
     @PostMapping
     public UserShiftsResponse createUserShifts(@RequestBody @Validated(UserShiftsRequest.Create.class) UserShiftsRequest request) {
-
         log.info("Назначаем пользователю с ID: {} смену", request.getEmployeeId());
-
         UserShiftsResponse response = userShiftsService.createUserShifts(request);
-
         return response;
     }
 
     @PutMapping("/{id}")
     public UserShiftsResponse updateUserShifts(@PathVariable Long id, @RequestBody @Validated(UserShiftsRequest.Update.class) UserShiftsRequest request) {
-
         log.info("Обновляем у пользователя с ID: {} смену", request.getEmployeeId());
-
         UserShiftsResponse response = userShiftsService.updateUserShifts(id, request);
-
         return response;
     }
 
     @DeleteMapping("/{id}")
     public void deleteUserShifts(@PathVariable Long id) {
-
         log.info("Удаляем смену с ID: {}", id);
-
         userShiftsService.deleteUserShifts(id);
-
     }
 }
