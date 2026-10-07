@@ -1,3 +1,5 @@
+import {Color, Employee, SubDivision} from "../../core/types";
+
 type SpeIn = {
     id: number;
     version: number;

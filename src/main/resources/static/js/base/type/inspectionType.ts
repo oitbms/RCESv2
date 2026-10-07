@@ -1,3 +1,5 @@
+import {Employee, SubDivision} from "../../core/types";
+
 type InspectionIn = {
     id: number;
     subDivision: SubDivision;

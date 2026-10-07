@@ -1,3 +1,5 @@
+import {Color, Employee} from "../../core/types";
+
 type SgiIn = {
     id: string;
     number: string;
