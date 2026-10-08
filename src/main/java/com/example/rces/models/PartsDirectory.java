@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -113,6 +114,13 @@ public class PartsDirectory extends BaseAuditingEntity {
     @Column(name = "operation")
     @Enumerated(EnumType.STRING)
     private List<Operation> operation;
+
+    @ElementCollection(targetClass = Operation.class)
+    @CollectionTable(name = "parts_directory_performed_operation",
+            joinColumns = @JoinColumn(name = "parts_directory_id"))
+    @Column(name = "operation")
+    @Enumerated(EnumType.STRING)
+    private List<Operation> performedOperation = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -265,6 +273,14 @@ public class PartsDirectory extends BaseAuditingEntity {
 
     public void setOperation(List<Operation> operation) {
         this.operation = operation;
+    }
+
+    public List<Operation> getPerformedOperation() {
+        return performedOperation;
+    }
+
+    public void setPerformedOperation(List<Operation> performedOperation) {
+        this.performedOperation = performedOperation;
     }
 
     public PartsDirectory() {

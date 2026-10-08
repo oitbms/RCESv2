@@ -1,6 +1,16 @@
 import { Base } from './base/base';
 import { NotificationType } from './core/types';
 
+const OPERATION_LABELS: Record<string, string> = {
+    thermal: 'Термическая резка',
+    locksmith: 'Слесарные работы',
+    baikal: 'Байкал',
+    shearingpunching: 'Рубка, пробивка',
+    drilling: 'Сверление',
+    bending: 'Гибка',
+    pressing: 'Прессовое'
+};
+
 class PdItem extends Base {
 
     private readonly pdSpecialFields: { name: string, transform: ($div: any) => any }[] = [
@@ -39,6 +49,7 @@ class PdItem extends Base {
     private allTeamsCache: any[] = [];
     private allEmployeesCache: any[] = [];
     private selectedReadinessRowId: string | null = null;
+    private selectedOperationsRowId: string | null = null;
     private loadFrom1cRows: partsDirectoryFrom1CPreviewRow[] = [];
     private selectedLoadFrom1cRowIndexes = new Set<number>();
     private loadFrom1cSearchText = '';
@@ -81,26 +92,18 @@ class PdItem extends Base {
                 return;
             }
 
-            const $row = $(e.currentTarget).closest('.table-row');
-            const rowId = Number($row.attr('id'));
-            const pdItem = this.localCache.get(rowId) as pdItemIn;
-
-            if (pdItem.ready) {
-                const params = new URLSearchParams();
-                params.set('id', String(rowId));
-                params.set('ready', 'false');
-                this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, "PATCH").then((pdi: pdItemIn) => {
-                    this.updateRow(pdi, rowId);
-                    setTimeout(() => this.applyFilters(), 150);
-                });
-            } else {
-                this.openReadinessDialog(e);
-            }
+            // Готовность вычисляется из выполненных операций — открываем модалку
+            e.preventDefault();
+            this.openReadinessDialog(e);
         }, true);
         this.createHandler('click', '#saveReadiness', this.saveReadinessHandler.bind(this), true);
         this.createHandler('click', '#cancelReadiness', this.closeReadinessDialog.bind(this), true);
         this.createHandler('click', '#closeReadinessDialog', this.closeReadinessDialog.bind(this), true);
         this.createHandler('click', '#readyFilterButton', this.toggleReadinessFilter.bind(this), true);
+        this.createHandler('click', '.operations-cell', (e) => this.openOperationsDialog(e), true);
+        this.createHandler('click', '#saveOperations', this.saveOperationsHandler.bind(this), true);
+        this.createHandler('click', '#cancelOperations', this.closeOperationsDialog, true);
+        this.createHandler('click', '#closeOperationsDialog', this.closeOperationsDialog, true);
         this.createHandler('input', '#searchInput', (event) => {
             this.searchText = $(event.target).val().toString().toLowerCase().trim();
             this.applyFilters();
@@ -193,6 +196,10 @@ class PdItem extends Base {
                     <div contenteditable="false" data-name="dateCompletion">
                         ${this.formatDate(pdi.dateCompletion)}
                     </div>
+                </div>
+                <div class="table-cell operations-cell" style="width: var(--operations);"
+                     title="${this.escapeHtml(this.formatOperations(pdi.operation))}">
+                    <span class="operations-value">${this.escapeHtml(this.formatOperations(pdi.operation))}</span>
                 </div>
                 <div class="table-cell center" style="width: var(--ready);">
                     <div class="checkbox-wrapper-ready">
@@ -771,6 +778,78 @@ class PdItem extends Base {
         return true;
     }
 
+    private formatOperations(operations?: string[] | null): string {
+        if (!operations || operations.length === 0) {
+            return '';
+        }
+        return operations.map(op => OPERATION_LABELS[op] || op).join(', ');
+    }
+
+    private openOperationsDialog(event: Event): void {
+        if (this.blockReadinessInEditMode(event)) {
+            return;
+        }
+
+        const $row = $(event.currentTarget).closest('.table-row');
+        const rowId = $row.attr('id');
+        if (!rowId) return;
+
+        this.selectedOperationsRowId = rowId;
+
+        const cacheData = this.localCache.get(Number(rowId)) as pdItemIn | undefined;
+        const operations = cacheData?.operation || [];
+
+        const dialog = $('#operations-dialog');
+        dialog.find('.operation-check').each((_, el) => {
+            const value = String($(el).val());
+            $(el).prop('checked', operations.indexOf(value) !== -1);
+        });
+
+        this.dialog.open('operations-dialog');
+    }
+
+    private closeOperationsDialog = (): void => {
+        this.dialog.close('operations-dialog');
+        this.selectedOperationsRowId = null;
+    };
+
+    private saveOperationsHandler = async (): Promise<void> => {
+        if (!this.selectedOperationsRowId) return;
+        if (this.blockReadinessInEditMode()) {
+            this.closeOperationsDialog();
+            return;
+        }
+
+        const dialog = $('#operations-dialog');
+        const operations: string[] = [];
+        dialog.find('.operation-check:checked').each((_, el) => {
+            operations.push(String($(el).val()));
+        });
+
+        const unlock = this.lockScreen('Сохранение операций...');
+        try {
+            const params = new URLSearchParams();
+            params.set('id', this.selectedOperationsRowId);
+            operations.forEach(op => params.append('operations', op));
+
+            const pdi = await this.requestToApi(`/api/parts-directory/operations?${params.toString()}`, 'PATCH') as pdItemIn;
+            this.updateRow(pdi, this.selectedOperationsRowId);
+
+            const $row = $(`.table-row[id="${this.selectedOperationsRowId}"]`);
+            const text = this.formatOperations(pdi.operation);
+            $row.find('.operations-value').text(text);
+            $row.find('.operations-cell').attr('title', text);
+
+            setTimeout(() => this.applyFilters(), 150);
+            this.createNotification('Операции успешно обновлены', NotificationType.SUCCESS);
+            this.closeOperationsDialog();
+        } catch {
+            this.createNotification('Ошибка при сохранении операций', NotificationType.ERROR);
+        } finally {
+            unlock();
+        }
+    };
+
     private openReadinessDialog(event: Event): void {
         if (this.blockReadinessInEditMode(event)) {
             return;
@@ -780,21 +859,27 @@ class PdItem extends Base {
         const rowId = $row.attr('id');
         if (!rowId) return;
 
+        // План операций из поля «Операции», выполненные — из поля performedOperation
+        const cacheData = this.localCache.get(Number(rowId)) as pdItemIn | undefined;
+        const operations = cacheData?.operation || [];
+        const performed = cacheData?.performedOperation || [];
+
+        if (operations.length === 0) {
+            this.createNotification('В поле «Операции» не выбрано ни одной операции', NotificationType.WARNING);
+            return;
+        }
+
         this.selectedReadinessRowId = rowId;
 
-        // Получаем данные из кэша для отображения текущих операций
-        const cacheData = this.localCache.get(rowId) as pdItemIn | undefined;
-        const operations = cacheData?.operation || [];
-
-        // Отмечаем чекбоксы на основе существующих операций
+        // В модалке показываются только операции из поля «Операции»
         const dialog = $('#readiness-dialog');
-        dialog.find('#operationThermal').prop('checked', operations.indexOf('thermal') !== -1);
-        dialog.find('#operationLocksmith').prop('checked', operations.indexOf('locksmith') !== -1);
-        dialog.find('#operationBaikal').prop('checked', operations.indexOf('baikal') !== -1);
-        dialog.find('#operationShearingPunching').prop('checked', operations.indexOf('shearingpunching') !== -1);
-        dialog.find('#operationDrilling').prop('checked', operations.indexOf('drilling') !== -1);
-        dialog.find('#operationBending').prop('checked', operations.indexOf('bending') !== -1);
-        dialog.find('#operationPressing').prop('checked', operations.indexOf('pressing') !== -1);
+        dialog.find('.readiness-operation-checks input[type="checkbox"]').each((_, el) => {
+            const value = String($(el).val());
+            const inOperationsField = operations.indexOf(value) !== -1;
+            $(el).prop('checked', inOperationsField && performed.indexOf(value) !== -1);
+            $(el).prop('disabled', false);
+            $(el).closest('.operation-checkbox').toggle(inOperationsField);
+        });
 
         this.dialog.open('readiness-dialog');
     }
@@ -812,53 +897,25 @@ class PdItem extends Base {
         }
 
         const dialog = $('#readiness-dialog');
-        const isThermal = dialog.find('#operationThermal').is(':checked');
-        const isLocksmith = dialog.find('#operationLocksmith').is(':checked');
-        const isBaikal = dialog.find('#operationBaikal').is(':checked');
-        const isShearingPunching = dialog.find('#operationShearingPunching').is(':checked');
-        const isDrilling = dialog.find('#operationDrilling').is(':checked');
-        const isBending = dialog.find('#operationBending').is(':checked');
-        const isPressing = dialog.find('#operationPressing').is(':checked');
-
-        // Собираем выбранные операции
-        const operations: string[] = [];
-        if (isThermal) operations.push('thermal');
-        if (isLocksmith) operations.push('locksmith');
-        if (isBaikal) operations.push('baikal');
-        if (isShearingPunching) operations.push('shearingpunching');
-        if (isDrilling) operations.push('drilling');
-        if (isBending) operations.push('bending');
-        if (isPressing) operations.push('pressing');
-
-        // Готовность = true если выбрана хотя бы одна операция
-        const ready = operations.length > 0;
+        const performed: string[] = [];
+        dialog.find('.readiness-operation-checks input[type="checkbox"]:checked').each((_, el) => {
+            performed.push(String($(el).val()));
+        });
 
         const unlock = this.lockScreen('Сохранение готовности...');
         try {
             const params = new URLSearchParams();
             params.set('id', this.selectedReadinessRowId);
-            params.set('ready', String(ready));
-            operations.forEach(op => params.append('operations', op));
+            performed.forEach(op => params.append('performed', op));
 
-            await this.requestToApi(`/api/parts-directory/ready?${params.toString()}`, 'PATCH').then((pdi: pdItemIn) => {
-                // @ts-ignore
-                this.updateRow(pdi, this.selectedReadinessRowId);
-                setTimeout(() => this.applyFilters(), 150);
-            });
+            const pdi = await this.requestToApi(`/api/parts-directory/performed-operations?${params.toString()}`, 'PATCH') as pdItemIn;
+            this.updateRow(pdi, this.selectedReadinessRowId);
+            setTimeout(() => this.applyFilters(), 150);
 
-            // Обновляем кэш и UI
-            const cacheData = this.localCache.get(this.selectedReadinessRowId) as pdItemIn | undefined;
-            if (cacheData) {
-                cacheData.ready = ready;
-                cacheData.operation = operations as any;
-            }
-
-            // Обновляем чекбокс в таблице
-            const $row = $(`.table-row[id="${this.selectedReadinessRowId}"]`);
-            const checkbox = $row.find('.ready-checkbox');
-            checkbox.prop('checked', ready);
-
-            this.createNotification('Готовность успешно обновлена', NotificationType.SUCCESS);
+            this.createNotification(
+                pdi.ready ? 'Все операции выполнены, позиция готова' : 'Выполненные операции сохранены',
+                NotificationType.SUCCESS
+            );
             this.closeReadinessDialog();
         } catch {
             this.createNotification('Ошибка при сохранении готовности', NotificationType.ERROR);

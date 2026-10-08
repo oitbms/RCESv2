@@ -15,7 +15,9 @@ public interface PartsDirectoryService {
 
     void deletePdi(Long id);
 
-    PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations);
+    PartsDirectoryDTO updateOperations(Long id, List<String> operations);
+
+    PartsDirectoryDTO updatePerformedOperations(Long id, List<String> performedOperations);
 
     PartsDirectoryFrom1C downloadFrom1C(String customerOrder);
 

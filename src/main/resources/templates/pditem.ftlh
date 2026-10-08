@@ -108,6 +108,9 @@
             <div class="table-header-cell" style="width: var(--dateCompletion);">
                 Дата готовности
             </div>
+            <div class="table-header-cell" style="width: var(--operations);">
+                Операции
+            </div>
             <div class="table-header-cell table-header-cell--ready last-child" style="width: var(--ready);">
                 <span>Готовность</span>
                 <button type="button"
@@ -362,6 +365,7 @@
         <button class="close-btn" id="closeReadinessDialog">&times;</button>
     </div>
     <div class="modal-body">
+        <p class="readiness-hint">Отметьте выполненные операции. Деталь готова, когда выполнены все операции.</p>
         <div class="readiness-operation-checks">
             <label class="operation-checkbox">
                 <input type="checkbox" id="operationThermal" value="thermal">
@@ -396,6 +400,48 @@
     <div class="modal-footer">
         <button class="btn btn-secondary" id="cancelReadiness">Отмена</button>
         <button class="btn btn-primary" id="saveReadiness">Сохранить</button>
+    </div>
+</dialog>
+<dialog id="operations-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Операции</h2>
+        <button class="close-btn" id="closeOperationsDialog">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="readiness-operation-checks">
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="thermal">
+                <span>Термическая резка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="locksmith">
+                <span>Слесарные работы</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="baikal">
+                <span>Байкал</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="shearingpunching">
+                <span>Рубка, пробивка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="drilling">
+                <span>Сверление</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="bending">
+                <span>Гибка</span>
+            </label>
+            <label class="operation-checkbox">
+                <input type="checkbox" class="operation-check" value="pressing">
+                <span>Прессование</span>
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelOperations">Отмена</button>
+        <button class="btn btn-primary" id="saveOperations">Сохранить</button>
     </div>
 </dialog>
 </body>

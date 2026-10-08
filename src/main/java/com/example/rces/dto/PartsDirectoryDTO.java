@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PartsDirectoryDTO {
 
@@ -42,6 +43,10 @@ public class PartsDirectoryDTO {
     private LocalDate dateCompletion;
 
     private Boolean ready;
+
+    private List<String> operation;
+
+    private List<String> performedOperation;
 
     private TeamDTO team;
 
@@ -187,6 +192,22 @@ public class PartsDirectoryDTO {
 
     public void setReady(Boolean ready) {
         this.ready = ready;
+    }
+
+    public List<String> getOperation() {
+        return operation;
+    }
+
+    public void setOperation(List<String> operation) {
+        this.operation = operation;
+    }
+
+    public List<String> getPerformedOperation() {
+        return performedOperation;
+    }
+
+    public void setPerformedOperation(List<String> performedOperation) {
+        this.performedOperation = performedOperation;
     }
 
     public TeamDTO getTeam() {

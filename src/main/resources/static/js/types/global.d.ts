@@ -171,6 +171,7 @@ declare type pdItemIn = {
     team: TeamIn;
     dateCompletion: string;
     operation: string[];
+    performedOperation: string[];
 };
 
 declare type CustomerOrder = {

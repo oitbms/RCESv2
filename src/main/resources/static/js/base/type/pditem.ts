@@ -1,3 +1,5 @@
+import {Color, CustomerOrder, Employee} from "../../core/types";
+
 type pdItemIn = {
     id: number;
     version: number;
@@ -19,6 +21,7 @@ type pdItemIn = {
     team: TeamIn;
     dateCompletion: string;
     operation: string[];
+    performedOperation: string[];
 }
 
 type TeamIn = {

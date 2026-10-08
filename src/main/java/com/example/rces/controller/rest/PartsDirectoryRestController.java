@@ -48,11 +48,17 @@ public class PartsDirectoryRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/ready")
-    public ResponseEntity<PartsDirectoryDTO> coordination(@RequestParam Long id,
-                                                          @RequestParam(name = "ready") Boolean readyBoolean,
-                                                          @RequestParam(required = false) List<String> operations) {
-        PartsDirectoryDTO dto = service.readyOrNot(id, readyBoolean, operations);
+    @PatchMapping("/performed-operations")
+    public ResponseEntity<PartsDirectoryDTO> updatePerformedOperations(@RequestParam Long id,
+                                                                       @RequestParam(required = false) List<String> performed) {
+        PartsDirectoryDTO dto = service.updatePerformedOperations(id, performed);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PatchMapping("/operations")
+    public ResponseEntity<PartsDirectoryDTO> updateOperations(@RequestParam Long id,
+                                                              @RequestParam(required = false) List<String> operations) {
+        PartsDirectoryDTO dto = service.updateOperations(id, operations);
         return ResponseEntity.ok(dto);
     }
 

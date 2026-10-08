@@ -111,20 +111,52 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     }
 
     @Override
-    public PartsDirectoryDTO readyOrNot(Long id, Boolean ready, List<String> operations) {
+    public PartsDirectoryDTO updateOperations(Long id, List<String> operations) {
         PartsDirectory pdiEntity = repository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
-        if (ready) {
-            List<PartsDirectory.Operation> operationList = PartsDirectory.Operation.fromString(operations);
-            pdiEntity.setOperation(new ArrayList<>(operationList));
-        } else {
-            pdiEntity.setOperation(new ArrayList<>());
-        }
-        pdiEntity.setReady(ready);
-        pdiEntity.setStatus(calculateStatus(pdiEntity));
-        pdiEntity.setColor(colorCalculate(pdiEntity));
+        List<PartsDirectory.Operation> operationList = operations == null || operations.isEmpty()
+                ? new ArrayList<>()
+                : new ArrayList<>(PartsDirectory.Operation.fromString(operations));
+        pdiEntity.setOperation(operationList);
+
+        // Выполненные операции — подмножество плана: убираем исключённые из плана
+        List<PartsDirectory.Operation> performed = pdiEntity.getPerformedOperation() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(pdiEntity.getPerformedOperation());
+        performed.retainAll(operationList);
+        pdiEntity.setPerformedOperation(performed);
+
+        recalculateReady(pdiEntity);
         repository.save(pdiEntity);
         return mapper.toDTO(pdiEntity);
+    }
+
+    @Override
+    public PartsDirectoryDTO updatePerformedOperations(Long id, List<String> performedOperations) {
+        PartsDirectory pdiEntity = repository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException(String.format("PDI с id %s не найдено", id)));
+        List<PartsDirectory.Operation> plan = pdiEntity.getOperation() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(pdiEntity.getOperation());
+        List<PartsDirectory.Operation> performed = performedOperations == null || performedOperations.isEmpty()
+                ? new ArrayList<>()
+                : new ArrayList<>(PartsDirectory.Operation.fromString(performedOperations));
+        // Только операции, входящие в план из поля «Операции»
+        performed.retainAll(plan);
+        pdiEntity.setPerformedOperation(performed);
+
+        recalculateReady(pdiEntity);
+        repository.save(pdiEntity);
+        return mapper.toDTO(pdiEntity);
+    }
+
+    private void recalculateReady(PartsDirectory pdi) {
+        List<PartsDirectory.Operation> plan = pdi.getOperation() == null ? List.of() : pdi.getOperation();
+        List<PartsDirectory.Operation> performed = pdi.getPerformedOperation() == null ? List.of() : pdi.getPerformedOperation();
+        boolean ready = !plan.isEmpty() && performed.containsAll(plan);
+        pdi.setReady(ready);
+        pdi.setStatus(calculateStatus(pdi));
+        pdi.setColor(colorCalculate(pdi));
     }
 
     @Override

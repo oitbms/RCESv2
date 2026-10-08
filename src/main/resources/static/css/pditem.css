@@ -21,6 +21,7 @@
     --status: 100px;
     --team: 140px;
     --dateCompletion: 160px;
+    --operations: minmax(150px, 0.85fr);
     --ready: 105px;
 }
 
@@ -134,6 +135,7 @@ header {
         var(--status)
         var(--team)
         var(--dateCompletion)
+        var(--operations)
         var(--ready);
     min-width: 0;
     background: var(--accent);
@@ -190,6 +192,7 @@ header {
         var(--status)
         var(--team)
         var(--dateCompletion)
+        var(--operations)
         var(--ready);
     border-bottom: 1px solid var(--border-color);
     border-left: 1px solid var(--default-color);
@@ -349,6 +352,26 @@ header {
 
 .ready-filter-button--not-ready {
     background: rgba(245, 158, 11, 0.35);
+}
+
+.operations-cell {
+    cursor: pointer;
+
+    & .operations-value {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-secondary);
+        padding: 4px 0 0 0;
+    }
+
+    &:hover .operations-value {
+        color: var(--accent);
+        text-decoration: underline;
+    }
 }
 
 .toolbar-text-button {
@@ -1139,7 +1162,8 @@ dialog::backdrop {
 }
 
 /* Модальное окно готовности */
-#readiness-dialog {
+#readiness-dialog,
+#operations-dialog {
     width: 480px;
     height: auto;
     max-height: 90vh;
@@ -1185,6 +1209,12 @@ dialog::backdrop {
         justify-content: flex-end;
         gap: 8px;
     }
+}
+
+.readiness-hint {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #6c757d;
 }
 
 .readiness-operation-checks {
