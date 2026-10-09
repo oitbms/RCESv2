@@ -87,6 +87,16 @@ class PdItem extends Base {
         this.createHandler('click', '#print-button', this.print = this.print.bind(this), true);
         this.createHandler('click', '#teams-button', () => this.openTeamEditDialog(), true);
         this.bindFieldChanges();
+
+        // Колонки не переносятся, а при нехватке ширины — прокручиваются:
+        // синхронизируем горизонтальную прокрутку шапки с телом таблицы.
+        const tableBody = document.querySelector('.table-body');
+        const tableHeader = document.querySelector('.table-header');
+        if (tableBody && tableHeader) {
+            tableBody.addEventListener('scroll', () => {
+                tableHeader.scrollLeft = tableBody.scrollLeft;
+            });
+        }
         this.createHandler('click', '.ready-checkbox', (e) => {
             if (this.blockReadinessInEditMode(e)) {
                 return;
@@ -126,82 +136,82 @@ class PdItem extends Base {
         })();
         const row = `
             <div class="table-row" id="${pdi.id}" data-index="${pdi.id}">
-                <div class="table-cell" style="width: var(--customerOrder); position: relative">
+                <div class="table-cell" style="position: relative" title="${this.escapeHtml(pdi.customerOrder.name)}">
                     <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
                     <div class="field-container center" data-name="customerOrder" contenteditable="false">
                         ${this.escapeHtml(pdi.customerOrder.name)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--name);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.name)}">
                     <div class="field-container center" data-name="name" contenteditable="false">
                         ${this.escapeHtml(pdi.name)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--scheme);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.scheme)}">
                     <div class="field-container center" data-name="scheme" contenteditable="false">
                         ${this.escapeHtml(pdi.scheme)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--thickness); padding: 0">
+                <div class="table-cell" title="${this.escapeHtml(pdi.thickness || '')}">
                     <div class="field-container center" data-name="thickness" contenteditable="false">
                         ${this.escapeHtml(pdi.thickness || '')}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--steel); padding: 0">
+                <div class="table-cell" title="${this.escapeHtml(pdi.steel)}">
                     <div class="field-container center" data-name="steel" contenteditable="false">
                         ${this.escapeHtml(pdi.steel)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--qty);">
+                <div class="table-cell">
                     <div class="field-container center" data-name="qty" contenteditable="false">
                         ${pdi.qty}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--qtyCompleted);">
+                <div class="table-cell">
                     <div class="field-container center" data-name="qtyCompleted" contenteditable="false">
                         ${pdi.qtyCompleted}
                     </div>
                 </div>
-                 <div class="table-cell" style="width: var(--measurements);">
+                 <div class="table-cell" title="${this.escapeHtml(pdi.measurements)}">
                     <div class="field-container center" data-name="measurements" contenteditable="false">
                         ${this.escapeHtml(pdi.measurements)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--machine);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.machine || '')}">
                     <div class="field-container center" data-name="machine" contenteditable="false">
                         ${this.escapeHtml(pdi.machine || '')}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--program);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.program)}">
                     <div class="field-container" data-name="program" contenteditable="false">
                         ${this.escapeHtml(pdi.program)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--comment);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.comment)}">
                     <div class="field-container" data-name="comment" contenteditable="false">
                         ${this.escapeHtml(pdi.comment)}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--status);">
+                <div class="table-cell" title="${this.escapeHtml(status)}">
                     <span class="status-indicator" style="background-color: ${this.calculateColor(pdi.color)}" data-status="${pdi.status}">
                         ${status}
                     </span>
                 </div>
-                <div class="table-cell" style="width: var(--team);">
+                <div class="table-cell" title="${this.escapeHtml(pdi.team?.name || '')}">
                     <div class="field-container team-field center" data-name="team" contenteditable="false">
                         ${this.escapeHtml(pdi.team?.name || '')}
                     </div>
                 </div>
-                <div class="table-cell" style="width: var(--preparationDate);">
+                <div class="table-cell" title="${this.escapeHtml(this.formatDate(pdi.dateCompletion))}">
                     <div contenteditable="false" data-name="dateCompletion">
                         ${this.formatDate(pdi.dateCompletion)}
                     </div>
                 </div>
-                <div class="table-cell operations-cell" style="width: var(--operations);"
+                <div class="table-cell operations-cell"
                      title="${this.escapeHtml(this.formatOperations(pdi.operation))}">
                     <span class="operations-value">${this.escapeHtml(this.formatOperations(pdi.operation))}</span>
                 </div>
-                <div class="table-cell center" style="width: var(--ready);">
+                <div class="table-cell center">
                     <div class="checkbox-wrapper-ready">
                         <input type="checkbox" class="ready-checkbox" id="toggleReady-${pdi.id}" ${pdi.ready ? 'checked' : ''}>
                         <svg viewBox="0 0 35.6 35.6">

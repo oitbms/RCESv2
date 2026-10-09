@@ -65,53 +65,53 @@
     </header>
     <div class="data-container">
         <div class="table-header">
-            <div class="table-header-cell" style="width: var(--customerorder);">
+            <div class="table-header-cell" style="width: var(--customerorder);" title="Номер заказа">
                 <div class="circle circle-header tooltip-trigger" data-description="Выделить все строки"></div>
                 Номер заказа
             </div>
-            <div class="table-header-cell" style="width: var(--name);">
+            <div class="table-header-cell" style="width: var(--name);" title="Наименование">
                 Наименование
             </div>
-            <div class="table-header-cell" style="width: var(--schema);">
+            <div class="table-header-cell" style="width: var(--schema);" title="Чертеж">
                 Чертеж
             </div>
-            <div class="table-header-cell" style="width: var(--thickness);">
+            <div class="table-header-cell table-header-cell--wrap" style="width: var(--thickness);" title="Толщина">
                 Толщина
             </div>
-            <div class="table-header-cell" style="width: var(--steel);">
+            <div class="table-header-cell" style="width: var(--steel);" title="Сталь">
                 Сталь
             </div>
-            <div class="table-header-cell" style="width: var(--qty);">
+            <div class="table-header-cell" style="width: var(--qty);" title="Количество">
                 Количество
             </div>
-            <div class="table-header-cell center" style="width: var(--qtyCompleted);">
+            <div class="table-header-cell center table-header-cell--wrap" style="width: var(--qtyCompleted);" title="Выполненное количество">
                 Выполненное количество
             </div>
-            <div class="table-header-cell" style="width: var(--dimensions);">
+            <div class="table-header-cell" style="width: var(--dimensions);" title="Размеры">
                 Размеры
             </div>
-            <div class="table-header-cell" style="width: var(--machine);">
+            <div class="table-header-cell" style="width: var(--machine);" title="Станок">
                 Станок
             </div>
-            <div class="table-header-cell" style="width: var(--program);">
+            <div class="table-header-cell" style="width: var(--program);" title="Программа">
                 Программа
             </div>
-            <div class="table-header-cell" style="width: var(--comment);">
+            <div class="table-header-cell" style="width: var(--comment);" title="Комментарий">
                 Комментарий
             </div>
-            <div class="table-header-cell last-child" style="width: var(--status);">
+            <div class="table-header-cell last-child" style="width: var(--status);" title="Статус">
                 Статус
             </div>
-            <div class="table-header-cell" style="width: var(--team);">
+            <div class="table-header-cell" style="width: var(--team);" title="Бригада">
                 Бригада
             </div>
-            <div class="table-header-cell" style="width: var(--dateCompletion);">
+            <div class="table-header-cell" style="width: var(--dateCompletion);" title="Дата готовности">
                 Дата готовности
             </div>
-            <div class="table-header-cell" style="width: var(--operations);">
+            <div class="table-header-cell" style="width: var(--operations);" title="Операции">
                 Операции
             </div>
-            <div class="table-header-cell table-header-cell--ready last-child" style="width: var(--ready);">
+            <div class="table-header-cell table-header-cell--ready last-child" style="width: var(--ready);" title="Готовность">
                 <span>Готовность</span>
                 <button type="button"
                         id="readyFilterButton"
