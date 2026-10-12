@@ -3,6 +3,7 @@ package com.example.rces.repository;
 import com.example.rces.dto.EmployeeWorkCalendarDto;
 import com.example.rces.models.Employee;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,13 +12,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EmployeeRepository extends BaseAuditingRepository<Employee, Long> {
+public interface EmployeeRepository extends BaseAuditingRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
 
     @EntityGraph(attributePaths = {"subDivision"})
     List<Employee> findAllByRole(String role);
 
     @EntityGraph(attributePaths = {"subDivision"})
     Optional<Employee> findByName(String name);
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, Long id);
+
+    @Query(value = "SELECT COUNT(*) FROM rces.employees e WHERE e.role = :role AND e.is_active = TRUE",
+            nativeQuery = true)
+    long countActiveByRole(@Param("role") String role);
 
     @Query("SELECT NEW com.example.rces.dto.EmployeeWorkCalendarDto( " +
             "e.id as id, " +

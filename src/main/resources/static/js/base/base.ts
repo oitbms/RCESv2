@@ -1,21 +1,20 @@
-import { requestToApi as apiRequest } from '../core/api';
-import { appendQueryParams, downloadFilesFromDto } from '../core/files';
-import { escapeHtml as escapeHtmlText } from '../core/html';
-import { createAsyncLock } from '../core/lock';
-import { ensureNotificationContainer, showNotification } from '../core/notifications';
+import {requestToApi as apiRequest} from '../core/api';
+import {appendQueryParams, downloadFilesFromDto} from '../core/files';
+import {escapeHtml as escapeHtmlText} from '../core/html';
+import {createAsyncLock} from '../core/lock';
+import {ensureNotificationContainer, showNotification} from '../core/notifications';
 import {
     Color,
-    NotificationType,
     type EditModeOptions,
     type FileDTO,
     type IntegerFieldValidationConfig,
+    NotificationType,
     type ReportItem,
     type RequestDataDTO,
-    type SpecialFieldTransform,
 } from '../core/types';
-import { CacheBormashImpl, type CacheBormash } from './cache';
-import { DialogImpl, type Dialog } from './dialog';
-import { confirmDialogTemplate, printDialogTemplate } from './dialogTemplates';
+import {type CacheBormash, CacheBormashImpl} from './cache';
+import {type Dialog, DialogImpl} from './dialog';
+import {confirmDialogTemplate, printDialogTemplate} from './dialogTemplates';
 
 export abstract class Base {
     private readonly asyncLock = createAsyncLock();
@@ -292,7 +291,6 @@ export abstract class Base {
             });
         });
     });
-
 
     //Контекстное меню
     public readonly createContextMenu = (items: { label: string, idAction: string, action: () => void }[],

@@ -3,6 +3,7 @@ package com.example.rces.dto;
 import com.example.rces.models.enums.NotificationType;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class ErrorResponse {
 
@@ -10,6 +11,7 @@ public class ErrorResponse {
     private String message;
     private LocalDateTime timestamp;
     private NotificationType notificationType;
+    private Map<String, String> fieldErrors;
 
     public ErrorResponse(int statusError, String message, NotificationType notificationType) {
         this.statusError = statusError;
@@ -48,5 +50,13 @@ public class ErrorResponse {
 
     public void setNotificationType(NotificationType notificationType) {
         this.notificationType = notificationType;
+    }
+
+    public Map<String, String> getFieldErrors() {
+        return fieldErrors;
+    }
+
+    public void setFieldErrors(Map<String, String> fieldErrors) {
+        this.fieldErrors = fieldErrors;
     }
 }

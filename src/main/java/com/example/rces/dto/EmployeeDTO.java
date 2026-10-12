@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class EmployeeDTO {
 
     private Long id;
+    private Long version;
     private String name;
     private SubDivisionDTO subDivision;
     private String role;

@@ -1,7 +1,6 @@
 package com.example.rces.controller.mvc;
 
 import com.example.rces.dto.EmployeeDTO;
-import com.example.rces.dto.SubDivisionDTO;
 import com.example.rces.models.Employee;
 import com.example.rces.models.Requests;
 import com.example.rces.models.enums.NotificationApp;
@@ -14,11 +13,8 @@ import com.example.rces.utils.DecimalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,14 +44,10 @@ public class RegistrationsController {
 
     @GetMapping("/admin")
     public String admin(@AuthenticationPrincipal Employee currentUser, Model model) {
-        List<Role> roles = List.of(Role.values());
-        List<SubDivisionDTO> mlmNodes = subDivisionService.getAll();
-        List<EmployeeDTO> employees = employeeService.findAll();
-        model.addAttribute("users", employees);
         model.addAttribute("user", currentUser);
-        model.addAttribute("mlmNodes", mlmNodes);
+        model.addAttribute("mlmNodes", subDivisionService.getAll());
         model.addAttribute("notificationApp", List.of(NotificationApp.values()));
-        model.addAttribute("roles", roles);
+        model.addAttribute("roles", List.of(Role.values()));
         return "admin";
     }
 
@@ -134,32 +126,7 @@ public class RegistrationsController {
     }
 
     @GetMapping("/registration")
-    public String registration(Model model) {
-        model.addAttribute("userRole", Role.values());
-        model.addAttribute("mlmNode", subDivisionService.getAll());
-        return "registration";
-    }
-
-    @PostMapping("/registration")
-    @Transactional
-    public String addUser(@RequestParam String username,
-                          @RequestParam String mlmNode,
-                          @RequestParam String role,
-                          @RequestParam String password,
-                          @RequestParam Long chatId) {
-        employeeService.save(username, mlmNode, role, password, chatId);
-        return "redirect:/admin";
-    }
-
-
-    @PostMapping("/update")
-    public String updateUser(@RequestParam(required = false) String userName,
-                             @RequestParam(required = false) String mlmNodeName,
-                             @RequestParam(required = false) String notificationAppName,
-                             @RequestParam(required = false) String roleName,
-                             @RequestParam(required = false) Long chatName,
-                             @RequestParam(required = false) Boolean active) {
-        employeeService.update(userName, mlmNodeName, notificationAppName,roleName, chatName, active);
+    public String registration() {
         return "redirect:/admin";
     }
 

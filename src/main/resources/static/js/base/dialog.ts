@@ -51,7 +51,7 @@ export class DialogImpl implements Dialog {
         this.activeDialogs.set(dialogId, this.currentZIndex);
         this.currentZIndex++;
         document.documentElement.style.setProperty('--dialog-z-index', this.currentZIndex.toString());
-        this.setupCloseHandlers(dialogId, options.onClose);
+        this.setupCloseHandlers(dialogId, options);
 
         if (options.onOpen) {
             options.onOpen();
@@ -120,9 +120,26 @@ export class DialogImpl implements Dialog {
         }
     }
 
-    private setupCloseHandlers(dialogId: string, onCloseCallback?: () => void): void {
+    private setupCloseHandlers(dialogId: string, options: DialogOptions): void {
+        const onCloseCallback = options.onClose;
+        const onBeforeClose = options.onBeforeClose;
         const dialogElement = document.getElementById(dialogId) as HTMLDialogElement;
         if (!dialogElement) return;
+
+        const requestClose = async (event?: Event) => {
+            if (event) event.preventDefault();
+            if (onBeforeClose) {
+                try {
+                    if ((await onBeforeClose()) === false) {
+                        return;
+                    }
+                } catch {
+                    return;
+                }
+            }
+            this.close(dialogId);
+            if (onCloseCallback) onCloseCallback();
+        };
 
         const handleBackdropClick = (e: MouseEvent) => {
             const rect = dialogElement.getBoundingClientRect();
@@ -134,8 +151,7 @@ export class DialogImpl implements Dialog {
             );
 
             if (!isInDialog) {
-                this.close(dialogId);
-                if (onCloseCallback) onCloseCallback();
+                void requestClose(e);
             }
         };
 
@@ -144,9 +160,7 @@ export class DialogImpl implements Dialog {
                 const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
                 const currentZIndex = this.activeDialogs.get(dialogId);
                 if (currentZIndex === maxZIndex) {
-                    e.preventDefault();
-                    this.close(dialogId);
-                    if (onCloseCallback) onCloseCallback();
+                    void requestClose(e);
                 }
             }
         };
@@ -166,12 +180,11 @@ export class DialogImpl implements Dialog {
 
         const cancelBtn = dialogElement.querySelector('[name="closeDialog"], #cancelButton') as HTMLElement;
         if (cancelBtn) {
-            const btn = cancelBtn as HTMLElement & { _dialogCancelClick?: () => void };
+            const btn = cancelBtn as HTMLElement & { _dialogCancelClick?: (e: Event) => void };
             if (btn._dialogCancelClick) cancelBtn.removeEventListener('click', btn._dialogCancelClick);
 
-            const handleCancel = () => {
-                this.close(dialogId);
-                if (onCloseCallback) onCloseCallback();
+            const handleCancel = (e: Event) => {
+                void requestClose(e);
             };
             cancelBtn.addEventListener('click', handleCancel);
             btn._dialogCancelClick = handleCancel;

@@ -45,6 +45,8 @@ export interface DialogOptions {
     clearFields?: boolean;
     onClose?: () => void;
     onOpen?: () => void;
+    /** Вызывается перед закрытием. Возврат false (или Promise<false>) отменяет закрытие. */
+    onBeforeClose?: () => boolean | Promise<boolean>;
 }
 
 export interface ErrorResponse {
@@ -52,6 +54,7 @@ export interface ErrorResponse {
     message: string;
     timestamp: string;
     notificationType: NotificationType;
+    fieldErrors?: Record<string, string>;
 }
 
 export type Employee = {

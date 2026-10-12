@@ -1,16 +1,30 @@
 package com.example.rces.service;
 
+import com.example.rces.dto.EmployeeCreateDTO;
 import com.example.rces.dto.EmployeeDTO;
+import com.example.rces.dto.EmployeeUpdateDTO;
 import com.example.rces.dto.EmployeeWorkCalendarDto;
 import com.example.rces.models.Employee;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface EmployeeService {
 
-    void save(String username, String mlmNode, String role, String password, Long chatId);
+    EmployeeDTO create(EmployeeCreateDTO createDTO);
 
-    void update(String userName, String mlmNodeName, String notificationAppName, String roleName, Long chatId, Boolean active);
+    EmployeeDTO update(Long id, Long version, EmployeeUpdateDTO updateDTO);
+
+    EmployeeDTO findById(Long id);
+
+    Page<EmployeeDTO> findPage(String query,
+                               String role,
+                               Boolean active,
+                               Long subDivisionId,
+                               int page,
+                               int size,
+                               String sort,
+                               String direction);
 
     void deleteById(Long id);
 

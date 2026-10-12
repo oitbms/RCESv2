@@ -74,6 +74,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/sub-division/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/sub-division/**").hasAnyAuthority(MACHINE_EDITOR_ROLES)
                         .requestMatchers("/get-data/**", "/login", "/ws/**", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/home").hasAnyAuthority("TECHNOLOGIST", "OTK", "CONSTRUCTOR", "ADMIN", "MASTER")
                         .requestMatchers("/admin", "/registration").hasAuthority("ADMIN")
                         .requestMatchers("/create", "/requestslist/**")

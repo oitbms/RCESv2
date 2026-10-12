@@ -1,205 +1,181 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/css/stylesMain.css">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/bootstrap/bootstrap.bundle.min.js" defer></script>
-    <script src="/js/admin.js" defer></script>
-    <title>Страница администрирования</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <#include "macros/registry-scripts.ftlh">
+    <@registryScripts module="admin" />
+    <title>Администрирование пользователей</title>
 </head>
 <body>
-<div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Функции</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-        <div class="list-group" style="width: 200px;">
-            <a href="/menu" class="list-group-item list-group-item-action btn btn-primary mb-2">Меню</a>
-            <#if user.getRole() == 'ADMIN' || user.getRole() == 'CONTROL' || user.getRole() == 'EVENT'>
-                <a href="/sgi" class="list-group-item list-group-item-action btn btn-primary">СГИ</a>
-            </#if>
-            <#if user.getRole() != 'CONTROL' && user.getRole() != 'EVENT'>
-                <div class="dropdown mt-3">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Формы заявок
-                    </button>
-                    <ul class="dropdown-menu">
-                        <#if user.getRole() == 'ADMIN' || user.getRole() == 'MASTER'>
-                            <li><a class="dropdown-item" href="/requestslist/technologist">Заявки для ОГТ </a></li>
-                            <li><a class="dropdown-item" href="/requestslist/constructor">Заявки для ОГК</a></li>
-                            <li><a class="dropdown-item" href="/requestslist/otk">Заявки для ОТК</a></li>
-                        <#elseif user.getRole() == 'TECHNOLOGIST'>
-                            <li><a class="dropdown-item" href="requestslist/technologist">Заявки для ОГТ </a></li>
-                        <#elseif user.getRole() == 'CONSTRUCTOR'>
-                            <li><a class="dropdown-item" href="requestslist/constructor">Заявки для ОГК</a></li>
-                        <#elseif user.getRole() == 'OTK'>
-                            <li><a class="dropdown-item" href="requestslist/otk">Заявки для ОТК</a></li>
-                        </#if>
-                    </ul>
-                </div>
-            </#if>
+<div class="admin-container">
+    <header>
+        <div class="title">
+            <h1>Управление пользователями</h1>
         </div>
-    </div>
-</div>
-<h1 class="text-center">
-    Список пользователей
-    <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="background: none; border: none;">
-        <i class="bi bi-list" style="color: black"></i>
-    </button>
-</h1>
-
-<div class="container">
-    <table class="table table-bordered" id="requestTable">
-        <thead>
-        <tr>
-            <th>
-                Сотрудник
-                <button type="button" class="toggleInput">
-                    <svg viewBox="0 0 24 24" width=16>
-                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                    </svg>
-                </button>
-                <div class="inputContainer">
-                    <input type="text" class="form-control" id="employee">
-                </div>
-            </th>
-            <th>
-                <button type="button" class="toggleInput">
-                    <svg viewBox="0 0 24 24" width=16>
-                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                    </svg>
-                </button>
-                <div class="inputContainer">
-                    <input type="text" class="form-control" id="mlmNode">
-                </div>
-            </th>
-            <th>
-                Роль
-                <button type="button" class="toggleInput">
-                    <svg viewBox="0 0 24 24" width=16>
-                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                    </svg>
-                </button>
-                <div class="inputContainer">
-                    <input type="text" class="form-control" id="role">
-                </div>
-            </th>
-            <th>
-                ChatID
-                <button type="button" class="toggleInput">
-                    <svg viewBox="0 0 24 24" width=16>
-                        <path d="M10 18h4v-2h-4zM3 6v2h18V6zm3 7h12v-2H6z"/>
-                    </svg>
-                </button>
-                <div class="inputContainer">
-                    <input type="text" class="form-control" id="chatId">
-                </div>
-            </th>
-            <th> Действия </th>
-        </tr>
-        </thead>
-        <tbody>
-        <#list users as req>
-            <tr id="req-${req.id}">
-                <td>${req.name}</td>
-                <td>${(req.mlmNode)!""}</td>
-                <td>${req.role!""}</td>
-                <td>${req.chatId!""}</td>
-                <td>
-                    <button type="button"
-                            class="btn btn-primary d-none d-md-inline-block create-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#createModal"
-                            data-id="${req.id}"
-                            data-user="${req.name}"
-                    >
-                        Редактировать
-                    </button>
-                    <button
-                            type="button"
-                            class="btn btn-danger delete-btn"
-                            data-id="${req.id}"
-                    >
-                        Удалить
-                    </button>
-                </td>
-            </tr>
-        </#list>
-        </tbody>
-    </table>
-    <div id="pagination" class="pagination mt-4"></div>
-    <div class="text-center mt-3">
-        <a class="btn btn-primary" href="/registration">Добавить нового пользователя</a>
-    </div>
-    <div class="text-center mt-3">
-        <button class="btn btn-primary clear" id="clearFilter">Очистить фильтр</button>
-    </div>
-</div>
-
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content ">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="createModalLabel">Редактирование пользователя</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        <div class="filters">
+            <div class="filter-field search-field">
+                <label for="user-search">Поиск</label>
+                <input type="text" id="user-search" placeholder="Имя сотрудника...">
             </div>
-            <div class="modal-body">
-                <div class="container">
-                    <form name="editUser" action="/update" method="POST">
-                        <input hidden="" type="text" class="form-control" id="userId" value="" name="id">
-                        <div class="mb-3">
-                            <label for="shop" class="d-flex justify-content-center form-label">Имя пользователя</label>
-                            <input type="text" class="form-control" id="userNameId" name="userName" value="">
-                        </div>
-                        <div class="mb-3">
-                            <label for="shop" class="d-flex justify-content-center form-label">Отдел</label>
-                            <select id="mlmNodeId" name="mlmNodeName" class="d-flex justify-content-center form-control" required>
-                                <#list mlmNodes as mlmNode>
-                                    <option value="${mlmNode}">${mlmNode.getName()}</option>
-                                </#list>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="notificationApp" class="d-flex justify-content-center form-label">Приложение для уведомлений</label>
-                            <select id="notificationAppId" name="notificationAppName" class="d-flex justify-content-center form-control" required>
-                                <#list notificationApp as notification>
-                                    <option value="${notification}">${notification.name()}</option>
-                                </#list>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="shop" class="d-flex justify-content-center form-label">Статус</label>
-                            <select id="activeId" name="active" class="form-control">
-                                <option value="true">Активный</option>
-                                <option value="false">Не активный</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="shop" class="d-flex justify-content-center form-label">Роль</label>
-                            <select id="roleId" name="roleName" class="d-flex justify-content-center form-control" required>
-                                <#list roles as role>
-                                    <option value="${role}">${role}</option>
-                                </#list>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="shop" class="d-flex justify-content-center form-label">ChatId</label>
-                            <input type="number" class="form-control" id="employChatId" name="chatName" value="">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" id="saveId">Сохранить изменения</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="filter-field">
+                <label for="role-filter">Роль</label>
+                <select id="role-filter">
+                    <option value="">Все роли</option>
+                    <#list roles as role>
+                        <option value="${role}">${role}</option>
+                    </#list>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="subdivision-filter">Подразделение</label>
+                <select id="subdivision-filter">
+                    <option value="">Все подразделения</option>
+                    <#list mlmNodes as mlmNode>
+                        <option value="${mlmNode.id}">${mlmNode.name}</option>
+                    </#list>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="active-filter">Статус</label>
+                <select id="active-filter">
+                    <option value="">Все</option>
+                    <option value="true">Активные</option>
+                    <option value="false">Отключённые</option>
+                </select>
+            </div>
+            <button type="button" class="btn-secondary-action" id="reset-filters">Сбросить</button>
+            <button type="button" class="btn-primary-action" id="create-user-btn">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
+        </div>
+    </header>
+
+    <div class="data-container">
+        <div class="table-header">
+            <div class="table-header-cell sortable" data-sort="id">ID</div>
+            <div class="table-header-cell sortable" data-sort="name">Сотрудник</div>
+            <div class="table-header-cell sortable" data-sort="subDivision">Подразделение</div>
+            <div class="table-header-cell sortable" data-sort="role">Роль</div>
+            <div class="table-header-cell">Уведомления</div>
+            <div class="table-header-cell">ChatID</div>
+            <div class="table-header-cell sortable" data-sort="active">Статус</div>
+            <div class="table-header-cell">Действия</div>
+        </div>
+        <div class="table-body" id="usersBody"></div>
+    </div>
+
+    <div class="footer-bar">
+        <div class="page-info" id="page-info"></div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<dialog id="userDialog" aria-labelledby="userDialogTitle">
+    <div class="modal-header">
+        <h2 class="modal-title" id="userDialogTitle">Создание пользователя</h2>
+        <button type="button" class="btn-close user-dialog-close" aria-label="Закрыть"></button>
+    </div>
+    <form id="userForm" novalidate>
+        <input type="hidden" id="userId" name="id">
+        <input type="hidden" id="userVersion" name="version">
+        <div class="modal-body">
+            <div class="form-error-banner" id="userFormError" role="alert" hidden></div>
+
+            <div class="form-group full-width">
+                <label class="form-label" for="userName">Имя пользователя <span class="required">*</span></label>
+                <input type="text" class="form-control" id="userName" name="name"
+                       minlength="4" maxlength="100" autocomplete="off" required>
+                <span class="field-error" id="userNameError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userPassword">
+                    Пароль <span class="required" id="userPasswordRequired">*</span>
+                </label>
+                <input type="password" class="form-control" id="userPassword" name="password"
+                       minlength="6" maxlength="100" autocomplete="new-password">
+                <span class="field-hint" id="userPasswordHint">Минимум 6 символов</span>
+                <span class="field-error" id="userPasswordError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userPasswordConfirm">
+                    Подтверждение пароля <span class="required" id="userPasswordConfirmRequired">*</span>
+                </label>
+                <input type="password" class="form-control" id="userPasswordConfirm" name="passwordConfirm"
+                       minlength="6" maxlength="100" autocomplete="new-password">
+                <span class="field-error" id="userPasswordConfirmError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userSubdivision">Подразделение <span class="required">*</span></label>
+                <select class="form-control" id="userSubdivision" name="subDivisionId" required>
+                    <option value="">Выберите...</option>
+                    <#list mlmNodes as mlmNode>
+                        <option value="${mlmNode.id}">${mlmNode.name}</option>
+                    </#list>
+                </select>
+                <span class="field-error" id="userSubdivisionError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userRole">Роль <span class="required">*</span></label>
+                <select class="form-control" id="userRole" name="role" required>
+                    <#list roles as role>
+                        <option value="${role}">${role}</option>
+                    </#list>
+                </select>
+                <span class="field-error" id="userRoleError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userNotificationApp">
+                    Приложение уведомлений <span class="required">*</span>
+                </label>
+                <select class="form-control" id="userNotificationApp" name="notificationApp" required>
+                    <#list notificationApp as notification>
+                        <option value="${notification}">${notification}</option>
+                    </#list>
+                </select>
+                <span class="field-error" id="userNotificationAppError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="userActive">Статус <span class="required">*</span></label>
+                <select class="form-control" id="userActive" name="active" required>
+                    <option value="true">Активный</option>
+                    <option value="false">Отключённый</option>
+                </select>
+                <span class="field-error" id="userActiveError" aria-live="polite"></span>
+            </div>
+
+            <div class="form-group full-width">
+                <label class="form-label" for="userChatId">
+                    ChatID <span class="required" id="userChatIdRequired">*</span>
+                </label>
+                <input type="number" class="form-control" id="userChatId" name="chatId" step="1" inputmode="numeric">
+                <span class="field-hint" id="userChatIdHint"></span>
+                <span class="field-error" id="userChatIdError" aria-live="polite"></span>
             </div>
         </div>
-    </div>
-</div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary user-dialog-cancel">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="userSaveBtn">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span class="btn-label">Сохранить</span>
+            </button>
+        </div>
 
+        <div class="dialog-loading" id="userDialogLoading" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Загрузка данных...</span>
+        </div>
+    </form>
+</dialog>
 </body>
 </html>
