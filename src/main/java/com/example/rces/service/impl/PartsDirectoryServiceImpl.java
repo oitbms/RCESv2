@@ -2,12 +2,12 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.*;
 import com.example.rces.mapper.PartsDirectoryMapper;
-import com.example.rces.models.CustomerOrder;
-import com.example.rces.models.PartsDirectory;
+import com.example.rces.models.*;
 import com.example.rces.repository.PartsDirectoryRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
 import com.example.rces.service.PartsDirectoryService;
+import com.example.rces.service.SpmService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
@@ -38,15 +38,17 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
     private final PartsDirectoryMapper mapper;
     private final EmployeeService employeeService;
     private final CustomerOrderService customerOrderService;
+    private final SpmService spmService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
 
     @Autowired
-    public PartsDirectoryServiceImpl(PartsDirectoryRepository repository, PartsDirectoryMapper mapper, EmployeeService employeeService, CustomerOrderService customerOrderService, ObjectMapper objectMapper, RestTemplate restTemplate) {
+    public PartsDirectoryServiceImpl(PartsDirectoryRepository repository, PartsDirectoryMapper mapper, EmployeeService employeeService, CustomerOrderService customerOrderService, SpmService spmService, ObjectMapper objectMapper, RestTemplate restTemplate) {
         this.repository = repository;
         this.mapper = mapper;
         this.employeeService = employeeService;
         this.customerOrderService = customerOrderService;
+        this.spmService = spmService;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
     }
@@ -204,7 +206,17 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
 
     @Override
     public List<PartsDirectoryDTO> createItemFromSpm(List<PartsDirectoryCreateDTOFromSpm> listDTO) {
-        return List.of();
+        List<PartsDirectory> pdiList = new ArrayList<>();
+        listDTO.forEach(dto -> {
+            PartsDirectory pdi = new PartsDirectory(dto, employeeService.getCurrentUser());
+//            CustomerOrder customerOrder = customerOrderService.createOrGetCustomerOrder(employeeService.getCurrentUser(),
+//                    dto.getCustomerOrder(), null);
+//            pdi.setCustomerOrder(customerOrder);
+            PartsDirectory savedPdi = repository.save(pdi);
+            pdiList.add(savedPdi);
+        });
+
+        return mapper.toDTOList(pdiList);
     }
 
     @Scheduled(cron = "0 0 9 * * *")
@@ -217,5 +229,4 @@ public class PartsDirectoryServiceImpl implements PartsDirectoryService {
             repository.save(p);
         });
     }
-
 }

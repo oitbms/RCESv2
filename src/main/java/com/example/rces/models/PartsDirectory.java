@@ -5,6 +5,7 @@ import com.example.rces.models.enums.Color;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import com.example.rces.dto.PartsDirectoryCreateDTOFromSpm;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -294,6 +295,14 @@ public class PartsDirectory extends BaseAuditingEntity {
         this.qty = dto.getQty();
         this.steel = dto.getSteel();
         this.measurements = dto.getMeasurements();
+        this.status = Status.NEW;
+        this.color = Color.NONE;
+    }
+
+    public PartsDirectory(PartsDirectoryCreateDTOFromSpm dto, Employee currentUser) {
+        this.employee = currentUser;
+        this.name = dto.getCustomerOrderLine();
+        this.dateCompletion = dto.getDateStart().atStartOfDay();
         this.status = Status.NEW;
         this.color = Color.NONE;
     }

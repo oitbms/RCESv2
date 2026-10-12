@@ -2,10 +2,12 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.SpmCreateDTO;
 import com.example.rces.dto.SpmDTO;
+import com.example.rces.exception.EntityNotFoundExceptionBormash;
 import com.example.rces.mapper.SpmMapper;
 import com.example.rces.models.CustomerOrder;
 import com.example.rces.models.Spm;
 import com.example.rces.models.enums.Color;
+import com.example.rces.models.enums.NotificationType;
 import com.example.rces.repository.SpmRepository;
 import com.example.rces.service.CustomerOrderService;
 import com.example.rces.service.EmployeeService;
@@ -35,10 +37,10 @@ public class SpmServiceImpl implements SpmService {
 
     @Autowired
     public SpmServiceImpl(SpmRepository repository,
-                            SpmMapper mapper,
-                            ObjectMapper objectMapper,
-                            CustomerOrderService customerOrderService,
-                            EmployeeService employeeService) {
+                          SpmMapper mapper,
+                          ObjectMapper objectMapper,
+                          CustomerOrderService customerOrderService,
+                          EmployeeService employeeService) {
         this.repository = repository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
@@ -58,6 +60,12 @@ public class SpmServiceImpl implements SpmService {
         linkCustomerOrder(spm, dto.getCustomerOrderName());
         Spm saved = repository.save(spm);
         return mapper.toDTO(saved);
+    }
+
+    @Override
+    public Spm findById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new EntityNotFoundExceptionBormash("SPE не найден",
+                NotificationType.ERROR));
     }
 
     @Override

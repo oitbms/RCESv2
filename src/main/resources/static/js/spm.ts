@@ -479,15 +479,31 @@ class Spm extends Base {
         const rowId = $row.attr('id');
         if (!rowId) return;
 
-        this.createContextMenu([
-            {
-                label: 'Удалить запись',
-                idAction: 'deleteSpm',
+        const numericId = Number(rowId);
+        const spm = !Number.isNaN(numericId) ? (this.localCache.get(numericId) as SpmIn) : null;
+        const isLoaded = spm?.loaded === true;
+
+        const menuItems: any[] = [];
+
+        if (!isLoaded) {
+            menuItems.push({
+                label: 'Загрузить',
+                idAction: 'loadSpeFromSpm',
                 action: () => {
-                    this.deleteSpmHandler(rowId);
+                    this.loadSpeFromSpmHandler(rowId);
                 }
-            },
-        ], (event as MouseEvent).clientX, (event as MouseEvent).clientY);
+            });
+        }
+
+        menuItems.push({
+            label: 'Удалить запись',
+            idAction: 'deleteSpm',
+            action: () => {
+                this.deleteSpmHandler(rowId);
+            }
+        });
+
+        this.createContextMenu(menuItems, (event as MouseEvent).clientX, (event as MouseEvent).clientY);
     };
 
     private deleteSpmHandler = async (id: string): Promise<void> => {
@@ -506,6 +522,47 @@ class Spm extends Base {
             this.createNotification('Запись успешно удалена', NotificationType.SUCCESS);
         } catch {
             this.createNotification('Ошибка при удалении записи', NotificationType.ERROR);
+        }
+    };
+
+    private loadSpeFromSpmHandler = async (id: string): Promise<void> => {
+        try {
+            const numericId = Number(id);
+            if (Number.isNaN(numericId)) {
+                this.createNotification('Ошибка при загрузке записи', NotificationType.ERROR);
+                return;
+            }
+
+            const spm = this.localCache.get(numericId) as SpmIn;
+            if (spm?.loaded) {
+                this.createNotification('Строка уже загружена', NotificationType.WARNING);
+                return;
+            }
+
+            const payload = {
+                spmId: numericId
+            };
+
+            const unlock = this.lockScreen('Создание записи в справочнике...');
+            try {
+                const createdRows = await this.requestToApi(
+                    '/api/parts-directory/create-item-from-spm',
+                    'POST',
+                    payload
+                ) as pdItemIn[];
+                this.createNotification('Запись создана', NotificationType.SUCCESS);
+
+                const updatedSpm = await this.requestToApi(`/api/spm/mark-loaded/${numericId}`, 'PATCH') as SpmIn;
+                this.updateRow(updatedSpm, updatedSpm.id);
+            } catch (error) {
+                console.error(error);
+                this.createNotification('Ошибка при создании записи в СИП', NotificationType.ERROR);
+            } finally {
+                unlock();
+            }
+        } catch (error) {
+            console.error(error);
+            this.createNotification('Ошибка при загрузке записи', NotificationType.ERROR);
         }
     };
 }

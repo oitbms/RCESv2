@@ -2,14 +2,11 @@ package com.example.rces.service.impl;
 
 import com.example.rces.dto.*;
 import com.example.rces.mapper.SPEMapper;
-import com.example.rces.models.Document;
-import com.example.rces.models.SPE;
+import com.example.rces.models.*;
 import com.example.rces.models.enums.OrganizationSPE;
 import com.example.rces.models.enums.StatusSPE;
 import com.example.rces.repository.SpeRepository;
-import com.example.rces.service.DocumentService;
-import com.example.rces.service.ReportService;
-import com.example.rces.service.SpeService;
+import com.example.rces.service.*;
 import com.example.rces.utils.ApiClient;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
