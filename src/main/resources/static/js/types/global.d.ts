@@ -49,6 +49,15 @@ declare type SpeIn = {
     organization: string;
 };
 
+declare type SpmIn = {
+    id: number;
+    customerOrder: CustomerOrder;
+    customerOrderLine: string;
+    dateStart: string;
+    priority: number;
+    loaded: boolean;
+};
+
 declare type OrganizationSPE = {
     name: string;
     position: string;
