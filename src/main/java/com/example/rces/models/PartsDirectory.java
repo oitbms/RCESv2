@@ -302,7 +302,10 @@ public class PartsDirectory extends BaseAuditingEntity {
     public PartsDirectory(PartsDirectoryCreateDTOFromSpm dto, Employee currentUser) {
         this.employee = currentUser;
         this.name = dto.getCustomerOrderLine();
-        this.dateCompletion = dto.getDateStart().atStartOfDay();
+        this.comment = "Загружено с СПМ";
+        this.dateCompletion = dto.getDateStart() != null ? dto.getDateStart().atStartOfDay() : null;
+        this.qty = 0;
+        this.qtyCompleted = 0;
         this.status = Status.NEW;
         this.color = Color.NONE;
     }

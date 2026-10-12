@@ -219,7 +219,7 @@
       this.activeDialogs.set(dialogId, this.currentZIndex);
       this.currentZIndex++;
       document.documentElement.style.setProperty("--dialog-z-index", this.currentZIndex.toString());
-      this.setupCloseHandlers(dialogId, options.onClose);
+      this.setupCloseHandlers(dialogId, options);
       if (options.onOpen) {
         options.onOpen();
       }
@@ -280,17 +280,33 @@
         localCache.delete("imagesMap");
       }
     }
-    setupCloseHandlers(dialogId, onCloseCallback) {
+    setupCloseHandlers(dialogId, options) {
+      const onCloseCallback = options.onClose;
+      const onBeforeClose = options.onBeforeClose;
       const dialogElement = document.getElementById(dialogId);
       if (!dialogElement)
         return;
+      const requestClose = async (event) => {
+        if (event)
+          event.preventDefault();
+        if (onBeforeClose) {
+          try {
+            if (await onBeforeClose() === false) {
+              return;
+            }
+          } catch (e) {
+            return;
+          }
+        }
+        this.close(dialogId);
+        if (onCloseCallback)
+          onCloseCallback();
+      };
       const handleBackdropClick = (e) => {
         const rect = dialogElement.getBoundingClientRect();
         const isInDialog = rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width;
         if (!isInDialog) {
-          this.close(dialogId);
-          if (onCloseCallback)
-            onCloseCallback();
+          void requestClose(e);
         }
       };
       const handleKeyDown = (e) => {
@@ -298,10 +314,7 @@
           const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
           const currentZIndex = this.activeDialogs.get(dialogId);
           if (currentZIndex === maxZIndex) {
-            e.preventDefault();
-            this.close(dialogId);
-            if (onCloseCallback)
-              onCloseCallback();
+            void requestClose(e);
           }
         }
       };
@@ -319,10 +332,8 @@
         const btn = cancelBtn;
         if (btn._dialogCancelClick)
           cancelBtn.removeEventListener("click", btn._dialogCancelClick);
-        const handleCancel = () => {
-          this.close(dialogId);
-          if (onCloseCallback)
-            onCloseCallback();
+        const handleCancel = (e) => {
+          void requestClose(e);
         };
         cancelBtn.addEventListener("click", handleCancel);
         btn._dialogCancelClick = handleCancel;
@@ -1328,15 +1339,27 @@
         const rowId = $row.attr("id");
         if (!rowId)
           return;
-        this.createContextMenu([
-          {
-            label: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0437\u0430\u043F\u0438\u0441\u044C",
-            idAction: "deleteSpm",
+        const numericId = Number(rowId);
+        const spm = !Number.isNaN(numericId) ? this.localCache.get(numericId) : null;
+        const isLoaded = (spm == null ? void 0 : spm.loaded) === true;
+        const menuItems = [];
+        if (!isLoaded) {
+          menuItems.push({
+            label: "\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C",
+            idAction: "loadSpeFromSpm",
             action: () => {
-              this.deleteSpmHandler(rowId);
+              this.loadSpeFromSpmHandler(rowId);
             }
+          });
+        }
+        menuItems.push({
+          label: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0437\u0430\u043F\u0438\u0441\u044C",
+          idAction: "deleteSpm",
+          action: () => {
+            this.deleteSpmHandler(rowId);
           }
-        ], event.clientX, event.clientY);
+        });
+        this.createContextMenu(menuItems, event.clientX, event.clientY);
       };
       this.deleteSpmHandler = async (id) => {
         try {
@@ -1354,6 +1377,48 @@
           this.createNotification("\u0417\u0430\u043F\u0438\u0441\u044C \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0443\u0434\u0430\u043B\u0435\u043D\u0430", "success" /* SUCCESS */);
         } catch (e) {
           this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u0437\u0430\u043F\u0438\u0441\u0438", "error" /* ERROR */);
+        }
+      };
+      this.loadSpeFromSpmHandler = async (id) => {
+        try {
+          const numericId = Number(id);
+          if (Number.isNaN(numericId)) {
+            this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0437\u0430\u043F\u0438\u0441\u0438", "error" /* ERROR */);
+            return;
+          }
+          const spm = this.localCache.get(numericId);
+          if (!spm) {
+            this.createNotification("\u0417\u0430\u043F\u0438\u0441\u044C \u0421\u041F\u041C \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430", "error" /* ERROR */);
+            return;
+          }
+          if (spm.loaded) {
+            this.createNotification("\u0421\u0442\u0440\u043E\u043A\u0430 \u0443\u0436\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u0430", "warning" /* WARNING */);
+            return;
+          }
+          const payload = [{
+            customerOrderLine: spm.customerOrderLine,
+            dateStart: spm.dateStart,
+            priority: spm.priority
+          }];
+          const unlock = this.lockScreen("\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u0432 \u0441\u043F\u0440\u0430\u0432\u043E\u0447\u043D\u0438\u043A\u0435...");
+          try {
+            const createdRows = await this.requestToApi(
+              "/api/parts-directory/create-item-from-spm",
+              "POST",
+              payload
+            );
+            this.createNotification("\u0417\u0430\u043F\u0438\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u043D\u0430", "success" /* SUCCESS */);
+            const updatedSpm = await this.requestToApi(`/api/spm/mark-loaded/${numericId}`, "PATCH");
+            this.updateRow(updatedSpm, updatedSpm.id);
+          } catch (error) {
+            console.error(error);
+            this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0438 \u0437\u0430\u043F\u0438\u0441\u0438 \u0432 \u0421\u0418\u041F", "error" /* ERROR */);
+          } finally {
+            unlock();
+          }
+        } catch (error) {
+          console.error(error);
+          this.createNotification("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0437\u0430\u043F\u0438\u0441\u0438", "error" /* ERROR */);
         }
       };
       this.createHandler("click", "#create-button", () => this.dialog.open("create-dialog"), true);

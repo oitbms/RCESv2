@@ -136,10 +136,10 @@ class PdItem extends Base {
         })();
         const row = `
             <div class="table-row" id="${pdi.id}" data-index="${pdi.id}">
-                <div class="table-cell" style="position: relative" title="${this.escapeHtml(pdi.customerOrder.name)}">
+                <div class="table-cell" style="position: relative" title="${this.escapeHtml(pdi.customerOrder?.name)}">
                     <div class="circle circle-row tooltip-trigger" data-description="Выделить строку"></div>
                     <div class="field-container center" data-name="customerOrder" contenteditable="false">
-                        ${this.escapeHtml(pdi.customerOrder.name)}
+                        ${this.escapeHtml(pdi.customerOrder?.name)}
                     </div>
                 </div>
                 <div class="table-cell" title="${this.escapeHtml(pdi.name)}">

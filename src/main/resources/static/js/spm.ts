@@ -534,14 +534,20 @@ class Spm extends Base {
             }
 
             const spm = this.localCache.get(numericId) as SpmIn;
-            if (spm?.loaded) {
+            if (!spm) {
+                this.createNotification('Запись СПМ не найдена', NotificationType.ERROR);
+                return;
+            }
+            if (spm.loaded) {
                 this.createNotification('Строка уже загружена', NotificationType.WARNING);
                 return;
             }
 
-            const payload = {
-                spmId: numericId
-            };
+            const payload = [{
+                customerOrderLine: spm.customerOrderLine,
+                dateStart: spm.dateStart,
+                priority: spm.priority
+            }];
 
             const unlock = this.lockScreen('Создание записи в справочнике...');
             try {

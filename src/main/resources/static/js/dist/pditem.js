@@ -219,7 +219,7 @@
       this.activeDialogs.set(dialogId, this.currentZIndex);
       this.currentZIndex++;
       document.documentElement.style.setProperty("--dialog-z-index", this.currentZIndex.toString());
-      this.setupCloseHandlers(dialogId, options.onClose);
+      this.setupCloseHandlers(dialogId, options);
       if (options.onOpen) {
         options.onOpen();
       }
@@ -280,17 +280,33 @@
         localCache.delete("imagesMap");
       }
     }
-    setupCloseHandlers(dialogId, onCloseCallback) {
+    setupCloseHandlers(dialogId, options) {
+      const onCloseCallback = options.onClose;
+      const onBeforeClose = options.onBeforeClose;
       const dialogElement = document.getElementById(dialogId);
       if (!dialogElement)
         return;
+      const requestClose = async (event) => {
+        if (event)
+          event.preventDefault();
+        if (onBeforeClose) {
+          try {
+            if (await onBeforeClose() === false) {
+              return;
+            }
+          } catch (e) {
+            return;
+          }
+        }
+        this.close(dialogId);
+        if (onCloseCallback)
+          onCloseCallback();
+      };
       const handleBackdropClick = (e) => {
         const rect = dialogElement.getBoundingClientRect();
         const isInDialog = rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width;
         if (!isInDialog) {
-          this.close(dialogId);
-          if (onCloseCallback)
-            onCloseCallback();
+          void requestClose(e);
         }
       };
       const handleKeyDown = (e) => {
@@ -298,10 +314,7 @@
           const maxZIndex = Math.max(...Array.from(this.activeDialogs.values()));
           const currentZIndex = this.activeDialogs.get(dialogId);
           if (currentZIndex === maxZIndex) {
-            e.preventDefault();
-            this.close(dialogId);
-            if (onCloseCallback)
-              onCloseCallback();
+            void requestClose(e);
           }
         }
       };
@@ -319,10 +332,8 @@
         const btn = cancelBtn;
         if (btn._dialogCancelClick)
           cancelBtn.removeEventListener("click", btn._dialogCancelClick);
-        const handleCancel = () => {
-          this.close(dialogId);
-          if (onCloseCallback)
-            onCloseCallback();
+        const handleCancel = (e) => {
+          void requestClose(e);
         };
         cancelBtn.addEventListener("click", handleCancel);
         btn._dialogCancelClick = handleCancel;
@@ -1935,7 +1946,7 @@
       this.createHandler("contextmenu", ".table-row.selected", this.showRowContextMenu.bind(this), true);
     }
     createRow(pdi) {
-      var _a, _b;
+      var _a, _b, _c, _d;
       const status = (() => {
         switch (pdi.status) {
           case "NEW":
@@ -1950,10 +1961,10 @@
       })();
       const row = `
             <div class="table-row" id="${pdi.id}" data-index="${pdi.id}">
-                <div class="table-cell" style="position: relative" title="${this.escapeHtml(pdi.customerOrder.name)}">
+                <div class="table-cell" style="position: relative" title="${this.escapeHtml((_a = pdi.customerOrder) == null ? void 0 : _a.name)}">
                     <div class="circle circle-row tooltip-trigger" data-description="\u0412\u044B\u0434\u0435\u043B\u0438\u0442\u044C \u0441\u0442\u0440\u043E\u043A\u0443"></div>
                     <div class="field-container center" data-name="customerOrder" contenteditable="false">
-                        ${this.escapeHtml(pdi.customerOrder.name)}
+                        ${this.escapeHtml((_b = pdi.customerOrder) == null ? void 0 : _b.name)}
                     </div>
                 </div>
                 <div class="table-cell" title="${this.escapeHtml(pdi.name)}">
@@ -2011,9 +2022,9 @@
                         ${status}
                     </span>
                 </div>
-                <div class="table-cell" title="${this.escapeHtml(((_a = pdi.team) == null ? void 0 : _a.name) || "")}">
+                <div class="table-cell" title="${this.escapeHtml(((_c = pdi.team) == null ? void 0 : _c.name) || "")}">
                     <div class="field-container team-field center" data-name="team" contenteditable="false">
-                        ${this.escapeHtml(((_b = pdi.team) == null ? void 0 : _b.name) || "")}
+                        ${this.escapeHtml(((_d = pdi.team) == null ? void 0 : _d.name) || "")}
                     </div>
                 </div>
                 <div class="table-cell" title="${this.escapeHtml(this.formatDate(pdi.dateCompletion))}">
